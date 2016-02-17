@@ -1,0 +1,36 @@
+#lsb-change-canvas {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 90%;
+	/*height: auto;*/
+	height: 400px;
+}
+
+.myLSBGraph .dygraph-legend > span.highlight { border: 1px solid grey; }
+
+#lsb-change-canvas .dygraph-label {
+  /* This applies to the title, x-axis label and y-axis label */
+  font-family: 'Lato', sans-serif;
+}
+#lsb-change-canvas .dygraph-title {
+  /* This rule only applies to the chart title */
+  font-family: 'Droid Serif', serif;  /* color, delta-x, delta-y, blur radius */
+}
+#lsb-change-canvas .dygraph-ylabel {
+  /* This rule only applies to the y-axis label */
+  font-family: 'Lato', sans-serif;  /* (offsets are in a rotated frame) */
+}
+
+#myFlashContent {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 50%;
+	min-height: 70%;		
+}
+
+#flashIE {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 50%;
+	min-height: 70%;		
+}

@@ -1,0 +1,21 @@
+#div_health {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 90%;
+	/*height: auto;*/
+	height: 400px;
+}
+
+#myFlashContent {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 50%;
+	min-height: 70%;		
+}
+
+#flashIE {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 50%;
+	min-height: 70%;		
+}
