@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>View Senslope Data</title>
+	<link href="./css/south-street/jquery-ui-1.10.4.custom.css" rel="stylesheet">
+	<script src="./development-bundle/jquery-1.10.2.js"></script>
+	<script src="./js/jquery-ui-1.10.4.custom.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.core.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.widget.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.datepicker.js"></script>
+	<script type="text/javascript" src="http://dygraphs.com/dygraph-combined.js"></script>
+	<script type="text/javascript" src="http://fgnass.github.io/spin.js/spin.min.js"></script>
+	<style type="text/css">
+		#demodiv {
+			margin-left: auto;
+			margin-right: auto;
+			min-width: 90%;
+			height: auto;
+		}
+		
+		#myFlashContent {
+			margin-left: auto;
+			margin-right: auto;
+			min-width: 50%;
+			min-height: 70%;		
+		}
+		
+		#flashIE {
+			margin-left: auto;
+			margin-right: auto;
+			min-width: 50%;
+			min-height: 70%;		
+		}
+    </style>
+	<script>
+	var end_date = new Date();
+    var from_date = new Date(end_date.getMonth()-1 + '-' + end_date.getDate() + '-' + end_date.getFullYear());
+	$(function() {
+    	$( "#datepicker" ).datepicker({ dateFormat: "yy-mm-dd" });
+        $( "#datepicker" ).datepicker("setDate", from_date);        
+	});
+
+        $(function() {
+		$( "#datepicker2" ).datepicker({ dateFormat: "yy-mm-dd" });
+	});
+	
+	function JSON2CSV(objArray) {
+		var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+
+		var str = '';
+		var line = '';
+
+		if ($("#labels").is(':checked')) {
+			var head = array[0];
+			if ($("#quote").is(':checked')) {
+				for (var index in array[0]) {
+					var value = index + "";
+					line += '"' + value.replace(/"/g, '""') + '",';
+				}
+			} else {
+				for (var index in array[0]) {
+					line += index + ',';
+				}
+			}
+
+			line = line.slice(0, -1);
+			str += line + '\r\n';
+		}
+
+		for (var i = 0; i < array.length; i++) {
+			var line = '';
+
+			if ($("#quote").is(':checked')) {
+				for (var index in array[i]) {
+					var value = array[i][index] + "";
+					line += '"' + value.replace(/"/g, '""') + '",';
+				}
+			} else {
+				for (var index in array[i]) {
+					line += array[i][index] + ',';
+				}
+			}
+
+			line = line.slice(0, -1);
+			str += line + '\r\n';
+		}
+		return str;
+	}
+
+	// TO DO:
+	function downloadData(frm) {
+	
+	  if (frm.dateinput.value == "") {
+		return;
+	  } 
+	  //else
+	  //	alert("The field contains the date from: " + frm.dateinput.value + ", date to: " + frm.dateinput2.value + " and site: " + frm.sites.value);
+	
+	  if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+	  } else { // code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  
+	  xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+			var siteData = JSON.parse(xmlhttp.responseText);
+			var csv = JSON2CSV(siteData );
+			var uri = 'data:text/csv;charset=utf-8,' + escape(csv);
+
+			var link = document.createElement("a");    
+			link.href = uri;
+
+			link.style = "visibility:hidden";
+			link.download = frm.sites.value + ".csv";
+
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+	  }
+	  //xmlhttp.open("GET","getJSON2.php?q=" + frm.dateinput.value + "&q2=" + frm.dateinput2.value + "&site=" + frm.sites.value,true);
+	  //var url ="getJSON3.php?q=" + frm.dateinput.value + "&site=" + frm.sites.value + "&nid=" + frm.node.value;
+	  var url ="getSenslopeData.php?accel&q=" + frm.dateinput.value + "&site=" + frm.sites.value + "&nid=" + frm.node.value + "&db=" + frm.dbase.value;
+	  xmlhttp.open("GET",url,true);	  
+	  xmlhttp.send();
+	}
+
+	var g = 0;
+	var isVisible = [true, true, true, true];
+	var opts = {
+		lines: 11, // The number of lines to draw
+		length: 6, // The length of each line
+		width: 3, // The line thickness
+		radius: 8, // The radius of the inner circle
+		corners: 1, // Corner roundness (0..1)
+		rotate: 0, // The rotation offset
+		direction: 1, // 1: clockwise, -1: counterclockwise
+		color: '#000', // #rgb or #rrggbb or array of colors
+		speed: 1.1, // Rounds per second
+		trail: 58, // Afterglow percentage
+		shadow: false, // Whether to render a shadow
+		hwaccel: false, // Whether to use hardware acceleration
+		className: 'spinner', // The CSS class to assign to the spinner
+		zIndex: 2e9, // The z-index (defaults to 2000000000)
+		top: '50%', // Top position relative to parent
+		left: '50%' // Left position relative to parent
+	};
+	var target = document.getElementById('demodiv');
+	
+	function showData(frm) {
+	
+	  if (frm.dateinput.value == "") {
+		return;
+	  } 
+	
+	  if (window.XMLHttpRequest) {
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		xmlhttp = new XMLHttpRequest();
+	  } else { // code for IE6, IE5
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  
+	  var target = document.getElementById('demodiv');
+	  var spinner = new Spinner().spin();
+	  target.appendChild(spinner.el);
+	  
+	  xmlhttp.onreadystatechange = function() {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            var siteData = JSON.parse(xmlhttp.responseText);
+            	
+            if (siteData == null){
+                spinner.stop();
+                alert("No data retrieved. Please check input values.");
+                return;
+            } 
+            var data = JSON2CSV(siteData);
+            
+			var isStacked = false;
+			
+			spinner.stop();
+			
+			g = new Dygraph(
+				document.getElementById("demodiv"), 
+				data, 
+				{
+					title: frm.sites.value + ' ' + frm.node.value,
+					stackedGraph: isStacked,
+					labels: ['timestamp', 'xvalue', 'yvalue', 'zvalue', 'mvalue'],
+					visibility: isVisible,
+					rollPeriod: 1,
+					showRoller: true,
+					//errorBars: true,
+
+					highlightCircleSize: 2,
+					strokeWidth: 1,
+					strokeBorderWidth: isStacked ? null : 1,
+					connectSeparatedPoints: true,
+                    
+					highlightSeriesOpts: {
+					  strokeWidth: 3,
+					  strokeBorderWidth: 1,
+					  highlightCircleSize: 5,
+					}
+				}
+				);
+			
+			var onclick = function(ev) {
+				if (g.isSeriesLocked()) {
+					g.clearSelection();
+				} else {
+					g.setSelection(g.getSelection(), g.getHighlightSeries(), true);
+				}
+			};
+			
+			g.updateOptions({clickCallback: onclick}, true);
+			g.setSelection(false, 'xvalue');
+		}
+	  }
+	  //xmlhttp.open("GET","getJSON2.php?q=" + frm.dateinput.value + "&q2=" + frm.dateinput2.value + "&site=" + frm.sites.value,true);
+	  //var url ="getJSON3.php?q=" + frm.dateinput.value + "&site=" + frm.sites.value;
+	  //var url ="getJSON3.php?q=" + frm.dateinput.value + "&site=" + frm.sites.value + "&nid=" + frm.node.value;
+	  var url ="getSenslopeData.php?accel&q=" + frm.dateinput.value + "&site=" + frm.sites.value + "&nid=" + frm.node.value + "&db=" + frm.dbase.value;
+	  xmlhttp.open("GET",url,true);
+	  xmlhttp.send();
+	}
+	
+	function change(el) {
+		if(g != 0)
+			g.setVisibility(parseInt(el.id), el.checked);
+        isVisible[parseInt(el.id)] = el.checked;
+    }
+	
+	function showAndClearField(frm){
+	  if (frm.dateinput.value == "")
+		  alert("Hey! You didn't enter anything!")
+	  else
+		  alert("The field contains the text: " + frm.dateinput.value)
+	  frm.dateinput.value = ""
+	}
+	</script>
+</head>
+<body>
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&appId=660212280700219&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<FORM NAME="test">
+<p>
+	Database: <select name="dbase">
+	<option value="senslopedb">Raw</option>
+	<option value="senslopedb_purged">Purged</option>
+	</select><Br/>
+	Site: <select name="sites">
+	<option value="blcb">BLCB</option>
+	<option value="blct">BLCT</option>
+	<option value="bolb">BOLB</option>
+	<option value="gamb">GAMB</option>
+	<option value="gamt">GAMT</option>
+	<option value="humb">HUMB</option>
+	<option value="humt">HUMT</option>
+	<option value="labb">LABB</option>
+	<option value="labt">LABT</option>
+	<option value="lipb">LIPB</option>
+	<option value="lipt">LIPT</option>
+	<option value="mamb">MAMB</option>
+	<option value="mamt">MAMT</option>
+	<option value="oslb">OSLB</option>
+	<option value="oslt">OSLT</option>
+	<option value="plab">PLAB</option>
+	<option value="plat">PLAT</option>
+	<option value="pugb">PUGB</option>
+	<option value="pugt">PUGT</option>
+	<option value="sinb">SINB</option>
+	<option value="sint">SINT</option>
+	<option value="sinu">SINU</option>
+	</select>
+	Node: <input type="number" min="1" max="40" name="node" value="1" size="0.5" onclick="showData(this.form)"><Br/>
+	From: <input type="text" id="datepicker" name="dateinput" size="30"/><Br/>
+	<input type="button" value="go" onclick="showData(this.form)">
+    <input type="button" value="Download CSV" onclick="downloadData(this.form)">
+</p>
+</FORM>
+
+<div class="demo-description">
+<p>Pick a date for viewing data</p>
+</div>
+
+<div id="demodiv"></div>
+<p><b>Show Series:</b></p>
+<p>
+	<input type=checkbox id="0" checked onClick="change(this)">
+	<label for="0"> xvalue</label>
+	<input type=checkbox id="1" checked onClick="change(this)">
+	<label for="1"> yvalue</label>
+	<input type=checkbox id="2" checked onClick="change(this)">
+	<label for="2"> zvalue</label>
+	<input type=checkbox id="3" checked onClick="change(this)">
+	<label for="3"> mvalue</label>
+</p>
+
+<div class="fb-comments" data-href="http://dewslandslide.com/ajax/simplechart.html" data-numposts="7" data-colorscheme="light"></div>
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>View NOAH Rainfall Data</title>
+	<link rel="stylesheet" href="./development-bundle/themes/base/jquery.ui.all.css">
+	<script src="./development-bundle/jquery-1.10.2.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.core.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.widget.js"></script>
+	<script src="./development-bundle/ui/jquery.ui.datepicker.js"></script>
+	<link rel="stylesheet" href="/development-bundle/demos/demos.css">
+	<script>
+	$(function() {
+		$( "#datepicker" ).datepicker({ dateFormat: "yy-mm-dd" });
+	});
+
+        $(function() {
+		$( "#datepicker2" ).datepicker({ dateFormat: "yy-mm-dd" });
+	});
+
+	// Create the XHR object.
+	function createCORSRequest(method, url) {
+		var xhr = new XMLHttpRequest();
+		if ("withCredentials" in xhr) {
+			// XHR for Chrome/Firefox/Opera/Safari.
+			xhr.open(method, url, true);
+		} else if (typeof XDomainRequest != "undefined") {
+			// XDomainRequest for IE.
+			xhr = new XDomainRequest();
+			xhr.open(method, url);
+		} else {
+			// CORS not supported.
+			xhr = null;
+		}
+		return xhr;
+	}
+
+	// Helper method to parse the title tag from the response.
+	function getTitle(text) {
+		return text.match('<title>(.*)?</title>')[1];
+	}
+
+	// Make the actual CORS request.
+	function makeCorsRequest() {
+		// All HTML5 Rocks properties support CORS.
+		//var url = 'http://updates.html5rocks.com';
+		//var url = 'http://noah.dost.gov.ph/';
+		var url = 'http://senslopetest.comlu.com/';
+
+		var xhr = createCORSRequest('GET', url);
+		if (!xhr) {
+			alert('CORS not supported');
+			return;
+		}
+
+		// Response handlers.
+		xhr.onload = function() {
+			var text = xhr.responseText;
+			var title = getTitle(text);
+			alert('Response from CORS request to ' + url + ': ' + title);
+		};
+
+		xhr.onerror = function() {
+			alert('Woops, there was an error making the request.');
+		};
+
+		xhr.send();
+	}
+	
+	function showDataCors(frm) {
+	
+		if (frm.dateinput.value == "") {
+			document.getElementById("txtHint").innerHTML="";
+			return;
+		} 
+		else
+			alert("The field contains the date: " + frm.dateinput.value + " and site: " + frm.sites.value);
+
+		var url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sites.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value;
+		var xmlhttp = createCORSRequest('GET', url);
+		if (!xmlhttp) {
+			alert('CORS not supported');
+			return;
+		}
+
+		// Response handlers.
+		xmlhttp.onload = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				document.getElementById("txtHint").innerHTML = xmlhttp.responseText;
+				//var json = JSON.parse(xmlhttp.responseText);
+				//document.getElementById("txtHint").innerHTML = json.data[0].dateTimeRead;
+			}
+		};
+		
+		xmlhttp.send();
+	}
+	
+	function downloadDataCors(frm) {
+	
+		if (frm.dateinput.value == "") {
+			document.getElementById("txtHint").innerHTML="";
+			return;
+		} 
+		else
+			alert("The field contains the date from: " + frm.dateinput.value + ", date to: " + frm.dateinput2.value + " and site: " + frm.sites.value);
+
+		var url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sites.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value;
+		var xmlhttp = createCORSRequest('GET', url);
+		if (!xmlhttp) {
+			alert('CORS not supported');
+			return;
+		}
+	  
+		// Response handlers
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				var siteData = JSON.parse(xmlhttp.responseText);
+				//var csv = JSON2CSV(siteData);
+				var csv = JSON2CSV(siteData.data);
+				var uri = 'data:text/csv;charset=utf-8,' + escape(csv);
+
+				var link = document.createElement("a");    
+				link.href = uri;
+
+				link.style = "visibility:hidden";
+				link.download = frm.sites.value + ".csv";
+
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
+		}
+
+		xmlhttp.send();
+	}	
+	
+	function JSON2CSV(objArray) {
+		var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+
+		var str = '';
+		var line = '';
+
+		if ($("#labels").is(':checked')) {
+			var head = array[0];
+			if ($("#quote").is(':checked')) {
+				for (var index in array[0]) {
+					var value = index + "";
+					line += '"' + value.replace(/"/g, '""') + '",';
+				}
+			} else {
+				for (var index in array[0]) {
+					line += index + ',';
+				}
+			}
+
+			line = line.slice(0, -1);
+			str += line + '\r\n';
+		}
+
+		for (var i = 0; i < array.length; i++) {
+			var line = '';
+
+			if ($("#quote").is(':checked')) {
+				for (var index in array[i]) {
+					var value = array[i][index] + "";
+					line += '"' + value.replace(/"/g, '""') + '",';
+				}
+			} else {
+				for (var index in array[i]) {
+					line += array[i][index] + ',';
+				}
+			}
+
+			line = line.slice(0, -1);
+			str += line + '\r\n';
+		}
+		return str;
+	}
+
+	function downloadData(frm) {
+	
+		if (frm.dateinput.value == "") {
+			document.getElementById("txtHint").innerHTML="";
+			return;
+		} 
+		else
+			alert("The field contains the date from: " + frm.dateinput.value + ", date to: " + frm.dateinput2.value + " and site: " + frm.sites.value);
+
+		if (window.XMLHttpRequest) {
+			// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		} else { // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+	  
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				var siteData = JSON.parse(xmlhttp.responseText);
+				var csv = JSON2CSV(siteData);
+				var uri = 'data:text/csv;charset=utf-8,' + escape(csv);
+
+				var link = document.createElement("a");    
+				link.href = uri;
+
+				link.style = "visibility:hidden";
+				link.download = frm.sites.value + ".csv";
+
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
+		}
+		xmlhttp.open("GET","http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sites.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value,true);
+		xmlhttp.send();
+	}
+
+	function showData(frm) {
+	
+		if (frm.dateinput.value == "") {
+			document.getElementById("txtHint").innerHTML="";
+			return;
+		} 
+		else
+			alert("The field contains the date: " + frm.dateinput.value + " and site: " + frm.sites.value);
+
+		if (window.XMLHttpRequest) {
+			// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		} else { // code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+	  
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+				document.getElementById("txtHint").innerHTML = xmlhttp.responseText;
+			}
+		}
+		xmlhttp.open("GET","http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sites.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value,true);
+		xmlhttp.send();
+	}
+	
+	function showAndClearField(frm){
+		if (frm.dateinput.value == "")
+			alert("Hey! You didn't enter anything!")
+		else
+			alert("The field contains the text: " + frm.dateinput.value)
+		frm.dateinput.value = ""
+	}
+	</script>
+</head>
+<body>
+
+<FORM NAME="test">
+	<p>
+		NOAH Weather Station: <input type="text" id="wstation" name="sites" size="30"/><Br/>
+		From: <input type="text" id="datepicker" name="dateinput" size="30"/><Br/>
+		To: <input type="text" id="datepicker2" name="dateinput2" size="30"/><Br/>
+		<input type="button" value="go" onclick="showDataCors(this.form)">
+		<input type="button" value="Download CSV" onclick="downloadDataCors(this.form)">
+	</p>
+</FORM>
+
+<div class="demo-description">
+	<p>Pick a date for viewing rainfall data</p>
+</div>
+
+<div id="txtHint"><b>...</b></div>
+
+</body>
+</html>
