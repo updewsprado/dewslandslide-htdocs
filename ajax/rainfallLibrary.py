@@ -45,10 +45,34 @@ def getRainfallNOAHcmd():
     downloadRainfallNOAH(rsite, fdate, tdate)
 
  
-def genRainfallNOAHlist():
+def doesNOAHTableExist(noahid):
+    table_name = "rain_noah_%s" % (noahid)
+    exists = qs.DoesTableExist(table_name)
+
+    if exists:
+        print table_name + " Exists!"
+    else:
+        print table_name + "DOES NOT exist..."
+    
+    return exists
+    
+def updateNOAHSingleTable(noahid):
+    #check if table "rain_noah_" + "noahid" exists already
+    if doesNOAHTableExist(noahid) == False:
+        #Create table for noahid before proceeding with the download
+        pass
+    
+    #TODO: find the latest timestamp for noahid
+    #TODO: generate start time and end time    
+    #TODO: download data for noahid
+    #TODO: insert the new data on the noahid table
+    
+def updateNOAHTables():
+    #get the list of rainfall NOAH rain gauge IDs
     dfRain = qs.GetRainNOAHList()
+    
+    for noahid in dfRain:
+        updateNOAHSingleTable(noahid)
 
-    print dfRain
 
-#getRainfallNOAHcmd();
-genRainfallNOAHlist()
+updateNOAHTables()

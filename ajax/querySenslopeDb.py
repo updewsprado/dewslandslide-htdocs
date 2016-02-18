@@ -47,6 +47,22 @@ def PrintOut(line):
     if printtostdout:
         print line
 
+#Check if table exists
+#   Returns true if table exists
+def DoesTableExist(table_name):
+    db, cur = SenslopeDBConnect(Namedb)
+    cur.execute("use "+ Namedb)
+    cur.execute("SHOW TABLES LIKE '%s'" %table_name)
+
+    if cur.rowcount > 0:
+        db.close()
+        return True
+    else:
+        db.close()
+        return False
+
+    
+
 def GetLatestTimestamp(nameDb, table):
     db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
@@ -324,8 +340,7 @@ def GetRainNOAHList():
         query = 'SELECT DISTINCT LEFT(name,3) as name, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props'
         
         df = psql.read_sql(query, db)
-        
-        #return df
+
         noahlist = []
         for idx in df.index:
             noah1 = df.ix[idx]['rain_noah']
