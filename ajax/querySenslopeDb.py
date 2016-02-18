@@ -314,6 +314,36 @@ def GetRainList():
     except:
         raise ValueError('Could not get sensor list from database')
 
+#GetRainNOAHList():
+#    returns an array of NOAH rain gauge IDs from the database tables
+def GetRainNOAHList():
+    try:
+        db, cur = SenslopeDBConnect(Namedb)
+        cur.execute("use "+ Namedb)
+        
+        query = 'SELECT DISTINCT LEFT(name,3) as name, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props'
+        
+        df = psql.read_sql(query, db)
+        
+        #return df
+        noahlist = []
+        for idx in df.index:
+            noah1 = df.ix[idx]['rain_noah']
+            noah2 = df.ix[idx]['rain_noah2']
+            noah3 = df.ix[idx]['rain_noah3']
+            
+            if np.isnan(noah1) == False:
+                noahlist.append(int(noah1))
+            if np.isnan(noah2) == False:
+                noahlist.append(int(noah2))
+            if np.isnan(noah3) == False:
+                noahlist.append(int(noah3))        
+        
+        return noahlist
+
+    except:
+        raise ValueError('Could not get sensor list from database')
+
 def GetRainProps():
     try:
         db, cur = SenslopeDBConnect(Namedb)
