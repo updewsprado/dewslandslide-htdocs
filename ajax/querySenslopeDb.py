@@ -77,6 +77,22 @@ def GetLatestTimestamp(nameDb, table):
         return a[0][0]
     else: 
         return ''
+        
+def GetLatestTimestamp2(table_name):
+    db, cur = SenslopeDBConnect(Namedb)
+    cur.execute("use "+ Namedb)
+    cur.execute("SHOW TABLES LIKE '%s'" %table_name)    
+
+    try:
+        cur.execute("SELECT max(timestamp) FROM %s" %(table_name))
+    except:
+        print "Error in getting maximum timstamp"
+
+    a = cur.fetchall()
+    if a:
+        return a[0][0]
+    else: 
+        return ''
 		
 def CreateAccelTable(table_name, nameDB):
     db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
@@ -126,7 +142,6 @@ def GetDBResultset(query):
 #        df: dataframe object
 #            dataframe object of the result set
 def GetDBDataFrame(query):
-    a = ''
     try:
         db, cur = SenslopeDBConnect(Namedb)
         df = psql.read_sql(query, db)
@@ -139,6 +154,14 @@ def GetDBDataFrame(query):
     except KeyboardInterrupt:
         PrintOut("Exception detected in accessing database")
         
+#Push a dataframe object into a table
+def PushDBDataFrame(df,table_name):     
+    db, cur = SenslopeDBConnect(Namedb)
+    #con = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=Namedb)
+    
+    df.to_sql(con=db, name=table_name, if_exists='append', flavor='mysql')
+    db.commit()
+    db.close()
 
 #GetRawAccelData(siteid = "", fromTime = "", maxnode = 40): 
 #    retrieves raw data from the database table specified by parameters
