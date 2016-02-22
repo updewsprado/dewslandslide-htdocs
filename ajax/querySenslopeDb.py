@@ -47,12 +47,44 @@ def PrintOut(line):
     if printtostdout:
         print line
 
+#Check if table exists
+#   Returns true if table exists
+def DoesTableExist(table_name):
+    db, cur = SenslopeDBConnect(Namedb)
+    cur.execute("use "+ Namedb)
+    cur.execute("SHOW TABLES LIKE '%s'" %table_name)
+
+    if cur.rowcount > 0:
+        db.close()
+        return True
+    else:
+        db.close()
+        return False
+
+    
+
 def GetLatestTimestamp(nameDb, table):
     db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     try:
         cur.execute("select max(timestamp) from %s.%s" %(nameDb,table))
+    except:
+        print "Error in getting maximum timstamp"
+
+    a = cur.fetchall()
+    if a:
+        return a[0][0]
+    else: 
+        return ''
+        
+def GetLatestTimestamp2(table_name):
+    db, cur = SenslopeDBConnect(Namedb)
+    cur.execute("use "+ Namedb)
+    cur.execute("SHOW TABLES LIKE '%s'" %table_name)    
+
+    try:
+        cur.execute("SELECT max(timestamp) FROM %s" %(table_name))
     except:
         print "Error in getting maximum timstamp"
 
@@ -110,7 +142,6 @@ def GetDBResultset(query):
 #        df: dataframe object
 #            dataframe object of the result set
 def GetDBDataFrame(query):
-    a = ''
     try:
         db, cur = SenslopeDBConnect(Namedb)
         df = psql.read_sql(query, db)
@@ -123,6 +154,14 @@ def GetDBDataFrame(query):
     except KeyboardInterrupt:
         PrintOut("Exception detected in accessing database")
         
+#Push a dataframe object into a table
+def PushDBDataFrame(df,table_name):     
+    db, cur = SenslopeDBConnect(Namedb)
+    #con = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=Namedb)
+    
+    df.to_sql(con=db, name=table_name, if_exists='append', flavor='mysql')
+    db.commit()
+    db.close()
 
 #GetRawAccelData(siteid = "", fromTime = "", maxnode = 40): 
 #    retrieves raw data from the database table specified by parameters
@@ -324,8 +363,7 @@ def GetRainNOAHList():
         query = 'SELECT DISTINCT LEFT(name,3) as name, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props'
         
         df = psql.read_sql(query, db)
-        
-        #return df
+
         noahlist = []
         for idx in df.index:
             noah1 = df.ix[idx]['rain_noah']
