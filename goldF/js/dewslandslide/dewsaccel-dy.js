@@ -1,41 +1,43 @@
 	var blockRedraw = false;
+	var end_date = new Date();
+	var start_date = new Date(end_date.getFullYear(), end_date.getMonth(), end_date.getDate()-10);
 
 	function setDate(fromDate, toDate) {
 	    var end_date;
-	    var from_date;		
+	    var from_date;
 
 		if(toDate == "") {
 			end_date = new Date();
 		}
 		else {
 			end_date = new Date(toDate);
-		}	
-		
+		}
+
 		if(fromDate == "") {
 			if (end_date.getMonth() == 0) {
 				from_date = new Date(12 + '-' + end_date.getDate() + '-' + (end_date.getFullYear() - 1));
-			} 
+			}
 			else{
 				from_date = new Date((end_date.getMonth()) + '-' + end_date.getDate() + '-' + end_date.getFullYear());
 			};
 		}
 		else {
 			from_date = new Date(fromDate);
-		}	
+		}
 
 		$(function() {
 	    	$( "#datepicker" ).datepicker({ dateFormat: "yy-mm-dd" });
-	        $( "#datepicker" ).datepicker("setDate", from_date);        
+	        $( "#datepicker" ).datepicker("setDate", from_date);
 		});
-	
+
 	    $(function() {
 	    	$( "#datepicker2" ).datepicker({ dateFormat: "yy-mm-dd" });
 	        $( "#datepicker2" ).datepicker("setDate", end_date);
-		});		
+		});
 	}
-	
+
 	//setDate();
-	
+
 	function createCORSRequest(method, url) {
 		var xhr = new XMLHttpRequest();
 		if ("withCredentials" in xhr) {
@@ -51,7 +53,7 @@
 		}
 		return xhr;
 	}
-	
+
 	function JSON2CSV(objArray) {
 		var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
 
@@ -65,12 +67,12 @@
 				for (var index in array[0]) {
 					var value = index + "";
 					line += '"' + value.replace(/"/g, '""') + '",';
-                 
+
 				}
 			} else {
 				for (var index in array[0]) {
                     line += index + ',';
-                 
+
 				}
 			}
 
@@ -86,8 +88,8 @@
 					var value = array[i][index] + "";
 					line += '"' + value.replace(/"/g, '""') + '",';
                     index_count += 1;
-                    
-                 
+
+
 				}
 			} else {
 				for (var index in array[i]) {
@@ -100,16 +102,16 @@
 			str += line + '\n';
 		}
         return str;
-		
+
 	}
 
 	// TO DO:
 	function downloadData(frm) {
-	
+
 	  if (frm.dateinput.value == "") {
 		document.getElementById("txtHint").innerHTML="";
 		return;
-	  } 
+	  }
 
 	  if (window.XMLHttpRequest) {
 		// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -117,14 +119,14 @@
 	  } else { // code for IE6, IE5
 		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 	  }
-	  
+
 	  xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			var siteData = JSON.parse(xmlhttp.responseText);
 			var csv = JSON2CSV(siteData );
 			var uri = 'data:text/csv;charset=utf-8,' + escape(csv);
 
-			var link = document.createElement("a");    
+			var link = document.createElement("a");
 			link.href = uri;
 
 			link.style = "visibility:hidden";
@@ -135,9 +137,9 @@
 			document.body.removeChild(link);
 		}
 	  };
-	  
+
 	  var url = "/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value;
-	  xmlhttp.open("GET",url,true);	  
+	  xmlhttp.open("GET",url,true);
 	  xmlhttp.send();
 	}
 
@@ -160,12 +162,12 @@
 		left: '50%' // Left position relative to parent
 	};
 	//var target = document.getElementById('demodiv');
-	
-    var rsiteid_prev = "";    
-    var g2 = 0;    
+
+    var rsiteid_prev = "";
+    var g2 = 0;
 	var gs = [];
     var roll_period = 1;
-    
+
     function getXHR() {
         if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
             return new XMLHttpRequest();
@@ -174,11 +176,11 @@
             return new ActiveXObject("Microsoft.XMLHTTP");
         }
     }
-    
+
     function showData(frm) {
-	
+
 		var rsiteid = '';
-        
+
 		switch(frm.sites.value){
 			case "blcb": rsiteid = "204"; break;
 			case "blct": rsiteid = "204"; break;
@@ -203,33 +205,33 @@
 			case "sint": rsiteid = "454"; break;
 			case "sinu": rsiteid = "454"; break;
 		}
-	
+
 		if (frm.dateinput.value == "") {
 			document.getElementById("txtHint").innerHTML="";
 			return;
-		} 
+		}
 
 		var urls = [
 			"/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value,
 			"http://weather.asti.dost.gov.ph/home/index.php/api/data/" + rsiteid + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value
 		];
-		
+
 		var target = document.getElementById('accel-2');
         var spinner = new Spinner(opts).spin();
         target.appendChild(spinner.el);
-		
+
 		var vis = [
 					[true, false, false, false],
 					[false, true, false, false],
 					[false, false, true, false],
 					[false, false, false, true],
 				];
-						
+
 		var xmlhttp_column = getXHR();
 		var column_plot_range;
         xmlhttp_column.onreadystatechange = function () {
 			if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
-                
+
                 var resp = xmlhttp_column.responseText;
                 var siteData = JSON.parse(resp);
                 if (siteData == null){
@@ -237,20 +239,20 @@
                     alert("No data retrieved. Please check input values.");
                     return;
                 };
-                
+
 				var columndata = JSON2CSV(siteData);
-               
+
 				spinner.stop();
-				
+
 				//var blockRedraw = false;
-				
+
 				var labels = [
 					'X (LSB)',
 					'Y (LSB)',
 					'Z (LSB)',
 					'M (Hz)',
 				];
-				
+
                 gs = [];
 				for (var i = 1; i <= 4; i++) {
 					gs.push(
@@ -264,26 +266,26 @@
 								column_plot_range = me.xAxisRange();
                                 roll_period = me.rollPeriod();
 								for (var j = 0; j < 4; j++) {
-									if (gs[j] == me) 
+									if (gs[j] == me)
 										continue;
 									gs[j].updateOptions( {
 										dateWindow: column_plot_range,
                                         rollPeriod: roll_period,
 										visibility: vis[j],
-									} 
+									}
 									);
 								}
-								
+
 								if (g2!=0){
 									g2.updateOptions( {
 										dateWindow: column_plot_range,
-										} 
+										}
 									);
 								}
 								blockRedraw = false;
 							},
 							visibility: vis[i-1],
-							ylabel: labels[i-1],							
+							ylabel: labels[i-1],
 							labelsDiv: '',
 							axes: {
 								x: {
@@ -299,16 +301,16 @@
 						)
 					);
 				};
-				
+
 			};
 		};
-	
+
 		xmlhttp_column.open("GET",urls[0],true);
 		xmlhttp_column.send();
-		
-		
+
+
         if (rsiteid_prev != rsiteid && frm.rain.value == "y"){
-        
+
             var threshold = 0.0;
             switch(frm.sites.value){
                 case "blcb": threshold = 130.00; break;
@@ -334,25 +336,25 @@
                 case "sint": threshold = 235.03; break;
                 case "sinu": threshold = 235.03; break;
             }
-        
-        
+
+
             rsiteid_prev = rsiteid;
-            
+
             var target2 = document.getElementById('raindiv');
             var spinner2 = new Spinner(opts).spin();
             target2.appendChild(spinner2.el);
-        
+
             var xmlhttp_rain = getXHR();
             var url = "getRainfall.php?rsite=" + rsiteid + "&fdate=" + frm.dateinput.value + "&tdate=" + frm.dateinput2.value;
             xmlhttp_rain.open("GET",url,true);
-            
+
             xmlhttp_rain.onreadystatechange = function() {
                 if (xmlhttp_rain.readyState == 4 && xmlhttp_rain.status == 200) {
-                    
+
                     var rdatacsv = JSON2CSV(xmlhttp_rain.responseText);
-                    
+
                     spinner2.stop();
-                    
+
                     //var blockRedraw = false;
                     g2 = new Dygraph(
                         document.getElementById("raindiv"),
@@ -365,30 +367,30 @@
                             dateWindow: gs[0].xAxisRange(),
                             showRoller: true,
                             fillGraph: true,
-                            
+
                             drawCallback: function(me, initial) {
 								if (blockRedraw || initial) return;
                                 if (!gs) return;
 								blockRedraw = true;
 								column_plot_range = me.xAxisRange();
                                 for (var j = 0; j < 4; j++) {
-									if (gs[j] == me) 
+									if (gs[j] == me)
 										continue;
 									gs[j].updateOptions( {
 										dateWindow: column_plot_range,
                                         visibility: vis[j],
-									} 
+									}
 									);
 								}
-								
+
 								blockRedraw = false;
 							},
-                            
+
                             underlayCallback: function(canvas, area, g2) {
                                 var c1 = g2.toDomCoords(g2.getValue(0,0), threshold);
                                 canvas.fillStyle = '#FF0000';
                                 canvas.fillRect(area.x, c1[1], area.w, 1);
-                                
+
                                 var c2 = g2.toDomCoords(g2.getValue(0,0), threshold/2);
                                 canvas.fillStyle = '#FF9900';
                                 canvas.fillRect(area.x, c2[1], area.w, 1);
@@ -397,11 +399,11 @@
                     );
                 }
             };
-            xmlhttp_rain.send();	
+            xmlhttp_rain.send();
         }
-	}	
+	}
 
-function showAccel(frm) {	
+function showAccel(frm) {
 	var rsiteid = '';
 
 	var dfrom = document.getElementById("formDate").dateinput.value;
@@ -411,44 +413,44 @@ function showAccel(frm) {
 
 	if (domainName == "localhost") {
 		var URL = "/temp/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb";
-	} 
+	}
 	else{
 		var URL = "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb";
 	}
 
 	var URLfiltered = "/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32";
-	
+
 	var target = document.getElementById('accel-2');
     //var spinner = new Spinner(opts).spin();
     var spinner = new Spinner(opts).spin();
     target.appendChild(spinner.el);
-	
+
 	var vis = [
 				[true, false, false, false],
 				[false, true, false, false],
 				[false, false, true, false],
 				[false, false, false, true],
 			];
-					
+
 	var xmlhttp_column = getXHR();
 	var column_plot_range;
     xmlhttp_column.onreadystatechange = function () {
 		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
-            
+
             var resp = xmlhttp_column.responseText;
             var siteData = JSON.parse(resp);
             if (siteData == null){
                 spinner.stop();
                 alert("No data retrieved. Please check input values.");
                 return;
-            } 
-            
+            }
+
 			var columndata = JSON2CSV(siteData);
-           
+
 			spinner.stop();
-			
+
 			//var blockRedraw = false;
-			
+
 			if (selectedSite.length == 4) {
 				if(frm.dbase.value == "raw") {
 					var labels = [
@@ -504,22 +506,22 @@ function showAccel(frm) {
 					columndata,
 					{
 						drawCallback: function(me, initial) {
-							if (blockRedraw || initial) 
+							if (blockRedraw || initial)
 								return;
 							blockRedraw = true;
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
 							for (var j = 0; j < numSeparateGraphs; j++) {
-								if (gs[j] == me) 
+								if (gs[j] == me)
 									continue;
 								gs[j].updateOptions( {
 									dateWindow: column_plot_range,
                                     rollPeriod: roll_period,
 									visibility: vis[j],
-								} 
+								}
 								);
 							}
-							
+
 							if (g2!=0){
 								g2.updateOptions({
 									dateWindow: column_plot_range,
@@ -528,7 +530,7 @@ function showAccel(frm) {
 							blockRedraw = false;
 						},
 						visibility: vis[i-1],
-						ylabel: labels[i-1],							
+						ylabel: labels[i-1],
 						labelsDiv: '',
 						axes: {
 								x: {
@@ -543,7 +545,7 @@ function showAccel(frm) {
 					}
 					)
 				);
-			}	
+			}
 		}
 	};
 
@@ -557,11 +559,11 @@ function showAccel(frm) {
 		//function from "codeigniter/application/views/gold/dynode.php"
 		toggleGraphView(1);
 	}
-	
-	xmlhttp_column.send();
-}	
 
-function showAccelSecond(frm) {	
+	xmlhttp_column.send();
+}
+
+function showAccelSecond(frm) {
 	var rsiteid = '';
 
 	var dfrom = document.getElementById("formDate").dateinput.value;
@@ -572,44 +574,44 @@ function showAccelSecond(frm) {
 
 	if (domainName == "localhost") {
 		var URL = "/temp/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb" + "&dataset=" + set;
-	} 
+	}
 	else{
 		var URL = "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb" + "&dataset=" + set;
 	}
 
 	var URLfiltered = "/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=33";
-	
+
 	var target = document.getElementById('accel-22');
     //var spinner = new Spinner(opts).spin();
     var spinner = new Spinner(opts).spin();
     target.appendChild(spinner.el);
-	
+
 	var vis = [
 				[true, false, false, false],
 				[false, true, false, false],
 				[false, false, true, false],
 				[false, false, false, true],
 			];
-					
+
 	var xmlhttp_column = getXHR();
 	var column_plot_range;
     xmlhttp_column.onreadystatechange = function () {
 		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
-            
+
             var resp = xmlhttp_column.responseText;
             var siteData = JSON.parse(resp);
             if (siteData == null){
                 spinner.stop();
                 alert("No data retrieved. Please check input values.");
                 return;
-            } 
-            
+            }
+
 			var columndata = JSON2CSV(siteData);
-           
+
 			spinner.stop();
-			
+
 			//var blockRedraw = false;
-			
+
 			if (selectedSite.length == 4) {
 				if(frm.dbase.value == "raw") {
 					var labels = [
@@ -670,16 +672,16 @@ function showAccelSecond(frm) {
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
 							for (var j = 0; j < numSeparateGraphs; j++) {
-								if (gs[j] == me) 
+								if (gs[j] == me)
 									continue;
 								gs[j].updateOptions( {
 									dateWindow: column_plot_range,
                                     rollPeriod: roll_period,
 									visibility: vis[j],
-								} 
+								}
 								);
 							}
-							
+
 							if (g2!=0){
 								g2.updateOptions({
 									dateWindow: column_plot_range,
@@ -688,7 +690,7 @@ function showAccelSecond(frm) {
 							blockRedraw = false;
 						},
 						visibility: vis[i-1],
-						ylabel: labels[i-1],							
+						ylabel: labels[i-1],
 						labelsDiv: '',
 						axes: {
 								x: {
@@ -703,7 +705,7 @@ function showAccelSecond(frm) {
 					}
 					)
 				);
-			}	
+			}
 		}
 	};
 
@@ -715,7 +717,7 @@ function showAccelSecond(frm) {
 		//toggleGraphView(1);
 	}
 	xmlhttp_column.send();
-}	
+}
 
 function showAndClearField(frm){
   if (frm.dateinput.value == "")
