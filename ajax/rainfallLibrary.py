@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 from datetime import timedelta as td
 from datetime import datetime as dt
 import sqlalchemy
@@ -53,15 +54,34 @@ def updateRainfallNOAHTableData(rsite, fdate, tdate):
     noahData = downloadRainfallNOAH(rsite, fdate, tdate)
     #print noahData
     
+    curTS = time.strftime("%Y-%m-%d")  
+    
+    table_name = "rain_noah_%s" % (rsite)
+    
     if noahData.empty: 
         print "    no data..."
-        #TODO: insert an entry with values: [timestamp,-1,-1] as a marker
-        #   for the next time it is used
-    else:        
-        table_name = "rain_noah_%s" % (rsite)
         
+        #The table is already up to date
+        if tdate > curTS:
+            return 
+        
+        #Insert an entry with values: [timestamp,-1,-1] as a marker
+        #   for the next time it is used
+        placeHolderData = pd.DataFrame({"timestamp": tdate+" 00:00:00","cumm":-1,"rval":-1}, index=[0])
+        placeHolderData = placeHolderData.set_index(['timestamp'])
+        #print placeHolderData
+        qs.PushDBDataFrame(placeHolderData, table_name) 
+
+    else:        
         #Insert the new data on the noahid table
         qs.PushDBDataFrame(noahData, table_name) 
+        
+        #The table is already up to date
+        if tdate > curTS:
+            return         
+        else:
+            #call this function again until the maximum recent timestamp is hit        
+            updateNOAHSingleTable(rsite)
     
     
 def getRainfallNOAHcmd():
@@ -120,10 +140,11 @@ def updateNOAHTables():
     
     ctr = 0
     for noahid in dfRain:
-        if ctr > 15:
+        if ctr > 0:
             updateNOAHSingleTable(noahid)
             
         ctr = ctr + 1
 
 updateNOAHTables()
 #downloadRainfallNOAH(557, "2015-04-12", "2015-06-01")    
+#updateNOAHSingleTable(69)
