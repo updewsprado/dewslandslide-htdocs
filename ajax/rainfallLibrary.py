@@ -67,6 +67,7 @@ def updateRainfallNOAHTableData(rsite, fdate, tdate):
         
         #Insert an entry with values: [timestamp,-1,-1] as a marker
         #   for the next time it is used
+        #   note: values with -1 should not be included in values used for computation
         placeHolderData = pd.DataFrame({"timestamp": tdate+" 00:00:00","cumm":-1,"rval":-1}, index=[0])
         placeHolderData = placeHolderData.set_index(['timestamp'])
         #print placeHolderData
@@ -104,26 +105,44 @@ def doesNOAHTableExist(noahid):
     if exists:
         print table_name + " Exists!"
     else:
-        print table_name + "DOES NOT exist..."
+        print table_name + " DOES NOT exist..."
     
     return exists
+    
+#Create the
+def createNOAHTable(noahid):
+    #Create table for noahid before proceeding with the download
+    query = "CREATE TABLE `senslopedb`.`rain_noah_%s` (" % noahid
+    query = query + "    `timestamp` DATETIME NOT NULL,"
+    query = query + "    `cumm` FLOAT NOT NULL,"
+    query = query + "    `rval` FLOAT NOT NULL,"
+    query = query + "    PRIMARY KEY (`timestamp`))"
+    query = query + "ENGINE = InnoDB "
+    query = query + "DEFAULT CHARACTER SET = utf8 "
+    query = query + "COMMENT = 'Downloaded Rainfall Data from NOAH Rain Gauge ID %s'" % noahid
+    #print query
+
+    print "Creating table: rain_noah%s..." % noahid
+
+    #Create new table
+    qs.ExecuteQuery(query)
     
 def updateNOAHSingleTable(noahid):
     #check if table "rain_noah_" + "noahid" exists already
     if doesNOAHTableExist(noahid) == False:
-        #Create table for noahid before proceeding with the download
-        pass
+        #Create a NOAH table if it doesn't exist yet
+        createNOAHTable(noahid)
     
     #Find the latest timestamp for noahid (which is also the start date)
     table_name = "rain_noah_%s" % (noahid)
     latestTS = qs.GetLatestTimestamp2(table_name)    
     
-    if latestTS == '':
+    if (latestTS == '') or (latestTS == None):
         #assign a starting date if table is currently empty
-        latestTS = "2014-01-01 00:00:00"
-        pass
-
-    latestTS = latestTS.strftime("%Y-%m-%d")
+        latestTS = "2014-01-01"
+    else:
+        latestTS = latestTS.strftime("%Y-%m-%d")
+    
     print "    Start timestamp: " + latestTS
     
     #Generate start end time    
@@ -146,5 +165,3 @@ def updateNOAHTables():
         ctr = ctr + 1
 
 updateNOAHTables()
-#downloadRainfallNOAH(557, "2015-04-12", "2015-06-01")    
-#updateNOAHSingleTable(69)
