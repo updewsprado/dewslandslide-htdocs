@@ -15,6 +15,9 @@
 	-moz-box-sizing: border-box;
 	box-sizing: border-box;
 	display: none;
+
+    
+}
 }
 .xdsoft_datetimepicker.xdsoft_rtl {
 	padding: 8px 0 8px 8px;
@@ -360,7 +363,7 @@
 	color: #fff !important;
 	background: #ff8000 !important;
 	box-shadow: none !important;
-}
+
 
 .xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_current.xdsoft_disabled:hover,
 .xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box>div>div.xdsoft_current.xdsoft_disabled:hover {
