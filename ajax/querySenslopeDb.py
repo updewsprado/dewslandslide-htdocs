@@ -86,7 +86,7 @@ def GetLatestTimestamp2(table_name):
     try:
         cur.execute("SELECT max(timestamp) FROM %s" %(table_name))
     except:
-        print "Error in getting maximum timstamp"
+        print "Error in getting maximum timestamp"
 
     a = cur.fetchall()
     if a:
@@ -132,6 +132,11 @@ def GetDBResultset(query):
         return cur.fetchall()
     else:
         return ""
+        
+#execute query without expecting a return
+#used different name
+def ExecuteQuery(query):
+    GetDBResultset(query)
         
 #GetDBDataFrame(query): queries a specific sensor data table and returns it as
 #    a python dataframe format
