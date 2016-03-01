@@ -21,6 +21,9 @@
     #map-canvas { 
       width: auto;
       height: 500px; 
+    }
+    .tab {
+      margin-left: 40px;
     }    
   </style>
 </head>
@@ -139,6 +142,10 @@ if ($alertid) {
             public_alert.flagger,
             lut_alerts.public_alert_level,
             lut_alerts.public_alert_desc,
+            lut_alerts.internal_alert_level,
+            lut_alerts.supp_info_rain,
+            lut_alerts.supp_info_ground,
+            lut_alerts.supp_info_eq,
             lut_responses.response_llmc_lgu,
             lut_responses.response_community
           FROM 
@@ -160,6 +167,10 @@ elseif ($site) {
             public_alert.flagger,
             lut_alerts.public_alert_level,
             lut_alerts.public_alert_desc,
+            lut_alerts.internal_alert_level,
+            lut_alerts.supp_info_rain,
+            lut_alerts.supp_info_ground,
+            lut_alerts.supp_info_eq,
             lut_responses.response_llmc_lgu,
             lut_responses.response_community
           FROM 
@@ -186,6 +197,27 @@ if (mysqli_num_rows($result) > 0) {
         $siteAlertPublic[$numSites]["desc"] = $row["public_alert_desc"];
         $siteAlertPublic[$numSites]["recipient"] = $row["recipient"];
         $siteAlertPublic[$numSites]["acknowledged"] = $row["acknowledged"];
+        $siteAlertPublic[$numSites]["internal_alert_level"] = $row["internal_alert_level"];
+
+        switch ($siteAlertPublic[$numSites]["internal_alert_level"]) {
+          case 'A0-E':
+          case 'ND-E':
+            $siteAlertPublic[$numSites]["supp_info"] = $row["supp_info_ground"]." ".$row["supp_info_eq"];
+            break;
+          case 'A0-R':
+          case 'ND-R':
+            $siteAlertPublic[$numSites]["supp_info"] = $row["supp_info_ground"]." ".$row["supp_info_rain"];
+            break;
+          case 'A1':
+          case 'A2':
+          case 'ND-L':
+            $siteAlertPublic[$numSites]["supp_info"] = $row["supp_info_ground"];
+            break;
+          default:
+            $siteAlertPublic[$numSites]["supp_info"] = "";
+            break;
+        }
+
         $siteAlertPublic[$numSites]["response_llmc_lgu"] = $row["response_llmc_lgu"];
         $siteAlertPublic[$numSites]["response_community"] = $row["response_community"];
         $siteAlertPublic[$numSites]["flagger"] = $row["flagger"];
@@ -261,14 +293,24 @@ mysqli_close($conn);
       <p><b>Sensor Installation Status:</b> <?php echo $siteColumnInfo[0]["installation_status"]; ?></p>
   <?php endif; ?>
 
+  <?php $alert = $siteAlertPublic[0]["internal_alert_level"]; ?>
       <Br>
       <p><b>Time Release:</b> <?php echo $siteAlertPublic[0]["time_released"]; ?></p>
       <p><b>Alert Level:</b> <?php echo $siteAlertPublic[0]["alert_level"]; ?></p>
-      <p><b>Description:</b> <?php echo $siteAlertPublic[0]["desc"]; ?></p>
+      <p><b>Description:</b> <?php if ($alert == "A0-D" || $alert == "ND-D") echo dependentInfoProcessor($alert, $siteAlertPublic[0]["desc"], $siteAlertPublicExtra["comments"], 0);
+          else echo $siteAlertPublic[0]["desc"]; ?></p>
 
-  <?php if(true) : ?>
-      <p><?php echo $siteAlertPublicExtra["comments"]; ?></p>
+  <?php if($siteAlertPublicExtra["comments"] != null) : ?>
+      <?php if( $alert != "A0" && $alert != "A0-D" && $alert != "ND-D" ) : { ?>
+        <p class="tab"><b>Details:</b> <?php 
+          echo dependentInfoProcessor($siteAlertPublic[0]["internal_alert_level"], $siteAlertPublic[0]["supp_info"], $siteAlertPublicExtra["comments"], 0); ?></p>
+      <?php } endif; ?>
   <?php endif; ?>
+
+  <?php $comment = dependentInfoProcessor($siteAlertPublic[0]["internal_alert_level"], $siteAlertPublic[0]["supp_info"], $siteAlertPublicExtra["comments"], 1); ?>
+  <?php if($comment != null) : { ?>
+      <p class="tab"><b>Comment(s):</b> <?php echo $comment; ?></p>
+  <?php } endif; ?>
 
       <p><b>Response to LLMC and LGU:</b> <?php echo $siteAlertPublic[0]["response_llmc_lgu"]; ?></p>
       <p><b>Response to Community:</b> <?php echo $siteAlertPublic[0]["response_community"]; ?></p>
@@ -300,6 +342,47 @@ mysqli_close($conn);
     </div>    
   </div><Br>
 </div>
+
+<?php 
+
+function dependentInfoProcessor($internal_alert_level, $suppInfoDesc, $suppInfo, $infoOrComment) {
+
+  $comment;
+  if($internal_alert_level == "A0-D" || $internal_alert_level == "ND-D") {
+    $list = explode(";", $suppInfo);
+    $groups = str_replace(",", "/", $list[0]);
+    if (isset($list[2])) $comment = $list[2]; else $comment = null;
+    $suppInfoDesc = str_replace("[LGU/LLMC/Community]", $groups, $suppInfoDesc);
+    $suppInfoDesc = str_replace("[reason for request]", $list[1], $suppInfoDesc);
+  } elseif ($internal_alert_level == "A0-E" || $internal_alert_level == "ND-E") {
+    $list = explode(";", $suppInfo);
+    if (isset($list[3])) $comment = $list[3]; else $comment = null;
+    $suppInfoDesc = str_replace("[M]", $list[0], $suppInfoDesc);
+    $suppInfoDesc = str_replace("[d]", $list[1], $suppInfoDesc);
+    $suppInfoDesc = str_replace("[date, time]", $list[2], $suppInfoDesc);
+  } elseif ($internal_alert_level == "A0-R" || $internal_alert_level == "ND-R") {
+    $list = explode(";", $suppInfo);
+    if (isset($list[1])) $comment = $list[1]; else $comment = null;
+    $suppInfoDesc = str_replace("[date, time (round up to the nearest next hour) of last threshold exceedence]", $list[0], $suppInfoDesc);
+  } elseif ($internal_alert_level == "A1" || $internal_alert_level == "ND-L") {
+    $list = explode(";", $suppInfo);
+    if (isset($list[2])) $comment = $list[2]; else $comment = null;
+    $suppInfoDesc = str_replace("[date, time (round up to nearest next hour) of original L1-triggering measurement]", $list[0], $suppInfoDesc);
+    $suppInfoDesc = str_replace("[list of date-time (round up to nearest next hour) of succeeding L1-triggering measurements]", $list[1], $suppInfoDesc);
+  } elseif ($internal_alert_level == "A2") {
+    $list = explode(";", $suppInfo);
+    if (isset($list[2])) $comment = $list[2]; else $comment = null;
+    $suppInfoDesc = str_replace("[date, time (round up to nearest next hour) of original L2-triggering measurement]", $list[0], $suppInfoDesc);
+    $suppInfoDesc = str_replace("[list of date-time (round up to nearest next hour) of succeeding L1/L2-triggering measurements]", $list[1], $suppInfoDesc);
+  } else {
+    if (isset($suppInfo)) $comment = $suppInfo; else $comment = null;
+  }
+
+  if ($infoOrComment == 1) return $comment;
+  else return $suppInfoDesc;
+}
+
+?>
 
 <script>
 var gmapJSON;

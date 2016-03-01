@@ -95,15 +95,50 @@ if (mysqli_num_rows($result) > 0) {
         $siteAlertPublic[$numSites]["region"] = $row["region"];
         $siteAlertPublic[$numSites]["public_alert"] = $row["public_alert_level"];
         $siteAlertPublic[$numSites]["public_alert_desc"] = $row["public_alert_desc"];
+
         $numSites++;
     }
 } else {
     echo "0 results";
 }
 
-//echo json_encode($siteAlertPublic);
+$sql = "SELECT * FROM public_alert_extra";
+
+$result = mysqli_query($conn, $sql);
+$comments = null;
+$i = 0;
+if (mysqli_num_rows($result) > 0) {
+    // output data of each row
+    while($row = mysqli_fetch_assoc($result)) {
+        $comments[$i]["alert_id"] = $row["public_alert_id"];
+        $comments[$i++]["comments"] = $row["comments"];
+    }
+}
+
+function getComments($alert_id) {
+    $i = 0;
+    global $comments;
+    for( $i = 0; $i < count($comments); $i++) {
+      if ($comments[$i]["alert_id"] == $alert_id) 
+      return $comments[$i]["comments"];
+    }
+}
+
+
+function dependentInfoProcessor($internal_alert_level, $suppInfoDesc, $suppInfo) {
+
+  if($internal_alert_level == "A0-D" || $internal_alert_level == "ND-D") {
+    $list = explode(";", $suppInfo);
+    $groups = str_replace(",", "/", $list[0]);
+    $suppInfoDesc = str_replace("[LGU/LLMC/Community]", $groups, $suppInfoDesc);
+    $suppInfoDesc = str_replace("[reason for request]", $list[1], $suppInfoDesc);
+  } 
+
+  return $suppInfoDesc;
+}
 
 mysqli_close($conn);
+
 ?>
 
     <div class="container">
@@ -157,7 +192,9 @@ mysqli_close($conn);
                 <td><a href='publicrelease2.php?alertid=<?php echo $publicAlert["alert_id"]; ?>'><?php echo $publicAlert["barangay"]; ?></a></td>
                 <td><?php echo $publicAlert["timestamp"]; ?></td>
                 <td><?php echo $publicAlert["public_alert"]; ?></td>
-                <td><?php echo $publicAlert["public_alert_desc"]; ?></td>
+                <td><?php if ($publicAlert["internal_alert"] == "A0-D" || "ND-D") {
+                    echo dependentInfoProcessor($publicAlert["internal_alert"], $publicAlert["public_alert_desc"], getComments($publicAlert["alert_id"]));
+                  } else echo $publicAlert["public_alert_desc"]; ?></td>
               </tr>
               <?php endforeach; ?>
             </tbody>
