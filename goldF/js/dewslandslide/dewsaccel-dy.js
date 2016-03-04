@@ -297,6 +297,7 @@
 							fillGraph: true,
 							showRoller: true,
                             rollPeriod: roll_period,
+                            colors: ['#284785', '#EE1111', '#006600', '#660066'],
 						}
 						)
 					);
@@ -462,6 +463,7 @@ function showAccel(frm) {
 
 					var labelAxis = ['timestamp','X','Y','Z','M'];
 					var numSeparateGraphs = 4;
+					var colorsLine = ['#284785', '#EE1111', '#006600', '#660066'];
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
@@ -485,6 +487,7 @@ function showAccel(frm) {
 
 					var labelAxis = ['timestamp','X','Y','Z','V'];
 					var numSeparateGraphs = 4;
+					var colorsLine = ['#284785', '#EE1111', '#006600', ' #ff8000'];
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
@@ -542,6 +545,7 @@ function showAccel(frm) {
 						fillGraph: true,
 						showRoller: true,
                         rollPeriod: roll_period,
+                        colors: colorsLine,
 					}
 					)
 				);
@@ -623,6 +627,8 @@ function showAccelSecond(frm) {
 
 					var labelAxis = ['timestamp','X','Y','Z','M'];
 					var numSeparateGraphs = 4;
+					var colorsLine = ['#284785', '#EE1111', '#006600', '#660066'];
+
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
@@ -644,8 +650,9 @@ function showAccelSecond(frm) {
 						'V2 (Battery)'
 					];
 
-					var labelAxis = ['timestamp','X','Y','Z','V'];
+					var labelAxis = ['timestamp','X','Y','Z','K','V'];
 					var numSeparateGraphs = 4;
+					var colorsLine = ['#284785', '#EE1111', '#006600', ' #ff8000'];
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
@@ -702,6 +709,7 @@ function showAccelSecond(frm) {
 						fillGraph: true,
 						showRoller: true,
                         rollPeriod: roll_period,
+                         colors: colorsLine,
 					}
 					)
 				);
