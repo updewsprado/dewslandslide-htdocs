@@ -650,7 +650,7 @@ function showAccelSecond(frm) {
 						'V2 (Battery)'
 					];
 
-					var labelAxis = ['timestamp','X','Y','Z','K','V'];
+					var labelAxis = ['timestamp','X','Y','Z','V'];
 					var numSeparateGraphs = 4;
 					var colorsLine = ['#284785', '#EE1111', '#006600', ' #ff8000'];
 				}
