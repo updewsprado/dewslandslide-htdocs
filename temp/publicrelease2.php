@@ -141,7 +141,7 @@ if ($alertid) {
             public_alert.acknowledged,
             public_alert.flagger,
             lut_alerts.public_alert_level,
-            lut_alerts.public_alert_desc,
+            lut_alerts.internal_alert_desc,
             lut_alerts.internal_alert_level,
             lut_alerts.supp_info_rain,
             lut_alerts.supp_info_ground,
@@ -166,7 +166,7 @@ elseif ($site) {
             public_alert.acknowledged,
             public_alert.flagger,
             lut_alerts.public_alert_level,
-            lut_alerts.public_alert_desc,
+            lut_alerts.internal_alert_desc,
             lut_alerts.internal_alert_level,
             lut_alerts.supp_info_rain,
             lut_alerts.supp_info_ground,
@@ -194,7 +194,7 @@ if (mysqli_num_rows($result) > 0) {
         $siteAlertPublic[$numSites]["name"] = $row["site"];
         $siteAlertPublic[$numSites]["time_released"] = $row["time_released"];
         $siteAlertPublic[$numSites]["alert_level"] = $row["public_alert_level"];
-        $siteAlertPublic[$numSites]["desc"] = $row["public_alert_desc"];
+        $siteAlertPublic[$numSites]["desc"] = $row["internal_alert_desc"];
         $siteAlertPublic[$numSites]["recipient"] = $row["recipient"];
         $siteAlertPublic[$numSites]["acknowledged"] = $row["acknowledged"];
         $siteAlertPublic[$numSites]["internal_alert_level"] = $row["internal_alert_level"];
