@@ -335,6 +335,8 @@
 			$dbreturn[$ctr]['name'] = $row['name'];
 			$dbreturn[$ctr]['max_rain_2year'] = $row['max_rain_2year'];
 			$dbreturn[$ctr]['rain_noah'] = $row['rain_noah'];
+			$dbreturn[$ctr]['rain_noah2'] = $row['rain_noah2'];
+			$dbreturn[$ctr]['rain_noah3'] = $row['rain_noah3'];
 			$dbreturn[$ctr]['rain_senslope'] = $row['rain_senslope'];
 			$dbreturn[$ctr]['rain_arq'] = $row['rain_arq'];
 
