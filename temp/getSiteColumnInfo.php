@@ -103,7 +103,7 @@
 			$dbreturn[$ctr]['date_install'] = $row['date_install'];
 			$dbreturn[$ctr]['date_activation'] = $row['date_activation'];
 			$dbreturn[$ctr]['lat'] = $row['lat'];
-			$dbreturn[$ctr]['long'] = $row['long'];
+			$dbreturn[$ctr]['lon'] = $row['lon'];
 			$dbreturn[$ctr]['sitio'] = $row['sitio'];
 			$dbreturn[$ctr]['barangay'] = $row['barangay'];
 			$dbreturn[$ctr]['municipality'] = $row['municipality'];
@@ -143,7 +143,7 @@
 			$dbreturn[$ctr]['date_install'] = $row['date_install'];
 			$dbreturn[$ctr]['date_activation'] = $row['date_activation'];
 			$dbreturn[$ctr]['lat'] = $row['lat'];
-			$dbreturn[$ctr]['long'] = $row['long'];
+			$dbreturn[$ctr]['lon'] = $row['lon'];
 			$dbreturn[$ctr]['sitio'] = $row['sitio'];
 			$dbreturn[$ctr]['barangay'] = $row['barangay'];
 			$dbreturn[$ctr]['municipality'] = $row['municipality'];
