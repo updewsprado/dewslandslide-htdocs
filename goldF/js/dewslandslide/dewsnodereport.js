@@ -1,6 +1,4 @@
-/**
- * @author PradoArturo
- */
+
 
 var nodeAlertJSON = 0;
 var nodeStatusJSON = 0;
@@ -142,17 +140,19 @@ var tip = d3.tip()
 		+ comment;
   });
 
+
+
 //initialize dimensions
 function init_dims() {
 	cWidth = document.getElementById('alert-canvas').clientWidth;
 	cHeight = document.getElementById('alert-canvas').clientHeight;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
-	margin = {top: cHeight * 0.01, right: cWidth * 0, bottom: cHeight * 0.01, left: cWidth * 0.065};
-	width = cWidth - margin.left - margin.right;
-	height = cHeight - margin.top - margin.bottom;
+	margin = {top: cHeight * 0.01 - 5, right: cWidth * 0, bottom: cHeight * 0.01 - 10, left: cWidth * 0.065};
+	width = cWidth - margin.left - margin.right - 500;
+	height = cHeight - margin.top - margin.bottom + 650;
 	
-	graphDim = {gWidth: width * 0.95, gHeight: height};	
+	graphDim = {gWidth: width * 0.95, gHeight: height* 0.85};	
 	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
@@ -176,6 +176,7 @@ function init_dims() {
 	              "translate(" + margin.left + "," + margin.top + ")");
 				  
 	svg.call(tip);	
+
  
 }
 
@@ -242,6 +243,10 @@ function getSiteMaxNodes(xOffset) {
 		.attr('width', cellw)
 		.attr('height', cellh)
 		.style("cursor", "pointer")
+		.on('mouseover', tip.show)
+		.on('mouseout', tip.hide)
+
+
 		.on("click", function(d){
 	        //document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
 	        gReportData = d;
@@ -394,6 +399,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 					.style("cursor", "pointer")
 					.on('mouseover', tip.show)
 					.on('mouseout', tip.hide)
+				
 					.on("click", function(d){
 				        //document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
 				        gReportData = d;
@@ -447,41 +453,3 @@ function alertLegends(frm) {
 	}
 };
 
-/*
-// Angular JS modal function
-angular.module('modalTest', [
-    'ui.bootstrap',
-    'dialogs'
-]).controller('dialogServiceTest', function ($scope, $rootScope, $timeout, $dialogs) {
-    $scope.name = '"Your name here."';
-    $scope.nodestatus = nodeStatusJSON;
-    $scope.launch = function (which) {
-        var dlg = null;
-        switch (which) {
-        case 'create':
-            dlg = $dialogs.create('/dialogs/whatsyourname.html', 'whatsYourNameCtrl', {}, {
-                key: false,
-                back: 'static'
-            });
-            dlg.result.then(function (name) {
-                $scope.name = name;
-            }, function () {
-                $scope.name = 'You decided not to enter in your name, that makes me sad.';
-            });
-            break;
-        };
-    };
-}).controller('whatsYourNameCtrl', function ($scope, $modalInstance, data) {
-    $scope.user = { name: '' };
-    $scope.cancel = function () {
-        $modalInstance.dismiss('canceled');
-    };
-    $scope.save = function () {
-        $modalInstance.close($scope.user.name);
-    };
-    $scope.hitEnter = function (evt) {
-        if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.name, null) || angular.equals($scope.name, '')))
-            $scope.save();
-    };
-});
-*/
