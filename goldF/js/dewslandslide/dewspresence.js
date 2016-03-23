@@ -1,6 +1,3 @@
-/**
- * @author PradoArturo
- */
 
 var presenceRawJSON = 0;
 var presencePurgedJSON = 0;

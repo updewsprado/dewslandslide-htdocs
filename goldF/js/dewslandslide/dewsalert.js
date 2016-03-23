@@ -1,6 +1,3 @@
-/**
- * @author PradoArturo
- */
 
 var nodeAlertJSON = 0;
 var nodeStatusJSON = 0;
@@ -78,11 +75,11 @@ function init_dims() {
 	cHeight = document.getElementById('alert-canvas').clientHeight;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
-	margin = {top: cHeight * 0.01, right: cWidth * 0, bottom: cHeight * 0.01, left: cWidth * 0.065};
-	width = cWidth - margin.left - margin.right;
-	height = cHeight - margin.top - margin.bottom;
+	margin = {top: cHeight * 0.001, right: cWidth * 0, bottom: cHeight * 0.01 , left: cWidth * 0.065};
+	width = cWidth - margin.left - margin.right - 140;
+	height = cHeight - margin.top - margin.bottom + 160;
 	
-	graphDim = {gWidth: width * 0.95, gHeight: height};	
+	graphDim = {gWidth: width * 0.95, gHeight: height* 0.85};	
 	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
@@ -195,6 +192,8 @@ function getSiteMaxNodes(xOffset) {
 		.attr('width', cellw)
 		.attr('height', cellh)
 		.style("cursor", "pointer")
+		.on('mouseover', tip.show)
+		.on('mouseout', tip.hide)
 		.on("click", function(d){
 	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
 	    });	
