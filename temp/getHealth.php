@@ -80,7 +80,7 @@
 			}
 		}
 			
-		echo json_encode( $result_nodes );
+		return json_encode( $result_nodes );
 
 		mysqli_close($con);
 	}
