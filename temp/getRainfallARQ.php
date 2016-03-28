@@ -5,16 +5,17 @@
 	 * returned by the query from corresponding rain_ARQ
 	 * table of each site
 	 *
-	 * @param      string  $site       
-	 * @param      timestamp  $start_date  
-	 * @param      timestamp  $end_date
+	 * @param      string  		$site       
+	 * @param      timestamp  	$start_date  
+	 * @param      timestamp  	$end_date
+	 * @param      int			$limit 		Number of row to be retrieved
 	 * 
 	 * @return     array 	$rain_info[x][property] 
 	 * 						where:	x is the row number of result
 	 *						property is field to access certain property
 	 *						(return is in JSON format)
 	 */
-	function getRainfallARQ($site, $start_date, $end_date = NULL, $host, $db, $user, $pass)
+	function getRainfallARQ($site, $start_date, $end_date = NULL, $limit = null, $host, $db, $user, $pass)
 	{
 		/*
 		$host = "localhost";
@@ -40,7 +41,8 @@
 		}
 		else { 
 			$query = "SELECT * FROM $table_name[0] WHERE timestamp > '$start_date'";
-			if (!is_null($end_date)) $query = $query . " AND timestamp <= '$end_date'";
+			if (!is_null($end_date)) $query = $query . " AND timestamp <= '$end_date'";			
+			if(!is_null($limit)) $query = $query . " LIMIT $limit";
 			//echo $query;
 			
 			$result = mysqli_query($con, $query);

@@ -344,7 +344,8 @@
 		}
 
 		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
-		$a = getRainfallARQ($_GET['site'], $_GET['start_date'], $_GET['end_date'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallARQ($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
 		echo $a;
 	}
 
@@ -355,7 +356,8 @@
 		}
 
 		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
-		$a = getRainfallSenslope($_GET['site'], $_GET['start_date'], $_GET['end_date'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallSenslope($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
 		echo $a;
 	}
 ?>	
