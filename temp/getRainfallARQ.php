@@ -39,7 +39,7 @@
 			return;
 		}
 		else { 
-			$query = "SELECT * FROM $table_name[0] WHERE timestamp >= '$start_date'";
+			$query = "SELECT * FROM $table_name[0] WHERE timestamp > '$start_date'";
 			if (!is_null($end_date)) $query = $query . " AND timestamp <= '$end_date'";
 			//echo $query;
 			
