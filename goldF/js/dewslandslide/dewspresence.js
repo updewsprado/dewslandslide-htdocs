@@ -1,6 +1,3 @@
-/**
- * @author PradoArturo
- */
 
 var presenceJSON = 0;
 var allSitesJSON = 0;

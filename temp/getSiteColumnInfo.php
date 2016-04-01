@@ -15,7 +15,7 @@
 		$dbreturn;
 		$ctr = 0;
 
-		echo "s_id,name,date_install,date_activation,lat,long,sitio,barangay,municipality,province,region,loc_desc" . "\n";
+		echo "s_id,name,date_install,date_activation,lat,lon,sitio,barangay,municipality,province,region,loc_desc" . "\n";
 
 		while($row = mysqli_fetch_array($result)) {
 			$dbreturn[$ctr]['s_id'] = $row['s_id'];
@@ -23,7 +23,7 @@
 			$dbreturn[$ctr]['date_install'] = $row['date_install'];
 			$dbreturn[$ctr]['date_activation'] = $row['date_activation'];
 			$dbreturn[$ctr]['lat'] = $row['lat'];
-			$dbreturn[$ctr]['long'] = $row['long'];
+			$dbreturn[$ctr]['lon'] = $row['lon'];
 			$dbreturn[$ctr]['sitio'] = $row['sitio'];
 			$dbreturn[$ctr]['barangay'] = $row['barangay'];
 			$dbreturn[$ctr]['municipality'] = $row['municipality'];
@@ -37,7 +37,7 @@
 			echo $dbreturn[$ctr]['date_install'] . ",";
 			echo $dbreturn[$ctr]['date_activation'] . ",";
 			echo $dbreturn[$ctr]['lat'] . ",";
-			echo $dbreturn[$ctr]['long'] . ",";
+			echo $dbreturn[$ctr]['lon'] . ",";
 			echo $dbreturn[$ctr]['sitio'] . ",";
 			echo $dbreturn[$ctr]['barangay'] . ",";
 			echo $dbreturn[$ctr]['municipality'] . ",";
@@ -117,7 +117,7 @@
 			$ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
+	   return json_encode( $dbreturn );
 	   mysqli_close($con);
 	}
 
@@ -158,7 +158,7 @@
 		}
 
 		if ($dbreturn) {
-			echo json_encode( $dbreturn );
+			return json_encode( $dbreturn );
 		} else {
 			echo "Error: Site name does not exist in web database";
 		}
@@ -182,7 +182,7 @@
 		$dbreturn;
 		$ctr = 0;
 
-		echo "s_id,name,seg_length,num_nodes,col_length,pos_first_node,first_node_num" . "\n";
+		//echo "s_id,name,seg_length,num_nodes,col_length,pos_first_node,first_node_num" . "\n";
 
 		while($row = mysqli_fetch_array($result)) {
 			$dbreturn[$ctr]['s_id'] = $row['s_id'];
@@ -203,9 +203,9 @@
 
 			$ctr = $ctr + 1;
 		}
-
+	
+		mysqli_close($con);
 	   //echo json_encode( $dbreturn );
-	   mysqli_close($con);
 	}	
 
 	function getSiteColumnPropsJSON($sid = 0, $host, $db, $user, $pass) {
@@ -236,8 +236,8 @@
 			$ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}
 
 	function getSingleSiteColumnProps($name = 'blcb', $host, $db, $user, $pass) {
@@ -293,26 +293,30 @@
 		$dbreturn;
 		$ctr = 0;
 
-		echo "name,max_rain_2year,rain_noah,rain_senslope,rain_arq" . "\n";
+		//echo "name,max_rain_2year,rain_noah,rain_senslope,rain_arq" . "\n";
 
 		while($row = mysqli_fetch_array($result)) {
 			$dbreturn[$ctr]['name'] = $row['name'];
 			$dbreturn[$ctr]['max_rain_2year'] = $row['max_rain_2year'];
 			$dbreturn[$ctr]['rain_noah'] = $row['rain_noah'];
+			$dbreturn[$ctr]['rain_noah2'] = $row['rain_noah2'];
+			$dbreturn[$ctr]['rain_noah3'] = $row['rain_noah3'];
 			$dbreturn[$ctr]['rain_senslope'] = $row['rain_senslope'];
 			$dbreturn[$ctr]['rain_arq'] = $row['rain_arq'];
 
+			/*
 			echo $dbreturn[$ctr]['name'] . ",";
 			echo $dbreturn[$ctr]['max_rain_2year'] . ",";
 			echo $dbreturn[$ctr]['rain_noah'] . ",";
 			echo $dbreturn[$ctr]['rain_senslope'] . ",";
 			echo $dbreturn[$ctr]['rain_arq'] . "\n";
+			*/
 
 			$ctr = $ctr + 1;
 		}
 
-	   //echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}	
 
 	function getSiteRainPropsJSON($sid = 0, $host, $db, $user, $pass) {
@@ -343,8 +347,8 @@
 			$ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}	
 
 	function getSiteSomsJSON($host, $db, $user, $pass) {
@@ -383,8 +387,8 @@
 			}
 		}
 
-	   echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}
 ?>
 

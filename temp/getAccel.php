@@ -18,12 +18,14 @@
 			  $dbreturn[$ctr]['xvalue'] = $row['xvalue'];
 			  $dbreturn[$ctr]['yvalue'] = $row['yvalue'];
 			  $dbreturn[$ctr]['zvalue'] = $row['zvalue'];
-			  $dbreturn[$ctr]['mvalue'] = $row['mvalue'];
+			  
+			  if (isset($row['mvalue'])) $dbreturn[$ctr]['mvalue'] = $row['mvalue'];
 
 			  $ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
+		if (!isset($dbreturn)) return null;
+		else return json_encode($dbreturn);
 
 	   mysqli_close($con);
 	}
@@ -269,7 +271,7 @@
 			}
 		}
 		
-		echo json_encode( $dbreturn );
+		return json_encode( $dbreturn );
 
 		mysqli_close($con);
 	}
@@ -333,7 +335,7 @@
 			}
 		}
 		
-		echo json_encode( $dbreturn );
+		return json_encode( $dbreturn );
 
 		mysqli_close($con);
 	}
@@ -383,7 +385,7 @@
 			$ctr = $ctr + 1;
 		}
 
-		echo json_encode($dbreturn);
+		return json_encode($dbreturn);
 		mysqli_close($con);
 	}
 ?>

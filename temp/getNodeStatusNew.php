@@ -76,8 +76,8 @@
 			$ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}		
 
 ?>
