@@ -68,20 +68,20 @@
       .direction('n')
 	  .html(function(d) {
 	  
-	  var comm_tooltip = "<strong>Node Number:</strong><span style='color:red'>" + d.node + "</span><br/>";
-	  
-	  if (d.y == d.all)
-	  {
-		comm_tooltip += "<strong>Overall</strong> <span style='color:red'>" + d.all + "</span>"; }
-	  else if (d.y == d.week)
-	  {
-		comm_tooltip += "<strong>Past 7 Days:</strong><span style='color:red'>" + d.week + "</span>"; }	
-	  else if (d.y == d.month)
-	  {
-		comm_tooltip += "<strong>Past 30 Days:</strong><span style='color:red'>" + d.month + "</span>"; }
-	  
-	  return comm_tooltip;
-		});
+		var comm_tooltip = "<strong>Node Number:</strong><span style='color:red'>" + d.node + "</span><br/>";
+
+		if (d.y == d.week) {
+			comm_tooltip += "<strong>Last 7 Days:</strong><span style='color:red'>" + d.week + "</span>"; 
+		}	
+		else if (d.y == d.month) {
+			comm_tooltip += "<strong>Last 30 Days:</strong><span style='color:red'>" + d.month + "</span>"; 
+		}
+		else if (d.y == d.bimonth) {
+			comm_tooltip += "<strong>Last 60 Days:</strong><span style='color:red'>" + d.bimonth + "</span>"; 
+		}
+
+		return comm_tooltip;
+	});
 	
 	function showCommHealthPlotGeneral()
 	{
@@ -126,12 +126,12 @@
 
 <!-- Bar Chart Formation -->			
 			
-			var comm_headers = ["week", "month", "all"];
-			var comm_headers2 = ["Past 7 days", "Past 30 days", "Overall"];
+			var comm_headers = ["week", "month", "bimonth"];
+			var comm_headers2 = ["Last 7 days", "Last 30 days", "Last 60 days"];
 			
 			var comm_layers = d3.layout.stack()(comm_headers.map(function(days) {
 				return data.map(function(d) {
-				  return {x: d.node, all: d.all, month: d.month, week: d.week, node: d.node, y: +d[days] };
+				  return {x: d.node, bimonth: d.bimonth, month: d.month, week: d.week, node: d.node, y: +d[days] };
 				});
 			}));
 						
@@ -172,9 +172,11 @@
 				.attr("width", comm_xScale.rangeBand() / comm_bars)
 				.attr("y", function(d) { return comm_y(d.y); })
 				.attr("height", function(d) { return comm_height - comm_y(d.y); })
-				.attr("id", function(d){if (d.y == d.all) return "overall";
-					else if (d.y == d.week) return "week";
-					else if (d.y == d.month) return "month"; })
+				.attr("id", function(d){
+					if (d.y == d.week) return "week";
+					else if (d.y == d.month) return "month"; 
+					else if (d.y == d.bimonth) return "bimonth"; 
+				})
 				.on('mouseover', comm_tip.show)
 				.on('mouseout', comm_tip.hide);
             
@@ -217,19 +219,6 @@
 	}
 
 	function barTransition(color){
-		if(color == "green" && comm_opacity1 == 0){
-			d3.selectAll("#overall").transition().duration(500).style("opacity", comm_opacity1);
-			d3.selectAll("#overall").on("mouseover", comm_tip.hide);
-			comm_opacity1s = comm_opacity1;
-			comm_opacity1 = comm_opacity1s ? 0 : 1;
-		}
-		
-		else if(color == "green" && comm_opacity1 == 1){
-			d3.selectAll("#overall").transition().duration(500).style("opacity", comm_opacity1);
-			d3.selectAll("#overall").on("mouseover", comm_tip.show);
-			comm_opacity1s = comm_opacity1;
-			comm_opacity1 = comm_opacity1s ? 0 : 1;
-		}
 		
 		if (color == "red" && comm_opacity2 == 0){
 			d3.selectAll("#week").transition().duration(500).style("opacity", comm_opacity2);
@@ -257,5 +246,19 @@
 			d3.selectAll("#month").on("mouseover", comm_tip.show);
 			comm_opacity3s = comm_opacity3;
 			comm_opacity3 = comm_opacity3s ? 0 : 1;
+		}
+
+		if (color == "green" && comm_opacity1 == 0){
+			d3.selectAll("#bimonth").transition().duration(500).style("opacity", comm_opacity1);
+			d3.selectAll("#bimonth").on("mouseover", comm_tip.hide);
+			comm_opacity1s = comm_opacity1;
+			comm_opacity1 = comm_opacity1s ? 0 : 1;
+		}
+		
+		else if (color == "green" && comm_opacity1 == 1){
+			d3.selectAll("#bimonth").transition().duration(500).style("opacity", comm_opacity1);
+			d3.selectAll("#bimonth").on("mouseover", comm_tip.show);
+			comm_opacity1s = comm_opacity1;
+			comm_opacity1 = comm_opacity1s ? 0 : 1;
 		}
 }

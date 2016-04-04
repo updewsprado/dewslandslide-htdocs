@@ -1,6 +1,5 @@
 
-var presenceRawJSON = 0;
-var presencePurgedJSON = 0;
+var presenceJSON = 0;
 var allSitesJSON = 0;
 
 var presencePlot = new function() {
@@ -109,69 +108,10 @@ var siteMaxNodes = [];
 var maxNode;
 var maxNodesJSON = 0;
 
-function getRawDataPresence(xOffset) {
+function getDataPresence(xOffset) {
 
 	var delay = 500;
-	var data = presenceRawJSON;
-	
-	siteMaxNodes = data;
-	
-	//add node links to nodes with normal status
-	var urlBase = "http://www.dewslandslide.com/";
-	var urlNodeExt = "test/dpsitemap/";	
-	
-	var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
-	//maxNode = d3.max(siteMaxNodes, function(d) { return parseDate(d.timestamp); });
-	maxNode = 48;
-	
-	var maxRaw = d3.max(presenceRawJSON, function(d) { return parseDate(d.timestamp); });
-	var maxPurged = d3.max(presencePurgedJSON, function(d) { return parseDate(d.timestamp); });
-
-	// Scale the range of the data
-	if(maxRaw > maxPurged) {
-		//x.domain(d3.extent(presenceRawJSON, function(d) { return parseDate(d.timestamp); }));
-		presencePlot.x.domain(d3.extent(presenceRawJSON, function(d) { return parseDate(d.timestamp); }));
-	} 
-	else {
-		//x.domain(d3.extent(presencePurgedJSON, function(d) { return parseDate(d.timestamp); }));
-		presencePlot.x.domain(d3.extent(presencePurgedJSON, function(d) { return parseDate(d.timestamp); }));
-	}
-
-	// Scale the range of the data
-	//presencePlot.x.domain(d3.extent(siteMaxNodes, function(d) { return parseDate(d.timestamp); }));
-	//yOrd.domain(siteMaxNodes.map(function(d) { return d.site; }));
-	presencePlot.yOrd.domain(allSitesJSON.map(function(d) { return d.site; }));
-	
-	var cellw = (presencePlot.graphDim.gWidth / maxNode) * 0.9;
-	var cellh = presencePlot.yOrd.rangeBand(); //9;
-
-	presencePlot.svg.selectAll(".cell")
-		.data(siteMaxNodes)
-	.enter().append("rect")
-		.attr("class", "cell")
-		.attr('x', function(d){
-			return presencePlot.x(parseDate(d.timestamp)) + xOffset;
-		})
-		.attr('y', function(d){
-			return presencePlot.yOrd(d.site);
-		})
-		.attr('width', cellw)
-		.attr('height', cellh)
-		.on('mouseover', presencePlot.tip.show)
-		.on('mouseout', presencePlot.tip.hide)
-		.style("cursor", "pointer")
-		.on("click", function(d){
-			window.open(urlBase + urlNodeExt + d.site);
-			//document.location.href = urlBase + urlNodeExt + d.site;
-	        //document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
-	        //document.location.href = "www.google.com";
-	    });	
-}
-
-function getPurgedDataPresence(xOffset) {
-
-	var delay = 500;
-	var data = presencePurgedJSON;
+	var data = presenceJSON;
 	
 	siteMaxNodes = data;
 	
@@ -218,22 +158,27 @@ var nodeStatuses = [];
 var nodeStatusJSON = 0;
 
 var alertdata = [];
-function generatePresencePlot(urlRaw, urlPurged, title, xOffset, isLegends, graphNum) {
+function generatePresencePlot(url, title, xOffset, isLegends, graphNum) {
 	// Get the data
 	var jsondata = [];
 
-	d3.json(urlPurged, function(error, data) {
-		presencePurgedJSON = data;
-		jsondata = data;		  
-	});	
-
-	//var data = urlRaw;
-	d3.json(urlRaw, function(error, data) {
-		presenceRawJSON = data;
+	//var data = url;
+	d3.json(url, function(error, data) {
+		presenceJSON = data;
 		jsondata = data;
 		
-		getRawDataPresence(xOffset);
-		var horOff = xOffset + ((presencePlot.graphDim.gWidth / maxNode) * 0.9)/2;	
+		getDataPresence(xOffset);
+		
+		var horOff = xOffset + ((presencePlot.graphDim.gWidth / maxNode) * 0.9)/2;
+		
+		/*
+		// Graph Label
+		presencePlot.svg.append("text")      // text label for the x axis
+			.attr("class", "axislabel")
+			.attr("x", xOffset + (presencePlot.graphDim.gWidth / 2))
+			.attr("y", 0 - (presencePlot.margin.top/2))
+			.text(title);	
+		*/		
 			
 		// Add the Y Axis
 		presencePlot.svg.append("g")
@@ -265,21 +210,32 @@ function generatePresencePlot(urlRaw, urlPurged, title, xOffset, isLegends, grap
 		    .on("click", function(d){
 		        //document.location.href = urlBase + urlExt + d;
 		        window.open(urlBase + urlExt + d);
-		    });		
-	});			
+		    });
 
-	//getPurgedDataPresence(xOffset);  
+		/*
+		// Y axis Label
+		presencePlot.svg.append("text")		// text label for the y axis
+			.attr("class", "axislabel")
+			.attr("transform", "rotate(-90)")
+			.attr("y", xOffset -5 - (presencePlot.margin.left / 2))
+			.attr("x", 0 - (presencePlot.height / 2))
+			.text("Column/Site");			
+		*/	
+	});			
+	
+	
 }
 
 	
 var nodeAlertJSON = 0;
 function showDataPres() {
+	//presenceJSON = <?php echo $dataPresence; ?>;
+	//allSitesJSON = <?php echo $allSites; ?>;
 	allSitesJSON = maxNodesJSON;
-	//var urlRaw = "/test/allpres/24";
-	var urlRaw = "/test/allpres";
-	var urlPurged = "/test/allpres/purged";
+	//var url = "/test/allpres/24";
+	var url = "/test/allpres";
 	
-	generatePresencePlot(urlRaw, urlPurged, "Data Presence Map", 0, true, 1);
+	generatePresencePlot(url, "Data Presence Map", 0, true, 1);
 }
 
 function dataPresencePlot() {
