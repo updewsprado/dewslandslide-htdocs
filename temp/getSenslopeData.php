@@ -10,6 +10,7 @@
 	require_once('getNodeStatusNew.php');
 	require_once('getRainfallARQ.php');
 	require_once('getRainfallSenslope.php');
+	require_once('getRainfallNOAH.php');
 	//require_once('getAlert.php');
 	
 	if(isset($_GET['db'])) {
@@ -358,6 +359,18 @@
 		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
 		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
 		$a = getRainfallSenslope($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	if (isset($_GET['rainnoah'])) {
+		if ( !isset($_GET['id']) || !isset($_GET['start_date']) ) {
+			echo "ERROR: No input placed for 'id' and/or 'start_date'.\n";
+			exit;
+		}
+
+		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallNOAH($_GET['id'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
 		echo $a;
 	}
 ?>	
