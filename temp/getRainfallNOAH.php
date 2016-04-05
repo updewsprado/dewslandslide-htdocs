@@ -74,13 +74,14 @@
 		$rain_info = new Noah;
 		//var_dump($noah);
 		$rain_info->max_rain_2year = $maxAndTables['max_rain_2year'];
-
+		
 
 		foreach ($noahArray as $name) 
 		{	
 			$rain_info->getData($con, $name, $maxAndTables[$name], $start_date, $end_date, $limit);
 		}
 		//var_dump($rain_info);
+
 
 		mysqli_close($con);
 		//echo json_encode($rain_info);

@@ -10,7 +10,7 @@
 	 * @param      timestamp  	$end_date
 	 * @param      int			$limit 		Number of row to be retrieved
 	 * 
-	 * @return     array 	$rain_info[x][property] 
+	 * @return     object 	$rain_info->[property] 
 	 * 						where:	x is the row number of result
 	 *						property is field to access certain property
 	 *						(return is in JSON format)
@@ -24,32 +24,44 @@
 		$db = "senslopedb";
 		*/
 
+		/**
+		* Object that will be returned
+		*/
+		class Senslope
+		{
+			public $max_rain_2year;
+			public $rain_senslope = [];
+		}
+
 		$con = mysqli_connect($host, $user, $pass, $db);
 		if ( mysqli_connect_errno() ) {
 			echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$query = "SELECT rain_senslope FROM site_rain_props WHERE name = '$site'";
+		$query = "SELECT rain_senslope, max_rain_2year FROM site_rain_props WHERE name = '$site'";
 		$result = mysqli_query($con, $query);
-		$table_name = mysqli_fetch_array($result);
-		//echo "Table name: " . $table_name[0];
-		//var_dump($table_name);
+		$output = mysqli_fetch_object($result);
+		//echo "Table name: " . $output[0];
+		//var_dump($output);
 
-		if( is_null($table_name[0]) ) {
+		if( is_null($output->rain_senslope) ) {
 			echo "Site \"$site\" has no corresponding \"rain_senslope\" values.";
 			return;
 		}
 		else {
-			$query = "SELECT * FROM $table_name[0] WHERE timestamp > '$start_date'";
+			$query = "SELECT * FROM $output->rain_senslope WHERE timestamp > '$start_date'";
 			if (!is_null($end_date)) $query = $query . " AND timestamp <= '$end_date'";
 			if(!is_null($limit)) $query = $query . " LIMIT $limit";
 			//echo $query;
 
 			$result = mysqli_query($con, $query);
 
+			$rain_info = new Senslope;
+			$rain_info->max_rain_2year = $output->max_rain_2year;
+
 			$i = 0;
 			while ($row = mysqli_fetch_assoc($result)) {
-				$rain_info[$i] = $row;
+				$rain_info->rain_senslope[$i] = $row;
 				//var_dump($rain_info);
 				$i = $i + 1;
 			}
