@@ -107,6 +107,7 @@ function showCommHealthPlotGeneral()
 	var comm_bars = 3;
 		
 	var comm_url = "/test/commhealth/" + curSite + "/" + dataBase;
+		//console.log(comm_url);
 	
 		comm_cWidth = document.getElementById('healthbars-canvas').clientWidth;
 		comm_cHeight = document.getElementById('healthbars-canvas').clientHeight;
@@ -136,6 +137,7 @@ function showCommHealthPlotGeneral()
 			  return {x: d.node, bimonth: d.bimonth, month: d.month, week: d.week, node: d.node, y: +d[days] };
 			});
 		}));
+		//console.log(comm_layers);
 					
 		var comm_yGroupMax = d3.max(comm_layers, function(layer) { return d3.max(layer, function(d) { return d.y; }); });
 
@@ -165,7 +167,7 @@ function showCommHealthPlotGeneral()
 			.data(comm_layers)
 			.enter().append("g")
 			.attr("class", "layer")
-			.style("fill", function(d, i) { return comm_color(i); });
+			.attr("fill", function(d, i) { return comm_color(i); });
 
 		var comm_rect = comm_layer.selectAll("rect")
 			.data(function(d) { return d; })
@@ -179,9 +181,33 @@ function showCommHealthPlotGeneral()
 				else if (d.y == d.month) return "month"; 
 				else if (d.y == d.bimonth) return "bimonth"; 
 			})
-			.on('mouseover', comm_tip.show)
-			.on('mouseout', comm_tip.hide);
-        
+			.attr("fill", function(d){
+				if (d.y == d.week) return "red";
+				else if (d.y == d.month) return "green"; 
+				else if (d.y == d.bimonth) return "blue"; 
+			})
+			// .on('mouseover', comm_tip.show)
+			// .on('mouseout', comm_tip.hide)
+			.on("mouseover", function (d) {
+				comm_tip.show(d)
+				d3.select(this)
+					.style("opacity", 0.5)
+					.attr("fill", "orange");
+			})
+			.on("mouseout", function(d) {
+				comm_tip.hide(d)
+			   	d3.select(this)
+			   		.transition()
+			   		.duration(250)
+			   		.style("opacity", 1)
+					.attr("fill", function (d) {
+						if (d.y == d.week) return "red";
+						else if (d.y == d.month) return "green"; 
+						else if (d.y == d.bimonth) return "blue"; 
+					});
+		   	});
+
+
 <!-- Axes -->
 		
 			comm_svg.append("g")
