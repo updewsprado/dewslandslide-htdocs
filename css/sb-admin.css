@@ -665,3 +665,33 @@ label {
 .tooltip-wide .tooltip {
   min-width: 200px;
 }
+
+/* line 1, sass/scss/modules/_publicrelease.scss */
+.red {
+  background-color: #FFD9D9;
+  color: black;
+}
+
+/* line 5, sass/scss/modules/_publicrelease.scss */
+.orange {
+  background-color: #ffedcc;
+  color: black;
+}
+
+/* line 9, sass/scss/modules/_publicrelease.scss */
+.yellow {
+  background-color: #ffffb3;
+  color: black;
+}
+
+/* line 13, sass/scss/modules/_publicrelease.scss */
+.green {
+  background-color: #b3ffb3;
+  color: black;
+}
+
+/* line 17, sass/scss/modules/_publicrelease.scss */
+.yellowgreen {
+  background-color: #e0ffb3;
+  color: black;
+}

@@ -115,7 +115,7 @@ function showLSBChangeGeneral(frm, e) {
                         
                             var c0 = g2.toDomCoords(g2.getValue(0,0), 0);
                             
-                            canvas.fillStyle = '#FFB2B2';
+                            canvas.fillStyle = 'red';
                             canvas.fillRect(area.x, area.y, area.w, area.h);
                             
                             var c1 = g2.toDomCoords(g2.getValue(0,0), 1);
@@ -136,7 +136,7 @@ function showLSBChangeGeneral(frm, e) {
     var dto = document.getElementById("formDate").dateinput2.value;
 
     //var url = "/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value;
-    var url = "/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value + "&start=" + dfrom + "&end=" + dto;
+    var url = "http://www.dewslandslide.com/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value + "&start=" + dfrom + "&end=" + dto;
     xmlhttp.open("GET", url, true);
     xmlhttp.send();
 }
