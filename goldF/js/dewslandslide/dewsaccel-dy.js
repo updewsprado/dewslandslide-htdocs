@@ -37,7 +37,7 @@
 	}
 
 	//setDate();
-
+// 
 	function createCORSRequest(method, url) {
 		var xhr = new XMLHttpRequest();
 		if ("withCredentials" in xhr) {
@@ -143,6 +143,7 @@
 	  xmlhttp.send();
 	}
 
+
 	var opts = {
 		lines: 11, // The number of lines to draw
 		length: 6, // The length of each line
@@ -215,7 +216,7 @@
 			"/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value,
 			"http://weather.asti.dost.gov.ph/home/index.php/api/data/" + rsiteid + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value
 		];
-
+console.log(urls);
 		var target = document.getElementById('accel-2');
         var spinner = new Spinner(opts).spin();
         target.appendChild(spinner.el);
