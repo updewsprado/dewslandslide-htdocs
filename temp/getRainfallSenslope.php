@@ -40,7 +40,7 @@
 			echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$query = "SELECT rain_senslope, max_rain_2year FROM site_rain_props WHERE LEFT(name,3) = '$site'";
+		$query = "SELECT rain_senslope, max_rain_2year FROM site_rain_props WHERE LEFT(name,3) = '$site' AND rain_senslope IS NOT NULL";
 		$result = mysqli_query($con, $query);
 		$output = mysqli_fetch_object($result);
 		//echo "Table name: " . $output[0];
