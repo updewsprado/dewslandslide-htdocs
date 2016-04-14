@@ -1,6 +1,8 @@
 <?php  
 
 	/**
+	 * Author: Kevin Dhale dela Cruz
+	 *
 	 * Returns an array $rain_info containing 
 	 * max_rainfall_2year data andall rows
 	 * returned by the query from corresponding 
@@ -64,7 +66,7 @@
 		}
 
 
-		$query = "SELECT max_rain_2year, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props WHERE name = '$site'";
+		$query = "SELECT max_rain_2year, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props WHERE LEFT(name,3) = '$site'";
 		$result = mysqli_query($con, $query);
 		$maxAndTables = mysqli_fetch_assoc($result);
 		//var_dump($maxAndTables);
@@ -89,5 +91,5 @@
 	}
 
 	# Testing Area
-	# getRainfallNoah('agbsb', '2015-01-21', null, null, null, null, null, null);
+	# getRainfallNoah('agb', '2015-01-21', null, null, null, null, null, null);
 ?>

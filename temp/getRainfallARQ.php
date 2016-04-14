@@ -1,6 +1,8 @@
 <?php  
 
 	/**
+	 * Author: Kevin Dhale dela Cruz
+	 *
 	 * Returns an array $rain_info containing all rows
 	 * returned by the query from corresponding rain_ARQ
 	 * table of each site
@@ -38,7 +40,7 @@
 			echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$query = "SELECT rain_arq, max_rain_2year FROM site_rain_props WHERE name = '$site'";
+		$query = "SELECT rain_arq, max_rain_2year FROM site_rain_props WHERE LEFT(name,3) = '$site'";
 		$result = mysqli_query($con, $query);
 		$output = mysqli_fetch_object($result);
 		//echo $output[0];
@@ -73,5 +75,5 @@
 	}
 
 	# Testing Area
-	# getRainfallARQ('agbsb', '2015-10-20', '2016-01-01');
+	# getRainfallARQ('agb', '2015-10-20', '2016-01-01');
 ?>
