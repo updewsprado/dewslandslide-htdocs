@@ -1,3 +1,63 @@
+function createCORSRequest(method, url) {
+		var xhr = new XMLHttpRequest();
+		if ("withCredentials" in xhr) {
+			// XHR for Chrome/Firefox/Opera/Safari.
+			xhr.open(method, url, true);
+		} else if (typeof XDomainRequest != "undefined") {
+			// XDomainRequest for IE.
+			xhr = new XDomainRequest();
+			xhr.open(method, url);
+		} else {
+			// CORS not supported.
+			xhr = null;
+		}
+		return xhr;
+	}
+
+	// Helper method to parse the title tag from the response.
+	function getTitle(text) {
+		return text.match('<title>(.*)?</title>')[1];
+	}
+
+	// Make the actual CORS request.
+	function makeCorsRequest() {
+		// All HTML5 Rocks properties support CORS.
+		//var url = 'http://updates.html5rocks.com';
+		//var url = 'http://noah.dost.gov.ph/';
+		var url = 'http://senslopetest.comlu.com/';
+
+		var xhr = createCORSRequest('GET', url);
+		if (!xhr) {
+			alert('CORS not supported');
+			return;
+		}
+
+		// Response handlers.
+		xhr.onload = function() {
+			var text = xhr.responseText;
+			var title = getTitle(text);
+			alert('Response from CORS request to ' + url + ': ' + title);
+		};
+
+		xhr.onerror = function() {
+			alert('Woops, there was an error making the request.');
+		};
+
+		xhr.send();
+	}
+	
+
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+        // code for IE7+, Firefox, Chrome, Opera, Safari
+        xmlhttp = new XMLHttpRequest();
+    } else { // code for IE6, IE5
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+
+
+
+
 
 var comm_opacity1 = 0,
 	comm_opacity2 = 0,
@@ -43,7 +103,28 @@ function showLegends(frm)
 		alert("Create a bar chart first!");
 	}
 }
-	
+
+	var g = 0;
+	var isVisible = [true, true, true, true];
+	var opts = {
+		lines: 11, // The number of lines to draw
+		length: 6, // The length of each line
+		width: 3, // The line thickness
+		radius: 8, // The radius of the inner circle
+		corners: 1, // Corner roundness (0..1)
+		rotate: 0, // The rotation offset
+		direction: 1, // 1: clockwise, -1: counterclockwise
+		color: '#000', // #rgb or #rrggbb or array of colors
+		speed: 1.1, // Rounds per second
+		trail: 58, // Afterglow percentage
+		shadow: false, // Whether to render a shadow
+		hwaccel: false, // Whether to use hardware acceleration
+		className: 'spinner', // The CSS class to assign to the spinner
+		zIndex: 2e9, // The z-index (defaults to 2000000000)
+		top: '50%', // Top position relative to parent
+		left: '50%' // Left position relative to parent
+	};
+    
 var comm_opts = {
 	lines: 11, // The number of lines to draw
 	length: 6, // The length of each line
