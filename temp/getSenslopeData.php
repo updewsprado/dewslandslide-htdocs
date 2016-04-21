@@ -11,6 +11,7 @@
 	require_once('getRainfallARQ.php');
 	require_once('getRainfallSenslope.php');
 	require_once('getRainfallNOAH.php');
+	require_once('getGndMeas.php');
 	//require_once('getAlert.php');
 	
 	if(isset($_GET['db'])) {
@@ -153,6 +154,49 @@
 		
 		$a = getAccel3($from, $to, $site, $nid, $dataset, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
 		echo $a;
+	}
+
+	//Get ground measurement data
+	if (isset($_GET['gndmeas'])) {
+		//get the site code
+		if (isset($_GET['site'])) {
+			//to make sure that only the 3 letter site code will be selected
+			$site = substr($_GET['site'], 0, 3);
+		}
+		else {
+			echo "Error: No site selected<Br>";
+			return;
+		}
+
+		//get the crack id
+		if (isset($_GET['cid'])) {
+			$cid = $_GET['cid'];
+		}
+		else {
+			$cid = null;
+		}
+
+		//get the starting date
+		if (isset($_GET['from'])) {
+			$from = $_GET['from'];
+		}
+		else {
+			$from = null;
+		}
+
+		//get the end date
+		if (isset($_GET['to'])) {
+			$to = $_GET['to'];
+		}
+		else {
+			$to = null;
+		}
+
+		echo "Data: site = $site, crack id = $cid, from = $from, to = $to <Br><Br>";
+		$gndmeas = getGndMeas($site=$site, $cid=$cid, $from=$from, $to=$to, 
+						$mysql_host, $mysql_database, $mysql_user, $mysql_password);
+
+		echo $gndmeas;
 	}
 
 	if(isset($_GET['coord'])) {
