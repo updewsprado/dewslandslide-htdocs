@@ -192,7 +192,7 @@
 			$to = null;
 		}
 
-		echo "Data: site = $site, crack id = $cid, from = $from, to = $to <Br><Br>";
+		//echo "Data: site = $site, crack id = $cid, from = $from, to = $to <Br><Br>";
 		$gndmeas = getGndMeas($site=$site, $cid=$cid, $from=$from, $to=$to, 
 						$mysql_host, $mysql_database, $mysql_user, $mysql_password);
 

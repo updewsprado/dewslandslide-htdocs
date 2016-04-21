@@ -32,7 +32,7 @@
 		}
 
 		$sql = $sql . "ORDER BY timestamp ASC";
-		echo $sql."<Br><Br>";
+		//echo $sql."<Br><Br>";
 
 		$result = 0;
 		$result = mysqli_query($con, $sql);
