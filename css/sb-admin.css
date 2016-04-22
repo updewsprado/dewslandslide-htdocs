@@ -406,6 +406,13 @@ ul.alert-dropdown {
   background-color: rgba(0, 0, 0, 0.4);
 }
 
+/* line 60, sass/scss/modules/_buttons.scss */
+#rainSelect {
+  color: #222222;
+  font-size: 13px;
+  line-height: normal;
+}
+
 /*spinner effect*/
 /* line 2, sass/scss/modules/_components.scss */
 .sk-fading-circle {
@@ -667,31 +674,31 @@ label {
 }
 
 /* line 1, sass/scss/modules/_publicrelease.scss */
-.red {
+.alert_00 {
   background-color: #FFD9D9;
   color: black;
 }
 
 /* line 5, sass/scss/modules/_publicrelease.scss */
-.orange {
+.alert_01 {
   background-color: #ffedcc;
   color: black;
 }
 
 /* line 9, sass/scss/modules/_publicrelease.scss */
-.yellow {
+.alert_02 {
   background-color: #ffffb3;
   color: black;
 }
 
 /* line 13, sass/scss/modules/_publicrelease.scss */
-.green {
+.alert_03 {
   background-color: #b3ffb3;
   color: black;
 }
 
 /* line 17, sass/scss/modules/_publicrelease.scss */
-.yellowgreen {
+.alert_nd {
   background-color: #e0ffb3;
   color: black;
 }
