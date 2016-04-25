@@ -108,7 +108,7 @@ var tip = d3.tip()
 		comment = "";
 	}
 	else {
-		comment = "<strong>Comment:</strong> <span style='color:red'>" + d.comment + "</span>";
+		comment = "<strong>Comment:</strong> <span style='color:red'>" + dAlert + "</span>";
 	}  
   
     return id_ts 
@@ -119,7 +119,7 @@ var tip = d3.tip()
 
 //initialize dimensions
 function init_dims() {
-	cWidth = document.getElementById('mini-alert-canvas').clientWidth * 0.75;
+	cWidth = document.getElementById('mini-alert-canvas').clientWidth * .95;
 	//cHeight = document.getElementById('minialertcanvas').offsetHeight;
 	cHeight = document.getElementById('mini-alert-canvas').clientHeight * 1.5;
 	

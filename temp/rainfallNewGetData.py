@@ -9,10 +9,13 @@ import requests
     
 def getDF():
 
+    #rsite = 'lipw'
     rsite = sys.argv[1]
-    
+    fdate = sys.argv[2]
+    tdate = sys.argv[3]
     # set arbitrarily for now
-    fdate = "2015-03-01"
+#    fdate = "2015-04-25"
+#    tdate = "2016-04-25"
     
     # url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/%s/from/%s/to/%s" % (rsite,fdate,tdate)
     # r = requests.get(url)
@@ -24,18 +27,23 @@ def getDF():
     engine = create_engine('mysql+mysqldb://updews:october50sites@127.0.0.1/senslopedb')
 
     #Changed date difference is 1 day or 24 hours
-    query = "select timestamp, rain from senslopedb.%s where timestamp >= '%s'" % (rsite, fdate)
+    query = "select timestamp, rain from senslopedb.%s where timestamp between '%s' and  '%s'" % (rsite ,fdate,tdate)
 
     df = pd.io.sql.read_sql(query,engine)
     df.columns = ['ts','rain']
     df = df.set_index(['ts'])
 
     df = df["rain"].astype(float)
+
     df = df.resample('15Min').fillna(0.00)
     dfs = pd.rolling_sum(df,96)
-    dfa = pd.DataFrame({"rval":df,"cumm":dfs})
+    dfs1 = pd.rolling_sum(df,288)
+    dfs = dfs[dfs>=0]
+    dfs1 = dfs1[dfs1>=0]
+    dfa = pd.DataFrame({"rval":df,"cumm":dfs,"72hrs":dfs1})
     dfa = dfa.fillna(0)
-    dfa = dfa[96:]
+    # dfa = dfa[96:]
+ 
     
     dfajson = dfa.reset_index().to_json(orient="records",date_format='iso')
     #dfa = dfa.reset_index()

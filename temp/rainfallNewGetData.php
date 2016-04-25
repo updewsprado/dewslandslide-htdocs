@@ -1,27 +1,51 @@
+
+
 <?php   
-    //echo "Current OS = ".PHP_OS."<Br>";
-
-    $rsite = $_GET['rsite'];
-
-    if (PHP_OS == "WINNT") {
-      exec('python rainfallNewGetData.py ' . $rsite, $output, $return);  
-    }
-    elseif (PHP_OS == 'Linux') {
-      exec('/home/ubuntu/anaconda/bin/python rainfallNewGetData.py ' . $rsite, $output, $return);  
+    if(isset($_GET['rsite'])) {
+        $rsite = $_GET['rsite'];
     }
     else {
-      echo "Write Executable Code for Mac OS Server";
+        echo "Error: No value for site has been set";
+        return -1;
     }
-    
-    //$fdate = $_GET['fdate'];
-    //$tdate = $_GET['tdate'];
-    //exec('/home/ubuntu/anaconda/bin/python getRainfall.py ' . $rsite . ' ' . $fdate . ' ' . $tdate, $output, $return);  
- 
-    if ($output[0]) {
-        echo($output[0]);
-    } else {
-        echo($output[1]);
+    if(isset($_GET['fdate'])) {
+        $fdate = $_GET['fdate'];
     }
+    else {
+       echo "Error: No value for fdate has been set";
+        return -1;
+    }
+     if(isset($_GET['tdate'])) {
+        $tdate = $_GET['tdate'];
+    }
+    else {
+         echo "Error: No value for tdate has been set";
+        return -1;
+    }
+
+
+
+    $os = PHP_OS;
+    //echo "Operating System: $os <Br>";
+
+    if (strpos($os,'WIN') !== false) {
+        $pythonPath = 'c:\Users\USER\Anaconda2\python.exe';
+    }
+    elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
+        $pythonPath = '/home/ubuntu/anaconda/bin/python';
+    }
+    else {
+        echo "Unknown OS for execution... Script discontinued";
+        return;
+    }
+
+    //For Linux (Remember to set one for windows as well)
     
-    //echo($output[0]);
+    $fileName = 'rainfallNewGetData.py';
+    $command = $pythonPath.' '.$fileName.' '.$rsite.' '.$fdate.' '.$tdate;
+
+    //echo "$command";
+    exec($command, $output, $return);
+    echo($output[0]);
+    
 ?>
