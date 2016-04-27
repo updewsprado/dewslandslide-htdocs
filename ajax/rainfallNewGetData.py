@@ -36,7 +36,6 @@ def getDF():
     df = df["rain"].astype(float)
 
     df = df.resample('15Min').fillna(0.00)
-    # 24 Hours * (60 min / 1 Hour) * (1 sample / 15 min) = 96 samples
     dfs = pd.rolling_sum(df,96)
     dfs1 = pd.rolling_sum(df,288)
     dfs = dfs[dfs>=0]

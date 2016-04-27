@@ -41,7 +41,7 @@
 
     //For Linux (Remember to set one for windows as well)
     
-    $fileName = 'rainfallNewGetData.py';
+    $fileName = 'rainfallNewGetDataARQ.py';
     $command = $pythonPath.' '.$fileName.' '.$rsite.' '.$fdate.' '.$tdate;
 
     //echo "$command";
