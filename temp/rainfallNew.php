@@ -47,8 +47,7 @@ $sql = "SELECT DISTINCT
           rain_senslope,
           rain_arq,
           max_rain_2year
-        FROM 
-          site_rain_props";
+        FROM senslopedb.site_rain_props";
 $result = mysqli_query($conn, $sql);
 
 $numSites = 0;
@@ -89,6 +88,7 @@ mysqli_close($conn);
               $curSite = $singleSite["name"];
               echo "<option value=\"$ctr\">$curSite</option>";
               $ctr++;
+              print_r ($curSite);
             }
           ?>
         </select>       
@@ -165,8 +165,7 @@ function displayRainGraphs() {
         var rainNOAH3 = allWS[x]["rain_noah3"];
         var rainARQ = allWS[x]["rain_arq"];
         var max = allWS[x]["max_rain_2year"];
-        // alert("senslope: " + rainSenslope + ", noah: " + rainNOAH +", noah2: " + rainNOAH2 +", noah3: " + rainNOAH3);
-        // alert( " 2 year :" + max + ", arq: " + rainARQ);
+        console.log(x +"ito un")
         if(rainSenslope) {
             if (rainSenslope != prevWS) {
                 getRainfallData(rainSenslope);
@@ -228,15 +227,16 @@ function getRainfallData(str) {
         document.getElementById("rainGraphSenslope").innerHTML = "";
         return;
     } else {
-      $.ajax({url: "rainfallNewGetData.php?rsite="+ str, success: function(result){
+      $.ajax({url: "rainfallNewGetData.php?rsite="+ str +"&fdate=2015-05-10&tdate=2016-04-10", success: function(result){
         /*
         testConsumption = JSON.parse(result);
         pcTarget = parseInt(testConsumption.targetmonthlyconsumption);
         */
+        console.log("senslope " + str);
         testResult = result;
         var x = document.getElementById("mySelect").value;
         var max = allWS[x]["max_rain_2year"];
-        console.log(max);
+       
         if ((result == "[]") || (result == "")) {
           document.getElementById("rainGraphSenslope").innerHTML = "";
           return;
@@ -312,7 +312,7 @@ function getRainfallARQ(str) {
         document.getElementById("rainGraphARQ").innerHTML = "";
         return;
     } else {
-      $.ajax({url: "rainfallNewGetDataARQVy.php?rsite="+str, success: function(result){
+      $.ajax({url: "rainfallNewGetDataARQVy.php?rsite="+str+"&fdate=2015-05-10&tdate=2016-04-10", success: function(result){
         /*
         testConsumption = JSON.parse(result);
         pcTarget = parseInt(testConsumption.targetmonthlyconsumption);
@@ -320,7 +320,7 @@ function getRainfallARQ(str) {
         testResult = result;
         var x = document.getElementById("mySelect").value;
         var max = allWS[x]["max_rain_2year"];
-        console.log(max);
+        console.log("arq " + str);
         if ((result == "[]") || (result == "")) {
           document.getElementById("rainGraphARQ").innerHTML = "";
           return;
@@ -397,7 +397,7 @@ function getRainfallDataNOAH(str) {
         document.getElementById("rainGraphNoah").innerHTML = "";
         return;
     } else {
-      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=rain_noah_" + str, success: function(result){
+      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=" + str+"&fdate=2015-05-10&tdate=2016-04-10", success: function(result){
         /*
         testConsumption = JSON.parse(result);
         pcTarget = parseInt(testConsumption.targetmonthlyconsumption);
@@ -410,9 +410,7 @@ function getRainfallDataNOAH(str) {
         var jsonData = JSON.parse(result);
         var x = document.getElementById("mySelect").value;
         var max = allWS[x]["max_rain_2year"];
-        console.log(max);
-      console.log(str + "noah");
-
+        console.log("NOAH1  " + str);
         if(jsonData) {
           var data = JSON2CSV(jsonData);
           var isStacked = false;
@@ -481,7 +479,7 @@ function getRainfallDataNOAH2(str) {
         document.getElementById("rainGraphNoah2").innerHTML = "";
         return;
     } else {
-      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=rain_noah_" + str, success: function(result){
+      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=" + str+"&fdate=2015-05-10&tdate=2016-04-10", success: function(result){
         /*
         testConsumption = JSON.parse(result);
         pcTarget = parseInt(testConsumption.targetmonthlyconsumption);
@@ -494,8 +492,7 @@ function getRainfallDataNOAH2(str) {
         var jsonData = JSON.parse(result);
         var x = document.getElementById("mySelect").value;
         var max = allWS[x]["max_rain_2year"];
-        console.log(max);
-      console.log(str);
+        console.log("NOAH2 " + str);
 
         if(jsonData) {
           var data = JSON2CSV(jsonData);
@@ -565,7 +562,7 @@ function getRainfallDataNOAH3(str) {
         document.getElementById("rainGraphNoah3").innerHTML = "";
         return;
     } else {
-      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=rain_noah_" + str, success: function(result){
+      $.ajax({url: "rainfallNewGetDataNoahVy.php?rsite=" + str+"&fdate=2015-05-10&tdate=2016-04-10", success: function(result){
         /*
         testConsumption = JSON.parse(result);
         pcTarget = parseInt(testConsumption.targetmonthlyconsumption);
@@ -578,8 +575,7 @@ function getRainfallDataNOAH3(str) {
         var jsonData = JSON.parse(result);
         var x = document.getElementById("mySelect").value;
         var max = allWS[x]["max_rain_2year"];
-        console.log(max);
-      console.log(str);
+         console.log("NOAH3 " + str);
 
         if(jsonData) {
           var data = JSON2CSV(jsonData);
