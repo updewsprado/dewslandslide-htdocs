@@ -31,8 +31,8 @@
 			$sql = $sql . "and crack_id = '$cid' ";
 		}
 
-		$sql = $sql . "ORDER BY timestamp ASC";
-		//echo $sql."<Br><Br>";
+		$sql = $sql . "ORDER BY timestamp ASC;";
+		// echo $sql."<Br><Br>";
 
 		$result = 0;
 		$result = mysqli_query($con, $sql);
@@ -42,8 +42,14 @@
 		    exit();
 		}
 
-		$dbreturn;
+		$dbreturn = [];
 		$ctr = 0;
+
+		//TODO: comment this part
+		// Return the number of rows in result set
+		// $rowcount = mysqli_num_rows($result);
+		// echo "Number of rows: $rowcount<Br>";
+
 		while($row = mysqli_fetch_array($result)) {
 			  $dbreturn[$ctr]['timestamp'] = $row['timestamp'];
 			  $dbreturn[$ctr]['meas_type'] = $row['meas_type'];
@@ -54,10 +60,14 @@
 			  $dbreturn[$ctr]['weather'] = $row['weather'];
 			  $dbreturn[$ctr]['reliability'] = $row['reliability'];
 
+			  // echo json_encode($dbreturn[$ctr]);
+
 			  $ctr = $ctr + 1;
 		}
 
 		mysqli_close($con);
+
+		// echo json_encode($dbreturn);
 
 		if (!isset($dbreturn)) 
 			return null;

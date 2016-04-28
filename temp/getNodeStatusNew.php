@@ -59,7 +59,7 @@
 		
 		$result = mysqli_query($con, $sql);
 
-		$dbreturn;
+		$dbreturn = [];
 		$ctr = 0;
 
 		while($row = mysqli_fetch_array($result)) {
