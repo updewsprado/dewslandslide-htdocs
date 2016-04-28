@@ -9,14 +9,14 @@ import requests
     
 def getDF():
 
-    #rsite = 'lipw'
+#    rsite = 'lipw'
     rsite = sys.argv[1]
     fdate = sys.argv[2]
     tdate = sys.argv[3]
     # set arbitrarily for now
 #    fdate = "2015-04-25"
 #    tdate = "2016-04-25"
-    
+#    
     # url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/%s/from/%s/to/%s" % (rsite,fdate,tdate)
     # r = requests.get(url)
 
@@ -34,8 +34,7 @@ def getDF():
     df = df.set_index(['ts'])
 
     df = df["rain"].astype(float)
-
-    df = df.resample('15Min').fillna(0.00)
+    df = df.resample('15Min', how = "sum").fillna(0.00)
     dfs = pd.rolling_sum(df,96)
     dfs1 = pd.rolling_sum(df,288)
     dfs = dfs[dfs>=0]

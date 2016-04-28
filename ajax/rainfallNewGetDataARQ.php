@@ -33,6 +33,7 @@
     }
     elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
         $pythonPath = '/home/ubuntu/anaconda/bin/python';
+         // echo "python problem";
     }
     else {
         echo "Unknown OS for execution... Script discontinued";

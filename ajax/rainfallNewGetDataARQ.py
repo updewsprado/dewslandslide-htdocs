@@ -34,8 +34,7 @@ def getDF():
     df = df.set_index(['ts'])
 
     df = df["r15m"].astype(float)
-
-    df = df.resample('15Min').fillna(0.00)
+    df = df.resample('15Min', how = "sum").fillna(0.00)
     dfs = pd.rolling_sum(df,96)
     dfs1 = pd.rolling_sum(df,288)
     dfs = dfs[dfs>=0]
