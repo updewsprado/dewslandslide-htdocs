@@ -171,25 +171,30 @@ mysqli_close($conn);
               <?php foreach ($siteAlertPublic as $publicAlert): ?>
               <?php
                 switch ($publicAlert["public_alert"]) {
-                  case 'A2':
-                    $tableRowClass = "danger";
-                    break;
-
-                  case 'A1':
-                    $tableRowClass = "warning";
-                    break;
-
-                  case 'A0+':
-                    $tableRowClass = "info";
-                    break;
-
-                  case 'A0':
-                    $tableRowClass = "success";
-                    break;
-                  
-                  default:
-                    $tableRowClass = "danger";
-                    break;
+                
+                      case 'a2':
+                      case 'A2':
+                         $tableRowClass= "alert_01";
+                        break;
+                      case 'a1':
+                      case 'A1':
+                         $tableRowClass = "alert_02";
+                        break;
+                      case 'a3':
+                      case 'A3':
+                         $tableRowClass = "alert_00";
+                        break;
+                      case 'a0':
+                      case 'A0':
+                        $tableRowClass = "alert_03";
+                        break;
+                      case 'nd':
+                      case 'ND':
+                        $tableRowClass = "alert_nd";
+                        break;
+                      default:
+                        $tableRowClass = "undefined";
+                        break;
                 }
               ?>
               <tr class="<?php echo $tableRowClass; ?>">

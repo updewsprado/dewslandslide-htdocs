@@ -226,6 +226,7 @@ console.log(urls);
 					[false, true, false, false],
 					[false, false, true, false],
 					[false, false, false, true],
+					
 				];
 
 		var xmlhttp_column = getXHR();

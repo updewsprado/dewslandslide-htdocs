@@ -33,6 +33,7 @@
     }
     elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
         $pythonPath = '/home/ubuntu/anaconda/bin/python';
+         // echo "python problem";
     }
     else {
         echo "Unknown OS for execution... Script discontinued";
@@ -41,7 +42,7 @@
 
     //For Linux (Remember to set one for windows as well)
     
-    $fileName = 'rainfallNewGetData.py';
+    $fileName = 'rainfallNewGetDataARQ.py';
     $command = $pythonPath.' '.$fileName.' '.$rsite.' '.$fdate.' '.$tdate;
 
     //echo "$command";
