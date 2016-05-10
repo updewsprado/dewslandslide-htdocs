@@ -1,28 +1,14 @@
 
 
 <?php   
-    if(isset($_GET['rsite'])) {
-        $rsite = $_GET['rsite'];
+    if(isset($_GET['gsite'])) {
+        $gsite = $_GET['gsite'];
     }
     else {
         echo "Error: No value for site has been set";
         return -1;
     }
-    if(isset($_GET['fdate'])) {
-        $fdate = $_GET['fdate'];
-    }
-    else {
-       echo "Error: No value for fdate has been set";
-        return -1;
-    }
-     if(isset($_GET['tdate'])) {
-        $tdate = $_GET['tdate'];
-    }
-    else {
-         echo "Error: No value for tdate has been set";
-        return -1;
-    }
-
+  
 
 
     $os = PHP_OS;
@@ -42,8 +28,8 @@
 
     //For Linux (Remember to set one for windows as well)
     
-    $fileName = 'rainfallNewGetDataNoah.py';
-    $command = $pythonPath.' '.$fileName.' '.$rsite.' '.$fdate.' '.$tdate;
+    $fileName = 'gndmeasfull.py';
+    $command = $pythonPath.' '.$fileName.' '.$gsite;
 
     // echo "$command";
     exec($command, $output, $return);

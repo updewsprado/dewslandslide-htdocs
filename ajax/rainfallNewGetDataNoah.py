@@ -25,7 +25,7 @@ def getDF():
     # df = df.set_index(['dateTimeRead'])
     # df.index = pd.to_datetime(df.index)
 
-    engine = create_engine('mysql+mysqldb://updews:october50sites@127.0.0.1/senslopedb')
+    engine = create_engine('mysql+mysqldb://root:senslope@127.0.0.1/senslopedb')
 
     #Changed date difference is 1 day or 24 hours
     query = "select * from senslopedb.rain_noah_%s where timestamp between '%s' and  '%s'" % (rsite , fdate, tdate)
@@ -33,12 +33,11 @@ def getDF():
     df = pd.io.sql.read_sql(query,engine)
     df.columns = ['ts','cumm','rval']
    
-    df = df[df >= 0]
+
     df = df.set_index(['ts'])
-    
     df = df["rval"].astype(float)
-    
-    df = df.resample('15Min').fillna(0.00)
+    df = df[df>= 0]
+    df = df.resample('15Min', how = "sum").fillna(0.00)
     dfs = pd.rolling_sum(df,96)
     dfs1 = pd.rolling_sum(df,288)
     dfs = dfs[dfs>=0]

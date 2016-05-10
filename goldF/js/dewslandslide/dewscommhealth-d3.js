@@ -372,3 +372,5 @@ function showCommHealthPlotGeneral()
 			comm_opacity1 = comm_opacity1s ? 0 : 1;
 		}
 }
+
+
