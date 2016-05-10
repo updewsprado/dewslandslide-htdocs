@@ -643,6 +643,7 @@ function showAccelSecond(frm) {
 
 					var labelAxis = ['timestamp','X','Y','Z'];
 					var numSeparateGraphs = 3;
+					var colorsLine = ['#284785', '#EE1111', '#006600', '#660066'];
 				}
 			}
 			else {
@@ -667,6 +668,7 @@ function showAccelSecond(frm) {
 
 					var labelAxis = ['timestamp','X','Y','Z'];
 					var numSeparateGraphs = 3;
+					var colorsLine = ['#284785', '#EE1111', '#006600', '#660066'];
 				}
 			}
 
