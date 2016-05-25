@@ -75,11 +75,11 @@ function init_dims() {
 	cHeight = document.getElementById('alert-canvas').clientHeight;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
-	margin = {top: cHeight * 0.001, right: cWidth * 0, bottom: cHeight * 0.01 , left: cWidth * 0.065};
-	width = cWidth - margin.left - margin.right - 140;
-	height = cHeight - margin.top - margin.bottom + 160;
+	margin = {top: cHeight * 0.01, right: cWidth * 0, bottom: cHeight * 0.01 , left: cWidth * 0.065};
+	width = cWidth - margin.left  - 150;
+	height = cHeight  - margin.bottom + 60;
 	
-	graphDim = {gWidth: width * 0.95, gHeight: height* 0.85};	
+	graphDim = {gWidth: width * 1.50, gHeight: height* 1.20};	
 	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
@@ -96,8 +96,8 @@ function init_dims() {
 	// Adds the svg canvas
 	svg = d3.select("#alert-canvas").append("svg")
 			.attr("id", "svg-alert")
-	        .attr("width", width + margin.left + margin.right)
-	        .attr("height", height + margin.top + margin.bottom)
+	        .attr("width", width + margin.left  + 140)
+	        .attr("height", 1050)
 			.append("g")
 	        .attr("transform", 
 	              "translate(" + margin.left + "," + margin.top + ")");
@@ -524,7 +524,7 @@ function alertLegends(frm) {
 		alert_target2.style.borderStyle = "solid";
 		alert_target2.style.borderWidth = "thin";
 		alert_target2.style.paddingLeft = "5px";
-		alert_target2.style.paddingTop = "10px";
+		alert_target2.style.paddingTop = "5px";
 		alert_target2.style.paddingRight = "5px";
 		alert_target2.style.left = (alert_target.offsetLeft - alert_target.scrollLeft + alert_target.clientLeft) + 'px';
 		alert_target2.style.top = (alert_target.offsetTop - alert_target.scrollTop + alert_target.clientTop - 110) + 'px';

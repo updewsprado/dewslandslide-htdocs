@@ -1,6 +1,3 @@
-/**
- * @author PradoArturo
- */
 
 //JSON Variable
 var nodeAlertJSON = 0;
@@ -77,7 +74,7 @@ var svg;
 // Tip that displays node info
 var tip = d3.tip()
   .attr('class', 'd3-tip')
-  .offset([-10, 0])
+  .offset([-0, 5])
   .html(function(d) {
 	var alert,status,id_ts,comment;
 	
@@ -114,7 +111,8 @@ var tip = d3.tip()
     return id_ts 
 		+ "<strong>Site:</strong> <span style='color:red'>" + d.site + "</span><Br/>"
 		+ "<strong>Node ID:</strong> <span style='color:red'>" + d.node + "</span><Br/>"
-		+ alert + status + comment;
+		+ alert + status + comment
+		;
   });
 
 //initialize dimensions
@@ -173,14 +171,14 @@ function make_x_axis2(tick) {
 function make_y_axis() {        
     return d3.svg.axis()
         .scale(y)
-        .orient("left")
+        .orient("right")
         .ticks(5);
 }
 
 function make_yOrd_axis() {        
     return d3.svg.axis()
         .scale(yOrd)
-        .orient("left")
+        .orient("right")
         .ticks(1);
 }		  
 			
@@ -243,6 +241,8 @@ function getSiteMaxNodes(xOffset) {
 		.attr('width', cellw)
 		.attr('height', cellh)
 		.style("cursor", "pointer")
+		.on('mouseover', tip.show)
+		.on('mouseout', tip.hide)
 		.on("click", function(d){
 	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
 	    });	
@@ -403,7 +403,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 					svg.append("rect")
 						.attr("class", "cell")
 						.attr("x", i*(labelWidth))
-						.attr("y", graphDim.gHeight + cellh * 0.25)
+						.attr("y", graphDim.gHeight + cellh * 0.50)
 						.attr("transform", "translate(" + xOffset + ",0)")
 						.attr('width', cellw)
 						.attr('height', cellh)
