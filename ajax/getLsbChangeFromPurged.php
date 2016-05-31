@@ -57,7 +57,7 @@
 
 	//For Linux (Remember to set one for windows as well)
     
-    $fileName = 'getLsbChangeFromPurged.py';
+    $fileName = 'generateFilteredData.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid;
 
     //echo "$command";
