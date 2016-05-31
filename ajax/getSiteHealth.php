@@ -49,7 +49,7 @@
 		}
 		*/
 
-		echo json_encode( $dbtstamp );
+		return json_encode( $dbtstamp );
 
 		mysqli_close($con);
 	}

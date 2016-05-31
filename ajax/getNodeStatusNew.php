@@ -59,7 +59,7 @@
 		
 		$result = mysqli_query($con, $sql);
 
-		$dbreturn;
+		$dbreturn = [];
 		$ctr = 0;
 
 		while($row = mysqli_fetch_array($result)) {
@@ -76,8 +76,8 @@
 			$ctr = $ctr + 1;
 		}
 
-	   echo json_encode( $dbreturn );
 	   mysqli_close($con);
+	   return json_encode( $dbreturn );
 	}		
 
 ?>
