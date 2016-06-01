@@ -56,9 +56,9 @@
 	}
 
 	//For Linux (Remember to set one for windows as well)
-    
+    $showid = 0;
     $fileName = 'generateFilteredData.py';
-    $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid;
+    $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid.' '.$showid;
 
     //echo "$command";
     exec($command, $output, $return);
