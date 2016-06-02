@@ -144,98 +144,190 @@ ul.alert-dropdown {
 }
 */
 /* Flot Chart Containers */
-/* line 140, sass/scss/base/_base.scss */
-.flot-chart {
-  display: block;
-  height: 400px;
-}
-
-/* line 145, sass/scss/base/_base.scss */
-.flot-chart-content {
-  width: 100%;
-  height: 100%;
-}
-
-/* Custom Colored Panels */
-/* line 152, sass/scss/base/_base.scss */
-.huge {
-  font-size: 40px;
-}
-
-/* line 156, sass/scss/base/_base.scss */
-.panel-green {
-  border-color: #5cb85c;
-}
-
-/* line 160, sass/scss/base/_base.scss */
-.panel-green .panel-heading {
-  border-color: #5cb85c;
-  color: white;
-  background-color: #5cb85c;
-}
-
-/* line 166, sass/scss/base/_base.scss */
-.panel-green a {
-  color: #5cb85c;
-}
-
-/* line 170, sass/scss/base/_base.scss */
-.panel-green a:hover {
-  color: #3d8b3d;
-}
-
-/* line 174, sass/scss/base/_base.scss */
-.panel-red {
-  border-color: #d9534f;
-}
-
-/* line 178, sass/scss/base/_base.scss */
-.panel-red .panel-heading {
-  border-color: #d9534f;
-  color: white;
-  background-color: #d9534f;
-}
-
-/* line 184, sass/scss/base/_base.scss */
-.panel-red a {
-  color: #d9534f;
-}
-
-/* line 188, sass/scss/base/_base.scss */
-.panel-red a:hover {
-  color: #b52b27;
-}
-
-/* line 192, sass/scss/base/_base.scss */
-.panel-yellow {
-  border-color: #f0ad4e;
-}
-
-/* line 196, sass/scss/base/_base.scss */
-.panel-yellow .panel-heading {
-  border-color: #f0ad4e;
-  color: white;
-  background-color: #f0ad4e;
-}
-
-/* line 202, sass/scss/base/_base.scss */
-.panel-yellow a {
-  color: #f0ad4e;
-}
-
-/* line 206, sass/scss/base/_base.scss */
-.panel-yellow a:hover {
-  color: #df8a13;
-}
-
-/* line 210, sass/scss/base/_base.scss */
-#sitegeneral {
-  color: #485ed7;
-}
-
-/*additional hover
-*/
 @media (min-width: 768px) {
+  /* line 140, sass/scss/base/_base.scss */
+  .flot-chart {
+    display: block;
+    height: 400px;
+  }
+
+  /* line 145, sass/scss/base/_base.scss */
+  .flot-chart-content {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Custom Colored Panels */
+  /* line 152, sass/scss/base/_base.scss */
+  .huge {
+    font-size: 40px;
+  }
+
+  /* line 156, sass/scss/base/_base.scss */
+  .panel-green {
+    border-color: #5cb85c;
+  }
+
+  /* line 160, sass/scss/base/_base.scss */
+  .panel-green .panel-heading {
+    border-color: #5cb85c;
+    color: white;
+    background-color: #5cb85c;
+  }
+
+  /* line 166, sass/scss/base/_base.scss */
+  .panel-green a {
+    color: #5cb85c;
+  }
+
+  /* line 170, sass/scss/base/_base.scss */
+  .panel-green a:hover {
+    color: #3d8b3d;
+  }
+
+  /* line 174, sass/scss/base/_base.scss */
+  .panel-red {
+    border-color: #d9534f;
+  }
+
+  /* line 178, sass/scss/base/_base.scss */
+  .panel-red .panel-heading {
+    border-color: #d9534f;
+    color: white;
+    background-color: #d9534f;
+  }
+
+  /* line 184, sass/scss/base/_base.scss */
+  .panel-red a {
+    color: #d9534f;
+  }
+
+  /* line 188, sass/scss/base/_base.scss */
+  .panel-red a:hover {
+    color: #b52b27;
+  }
+
+  /* line 192, sass/scss/base/_base.scss */
+  .panel-yellow {
+    border-color: #f0ad4e;
+  }
+
+  /* line 196, sass/scss/base/_base.scss */
+  .panel-yellow .panel-heading {
+    border-color: #f0ad4e;
+    color: white;
+    background-color: #f0ad4e;
+  }
+
+  /* line 202, sass/scss/base/_base.scss */
+  .panel-yellow a {
+    color: #f0ad4e;
+  }
+
+  /* line 206, sass/scss/base/_base.scss */
+  .panel-yellow a:hover {
+    color: #df8a13;
+  }
+
+  /* line 210, sass/scss/base/_base.scss */
+  #sitegeneral {
+    color: #485ed7;
+  }
+
+  /*additional hover
+  */
+  /* line 233, sass/scss/base/_base.scss */
+  .side-nav {
+    position: static;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* line 241, sass/scss/base/_base.scss */
+  .side-nav li {
+    position: relative;
+    line-height: 20px;
+    display: inline-block;
+    width: 100%;
+    font-size: 100%;
+    font-weight: 500;
+    text-transform: uppercase;
+    outline: none;
+  }
+
+  /* line 251, sass/scss/base/_base.scss */
+  .side-nav li:before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: -1;
+    height: 100%;
+    width: 3px;
+    background-color: #222222;
+    /*-webkit-transition: width .4s ease-in-out;
+    -moz-transition: width .4s ease-in-out;
+    -ms-transition: width .4s ease-in-out;
+    transition: width .4s ease-in-out;*/
+  }
+
+  /*.side-nav li:hover:before, .side-nav li.open:hover:before {
+  width: 100%;
+  -webkit-transition: width .4s ease-in-out;
+  -moz-transition: width .4s ease-in-out;
+  -ms-transition: width .4s ease-in-out;
+  transition: width .4s ease-in-out;
+  }*/
+  /* line 272, sass/scss/base/_base.scss */
+  .side-nav li a {
+    display: block;
+    color: #ddd;
+    text-decoration: none;
+    padding: 10px 15px 10px 30px;
+  }
+
+  /* line 278, sass/scss/base/_base.scss */
+  .side-nav li a:hover, .side-nav li a:active, .side-nav li a:focus, .side-nav li.open a:hover, .sidebar-nav li.open a:active, .sidebar-nav li.open a:focus {
+    color: black;
+    text-decoration: none;
+    background-color: #ddd;
+  }
+
+  /* line 284, sass/scss/base/_base.scss */
+  .side-nav > li > ul {
+    padding: 0;
+  }
+
+  /* line 288, sass/scss/base/_base.scss */
+  .side-nav > li > ul > li > a {
+    display: block;
+    padding: 10px 15px 10px 38px;
+  }
+
+  /* line 293, sass/scss/base/_base.scss */
+  .navbar-brand-centered {
+    position: fixed;
+    left: 45%;
+    display: block;
+    width: auto;
+    text-align: center;
+  }
+
+  /* line 302, sass/scss/base/_base.scss */
+  .navbar > .container .navbar-brand-centered,
+  .navbar > .container-fluid .navbar-brand-centered {
+    margin-left: -50px;
+  }
+
+  /* line 306, sass/scss/base/_base.scss */
+  #sidebar-wrapper.active {
+    left: 250px;
+    width: 200px;
+  }
+}
+@media (min-width: 768px) and (min-width: 768px) {
   /* line 217, sass/scss/base/_base.scss */
   #sidebar-wrapper {
     z-index: 1000;
@@ -253,97 +345,6 @@ ul.alert-dropdown {
     transition: all 0.5s ease-in-out 0s;
   }
 }
-/* line 233, sass/scss/base/_base.scss */
-.side-nav {
-  position: static;
-  top: 0;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* line 241, sass/scss/base/_base.scss */
-.side-nav li {
-  position: relative;
-  line-height: 20px;
-  display: inline-block;
-  width: 100%;
-  font-size: 100%;
-  font-weight: 500;
-  text-transform: uppercase;
-  outline: none;
-}
-
-/* line 251, sass/scss/base/_base.scss */
-.side-nav li:before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: -1;
-  height: 100%;
-  width: 3px;
-  background-color: #222222;
-  /*-webkit-transition: width .4s ease-in-out;
-  -moz-transition: width .4s ease-in-out;
-  -ms-transition: width .4s ease-in-out;
-  transition: width .4s ease-in-out;*/
-}
-
-/*.side-nav li:hover:before, .side-nav li.open:hover:before {
-    width: 100%;
-    -webkit-transition: width .4s ease-in-out;
-    -moz-transition: width .4s ease-in-out;
-    -ms-transition: width .4s ease-in-out;
-    transition: width .4s ease-in-out;
-}*/
-/* line 272, sass/scss/base/_base.scss */
-.side-nav li a {
-  display: block;
-  color: #ddd;
-  text-decoration: none;
-  padding: 10px 15px 10px 30px;
-}
-
-/* line 278, sass/scss/base/_base.scss */
-.side-nav li a:hover, .side-nav li a:active, .side-nav li a:focus, .side-nav li.open a:hover, .sidebar-nav li.open a:active, .sidebar-nav li.open a:focus {
-  color: black;
-  text-decoration: none;
-  background-color: #ddd;
-}
-
-/* line 284, sass/scss/base/_base.scss */
-.side-nav > li > ul {
-  padding: 0;
-}
-
-/* line 288, sass/scss/base/_base.scss */
-.side-nav > li > ul > li > a {
-  display: block;
-  padding: 10px 15px 10px 38px;
-}
-
-/* line 293, sass/scss/base/_base.scss */
-.navbar-brand-centered {
-  position: fixed;
-  left: 45%;
-  display: block;
-  width: auto;
-  text-align: center;
-}
-
-/* line 302, sass/scss/base/_base.scss */
-.navbar > .container .navbar-brand-centered,
-.navbar > .container-fluid .navbar-brand-centered {
-  margin-left: -50px;
-}
-
-/* line 306, sass/scss/base/_base.scss */
-#sidebar-wrapper.active {
-  left: 250px;
-  width: 200px;
-}
-
 /* BUTTONS */
 /* line 2, sass/scss/modules/_buttons.scss */
 .list_menu {
