@@ -48,7 +48,7 @@
 	    $pythonPath = 'C:\Anaconda\python.exe';
 	}
 	elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
-		$pythonPath = '/home/ubuntu/anaconda/bin/python';
+		$pythonPath = '/home/ubuntu/anaconda2/bin/python';
 	}
 	else {
 		echo "Unknown OS for execution... Script discontinued";
@@ -56,7 +56,7 @@
 	}
 
 	//For Linux (Remember to set one for windows as well)
-    
+    $showid = 0;
     $fileName = 'getLsbChangeFromPurged.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid;
 

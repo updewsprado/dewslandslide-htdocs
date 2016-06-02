@@ -8,25 +8,34 @@
 	require_once('getSitesCoord.php');
 	require_once('getSiteColumnInfo.php');
 	require_once('getNodeStatusNew.php');
+	require_once('getRainfallARQ.php');
+	require_once('getRainfallSenslope.php');
+	require_once('getRainfallNOAH.php');
+	require_once('getGndMeas.php');
 	//require_once('getAlert.php');
 	
 	if(isset($_GET['db'])) {
 		$mysql_database = $_GET['db'];
 		//echo "db exists: $mysql_database<Br/>";	
 	}
+	/*
 	else {
 		echo "ERROR: DB does not exist<Br/>";	
-	}	
+	}*/
 	
 	if(isset($_GET['sitenames'])) {
-		getSiteNames($mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getSiteNames($mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+
 	}
 
 	if(isset($_GET['health'])) {
 		//echo "health exists<Br/>";
 		$site = $_GET['site'];
-		
-		getHealth($site, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getHealth($site, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+
+		if (isset($a)) echo 'No value returned.';
+		else echo $a;
 	}
 	
 	if(isset($_GET['sitehealth'])) {
@@ -36,7 +45,8 @@
 		
 		if(isset($_GET['site']) && isset($_GET['q'])) {
 			//echo "site info & date data is incomplete<Br/>";
-			getSiteHealth($date, $site, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			$a = getSiteHealth($date, $site, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
 		}
 		else {
 			echo "ERROR: site info & date data is incomplete<Br/>";
@@ -49,7 +59,10 @@
 		$site = $_GET['site'];
 		$nid = (int)($_GET['nid']);
 		
-		getAccel($q, $site, $nid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getAccel($q, $site, $nid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+
+		if (is_null($a)) echo 'Error retrieving data with ' . $site . ', ' . $q .', ' . $nid;
+		else echo $a;
 	}
 	
 	if(isset($_GET['accelsite'])) {
@@ -89,11 +102,13 @@
 		
 		if($site_flag && $from_flag && $to_flag) {
 			//echo "site info & date data is incomplete<Br/>";
-			getAccelSite2($from, $to, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			$a = getAccelSite2($from, $to, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
 		}
 		elseif($site_flag && $from_flag && !$to_flag) {
 			//echo "site info & date data is incomplete<Br/>";
-			getAccelSite($from, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			$a = getAccelSite($from, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
 		}
 		else {
 			echo "ERROR: site info or date data is incomplete<Br/>";
@@ -106,15 +121,88 @@
 		$to = $_GET['to'];
 		$site = $_GET['site'];
 		$nid = (int)($_GET['nid']);
+
+		if(isset($_GET['dataset']) && !empty($_GET['dataset'])) {
+			$dataset = (int)($_GET['dataset']);
+		}
+		else {
+			$dataset = null;
+		}	
 		
 		$to = "'" . date('Y-m-d H:i:s', strtotime($to. '+1 days +7 hours +45 minutes')) . "'";
 		
-		getAccel2($from, $to, $site, $nid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getAccel2($from, $to, $site, $nid, $dataset, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	//Testing code for inclusion of battery level
+	if(isset($_GET['accel3'])) {
+		//echo "accel exists <Br/>";	
+		$from = "'" . $_GET['from'] . "'";
+		$to = $_GET['to'];
+		$site = $_GET['site'];
+		$nid = (int)($_GET['nid']);
+
+		if(isset($_GET['dataset']) && !empty($_GET['dataset'])) {
+			$dataset = (int)($_GET['dataset']);
+		}
+		else {
+			$dataset = null;
+		}	
+		
+		$to = "'" . date('Y-m-d H:i:s', strtotime($to. '+1 days +7 hours +45 minutes')) . "'";
+		
+		$a = getAccel3($from, $to, $site, $nid, $dataset, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	//Get ground measurement data
+	if (isset($_GET['gndmeas'])) {
+		//get the site code
+		if (isset($_GET['site'])) {
+			//to make sure that only the 3 letter site code will be selected
+			$site = substr($_GET['site'], 0, 3);
+		}
+		else {
+			echo "Error: No site selected<Br>";
+			return;
+		}
+
+		//get the crack id
+		if (isset($_GET['cid'])) {
+			$cid = $_GET['cid'];
+		}
+		else {
+			$cid = null;
+		}
+
+		//get the starting date
+		if (isset($_GET['from'])) {
+			$from = $_GET['from'];
+		}
+		else {
+			$from = null;
+		}
+
+		//get the end date
+		if (isset($_GET['to'])) {
+			$to = $_GET['to'];
+		}
+		else {
+			$to = null;
+		}
+
+		//echo "Data: site = $site, crack id = $cid, from = $from, to = $to <Br><Br>";
+		$gndmeas = getGndMeas($site=$site, $cid=$cid, $from=$from, $to=$to, 
+						$mysql_host, $mysql_database, $mysql_user, $mysql_password);
+
+		echo $gndmeas;
 	}
 
 	if(isset($_GET['coord'])) {
 		//echo "coord exists<Br/>";
-		getCoord($mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getCoord($mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
 	}
 	
 	if(isset($_GET['alert'])) {
@@ -151,14 +239,16 @@
 		}		
 		
 		//echo "sid = " . $sid;
-		getSiteColumnJSON($sid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getSiteColumnJSON($sid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
 	}
 
 	if(isset($_GET['singlesitecolumn'])) {
 
 		if(isset($_GET['name']) && !empty($_GET['name'])) {
 			$name = $_GET['name'];
-			getSingleSiteColumn($name, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			$a = getSingleSiteColumn($name, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
 		}
 		else {
 			echo "site name is empty";
@@ -179,7 +269,8 @@
 	}	
 
 	if(isset($_GET['columninfojson'])) {
-		getSiteColumnPropsJSON(0, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getSiteColumnPropsJSON(0, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
 	}		
 
 	if(isset($_GET['singlecolumninfo'])) {
@@ -204,11 +295,13 @@
 		}		
 		
 		//echo "sid = " . $sid;
-		getSiteRainProps($sid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getSiteRainProps($sid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
 	}	
 
 	if(isset($_GET['raininfojson'])) {
-		getSiteRainPropsJSON(0, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		$a = getSiteRainPropsJSON(0, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
 	}	
 
 	if(isset($_GET['nodestatus'])) {
@@ -224,7 +317,8 @@
 		//echo "pid = " . $pid;
 
 		if(isset($_GET['json'])) {
-			getNodeStatusJSON($pid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			$a = getNodeStatusJSON($pid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
 		}
 		else {
 			getNodeStatus($pid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
@@ -232,6 +326,97 @@
 
 		//getNodeStatus($pid, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
 	}		
+
+	if(isset($_GET['sitesomsjson'])) {
+		$a = getSiteSomsJSON($mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	if(isset($_GET['sitesomsdata'])) {
+		$from_flag = false;
+		$to_flag = false;
+		$site_flag = false;
+		
+		if(isset($_GET['site']) && !empty($_GET['site'])) {
+			$site = $_GET['site'];
+			$site_flag = true;
+		}
+		else {
+			echo "ERROR: site info is incomplete<Br/>";
+			return;
+		}
+		
+		if(isset($_GET['start']) && !empty($_GET['start'])) {
+			$from = $_GET['start'];
+			$from_flag = true;
+		}
+		else {
+			echo "ERROR: start date info is incomplete<Br/>";
+			return;
+		}
+		
+		if(isset($_GET['end']) && !empty($_GET['end'])) {
+			$to = $_GET['end'];
+			$to_flag = true;
+		}
+
+		if (isset($_GET['limit']) && !empty($_GET['limit'])) {
+			$limit = $_GET['limit'];
+		}
+		else {
+			$limit = null;
+		}
+		
+		if($site_flag && $from_flag && $to_flag) {
+			//echo "site info & date data is incomplete<Br/>";
+			$a = getSomsSite($from, $to, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
+		}
+		elseif($site_flag && $from_flag && !$to_flag) {
+			//echo "site info & date data is incomplete<Br/>";
+			$a = getSomsSite($from, null, $site, $limit, $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+			echo $a;
+		}
+		else {
+			echo "ERROR: site info or date data is incomplete<Br/>";
+		}
+	}
+
+	if (isset($_GET['rainarq'])) {
+		if ( !isset($_GET['site']) || !isset($_GET['start_date']) ) {
+			echo "ERROR: No input placed for 'site' and/or 'start_date'.\n";
+			exit;
+		}
+
+		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallARQ($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	if (isset($_GET['rainsenslope'])) {
+		if ( !isset($_GET['site']) || !isset($_GET['start_date']) ) {
+			echo "ERROR: No input placed for 'site' and/or 'start_date'.\n";
+			exit;
+		}
+
+		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallSenslope($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
+
+	if (isset($_GET['rainnoah'])) {
+		if ( !isset($_GET['site']) || !isset($_GET['start_date']) ) {
+			echo "ERROR: No input placed for 'id' and/or 'start_date'.\n";
+			exit;
+		}
+
+		if ( !isset($_GET['end_date']) ) $_GET['end_date'] = NULL;
+		if ( !isset($_GET['limit']) ) $_GET['limit'] = NULL;
+		$a = getRainfallNOAH($_GET['site'], $_GET['start_date'], $_GET['end_date'], $_GET['limit'], $mysql_host, $mysql_database, $mysql_user, $mysql_password);
+		echo $a;
+	}
 ?>	
 
 

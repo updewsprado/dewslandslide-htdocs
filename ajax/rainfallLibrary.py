@@ -157,11 +157,7 @@ def updateNOAHTables():
     #get the list of rainfall NOAH rain gauge IDs
     dfRain = qs.GetRainNOAHList()
     
-    ctr = 0
     for noahid in dfRain:
-        if ctr > 0:
-            updateNOAHSingleTable(noahid)
-            
-        ctr = ctr + 1
+        updateNOAHSingleTable(noahid)
 
 updateNOAHTables()
