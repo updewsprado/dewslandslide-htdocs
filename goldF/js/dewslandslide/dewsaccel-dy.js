@@ -1,3 +1,5 @@
+
+
 	var blockRedraw = false;
 	var end_date = new Date();
 	var start_date = new Date(end_date.getFullYear(), end_date.getMonth(), end_date.getDate()-10);
@@ -32,7 +34,7 @@
 
 	    $(function() {
 	    	$( "#datepicker2" ).datepicker({ dateFormat: "yy-mm-dd" });
-	        $( "#datepicker2" ).datepicker("setDate", end_date);
+	        $( "#datepicker2" ).datepicker("setDate", '+1');
 		});
 	}
 
@@ -138,12 +140,15 @@
 		}
 	  };
 
+	  // var url1 = "/temp/somsfull.php?&fdate=" + frm.dateinput.value  + "&tdate=" + frm.dateinput2.value  + "&site=" + frm.sites.value "&db=" + frm.dbase.value;
 	  var url = "/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value;
 	  xmlhttp.open("GET",url,true);
+	  // xmlhttp.open("GET",url1,true);
 	  xmlhttp.send();
+	
 	}
 
-
+	  
 	var opts = {
 		lines: 11, // The number of lines to draw
 		length: 6, // The length of each line
@@ -178,233 +183,6 @@
         }
     }
 
-    function showData(frm) {
-
-		var rsiteid = '';
-
-		switch(frm.sites.value){
-			case "blcb": rsiteid = "204"; break;
-			case "blct": rsiteid = "204"; break;
-			case "bolb": rsiteid = "1236"; break;
-			case "gamt": rsiteid = "782"; break;
-			case "gamb": rsiteid = "782"; break;
-			case "humb": rsiteid = "789"; break;
-			case "humt": rsiteid = "789"; break;
-			case "labb": rsiteid = "389"; break;
-			case "labt": rsiteid = "389"; break;
-			case "lipb": rsiteid = "1236"; break;
-			case "lipt": rsiteid = "1236"; break;
-			case "mamb": rsiteid = "389"; break;
-			case "mamt": rsiteid = "389"; break;
-			case "oslb": rsiteid = "152"; break;
-			case "oslt": rsiteid = "152"; break;
-			case "plat": rsiteid = "789"; break;
-			case "plab": rsiteid = "789"; break;
-			case "pugb": rsiteid = "65"; break;
-			case "pugt": rsiteid = "65"; break;
-			case "sinb": rsiteid = "454"; break;
-			case "sint": rsiteid = "454"; break;
-			case "sinu": rsiteid = "454"; break;
-		}
-
-		if (frm.dateinput.value == "") {
-			document.getElementById("txtHint").innerHTML="";
-			return;
-		}
-
-		var urls = [
-			"/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value,
-			"http://weather.asti.dost.gov.ph/home/index.php/api/data/" + rsiteid + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value
-		];
-console.log(urls);
-		var target = document.getElementById('accel-2');
-        var spinner = new Spinner(opts).spin();
-        target.appendChild(spinner.el);
-
-		var vis = [
-					[true, false, false, false],
-					[false, true, false, false],
-					[false, false, true, false],
-					[false, false, false, true],
-					
-				];
-
-		var xmlhttp_column = getXHR();
-		var column_plot_range;
-        xmlhttp_column.onreadystatechange = function () {
-			if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
-
-                var resp = xmlhttp_column.responseText;
-                var siteData = JSON.parse(resp);
-                if (siteData == null){
-                    spinner.stop();
-                    alert("No data retrieved. Please check input values.");
-                    return;
-                };
-
-				var columndata = JSON2CSV(siteData);
-
-				spinner.stop();
-
-				//var blockRedraw = false;
-
-				var labels = [
-					'X (LSB)',
-					'Y (LSB)',
-					'Z (LSB)',
-					'M (Hz)',
-				];
-
-                gs = [];
-				for (var i = 1; i <= 4; i++) {
-					gs.push(
-						new Dygraph(
-						document.getElementById("accel-" + i),
-						columndata,
-						{
-							drawCallback: function(me, initial) {
-								if (blockRedraw || initial) return;
-								blockRedraw = true;
-								column_plot_range = me.xAxisRange();
-                                roll_period = me.rollPeriod();
-								for (var j = 0; j < 4; j++) {
-									if (gs[j] == me)
-										continue;
-									gs[j].updateOptions( {
-										dateWindow: column_plot_range,
-                                        rollPeriod: roll_period,
-										visibility: vis[j],
-									}
-									);
-								}
-
-								if (g2!=0){
-									g2.updateOptions( {
-										dateWindow: column_plot_range,
-										}
-									);
-								}
-								blockRedraw = false;
-							},
-							visibility: vis[i-1],
-							ylabel: labels[i-1],
-							labelsDiv: '',
-							axes: {
-								x: {
-									drawAxis: false
-								}
-							},
-							labels: ['timestamp','X','Y','Z','M'],
-							strokeWidth: 1.5,
-							fillGraph: true,
-							showRoller: true,
-                            rollPeriod: roll_period,
-                            colors: ['#284785', '#EE1111', '#006600', '#660066'],
-						}
-						)
-					);
-				};
-
-			};
-		};
-
-		xmlhttp_column.open("GET",urls[0],true);
-		xmlhttp_column.send();
-
-
-        if (rsiteid_prev != rsiteid && frm.rain.value == "y"){
-
-            var threshold = 0.0;
-            switch(frm.sites.value){
-                case "blcb": threshold = 130.00; break;
-                case "blct": threshold = 130.00; break;
-                case "bolb": threshold = 128.53; break;
-                case "gamt": threshold = 183.85; break;
-                case "gamb": threshold = 183.85; break;
-                case "humb": threshold = 79.33;  break;
-                case "humt": threshold = 79.33;  break;
-                case "labb": threshold = 195.21; break;
-                case "labt": threshold = 195.21; break;
-                case "lipb": threshold = 129.65; break;
-                case "lipt": threshold = 129.65; break;
-                case "mamb": threshold = 208.54; break;
-                case "mamt": threshold = 208.54; break;
-                case "oslb": threshold = 179.41; break;
-                case "oslt": threshold = 179.41; break;
-                case "plat": threshold = 78.32;  break;
-                case "plab": threshold = 78.32;  break;
-                case "pugb": threshold = 191.95; break;
-                case "pugt": threshold = 191.95; break;
-                case "sinb": threshold = 235.03; break;
-                case "sint": threshold = 235.03; break;
-                case "sinu": threshold = 235.03; break;
-            }
-
-
-            rsiteid_prev = rsiteid;
-
-            var target2 = document.getElementById('raindiv');
-            var spinner2 = new Spinner(opts).spin();
-            target2.appendChild(spinner2.el);
-
-            var xmlhttp_rain = getXHR();
-            var url = "getRainfall.php?rsite=" + rsiteid + "&fdate=" + frm.dateinput.value + "&tdate=" + frm.dateinput2.value;
-            xmlhttp_rain.open("GET",url,true);
-
-            xmlhttp_rain.onreadystatechange = function() {
-                if (xmlhttp_rain.readyState == 4 && xmlhttp_rain.status == 200) {
-
-                    var rdatacsv = JSON2CSV(xmlhttp_rain.responseText);
-
-                    spinner2.stop();
-
-                    //var blockRedraw = false;
-                    g2 = new Dygraph(
-                        document.getElementById("raindiv"),
-                        rdatacsv,
-                        {
-                            ylabel: "Rain Intensity (mm)",
-                            labels: ["Timestamp","24 hours","15 minutes"],
-                            dateWindow: column_plot_range,
-                            strokeWidth: 1.5,
-                            dateWindow: gs[0].xAxisRange(),
-                            showRoller: true,
-                            fillGraph: true,
-
-                            drawCallback: function(me, initial) {
-								if (blockRedraw || initial) return;
-                                if (!gs) return;
-								blockRedraw = true;
-								column_plot_range = me.xAxisRange();
-                                for (var j = 0; j < 4; j++) {
-									if (gs[j] == me)
-										continue;
-									gs[j].updateOptions( {
-										dateWindow: column_plot_range,
-                                        visibility: vis[j],
-									}
-									);
-								}
-
-								blockRedraw = false;
-							},
-
-                            underlayCallback: function(canvas, area, g2) {
-                                var c1 = g2.toDomCoords(g2.getValue(0,0), threshold);
-                                canvas.fillStyle = '#FF0000';
-                                canvas.fillRect(area.x, c1[1], area.w, 1);
-
-                                var c2 = g2.toDomCoords(g2.getValue(0,0), threshold/2);
-                                canvas.fillStyle = '#FF9900';
-                                canvas.fillRect(area.x, c2[1], area.w, 1);
-                            },
-                        }// options
-                    );
-                }
-            };
-            xmlhttp_rain.send();
-        }
-	}
 
 function showAccel(frm) {
 	var rsiteid = '';
@@ -441,7 +219,9 @@ function showAccel(frm) {
 		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
 
             var resp = xmlhttp_column.responseText;
+
             var siteData = JSON.parse(resp);
+             // console.log(siteData);
             if (siteData == null){
                 spinner.stop();
                 alert("No data retrieved. Please check input values.");
@@ -557,6 +337,9 @@ function showAccel(frm) {
 		}
 	};
 
+	
+
+
 	if(frm.dbase.value == "raw") {
 		xmlhttp_column.open("GET",URL,true);
 	}
@@ -607,6 +390,7 @@ function showAccelSecond(frm) {
 		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
 
             var resp = xmlhttp_column.responseText;
+
             var siteData = JSON.parse(resp);
             if (siteData == null){
                 spinner.stop();
@@ -733,6 +517,351 @@ function showAccelSecond(frm) {
 	xmlhttp_column.send();
 }
 
+function showSoms(frm) {
+	var rsiteid = '';
+
+	var dfrom = document.getElementById("formDate").dateinput.value;
+	var dto = document.getElementById("formDate").dateinput2.value;
+	var selectedSite = frm.sitegeneral.value;
+	var domainName = window.location.hostname;
+	var version =document.getElementById("header-site").innerHTML;
+	var newVersion = version.substr(8, version.length-25);
+	
+if (newVersion == 2){
+		var URL = "/temp/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
+		if (domainName == "localhost") {
+
+			var URL ="/temp/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+		}
+		else{
+			var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+	}
+		var URLfiltered = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+	} else  {
+		var msgid1 = "110";
+	
+	console.log(msgid1);
+		if (domainName == "localhost") {
+
+			var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
+		}
+		else{
+			var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+		}
+		var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+	}
+console.log(msgid1);
+	var target = document.getElementById('accel-2');
+    //var spinner = new Spinner(opts).spin();
+    var spinner = new Spinner(opts).spin();
+    target.appendChild(spinner.el);
+    console.log(URL);
+	 
+var vis = [
+				[true, false, false, false],
+				[false, true, false, false],
+				[false, false, true, false],
+				[false, false, false, true],
+			];
+
+	var xmlhttp_column = getXHR();
+	var column_plot_range;
+    xmlhttp_column.onreadystatechange = function () {
+		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
+
+            var resp = xmlhttp_column.responseText;
+
+            var siteData = JSON.parse(resp);
+            if (siteData == null){
+                spinner.stop();
+                alert("No data retrieved. Please check input values.");
+                return;
+            }
+
+			var columndata = JSON2CSV(siteData);
+
+			spinner.stop();
+
+
+
+			if (selectedSite.length == 2) {
+				if(frm.dbase.value == "raw") {
+					var labels = [
+						'M1 (Hz)',
+					];
+
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#DAA520', '#004e4e'];
+
+				}
+				else if(frm.dbase.value == "filtered"){
+					var labels = [
+							'M1 (Hz)',
+							
+
+					];
+
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#DAA520', '#004e4e'];
+
+				}
+			}
+			else {
+				if(frm.dbase.value == "raw") {
+					var labels = [
+							'M1 (Hz)',
+							
+					];
+
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#DAA520', '#004e4e'];
+
+				}
+				else if(frm.dbase.value == "filtered"){
+					var labels = [
+							'M1 (Hz)',
+							
+					];
+
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 2;
+					var colorsLine = ['#DAA520', '#004e4e'];
+
+				}
+			}
+			// console.log(columndata);
+			console.log(URL);
+                             gs = [];
+			for (var i = 1; i <= numSeparateGraphs; i++) {
+				gs.push(
+					new Dygraph(
+					document.getElementById("accel-v" + i),
+					columndata,
+					{
+						drawCallback: function(me, initial) {
+							if (blockRedraw || initial) return;
+							blockRedraw = true;
+							column_plot_range = me.xAxisRange();
+                            roll_period = me.rollPeriod();
+							for (var j = 0; j < numSeparateGraphs; j++) {
+								if (gs[j] == me)
+									continue;
+								gs[j].updateOptions( {
+									dateWindow: column_plot_range,
+                                    rollPeriod: roll_period,
+									visibility: vis[j],
+								}
+								);
+							}
+
+							if (g2!=0){
+								g2.updateOptions({
+									dateWindow: column_plot_range,
+								});
+							}
+							blockRedraw = false;
+						},
+						visibility: vis[i-1],
+						ylabel: labels[i-1],
+						labelsDiv: '',
+						axes: {
+								x: {
+									drawAxis: false
+								}
+							},
+						labels: labelAxis,
+						strokeWidth: 1.5,
+						fillGraph: true,
+						showRoller: true,
+                        rollPeriod: roll_period,
+                         colors: colorsLine,
+					}
+					)
+				);
+			}
+		}
+	};
+
+	if(frm.dbase.value == "raw") {
+		xmlhttp_column.open("GET",URL,true);
+	}
+	else if(frm.dbase.value == "filtered"){
+		xmlhttp_column.open("GET",URLfiltered,true);
+		//toggleGraphView(1);
+	}
+	xmlhttp_column.send();
+}
+
+function showSoms2(frm) {
+	var rsiteid = '';
+
+	var dfrom = document.getElementById("formDate").dateinput.value;
+	var dto = document.getElementById("formDate").dateinput2.value;
+	var selectedSite = frm.sitegeneral.value;
+	var domainName = window.location.hostname;
+	var version =document.getElementById("header-site").innerHTML;
+	var newVersion = version.substr(8, version.length-25);
+	
+		var m ="m";
+	if (newVersion == 2){
+		var msgid1 = "112";
+	} else  {
+		var msgid1 = "113";
+	} 
+	console.log(msgid1);
+	if (domainName == "localhost") {
+
+		var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
+	}
+	else{
+		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+}
+	var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+
+	var target = document.getElementById('accel-2');
+    //var spinner = new Spinner(opts).spin();
+    var spinner = new Spinner(opts).spin();
+    target.appendChild(spinner.el);
+    // console.log(URL);
+	 
+var vis = [
+				[true, false, false, false],
+				[false, true, false, false],
+				[false, false, true, false],
+				[false, false, false, true],
+			];
+
+	var xmlhttp_column = getXHR();
+	var column_plot_range;
+    xmlhttp_column.onreadystatechange = function () {
+		if (xmlhttp_column.readyState == 4 && xmlhttp_column.status == 200) {
+
+            var resp = xmlhttp_column.responseText;
+
+            var siteData = JSON.parse(resp);
+            if (siteData == null){
+                spinner.stop();
+                alert("No data retrieved. Please check input values.");
+                return;
+            }
+
+			var columndata = JSON2CSV(siteData);
+
+			spinner.stop();
+
+
+
+			if (selectedSite.length == 1) {
+				if(frm.dbase.value == "raw") {
+					var labels = [
+						'M2 (Hz)',
+					];
+
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#DAA520', '#004e4e'];
+
+				}
+				else if(frm.dbase.value == "filtered"){
+					var labels = [
+							'M2 (Hz)',
+					];
+
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
+
+				}
+			}
+			else {
+				if(frm.dbase.value == "raw") {
+					var labels = [
+							'M2 (Hz)',
+					];
+
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
+
+				}
+				else if(frm.dbase.value == "filtered"){
+					var labels = [
+							'M2 (Hz)',
+					];
+
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
+
+				}
+			}
+			// console.log(columndata);
+			console.log(URL);
+                             gs = [];
+			for (var i = 1; i <= numSeparateGraphs; i++) {
+				gs.push(
+					new Dygraph(
+					document.getElementById("accel-v1" + i),
+					columndata,
+					{
+						drawCallback: function(me, initial) {
+							if (blockRedraw || initial) return;
+							blockRedraw = true;
+							column_plot_range = me.xAxisRange();
+                            roll_period = me.rollPeriod();
+							for (var j = 0; j < numSeparateGraphs; j++) {
+								if (gs[j] == me)
+									continue;
+								gs[j].updateOptions( {
+									dateWindow: column_plot_range,
+                                    rollPeriod: roll_period,
+									visibility: vis[j],
+								}
+								);
+							}
+
+							if (g2!=0){
+								g2.updateOptions({
+									dateWindow: column_plot_range,
+								});
+							}
+							blockRedraw = false;
+						},
+						visibility: vis[i-1],
+						ylabel: labels[i-1],
+						labelsDiv: '',
+						axes: {
+								x: {
+									drawAxis: false
+								}
+							},
+						labels: labelAxis,
+						strokeWidth: 1.5,
+						fillGraph: true,
+						showRoller: true,
+                        rollPeriod: roll_period,
+                         colors: colorsLine,
+					}
+					)
+				);
+			}
+		}
+	};
+
+	if(frm.dbase.value == "raw") {
+		xmlhttp_column.open("GET",URL,true);
+	}
+	else if(frm.dbase.value == "filtered"){
+		xmlhttp_column.open("GET",URLfiltered,true);
+		//toggleGraphView(1);
+	}
+	xmlhttp_column.send();
+}
+ 
+
 function showAndClearField(frm){
   if (frm.dateinput.value == "")
 	  alert("Hey! You didn't enter anything!");
@@ -740,3 +869,4 @@ function showAndClearField(frm){
 	  alert("The field contains the text: " + frm.dateinput.value);
   frm.dateinput.value = "";
 }
+
