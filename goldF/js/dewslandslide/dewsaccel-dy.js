@@ -527,31 +527,35 @@ function showSoms(frm) {
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	
-	var m ="m";
-	// var msgid1 = '111';
-	// var msgid2 = '110';
-	if (newVersion == 2){
-		var msgid1 = "110";
-		var msgid2 = "111";
-	} else  {
-		var msgid1 = "111";
-		var msgid2 = "110";
-	} 
-	console.log(msgid1,msgid2);
-	if (domainName == "localhost") {
-		// var URL ="/temp/somsfull.php?site="+selectedSite+m+"&fdate="+ dfrom +"&tdate=2016-04-10&ms1=110&ms2=111";
-		var URL ="/temp/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&ms2=" +msgid2 ;
-	}
-	else{
-		var URL = "/ajax/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&ms2=" +msgid2;
-}
-	var URLfiltered = "/ajax/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&ms2=" +msgid2;
+if (newVersion == 2){
+		var URL = "/temp/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
+		if (domainName == "localhost") {
 
+			var URL ="/temp/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+		}
+		else{
+			var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+	}
+		var URLfiltered = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
+	} else  {
+		var msgid1 = "110";
+	
+	console.log(msgid1);
+		if (domainName == "localhost") {
+
+			var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
+		}
+		else{
+			var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+		}
+		var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+	}
+console.log(msgid1);
 	var target = document.getElementById('accel-2');
     //var spinner = new Spinner(opts).spin();
     var spinner = new Spinner(opts).spin();
     target.appendChild(spinner.el);
-    // console.log(URL);
+    console.log(URL);
 	 
 var vis = [
 				[true, false, false, false],
@@ -584,22 +588,22 @@ var vis = [
 				if(frm.dbase.value == "raw") {
 					var labels = [
 						'M1 (Hz)',
-						'M2 (Hz)',
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
-					var numSeparateGraphs = 2;
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
 					var colorsLine = ['#DAA520', '#004e4e'];
 
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
 							'M1 (Hz)',
-							'M2 (Hz)',
+							
+
 					];
 
-					var labelAxis = ['timestamp','M1'];
-					var numSeparateGraphs = 2;
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
 					var colorsLine = ['#DAA520', '#004e4e'];
 
 				}
@@ -608,21 +612,21 @@ var vis = [
 				if(frm.dbase.value == "raw") {
 					var labels = [
 							'M1 (Hz)',
-							'M2 (Hz)',
+							
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
-					var numSeparateGraphs = 2;
+					var labelAxis = ['timestamp','raw'];
+					var numSeparateGraphs = 1;
 					var colorsLine = ['#DAA520', '#004e4e'];
 
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
 							'M1 (Hz)',
-							'M2 (Hz)',
+							
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
+					var labelAxis = ['timestamp','raw'];
 					var numSeparateGraphs = 2;
 					var colorsLine = ['#DAA520', '#004e4e'];
 
@@ -634,7 +638,7 @@ var vis = [
 			for (var i = 1; i <= numSeparateGraphs; i++) {
 				gs.push(
 					new Dygraph(
-					document.getElementById("accel-3" + i),
+					document.getElementById("accel-v" + i),
 					columndata,
 					{
 						drawCallback: function(me, initial) {
@@ -700,29 +704,29 @@ function showSoms2(frm) {
 	var domainName = window.location.hostname;
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
-	var m ='m'
-	// var msgid = '113'
+	
+		var m ="m";
 	if (newVersion == 2){
 		var msgid1 = "112";
-		var msgid2 = "113";
 	} else  {
 		var msgid1 = "113";
-		var msgid2 = "112";
 	} 
+	console.log(msgid1);
 	if (domainName == "localhost") {
-		// var URL ="/temp/somsfull.php?site="+selectedSite+m+"&fdate=2015-11-10&tdate=" + dto + "&ms1=113&ms2=112";
-		var URL ="/temp/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1 + "&ms2=" +msgid2;
+
+		var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
 	}
 	else{
-		var URL = "/ajax/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1 + "&ms2=" +msgid2;
-	}
-
-	var URLfiltered = "/ajax/somsfull.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1 + "&ms2=" +msgid2;
+		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+}
+	var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
 
 	var target = document.getElementById('accel-2');
     //var spinner = new Spinner(opts).spin();
     var spinner = new Spinner(opts).spin();
     target.appendChild(spinner.el);
+    // console.log(URL);
+	 
 var vis = [
 				[true, false, false, false],
 				[false, true, false, false],
@@ -750,59 +754,57 @@ var vis = [
 
 
 
-			if (selectedSite.length == 2) {
+			if (selectedSite.length == 1) {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-						'M1 (Hz)',
 						'M2 (Hz)',
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
-					var numSeparateGraphs = 2;
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
 					var colorsLine = ['#DAA520', '#004e4e'];
 
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M1 (Hz)',
 							'M2 (Hz)',
 					];
 
-					var labelAxis = ['timestamp','M1'];
-					var numSeparateGraphs = 2;
-					var colorsLine = ['#DAA520', '#004e4e'];
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
 
 				}
 			}
 			else {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-							'M1 (Hz)',
 							'M2 (Hz)',
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
-					var numSeparateGraphs = 2;
-					var colorsLine = ['#DAA520', '#004e4e'];
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
 
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M1 (Hz)',
 							'M2 (Hz)',
 					];
 
-					var labelAxis = ['timestamp','M1','M2'];
-					var numSeparateGraphs = 2;
-					var colorsLine = ['#DAA520', '#004e4e'];
+					var labelAxis = ['timestamp','cal'];
+					var numSeparateGraphs = 1;
+					var colorsLine = ['#004e4e'];
 
 				}
 			}
+			// console.log(columndata);
+			console.log(URL);
                              gs = [];
 			for (var i = 1; i <= numSeparateGraphs; i++) {
 				gs.push(
 					new Dygraph(
-					document.getElementById("accel-4" + i),
+					document.getElementById("accel-v1" + i),
 					columndata,
 					{
 						drawCallback: function(me, initial) {
@@ -858,6 +860,7 @@ var vis = [
 	}
 	xmlhttp_column.send();
 }
+ 
 
 function showAndClearField(frm){
   if (frm.dateinput.value == "")
