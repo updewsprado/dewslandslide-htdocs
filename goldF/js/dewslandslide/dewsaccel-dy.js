@@ -713,7 +713,7 @@ function showSoms2(frm) {
 	} 
 	console.log(msgid1);
 	if (domainName == "localhost") {
-
+		var m ="m";
 		var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
 	}
 	else{
