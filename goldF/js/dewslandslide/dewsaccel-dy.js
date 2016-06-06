@@ -539,7 +539,7 @@ if (newVersion == 2){
 		var URLfiltered = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value;
 	} else  {
 		var msgid1 = "110";
-	
+		var m ="m";
 	console.log(msgid1);
 		if (domainName == "localhost") {
 
@@ -705,7 +705,7 @@ function showSoms2(frm) {
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	
-		var m ="m";
+	var m ="m";
 	if (newVersion == 2){
 		var msgid1 = "112";
 	} else  {
@@ -725,7 +725,7 @@ function showSoms2(frm) {
     //var spinner = new Spinner(opts).spin();
     var spinner = new Spinner(opts).spin();
     target.appendChild(spinner.el);
-    // console.log(URL);
+    console.log(URL);
 	 
 var vis = [
 				[true, false, false, false],
