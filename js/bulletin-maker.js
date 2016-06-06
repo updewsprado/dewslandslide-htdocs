@@ -8,6 +8,8 @@ page.settings.dpi= 300;
 page.viewportSize = { width: 1275, height: 1650 };
 page.paperSize = { width: (8.5/0.55) + 'in', height: (11/0.55) + 'in'/*, border: (0.5/0.55) + 'in' */};
 page.settings.dpi = 300;
+//FOR UBUNTU
+page.zoomFactor = 0.55;
 
 page.onResourceError = function(resourceError) {
     console.error(resourceError.url + ': ' + resourceError.errorString);
@@ -20,12 +22,12 @@ page.onError = function (msg, trace) {
     });
 };
 
-
-page.open( 'http://localhost/gold/bulletin-builder/' + args[1], function(status) {
+//http://localhost/gold/bulletin-builder/
+page.open( args[1], function(status) {
 
 	if (status === 'success') {
 
-		console.log("Page 'http://localhost'... loaded.");
+		console.log("Page " + args[1] + " loaded...");
 
 		// var sample = page.evaluate( function () {
 		// 	$('input[name="username"]').val('ksdelacruz');
@@ -67,8 +69,8 @@ page.open( 'http://localhost/gold/bulletin-builder/' + args[1], function(status)
 			console.log("Capturing finished...");
 			console.log("Exiting...");
 			console.log("Success.");
-			phantom.exit();	
-		}, 500);
+			phantom.exit();
+		}, 10000);
 		
   		// page.render('z.pdf');
 		// phantom.exit();
