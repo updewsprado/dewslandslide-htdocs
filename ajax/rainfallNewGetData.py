@@ -9,13 +9,13 @@ import requests
     
 def getDF():
 
-#    rsite = 'lipw'
+#    rsite = 'blcw'
     rsite = sys.argv[1]
     fdate = sys.argv[2]
     tdate = sys.argv[3]
     # set arbitrarily for now
-#    fdate = "2015-04-25"
-#    tdate = "2016-04-25"
+#    fdate = "2016-04-25"
+#    tdate = "2016-05-25"
 #    
     # url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/%s/from/%s/to/%s" % (rsite,fdate,tdate)
     # r = requests.get(url)

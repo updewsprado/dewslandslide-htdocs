@@ -49,6 +49,13 @@ function showLSBChange(frm) {
 	showLSBChangeGeneral(frm, 'lsb-change-canvas');
 }
 
+function addZero(i) {
+    if (i < 10) {
+        i = "0" + i;
+    }
+    return i;
+}
+
 function showLSBChangeGeneral(frm, e) {
 	var xmlhttp;
 	if (window.XMLHttpRequest) {
@@ -136,7 +143,8 @@ function showLSBChangeGeneral(frm, e) {
     var dto = document.getElementById("formDate").dateinput2.value;
 
     //var url = "/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value;
-    var url = "http://www.dewslandslide.com/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value + "&start=" + dfrom + "&end=" + dto;
+    var d = new Date();
+    var url = "http://www.dewslandslide.com/ajax/getLsbChangeFromPurged.php?site=" + frm.sitegeneral.value + "&node=" + frm.node.value + "&start=" + dfrom + "&end=" + dto + "+" + addZero(d.getHours()) + ":" + addZero(d.getMinutes());
     xmlhttp.open("GET", url, true);
     xmlhttp.send();
 }

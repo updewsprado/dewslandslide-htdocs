@@ -62,8 +62,8 @@ var tip = d3.tip()
 	}  
   
     return id_ts +
-		"<strong>Site:</strong> <span style='color:red'>" + d.site + "</span><Br/>" +
-		"<strong>Node ID:</strong> <span style='color:red'>" + d.node + "</span><Br/>" +
+		"<strong>Site:</strong> <span style='color:#33cc33'>" + d.site + "</span><Br/>" +
+		"<strong>Node ID:</strong> <span style='color:#ff9933'>" + d.node + "</span><Br/>" +
 		alert + status + 
 		"<strong>Flagger:</strong> <span style='color:red'>" + d.flagger + "</span><Br/>" +
 		comment;
