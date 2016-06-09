@@ -120,7 +120,7 @@
 		    }
 		    elseif (PHP_OS == 'Linux') {
 				//call the python script for downloading and normalizing data
-				exec('/home/ubuntu/anaconda/bin/python getRainfallNOAH.py ' . 
+				exec('/home/ubuntu/anaconda2/bin/python getRainfallNOAH.py ' . 
 					$site . ' ' . $fdate . ' ' . $tdate, $output, $return); 
 		    }
 		    else {

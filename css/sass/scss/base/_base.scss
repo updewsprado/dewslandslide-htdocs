@@ -213,7 +213,7 @@ ul.alert-dropdown {
 
 /*additional hover
 */
-@media(min-width:768px){
+@media{
         #sidebar-wrapper {
             z-index: 1000;
             position: absolute;
@@ -241,7 +241,7 @@ ul.alert-dropdown {
         .side-nav li {
         position: relative;
         line-height: 20px;
-        display: inline-block;
+        display: inherit!important;
         width: 100%;
         font-size: 100%;
         font-weight: 500;

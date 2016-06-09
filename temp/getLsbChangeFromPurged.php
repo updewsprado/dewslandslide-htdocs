@@ -45,7 +45,7 @@
 	//echo "Operating System: $os <Br>";
 
 	if (strpos($os,'WIN') !== false) {
-	    $pythonPath = 'C:\Anaconda\python.exe';
+	    $pythonPath = 'c:\Users\USER\Anaconda2\python.exe';
 	}
 	elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
 		$pythonPath = '/home/ubuntu/anaconda2/bin/python';

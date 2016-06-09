@@ -69,7 +69,7 @@
 		echo "End date: " . date_format($date, $format) . "<Br/>";
 		$tdate = date_format($date, $format);
 		
-		exec('/home/ubuntu/anaconda/bin/python getRainfallNOAH.py ' . $site . ' ' . $fdate . ' ' . $tdate, $output, $return); 
+		exec('/home/ubuntu/anaconda2/bin/python getRainfallNOAH.py ' . $site . ' ' . $fdate . ' ' . $tdate, $output, $return); 
 		
 		//Used to be $output[0] until it was changed by NOAH by indicating the sensor status on the first part of the json
 		//$rain = $output[0];

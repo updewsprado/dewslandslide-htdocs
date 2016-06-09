@@ -327,7 +327,7 @@ ul.alert-dropdown {
     width: 200px;
   }
 }
-@media (min-width: 768px) and (min-width: 768px) {
+@media (min-width: 768px) and (min-width: 300px) {
   /* line 217, sass/scss/base/_base.scss */
   #sidebar-wrapper {
     z-index: 1000;

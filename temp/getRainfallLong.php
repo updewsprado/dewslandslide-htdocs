@@ -32,7 +32,7 @@
 		//$tdate =  date('Y-m-d',strtotime($date_string));
 		$tdate = "'" . date('Y-m-d H:i:s') . "'";
 		
-		exec('/home/ubuntu/anaconda/bin/python getRainfallNOAH.py ' . $site . ' ' . $fdate . ' ' . $tdate, $output, $return); 
+		exec('/home/ubuntu/anaconda2/bin/python getRainfallNOAH.py ' . $site . ' ' . $fdate . ' ' . $tdate, $output, $return); 
 		
 		//$rain = $output[0];
 		//echo $rain;

@@ -25,7 +25,7 @@
         $pythonPath = 'c:\Users\USER\Anaconda2\python.exe';
     }
     elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
-        $pythonPath = '/home/ubuntu/anaconda/bin/python';
+        $pythonPath = '/home/ubuntu/anaconda2/bin/python';
     }
     else {
         echo "Unknown OS for execution... Script discontinued";

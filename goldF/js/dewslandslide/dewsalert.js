@@ -71,15 +71,15 @@ var tip = d3.tip()
 
 //initialize dimensions
 function init_dims() {
-	cWidth = document.getElementById('alert-canvas').clientWidth;
-	cHeight = document.getElementById('alert-canvas').clientHeight;
+	cWidth = document.getElementById('alert-canvas').clientWidth ;
+	cHeight = document.getElementById('alert-canvas').clientHeight * 4.3;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
-	margin = {top: cHeight * 0.01, right: cWidth * 0, bottom: cHeight * 0.01 , left: cWidth * 0.065};
-	width = cWidth - margin.left  - 150;
-	height = cHeight  - margin.bottom + 60;
+	margin = {top: cHeight * 0, right: cWidth * 0.009, bottom: cHeight * 0.65, left: cWidth * 0.1};
+	width = cWidth - margin.left - margin.right-100;
+	height = cHeight - margin.top - margin.bottom;
 	
-	graphDim = {gWidth: width * 1.50, gHeight: height* 1.20};	
+	graphDim = {gWidth: width * 0.85, gHeight: height};		
 	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
@@ -96,8 +96,8 @@ function init_dims() {
 	// Adds the svg canvas
 	svg = d3.select("#alert-canvas").append("svg")
 			.attr("id", "svg-alert")
-	        .attr("width", width + margin.left  + 140)
-	        .attr("height", 1050)
+	        .attr("width", width + margin.left )
+	        .attr("height", 1250)
 			.append("g")
 	        .attr("transform", 
 	              "translate(" + margin.left + "," + margin.top + ")");

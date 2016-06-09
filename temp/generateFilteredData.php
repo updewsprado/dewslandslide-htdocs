@@ -82,7 +82,7 @@
 	echo "Operating System: $os";
 
 	//For Linux (Remember to set one for windows as well)
-    $pythonPath = '/home/ubuntu/anaconda/bin/python';
+    $pythonPath = '/home/ubuntu/anaconda2/bin/python';
     $fileName = 'outputFilteredData.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid;
 
