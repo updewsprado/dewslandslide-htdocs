@@ -11,7 +11,7 @@ def getDF():
         gsite = sys.argv[1]
 #        gsite = 'agb'
         fdate = "2013-04-25"
-        engine = create_engine('mysql+mysqldb://root:senslope@127.0.0.1/senslopedb')
+        engine = create_engine('mysql+pymysql://root:senslope@127.0.0.1/senslopedb')
         query = "SELECT timestamp,crack_id,meas FROM senslopedb.gndmeas where timestamp >'%s' and site_id ='%s' order by site_id asc"%(fdate,gsite) 
         df = pd.io.sql.read_sql(query,engine)
         df.columns = ['ts','crack_id','meas']
