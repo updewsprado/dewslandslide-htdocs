@@ -28,11 +28,11 @@ var presencePlot = new function() {
 		this.cWidth = document.getElementById('presence-map-canvas').clientWidth;
 		this.cHeight = document.getElementById('presence-map-canvas').clientHeight;
 		
-		this.margin = {top: 0, right: 0, bottom: 0, left: this.cWidth * 0.09};
-		this.width = this.cWidth - this.margin.left - this.margin.right ;
+		this.margin = {top: 0, right: 0, bottom: 0, left: this.cWidth * 0.05};
+		this.width = this.cWidth - this.margin.left - this.margin.right;
 		this.height = this.cHeight - this.margin.top - this.margin.bottom;
 		
-		this.graphDim = {gWidth: this.width-400, gHeight: this.height + 600};	
+		this.graphDim = {gWidth: this.width, gHeight: this.height};	
 		
 		// Set the ranges
 		this.x = d3.scale.linear().range([0, this.graphDim.gWidth]);
@@ -51,7 +51,7 @@ var presencePlot = new function() {
 			.append("svg")
             .attr('id', 'svg-presence')
 		        .attr("width", this.width + this.margin.left + this.margin.right)
-		        .attr("height", this.height + this.margin.top + this.margin.bottom + 600)
+		        .attr("height", this.height + this.margin.top + this.margin.bottom)
 		    .append("g")
 		        .attr("transform", 
 		              "translate(" + this.margin.left + "," + this.margin.top + ")");
