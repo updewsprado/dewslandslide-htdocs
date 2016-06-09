@@ -57,7 +57,7 @@
 	}
 	elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
 <<<<<<< HEAD
-		$pythonPath = '/home/dews/anaconda/bin/python';
+		$pythonPath = '/home/dews/anaconda2/bin/python';
 =======
 		$pythonPath = '/home/ubuntu/anaconda2/bin/python';
 >>>>>>> 689de32cd89f5608111837387342245cca39a362
