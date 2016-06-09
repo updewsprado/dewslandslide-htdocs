@@ -546,9 +546,9 @@ if (newVersion == 2){
 			var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
 		}
 		else{
-			var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+			var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
 		}
-		var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+		var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
 	}
 console.log(msgid1);
 	var target = document.getElementById('accel-2');
@@ -717,9 +717,9 @@ function showSoms2(frm) {
 		var URL ="/temp/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1  + "&nid=" + frm.node.value ;
 	}
 	else{
-		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
 }
-	var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=2" + frm.node.value;
+	var URLfiltered = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
 
 	var target = document.getElementById('accel-2');
     //var spinner = new Spinner(opts).spin();
