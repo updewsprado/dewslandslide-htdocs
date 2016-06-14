@@ -116,7 +116,7 @@ function getDataPresence(xOffset) {
 	siteMaxNodes = data;
 	
 	//add node links to nodes with normal status
-	var urlBase = "http://www.dewslandslide.com/";
+	var urlBase = "http://" + window.location.hostname + "/";
 	var urlNodeExt = "test/dpsitemap/";	
 	
 	var parseDate = d3.time.format("%Y-%m-%d %H:%M:%S").parse;
@@ -199,7 +199,7 @@ function generatePresencePlot(url, title, xOffset, isLegends, graphNum) {
 		};
 
 		// Add hyperlinks to Y Axis ticks
-		var urlBase = "http://www.dewslandslide.com/";
+		var urlBase = "http://" + window.location.hostname + "/";
 		var urlExt = "test/dpsitemap/";
 		
 		d3.selectAll(".yAxisDataPresence").selectAll("text")

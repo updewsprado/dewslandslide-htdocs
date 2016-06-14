@@ -158,7 +158,7 @@ function getSiteMaxNodes(xOffset) {
 	siteMaxNodes = data;
 	
 	//add node links to nodes with normal status
-	var urlBase = "http://www.dewslandslide.com/";
+	var urlBase = "http://" + window.location.hostname + "/";
 	var urlNodeExt = "gold/node/";	
 	
 	maxNode = d3.max(siteMaxNodes, function(d) { return parseFloat(d.nodes); });
@@ -286,7 +286,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			};
 	
 			// Add hyperlinks to Y Axis ticks
-			var urlBase = "http://www.dewslandslide.com/";
+			var urlBase = "http://" + window.location.hostname + "/";
 			var urlExt = "gold/site/";	
 			var urlNodeExt = "gold/node/";		
 			
