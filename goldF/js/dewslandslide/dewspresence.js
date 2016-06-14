@@ -26,11 +26,11 @@ var presencePlot = new function() {
 	//initialize dimensions
 	this.init_dims = function() {
 		this.cWidth = document.getElementById('presence-map-canvas').clientWidth;
-		this.cHeight = document.getElementById('presence-map-canvas').clientHeight;
+		this.cHeight = document.getElementById('presence-map-canvas').offsetHeight *1.4;
 		
-		this.margin = {top: 0, right: 0, bottom: 0, left: this.cWidth * 0.05};
+		this.margin = {top:0, right:this.cWidth * 0.05, bottom:cHeight* 0.65, left: this.cWidth * 0.07};
 		this.width = this.cWidth - this.margin.left - this.margin.right;
-		this.height = this.cHeight - this.margin.top - this.margin.bottom;
+		this.height = this.cHeight - this.margin.top - this.margin.bottom + 50;
 		
 		this.graphDim = {gWidth: this.width, gHeight: this.height};	
 		
@@ -50,8 +50,8 @@ var presencePlot = new function() {
 		this.svg = d3.select("#presence-map-canvas")
 			.append("svg")
             .attr('id', 'svg-presence')
-		        .attr("width", this.width + this.margin.left + this.margin.right)
-		        .attr("height", this.height + this.margin.top + this.margin.bottom)
+		        .attr("width", this.cWidth + 100)
+		        .attr("height", this.height + this.margin.bottom+  this.margin.top + this.cHeight)
 		    .append("g")
 		        .attr("transform", 
 		              "translate(" + this.margin.left + "," + this.margin.top + ")");
@@ -60,19 +60,19 @@ var presencePlot = new function() {
 	};
             
 	// Define the axes
-	this.make_x_axis = function () {          
-	    return d3.svg.axis()
-	        .scale(this.x)
-	        .orient("bottom")
-	        .ticks(40);
-	};
+	// this.make_x_axis = function () {          
+	//     return d3.svg.axis()
+	//         .scale(this.x)
+	//         .orient("bottom")
+	//         .ticks(40);
+	// };
 	
-	this.make_y_axis = function () {          
-	    return d3.svg.axis()
-	        .scale(this.y)
-	        .orient("left")
-	        .ticks(5);
-	};
+	// this.make_y_axis = function () {          
+	//     return d3.svg.axis()
+	//         .scale(this.y)
+	//         .orient("left")
+	//         .ticks(5);
+	// };
 	
 	this.make_yOrd_axis = function () {           
 	    return d3.svg.axis()
@@ -84,7 +84,7 @@ var presencePlot = new function() {
 	// Tip that displays node info
 	this.tip = d3.tip()
 	  .attr('class', 'd3-tip')
-	  .offset([-10, 0])
+	  .offset([0, 0])
 	  .html(function(d) {
 		var alert,status,id_ts,comment;
 		

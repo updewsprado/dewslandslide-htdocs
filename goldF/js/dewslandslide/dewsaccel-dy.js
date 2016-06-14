@@ -587,7 +587,7 @@ var vis = [
 			if (selectedSite.length == 2) {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-						'M1 (Hz)',
+						' (Hz)',
 					];
 
 					var labelAxis = ['timestamp','raw'];
@@ -597,7 +597,7 @@ var vis = [
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M1 (Hz)',
+							' (Hz)',
 							
 
 					];
@@ -611,7 +611,7 @@ var vis = [
 			else {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-							'M1 (Hz)',
+							' (Hz)',
 							
 					];
 
@@ -622,7 +622,7 @@ var vis = [
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M1 (Hz)',
+							'(Hz)',
 							
 					];
 
@@ -757,7 +757,7 @@ var vis = [
 			if (selectedSite.length == 1) {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-						'M2 (Hz)',
+						'(Hz)',
 					];
 
 					var labelAxis = ['timestamp','cal'];
@@ -767,7 +767,7 @@ var vis = [
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M2 (Hz)',
+							'(Hz)',
 					];
 
 					var labelAxis = ['timestamp','cal'];
@@ -779,7 +779,7 @@ var vis = [
 			else {
 				if(frm.dbase.value == "raw") {
 					var labels = [
-							'M2 (Hz)',
+							'(Hz)',
 					];
 
 					var labelAxis = ['timestamp','cal'];
@@ -789,7 +789,7 @@ var vis = [
 				}
 				else if(frm.dbase.value == "filtered"){
 					var labels = [
-							'M2 (Hz)',
+							'(Hz)',
 					];
 
 					var labelAxis = ['timestamp','cal'];
