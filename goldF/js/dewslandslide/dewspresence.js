@@ -51,7 +51,7 @@ var presencePlot = new function() {
 			.append("svg")
             .attr('id', 'svg-presence')
 		        .attr("width", this.cWidth + 100)
-		        .attr("height", this.height + this.margin.bottom+  this.margin.top + this.cHeight)
+		        .attr("height", this.height + this.margin.bottom- 790)
 		    .append("g")
 		        .attr("transform", 
 		              "translate(" + this.margin.left + "," + this.margin.top + ")");
