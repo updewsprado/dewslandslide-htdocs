@@ -1,9 +1,14 @@
 // (function() {
+	//Provide default user name
+	//TODO: replace with session user name
+	$('#user').val("Orutra-man");
 
-	var user, contactnum;
+	var user, contactnum, contactnumTrimmed;
+	var multiplenums;
 	var messages = [];
 	var temp, tempMsg;
 	var WSS_CONNECTION_STATUS = -1;
+	var isFirstSuccessfulConnect = true;
 
 	var messages_template = Handlebars.compile($('#messages-template').html());
 
@@ -31,6 +36,18 @@
 		}
 	}
 
+	function loadCommunityContactRequest(msg) {
+		//TODO: load the historical message here
+		temp = msg;
+		var totalContacts = msg.total;
+		var contact = msg.data[0];
+		var fullname = contact.fullname;
+		var tempnum = contact.numbers;
+
+		console.log("fullname: " + fullname + ", number: " + tempnum);
+		$('#contactnum').val(tempnum);
+	}
+
 	// var conn = new WebSocket('ws://www.codesword.com:5050');
 	var timerID = 0;
 	var conn = null;
@@ -43,6 +60,14 @@
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
 			WSS_CONNECTION_STATUS = 0;
+
+			if (isFirstSuccessfulConnect) {
+				//TODO: load contacts information for first successful connect
+				//contacts currently 9KB in size. too big for the WSS setup
+
+				//set flag to false after successful loading
+				isFirstSuccessfulConnect = false;
+			}
 
 			// a setInterval has been fired
 			if (window.timerID) {
@@ -57,8 +82,25 @@
 			if (msg.type == "smsload") {
 				initLoadMessageHistory(msg);
 			} 
+			else if (msg.type == "loadcommunitycontact") {
+				loadCommunityContactRequest(msg);
+			}
 			else {
-				updateMessages(msg);
+				var numbers = /^[0-9]+$/;  
+				if(msg.user.match(numbers)) {
+					if (contactnum == normalizedContactNum(msg.user)) {
+						updateMessages(msg);
+					}
+				}
+				else {
+					//Assumption: Alpha numeric users only come from the browser client
+					var tempNum;
+					for (tempNum in msg.numbers) {
+						if (tempNum.search(contactnumTrimmed) >= 0) {
+							updateMessages(msg);
+						}
+					}
+				}
 			}
 		}
 
@@ -107,11 +149,6 @@
 		return tempConn;
 	}
 
-	// function reconnectWS() {
-	// 	console.log("trying to reconnect to web socket server");
-	// 	conn = new WebSocket('ws://www.codesword.com:5050');
-	// }
-
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection() {
 		if (!window.timerID) {
@@ -131,27 +168,100 @@
 		}
 	}
 
+	//9xx-xxxx-xxx format
+	function trimmedContactNum(targetNumber) {
+		var numbers = /^[0-9]+$/;  
+		var trimmed;
+		if(targetNumber.match(numbers)) {  
+			var size = targetNumber.length;
 
+			if (size == 12) {
+				trimmed = targetNumber.slice(2, size);
+			} 
+			else if (size == 11) {
+				trimmed = targetNumber.slice(1, size);
+			}
+			else if (size == 10) {
+				trimmed = targetNumber;
+			}
+			else {
+				console.log('Error: No such number in the Philippines');  
+				return -1;
+			}
+
+			targetNumber = "63" + trimmed;
+			return trimmed;
+		}  
+		else {  
+			console.log('Please input numeric characters only');  
+			return -1;
+		}  
+	}
+
+	//639xx-xxxx-xxx format
+	function normalizedContactNum(targetNumber) {
+		var trimmed = trimmedContactNum(targetNumber);
+		
+		if (trimmed < 0) {
+			console.log("Error: Invalid Contact Number");
+			return -1;
+		} 
+		else {
+			return "63" + trimmed;
+		}
+	}
+
+	$('#generate-contact').click(function() {
+		// conn = new WebSocket('ws://www.codesword.com:5050');
+		sitename = $('#sitename').val();
+		office = $('#office').val();
+
+		if (sitename == "") {
+			alert("Error: No sitename selected");
+			return;
+		}
+
+		if (office == "") {
+			office = "all";
+			$('#office').val("all");
+		}
+
+		var contactRequest = {
+			'type': 'loadcommunitycontactrequest',
+			'sitename': sitename,
+			'office': office
+		};
+
+		//request for message history of selected number
+		conn.send(JSON.stringify(contactRequest));
+	});
 
 	$('#join-chat').click(function() {
 		// conn = new WebSocket('ws://www.codesword.com:5050');
 
 		user = $('#user').val();
-		contactnum = $('#contactnum').val();
+		contactnum = normalizedContactNum($('#contactnum').val());
+		contactnumTrimmed = trimmedContactNum(contactnum);
+
+		if (contactnum < 0) {
+			alert("Error: Invalid Contact Number");
+			return;
+		}
+
 		$('#user-container').addClass('hidden');
 		$('#main-container').removeClass('hidden');
 
 		var msg = {
 			'type': 'joinchat',
 			'user': user,
-			'numbers': [contactnum],
+			'numbers': [contactnumTrimmed],
 			'msg': user + ' is now online',
-			'timestamp': moment().format('hh:mm a')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 		};
 
 		var msgHistory = {
 			'type': 'smsloadrequest',
-			'number': contactnum,
+			'number': contactnumTrimmed,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 			//'timestamp': moment().format('hh:mm a')
 		};
@@ -173,7 +283,7 @@
 			'user': user,
 			'numbers': [contactnum],
 			'msg': text,
-			'timestamp': moment().format('hh:mm a')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 		};
 		updateMessages(msg);
 		conn.send(JSON.stringify(msg));
@@ -187,7 +297,7 @@
 			'user': user,
 			'numbers': [contactnum],
 			'msg': user + ' is now offline',
-			'timestamp': moment().format('hh:mm a')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 		};
 		updateMessages(msg);
 		conn.send(JSON.stringify(msg));
