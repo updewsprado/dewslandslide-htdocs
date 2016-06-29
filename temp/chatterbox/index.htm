@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
+	<!-- <meta charset="utf-8"> -->
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
 	<title>chatterbox</title>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
@@ -17,10 +18,13 @@
 			<label for="sitename">Site Name (3 Letter):</label>
 			<input type="text" id="sitename" name="sitename"><Br/>
 			<label for="office">Office:</label>
-			<input type="text" id="office" name="office"><Br/>
+			<input type="text" id="office" name="office">
 			<button type="button" id="generate-contact">Generate Number</button><Br/>
-			<label for="contactnum">Number you want to contact:</label>
-			<input type="text" id="contactnum" name="contactnum">
+			<label for="contactname">Name you want to contact:</label><Br/>
+			<input class="largeTextDisplay" type="text" id="contactname" name="contactname">
+			<button type="button" id="generate-contact-from-name">Gen Num from Name</button><Br/>
+			<label for="contactnum">Number you want to contact:</label><Br/>
+			<input class="largeTextDisplay" type="text" id="contactnum" name="contactnum">
 			<button type="button" id="join-chat">Join Chat</button>
 		</div>
 

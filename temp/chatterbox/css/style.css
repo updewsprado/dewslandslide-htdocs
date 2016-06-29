@@ -3,7 +3,7 @@
 }
 
 #wrapper {
-	width: 800px;
+	width: auto;
 	margin: 0 auto;
 }
 
@@ -13,9 +13,10 @@
 }
 
 #user-container {
-	width: 500px;
+	height: auto;
+	width: auto;
 	margin: 0 auto;
-	text-align: center;
+	text-align: left;
 }
 
 #main-container {
@@ -28,6 +29,14 @@
 	width: 500px;
 	border: 1px solid #ccc;
 	padding: 20px;
+	text-align: left;
+	overflow-y: scroll;
+}
+
+.largeTextDisplay {
+	height: 100px;
+	width: auto;
+	border: 1px solid #ccc;
 	text-align: left;
 	overflow-y: scroll;
 }

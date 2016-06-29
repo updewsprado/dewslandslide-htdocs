@@ -4,6 +4,8 @@
 	$('#user').val("Orutra-man");
 
 	var user, contactnum, contactnumTrimmed;
+	var contactInfo;
+	var contactname;
 	var multiplenums;
 	var messages = [];
 	var temp, tempMsg;
@@ -13,10 +15,21 @@
 	var messages_template = Handlebars.compile($('#messages-template').html());
 
 	function updateMessages(msg) {
+		//substitute number for name of registered user from contactInfo
+		for (i in contactInfo) {
+			console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+			if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+				//updateMessages(msg);
+				msg.user = contactInfo[i].fullname;
+				break;
+			}
+		}
+
 		messages.push(msg);
 		var messages_html = messages_template({'messages': messages});
 		$('#messages').html(messages_html);
-		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 1000 );
+		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 	}
 
 	function loadMessageHistory(msg) {
@@ -38,17 +51,17 @@
 
 	function loadCommunityContactRequest(msg) {
 		//TODO: load the historical message here
-		temp = msg;
+		contactInfo = msg.data;
 		var totalContacts = msg.total;
 		var contact = msg.data[0];
-		var fullname = contact.fullname;
+		var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
 		var tempnum = contact.numbers;
 
 		console.log("fullname: " + fullname + ", number: " + tempnum);
+		$('#contactname').val(fullname);
 		$('#contactnum').val(tempnum);
 	}
 
-	// var conn = new WebSocket('ws://www.codesword.com:5050');
 	var timerID = 0;
 	var conn = null;
 	conn = connectWS();
@@ -236,10 +249,29 @@
 		conn.send(JSON.stringify(contactRequest));
 	});
 
+	$('#generate-contact-from-name').click(function() {
+		// conn = new WebSocket('ws://www.codesword.com:5050');
+		contactname = $('#contactname').val();
+
+		if (contactname == "") {
+			alert("Error: No contactname selected");
+			return;
+		}
+
+		var contactRequest = {
+			'type': 'loadcontactfromnamerequest',
+			'contactname': contactname,
+		};
+
+		//request for message history of selected number
+		conn.send(JSON.stringify(contactRequest));
+	});
+
 	$('#join-chat').click(function() {
 		// conn = new WebSocket('ws://www.codesword.com:5050');
 
 		user = $('#user').val();
+		contactname = $('#contactname').val();
 		contactnum = normalizedContactNum($('#contactnum').val());
 		contactnumTrimmed = trimmedContactNum(contactnum);
 
