@@ -1,0 +1,69 @@
+.hidden {
+	display: none;
+}
+
+#wrapper {
+	width: auto;
+	margin: 0 auto;
+}
+
+#leave-room {
+	margin-bottom: 10px;
+	float: right;
+}
+
+#user-container {
+	height: auto;
+	width: auto;
+	margin: 0 auto;
+	text-align: left;
+}
+
+#main-container {
+	width: 500px;
+	margin: 0 auto;
+}
+
+#messages {
+	height: 300px;
+	width: 500px;
+	border: 1px solid #ccc;
+	padding: 20px;
+	text-align: left;
+	overflow-y: scroll;
+}
+
+.largeTextDisplay {
+	height: 100px;
+	width: auto;
+	border: 1px solid #ccc;
+	text-align: left;
+	overflow-y: scroll;
+}
+
+#msg-container {
+	padding: 20px;
+}
+
+#msg {
+	width: 400px;
+}
+
+.user {
+	font-weight: bold;
+}
+
+.msg {
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+.time {
+	float: right;
+	color: #939393;
+	font-size: 13px;
+}
+
+.details {
+	margin-top: 20px;
+}
