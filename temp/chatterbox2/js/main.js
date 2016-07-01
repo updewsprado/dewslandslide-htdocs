@@ -8,28 +8,45 @@
 	var contactname;
 	var multiplenums;
 	var messages = [];
-	var temp, tempMsg;
+	var temp, tempMsg, tempUser;
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 
 	var messages_template = Handlebars.compile($('#messages-template').html());
+	var messages_template_user = Handlebars.compile($('#messages-template-user').html());
+	var messages_template_contact = Handlebars.compile($('#messages-template-contact').html());
 
 	function updateMessages(msg) {
-		//substitute number for name of registered user from contactInfo
-		for (i in contactInfo) {
-			console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+		console.log("User is: " + msg.user);
 
-			if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
-				//updateMessages(msg);
-				msg.user = contactInfo[i].fullname;
-				break;
+		//TODO: Make the segregation of message templates work!!!
+
+		if (msg.user == "You") {
+			messages.push(msg);
+			// console.log(msg.user + " message template user");
+			var messages_html_user = messages_template_contact({'messages': messages});
+			$('#messages').html(messages_html_user);
+			$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+		}
+		else {
+			//substitute number for name of registered user from contactInfo
+			for (i in contactInfo) {
+				// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+				if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+					console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+					//updateMessages(msg);
+					msg.user = contactInfo[i].fullname;
+					console.log(msg.user + " message template contact");
+					messages.push(msg);
+					var messages_html_contact = messages_template_contact({'messages': messages});
+					$('#messages').html(messages_html_contact);
+					$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+					break;
+				}
 			}
 		}
-
-		messages.push(msg);
-		var messages_html = messages_template({'messages': messages});
-		$('#messages').html(messages_html);
-		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 	}
 
 	function loadMessageHistory(msg) {
@@ -38,6 +55,8 @@
 	}
 
 	function initLoadMessageHistory(msgHistory) {
+		console.log(msgHistory);
+		console.log("initLoadMessageHistory");
 		//Loop through the JSON msg and
 		//	use updateMessages multiple times
 		var history = msgHistory.data;
@@ -93,6 +112,7 @@
 			var msg = JSON.parse(e.data);
 
 			if (msg.type == "smsload") {
+				tempMsg = msg;
 				initLoadMessageHistory(msg);
 			} 
 			else if (msg.type == "loadcommunitycontact") {
@@ -304,7 +324,6 @@
 		$('#user').val('');
 
 		//request for message history of selected number
-		tempMsg = msgHistory;
 		conn.send(JSON.stringify(msgHistory));
 	});
 
