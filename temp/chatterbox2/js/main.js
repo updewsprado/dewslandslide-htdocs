@@ -6,7 +6,7 @@
 	var user, contactnum, contactnumTrimmed;
 	var contactInfo;
 	var contactname;
-	var multiplenums;
+	var multipleContacts;
 	var messages = [];
 	var temp, tempMsg, tempUser;
 	var WSS_CONNECTION_STATUS = -1;
@@ -119,7 +119,20 @@
 				loadCommunityContactRequest(msg);
 			}
 			else if (msg.type == "loadnamesuggestions") {
-				comboplete.list = msg.data;
+				if (msg.data == null) {
+					return;
+				}
+
+				multipleContacts = msg.data;
+
+				var suggestionsArray = [];
+				for (var i in msg.data) {
+				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+				    					" (" + msg.data[i].numbers + ")";
+				    suggestionsArray.push(suggestion);
+				}
+
+				comboplete.list = suggestionsArray;
 			}
 			else {
 				var numbers = /^[0-9]+$/;  
@@ -189,18 +202,18 @@
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-						        function () {
-						            if (conn.readyState === 1) {
-						                console.log("Connection is made");
-						                return;
+		        function () {
+		            if (conn.readyState === 1) {
+		                console.log("Connection is made");
+		                return;
 
-						            } else {
-						                console.log("wait for connection...");
-						                conn = connectWS();
-						                waitForSocketConnection();
-						            }
+		            } else {
+		                console.log("wait for connection...");
+		                conn = connectWS();
+		                waitForSocketConnection();
+		            }
 
-						        }, 5000); // wait 5 seconds for the connection...
+		        }, 5000); // wait 5 seconds for the connection...
 		}
 	}
 
@@ -318,35 +331,14 @@
 			'type': 'smsloadrequest',
 			'number': contactnumTrimmed,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-			//'timestamp': moment().format('hh:mm a')
 		};
 
-		//updateMessages(msg);
 		conn.send(JSON.stringify(msg));
 
 		$('#user').val('');
 
 		//request for message history of selected number
 		conn.send(JSON.stringify(msgHistory));
-	});
-
-	var comboplete = new Awesomplete('input.dropdown-input', {
-		minChars: 3,
-	});
-	//comboplete.list = ['CSS', 'JavaScript', 'HTML', 'SVG', 'Ruby', 'ARIA', 'MathML', 'Python', 'PHP', 'C', 'C++'];
-	comboplete.list = [];
-
-	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-		if (comboplete.ul.childNodes.length === 0) {
-			//comboplete.minChars = 3;
-			comboplete.evaluate();
-		} 
-		else if (comboplete.ul.hasAttribute('hidden')) {
-			comboplete.open();
-		}
-		else {
-			comboplete.close();
-		}
 	});
 
 	function getNameSuggestions (nameQuery) {
@@ -359,14 +351,42 @@
 		conn.send(JSON.stringify(nameSuggestionRequest));
 	};
 
+	var comboplete = new Awesomplete('input.dropdown-input', {
+		minChars: 3,
+	});
+	comboplete.list = [];
+
+	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+		var nameQuery = $('.dropdown-input').val();
+
+		if (nameQuery.length >= 3) {
+			if (comboplete.ul.childNodes.length === 0) {
+				//comboplete.minChars = 3;
+				comboplete.evaluate();
+			} 
+			else if (comboplete.ul.hasAttribute('hidden')) {
+				comboplete.open();
+			}
+			else {
+				comboplete.close();
+			}
+		}
+	});
+
 	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-		var selectedItem = $('.dropdown-input').val();
+	    // get keycode of current keypress event
+	    var code = (e.keyCode || e.which);
 
-		if (selectedItem.length >= 3) {
-			//alert(selectedItem);
+	    // do nothing if it's an arrow key
+	    if(code == 37 || code == 38 || code == 39 || code == 40) {
+	        return;
+	    }
 
-			//TODO: Get autocomplete data from the WSS
-			getNameSuggestions(selectedItem);
+		var nameQuery = $('.dropdown-input').val();
+
+		if (nameQuery.length >= 3) {
+			//Get autocomplete data from the WSS
+			getNameSuggestions(nameQuery);
 		}
 		else {
 			comboplete.close();
@@ -377,8 +397,9 @@
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 		// User made a selection from dropdown. 
 		// This is fired after the selection is applied
-		// var selectedItem = $('.dropdown-input').val();
-		// alert(selectedItem);
+		var nameQuery = $('.dropdown-input').val();
+
+		getNameSuggestions(nameQuery);
 	}, false);
 
 	$('#send-msg').click(function() {

@@ -28,20 +28,18 @@
         <input class="largeTextDisplay" type="text" id="contactname" name="contactname">
         <button type="button" id="generate-contact-from-name">Gen Num from Name</button><Br/>
         <label for="contactnum">Number you want to contact:</label><Br/>
-        <input class="largeTextDisplay" type="text" id="contactnum" name="contactnum">
-        <button type="button" id="join-chat">Join Chat</button><Br/><Br/>
+        <input class="largeTextDisplay" type="text" id="contactnum" name="contactnum"><Br/><Br/>
+        <!-- <button type="button" id="join-chat">Join Chat</button><Br/><Br/> -->
 
-<!-- Testing awesomplete autocomplete -->
-<!--         <input id="contactSuggestions" class="awesomplete" list="mylist" data-minchars="2"/>
-        <datalist id="mylist">
-          <option>One</option>
-          <option>Two</option>
-          <option>Three</option>
-        </datalist> -->
+    </div>
 
-        <label>Search for contact:</label>
+    <div class="row">
+        <label>Search for contact:</label><Br/>
         <!-- <input class="dropdown-input" data-list="CSS, JavaScript, HTML, SVG, ARIA, MathML, Python, PHP, C, C++" /> -->
-        <input class="dropdown-input" />
+        <div class="col-md-12">
+            <input class="dropdown-input" data-multiple />
+            <button type="button" id="join-chat">Go Chat!</button><Br/>
+        </div>
     </div>
 
     <div class="row">
@@ -106,34 +104,7 @@
             <button type="button" id="leave-room">Leave</button>
             <div class="chat-message">
                 <ul id="messages" class="chat">
-                    <li class="left clearfix">
-                    	<span class="chat-img pull-left">
-                    		<img src="img/boy_avatar.png" alt="User Avatar">
-                    	</span>
-                    	<div class="chat-body clearfix">
-                    		<div class="header">
-                    			<strong class="primary-font">John Doe</strong>
-                    			<small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 12 mins ago</small>
-                    		</div>
-                    		<p>
-                    			Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    		</p>
-                    	</div>
-                    </li>
-                    <li class="right clearfix">
-                    	<span class="chat-img pull-right">
-                    		<img src="img/phivolcs2.png" alt="User Avatar">
-                    	</span>
-                    	<div class="chat-body clearfix">
-                    		<div class="header">
-                    			<strong class="primary-font">Dynaslope</strong>
-                    			<small class="pull-right text-muted"><i class="fa fa-clock-o"></i> 13 mins ago</small>
-                    		</div>
-                    		<p>
-                    			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare dolor, quis ullamcorper ligula sodales at. 
-                    		</p>
-                    	</div>
-                    </li>      
+                
                 </ul>
             </div>
             <div class="chat-box bg-white">
