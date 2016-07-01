@@ -118,6 +118,9 @@
 			else if (msg.type == "loadcommunitycontact") {
 				loadCommunityContactRequest(msg);
 			}
+			else if (msg.type == "loadnamesuggestions") {
+				comboplete.list = msg.data;
+			}
 			else {
 				var numbers = /^[0-9]+$/;  
 				if(msg.user.match(numbers)) {
@@ -326,6 +329,57 @@
 		//request for message history of selected number
 		conn.send(JSON.stringify(msgHistory));
 	});
+
+	var comboplete = new Awesomplete('input.dropdown-input', {
+		minChars: 3,
+	});
+	//comboplete.list = ['CSS', 'JavaScript', 'HTML', 'SVG', 'Ruby', 'ARIA', 'MathML', 'Python', 'PHP', 'C', 'C++'];
+	comboplete.list = [];
+
+	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+		if (comboplete.ul.childNodes.length === 0) {
+			//comboplete.minChars = 3;
+			comboplete.evaluate();
+		} 
+		else if (comboplete.ul.hasAttribute('hidden')) {
+			comboplete.open();
+		}
+		else {
+			comboplete.close();
+		}
+	});
+
+	function getNameSuggestions (nameQuery) {
+		var nameSuggestionRequest = {
+			'type': 'requestnamesuggestions',
+			'namequery': nameQuery,
+		};
+
+		//request for message history of selected number
+		conn.send(JSON.stringify(nameSuggestionRequest));
+	};
+
+	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+		var selectedItem = $('.dropdown-input').val();
+
+		if (selectedItem.length >= 3) {
+			//alert(selectedItem);
+
+			//TODO: Get autocomplete data from the WSS
+			getNameSuggestions(selectedItem);
+		}
+		else {
+			comboplete.close();
+		}
+		
+	}, false);
+
+	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+		// User made a selection from dropdown. 
+		// This is fired after the selection is applied
+		// var selectedItem = $('.dropdown-input').val();
+		// alert(selectedItem);
+	}, false);
 
 	$('#send-msg').click(function() {
 		var text = $('#msg').val();

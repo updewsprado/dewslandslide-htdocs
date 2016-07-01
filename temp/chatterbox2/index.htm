@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/styleBS.css">
+    <link rel="stylesheet" type="text/css" href="css/awesomplete.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
@@ -28,7 +29,19 @@
         <button type="button" id="generate-contact-from-name">Gen Num from Name</button><Br/>
         <label for="contactnum">Number you want to contact:</label><Br/>
         <input class="largeTextDisplay" type="text" id="contactnum" name="contactnum">
-        <button type="button" id="join-chat">Join Chat</button>
+        <button type="button" id="join-chat">Join Chat</button><Br/><Br/>
+
+<!-- Testing awesomplete autocomplete -->
+<!--         <input id="contactSuggestions" class="awesomplete" list="mylist" data-minchars="2"/>
+        <datalist id="mylist">
+          <option>One</option>
+          <option>Two</option>
+          <option>Three</option>
+        </datalist> -->
+
+        <label>Search for contact:</label>
+        <!-- <input class="dropdown-input" data-list="CSS, JavaScript, HTML, SVG, ARIA, MathML, Python, PHP, C, C++" /> -->
+        <input class="dropdown-input" />
     </div>
 
     <div class="row">
@@ -186,6 +199,7 @@
     {{/each}}
 </script>
 
+<script src="js/awesomplete.min.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
