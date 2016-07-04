@@ -1,8 +1,4 @@
 // (function() {
-	//Provide default user name
-	//TODO: replace with session user name
-	$('#user').val("Orutra-man");
-
 	var user, contactnum, contactnumTrimmed;
 	var contactInfo;
 	var contactname;
@@ -12,21 +8,15 @@
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 
-	var messages_template = Handlebars.compile($('#messages-template').html());
-	var messages_template_user = Handlebars.compile($('#messages-template-user').html());
-	var messages_template_contact = Handlebars.compile($('#messages-template-contact').html());
+	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 
 	function updateMessages(msg) {
 		console.log("User is: " + msg.user);
 
-		//TODO: Make the segregation of message templates work!!!
-
 		if (msg.user == "You") {
+			msg.isyou = 1;
 			messages.push(msg);
 			// console.log(msg.user + " message template user");
-			var messages_html_user = messages_template_contact({'messages': messages});
-			$('#messages').html(messages_html_user);
-			$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 		}
 		else {
 			//substitute number for name of registered user from contactInfo
@@ -36,17 +26,18 @@
 				if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
 					console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
 
-					//updateMessages(msg);
+					msg.isyou = 0;
 					msg.user = contactInfo[i].fullname;
 					console.log(msg.user + " message template contact");
 					messages.push(msg);
-					var messages_html_contact = messages_template_contact({'messages': messages});
-					$('#messages').html(messages_html_contact);
-					$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 					break;
 				}
 			}
 		}
+
+		var messages_html = messages_template_both({'messages': messages});
+		$('#messages').html(messages_html);
+		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 	}
 
 	function loadMessageHistory(msg) {
@@ -56,6 +47,11 @@
 
 	function initLoadMessageHistory(msgHistory) {
 		console.log(msgHistory);
+
+		if (msgHistory.data == null) {
+			return;
+		}
+
 		console.log("initLoadMessageHistory");
 		//Loop through the JSON msg and
 		//	use updateMessages multiple times
@@ -119,16 +115,16 @@
 				loadCommunityContactRequest(msg);
 			}
 			else if (msg.type == "loadnamesuggestions") {
+				multipleContacts = msg.data;
+
 				if (msg.data == null) {
 					return;
 				}
 
-				multipleContacts = msg.data;
-
 				var suggestionsArray = [];
 				for (var i in msg.data) {
 				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-				    					" (" + msg.data[i].numbers + ")";
+				    					" - " + msg.data[i].numbers;
 				    suggestionsArray.push(suggestion);
 				}
 
@@ -304,8 +300,6 @@
 	});
 
 	$('#join-chat').click(function() {
-		// conn = new WebSocket('ws://www.codesword.com:5050');
-
 		user = $('#user').val();
 		contactname = $('#contactname').val();
 		contactnum = normalizedContactNum($('#contactnum').val());
@@ -336,6 +330,62 @@
 		conn.send(JSON.stringify(msg));
 
 		$('#user').val('');
+
+		//request for message history of selected number
+		conn.send(JSON.stringify(msgHistory));
+	});
+
+	$('#go-chat').click(function() {
+		// user = $('#user').val();
+		// contactname = $('#contactname').val();
+		// contactnum = normalizedContactNum($('#contactnum').val());
+		// contactnumTrimmed = trimmedContactNum(contactnum);
+
+		user = "You";
+
+		if (multipleContacts) {
+			var nameQuery = $('.dropdown-input').val();
+			parseContactInfo(nameQuery);
+
+			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		}
+		else {
+			contactname = $('.dropdown-input').val();
+			contactnum = contactname;
+			contactnumTrimmed = trimmedContactNum(contactnum);
+
+			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		}
+
+
+
+		if (contactnum < 0) {
+			alert("Error: Invalid Contact Number");
+			return;
+		}
+
+		$('#user-container').addClass('hidden');
+		$('#main-container').removeClass('hidden');
+
+		var msg = {
+			'type': 'joinchat',
+			'user': user,
+			'numbers': [contactnumTrimmed],
+			'msg': user + ' is now online',
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
+		};
+
+		var msgHistory = {
+			'type': 'smsloadrequest',
+			'number': contactnumTrimmed,
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
+		};
+
+		conn.send(JSON.stringify(msg));
+
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
 
 		//request for message history of selected number
 		conn.send(JSON.stringify(msgHistory));
@@ -394,12 +444,21 @@
 		
 	}, false);
 
+	function parseContactInfo (tempContactInfo) {
+		var n = tempContactInfo.search(' - ');
+		var size = tempContactInfo.length;
+		contactname = tempContactInfo.slice(0,n);
+		contactnum = tempContactInfo.slice(n + 3,tempContactInfo.length);
+		contactnumTrimmed = trimmedContactNum(contactnum);
+	}
+
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 		// User made a selection from dropdown. 
 		// This is fired after the selection is applied
 		var nameQuery = $('.dropdown-input').val();
+		parseContactInfo(nameQuery);
 
-		getNameSuggestions(nameQuery);
+		//getNameSuggestions(nameQuery);
 	}, false);
 
 	$('#send-msg').click(function() {
@@ -417,24 +476,5 @@
 		$('#msg').val('');
 	});
 
-	$('#leave-room').click(function() {
-		var msg = {
-			'type': 'leavechat',
-			'user': user,
-			'numbers': [contactnum],
-			'msg': user + ' is now offline',
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-		};
-		updateMessages(msg);
-		conn.send(JSON.stringify(msg));
-
-		$('#messages').html('');
-		messages = [];
-
-		$('#main-container').addClass('hidden');
-		$('#user-container').removeClass('hidden');
-
-		conn.close();
-	});
 
 // })();
