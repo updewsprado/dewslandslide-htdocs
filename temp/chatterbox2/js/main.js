@@ -12,11 +12,11 @@
 
 	function updateMessages(msg) {
 		console.log("User is: " + msg.user);
+		console.log("Message: " + msg.msg);
 
 		if (msg.user == "You") {
 			msg.isyou = 1;
 			messages.push(msg);
-			// console.log(msg.user + " message template user");
 		}
 		else {
 			//substitute number for name of registered user from contactInfo
@@ -28,7 +28,6 @@
 
 					msg.isyou = 0;
 					msg.user = contactInfo[i].fullname;
-					console.log(msg.user + " message template contact");
 					messages.push(msg);
 					break;
 				}
@@ -106,9 +105,9 @@
 
 		tempConn.onmessage = function(e) {
 			var msg = JSON.parse(e.data);
+			tempMsg = msg;
 
 			if (msg.type == "smsload") {
-				tempMsg = msg;
 				initLoadMessageHistory(msg);
 			} 
 			else if (msg.type == "loadcommunitycontact") {
@@ -133,7 +132,7 @@
 			else {
 				var numbers = /^[0-9]+$/;  
 				if(msg.user.match(numbers)) {
-					if (contactnum == normalizedContactNum(msg.user)) {
+					if (normalizedContactNum(contactnum) == normalizedContactNum(msg.user)) {
 						updateMessages(msg);
 					}
 				}
