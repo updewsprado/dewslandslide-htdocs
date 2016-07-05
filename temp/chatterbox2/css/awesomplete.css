@@ -12,6 +12,7 @@ div.awesomplete {
 
 div.awesomplete > input {
 	display: block;
+	min-width: 100%;
 }
 
 div.awesomplete > ul {

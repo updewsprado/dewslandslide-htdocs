@@ -213,9 +213,10 @@
 	}
 
 	//9xx-xxxx-xxx format
-	function trimmedContactNum(targetNumber) {
+	function trimmedContactNum(inputContactNumber) {
 		var numbers = /^[0-9]+$/;  
 		var trimmed;
+		var targetNumber = inputContactNumber.replace(/[^0-9]/igm,'');
 		if(targetNumber.match(numbers)) {  
 			var size = targetNumber.length;
 
@@ -233,7 +234,7 @@
 				return -1;
 			}
 
-			targetNumber = "63" + trimmed;
+			inputContactNumber = "63" + trimmed;
 			return trimmed;
 		}  
 		else {  
@@ -314,8 +315,16 @@
 		conn.send(JSON.stringify(nameSuggestionRequest));
 	};
 
-	var comboplete = new Awesomplete('input.dropdown-input', {
-		minChars: 3,
+	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+		filter: function(text, input) {
+			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+		},
+
+		replace: function(text) {
+			var before = this.input.value.match(/^.+;\s*|/)[0];
+			this.input.value = before + text + "; ";
+		},
+		minChars: 3
 	});
 	comboplete.list = [];
 
@@ -345,11 +354,13 @@
 	        return;
 	    }
 
-		var nameQuery = $('.dropdown-input').val();
+		var allNameQueries = $('.dropdown-input').val();
+		var nameQuery = getFollowingNameQuery(allNameQueries);
 
 		if (nameQuery.length >= 3) {
 			//Get autocomplete data from the WSS
 			getNameSuggestions(nameQuery);
+
 		}
 		else {
 			comboplete.close();
@@ -394,22 +405,41 @@
 		}
 	}
 
+	function getFollowingNameQuery (allNameQueries) {
+		var before = allNameQueries.match(/^.+;\s*|/)[0];
+		var size = before.length;
+		var nameQuery = allNameQueries.slice(size);
+
+		return nameQuery;
+	}
+
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 		// User made a selection from dropdown. 
 		// This is fired after the selection is applied
-		var nameQuery = $('.dropdown-input').val();
-		parseContactInfo(nameQuery);
+		// var nameQuery = $('.dropdown-input').val();
+		// parseContactInfo(nameQuery);
 
-		//getNameSuggestions(nameQuery);
+		var allText = $('.dropdown-input').val();
+		var size = allText.length;
+		var allNameQueries = allText.slice(0, size-2);
+		var nameQuery = getFollowingNameQuery(allNameQueries);
+
+		parseContactInfo(nameQuery);
 	}, false);
 
 	$('#send-msg').click(function() {
 		var text = $('#msg').val();
 		var footer = "\n\nThis message was sent by Chatterbox App."
+
+		var normalized = [];
+		for (i in contactnumTrimmed) {
+		   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+		}
+
 		var msg = {
 			'type': 'smssend',
 			'user': user,
-			'numbers': contactnumTrimmed,
+			'numbers': normalized,
 			'msg': text + footer,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 		};
@@ -418,6 +448,5 @@
 
 		$('#msg').val('');
 	});
-
 
 // })();
