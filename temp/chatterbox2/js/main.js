@@ -110,9 +110,9 @@
 			if (msg.type == "smsload") {
 				initLoadMessageHistory(msg);
 			} 
-			else if (msg.type == "loadcommunitycontact") {
-				loadCommunityContactRequest(msg);
-			}
+			// else if (msg.type == "loadcommunitycontact") {
+			// 	loadCommunityContactRequest(msg);
+			// }
 			else if (msg.type == "loadnamesuggestions") {
 				contactSuggestions = msg.data;
 
@@ -131,9 +131,13 @@
 			}
 			else {
 				var numbers = /^[0-9]+$/;  
+				console.log(msg);
 				if(msg.user.match(numbers)) {
-					if (normalizedContactNum(contactnum) == normalizedContactNum(msg.user)) {
-						updateMessages(msg);
+					for (i in contactnumTrimmed) {
+						// console.log(contactnumTrimmed[i]);
+						if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+							updateMessages(msg);
+						}
 					}
 				}
 				else {
@@ -257,18 +261,9 @@
 	}
 
 	$('#go-chat').click(function() {
-		// user = $('#user').val();
-		// contactname = $('#contactname').val();
-		// contactnum = normalizedContactNum($('#contactnum').val());
-		// contactnumTrimmed = trimmedContactNum(contactnum);
-
 		user = "You";
 
 		if (contactSuggestions) {
-			var nameQuery = $('.dropdown-input').val();
-			parseContactInfo(nameQuery);
-
-			//contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 			contactInfo = testMultiContacts;
 		}
 		else {
@@ -280,9 +275,7 @@
 			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 		}
 
-
-
-		if (contactnum < 0) {
+		if (contactnumTrimmed <= 0) {
 			alert("Error: Invalid Contact Number");
 			return;
 		}
@@ -357,6 +350,12 @@
 		var allNameQueries = $('.dropdown-input').val();
 		var nameQuery = getFollowingNameQuery(allNameQueries);
 
+		if (allNameQueries.length < 3) {
+			//Reset the contacts list
+			testMultiContacts = [];
+			contactnumTrimmed = [];
+		}
+
 		if (nameQuery.length >= 3) {
 			//Get autocomplete data from the WSS
 			getNameSuggestions(nameQuery);
@@ -371,18 +370,25 @@
 	var testName;
 	var testNumbers;
 	var testMultiContacts = [];
-	function parseContactInfo (tempContactInfo) {
-		var n = tempContactInfo.search(' - ');
-		var size = tempContactInfo.length;
-		contactname = tempContactInfo.slice(0,n);
-		contactnum = tempContactInfo.slice(n + 3,tempContactInfo.length);
-		contactnumTrimmed = [];
 
-		testName = tempContactInfo.slice(0,n);
-		testNumbers = tempContactInfo.slice(n + 3,tempContactInfo.length);
+	function parseContactInfo (multipleContactInfo) {
+		// var n = multipleContactInfo.search(' - ');
+		// var size = multipleContactInfo.length;
+		// contactname = multipleContactInfo.slice(0,n);
+		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
+		// contactnumTrimmed = [];
+
+		parseSingleContactInfo(multipleContactInfo);
+	}
+
+	function parseSingleContactInfo (singleContactInfo) {
+		var n = singleContactInfo.search(' - ');
+		var size = singleContactInfo.length;
+		testName = singleContactInfo.slice(0,n);
+		testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
 		var tempNum;
 		var searchIndex = 0;
-		testMultiContacts = [];
+		//testMultiContacts = [];
 		
 		while (searchIndex >= 0) {
 			searchIndex = testNumbers.search(",");
@@ -391,12 +397,10 @@
 
 			if (searchIndex < 0) {
 				parsedInfo.numbers = testNumbers;
-				//parsedInfo.numbersTrimmed = trimmedContactNum(parsedInfo.numbers);
 				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
 			} 
 			else {
 				parsedInfo.numbers = testNumbers.slice(0,searchIndex);
-				//parsedInfo.numbersTrimmed = trimmedContactNum(parsedInfo.numbers);
 				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
 				testNumbers = testNumbers.slice(searchIndex + 1);
 			}
@@ -416,9 +420,6 @@
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 		// User made a selection from dropdown. 
 		// This is fired after the selection is applied
-		// var nameQuery = $('.dropdown-input').val();
-		// parseContactInfo(nameQuery);
-
 		var allText = $('.dropdown-input').val();
 		var size = allText.length;
 		var allNameQueries = allText.slice(0, size-2);
