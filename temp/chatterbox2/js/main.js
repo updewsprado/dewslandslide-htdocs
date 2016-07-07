@@ -9,6 +9,11 @@
 	var temp, tempMsg, tempUser, tempRequest;
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
+	var testName;
+	var testNumbers;
+	var testMultiContacts = [];
+	var timerID = 0;
+	var conn = connectWS();
 
 	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 
@@ -65,27 +70,27 @@
 		}
 	}
 
-	function loadCommunityContactRequest(msg) {
-		//TODO: load the historical message here
-		contactInfo = msg.data;
-		var totalContacts = msg.total;
-		var contact = msg.data[0];
-		var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
-		var tempnum = contact.numbers;
+	// function loadCommunityContactRequest(msg) {
+	// 	//TODO: load the historical message here
+	// 	contactInfo = msg.data;
+	// 	var totalContacts = msg.total;
+	// 	var contact = msg.data[0];
+	// 	var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
+	// 	var tempnum = contact.numbers;
 
-		console.log("fullname: " + fullname + ", number: " + tempnum);
-	}
+	// 	console.log("fullname: " + fullname + ", number: " + tempnum);
+	// }
 
-	var timerID = 0;
-	var conn = null;
-	conn = connectWS();
 
+
+	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.codesword.com:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
+			$("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
 
 			if (isFirstSuccessfulConnect) {
@@ -101,6 +106,9 @@
 				window.clearInterval(window.timerID);
 				window.timerID = 0;
 			}
+
+			//Enable the functionality of "send button"
+			$("#send-msg").removeClass("disabled");
 		};
 
 		tempConn.onmessage = function(e) {
@@ -172,8 +180,11 @@
 	            reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
+	        	$("#connectionStatusModal").modal("show");
+				//Enable the functionality of "send button"
+				$("#send-msg").addClass("disabled");
 
-	       		//TODO: reconnect to the WSS
+	       		// reconnect to the WSS
 	       		waitForSocketConnection();
 	       	}
 	        else if(event.code == 1007)
@@ -260,44 +271,6 @@
 		}
 	}
 
-	$('#go-chat').click(function() {
-		user = "You";
-
-		if (contactSuggestions) {
-			contactInfo = testMultiContacts;
-		}
-		else {
-			//If we are contacting an unregistered number
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
-
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
-		}
-
-		if (contactnumTrimmed <= 0) {
-			alert("Error: Invalid Contact Number");
-			return;
-		}
-
-		$('#user-container').addClass('hidden');
-		$('#main-container').removeClass('hidden');
-
-		var msgHistory = {
-			'type': 'smsloadrequest',
-			'number': contactnumTrimmed,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-		};
-
-		$('#user').val('You');
-		$('#messages').html('');
-		messages = [];
-
-		tempRequest = msgHistory;
-		//request for message history of selected number
-		conn.send(JSON.stringify(msgHistory));
-	});
-
 	function getNameSuggestions (nameQuery) {
 		var nameSuggestionRequest = {
 			'type': 'requestnamesuggestions',
@@ -307,6 +280,53 @@
 		//request for message history of selected number
 		conn.send(JSON.stringify(nameSuggestionRequest));
 	};
+
+
+	function parseContactInfo (multipleContactInfo) {
+		// var n = multipleContactInfo.search(' - ');
+		// var size = multipleContactInfo.length;
+		// contactname = multipleContactInfo.slice(0,n);
+		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
+		// contactnumTrimmed = [];
+
+		parseSingleContactInfo(multipleContactInfo);
+	}
+
+	function parseSingleContactInfo (singleContactInfo) {
+		var n = singleContactInfo.search(' - ');
+		var size = singleContactInfo.length;
+		testName = singleContactInfo.slice(0,n);
+		testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
+		var tempNum;
+		var searchIndex = 0;
+		//testMultiContacts = [];
+		
+		while (searchIndex >= 0) {
+			searchIndex = testNumbers.search(",");
+			var parsedInfo = {};
+			parsedInfo.fullname = testName;
+
+			if (searchIndex < 0) {
+				parsedInfo.numbers = testNumbers;
+				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
+			} 
+			else {
+				parsedInfo.numbers = testNumbers.slice(0,searchIndex);
+				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
+				testNumbers = testNumbers.slice(searchIndex + 1);
+			}
+
+			testMultiContacts.push(parsedInfo);
+		}
+	}
+
+	function getFollowingNameQuery (allNameQueries) {
+		var before = allNameQueries.match(/^.+;\s*|/)[0];
+		var size = before.length;
+		var nameQuery = allNameQueries.slice(size);
+
+		return nameQuery;
+	}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
 		filter: function(text, input) {
@@ -367,56 +387,6 @@
 		
 	}, false);
 
-	var testName;
-	var testNumbers;
-	var testMultiContacts = [];
-
-	function parseContactInfo (multipleContactInfo) {
-		// var n = multipleContactInfo.search(' - ');
-		// var size = multipleContactInfo.length;
-		// contactname = multipleContactInfo.slice(0,n);
-		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
-		// contactnumTrimmed = [];
-
-		parseSingleContactInfo(multipleContactInfo);
-	}
-
-	function parseSingleContactInfo (singleContactInfo) {
-		var n = singleContactInfo.search(' - ');
-		var size = singleContactInfo.length;
-		testName = singleContactInfo.slice(0,n);
-		testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
-		var tempNum;
-		var searchIndex = 0;
-		//testMultiContacts = [];
-		
-		while (searchIndex >= 0) {
-			searchIndex = testNumbers.search(",");
-			var parsedInfo = {};
-			parsedInfo.fullname = testName;
-
-			if (searchIndex < 0) {
-				parsedInfo.numbers = testNumbers;
-				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-			} 
-			else {
-				parsedInfo.numbers = testNumbers.slice(0,searchIndex);
-				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-				testNumbers = testNumbers.slice(searchIndex + 1);
-			}
-
-			testMultiContacts.push(parsedInfo);
-		}
-	}
-
-	function getFollowingNameQuery (allNameQueries) {
-		var before = allNameQueries.match(/^.+;\s*|/)[0];
-		var size = before.length;
-		var nameQuery = allNameQueries.slice(size);
-
-		return nameQuery;
-	}
-
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 		// User made a selection from dropdown. 
 		// This is fired after the selection is applied
@@ -428,6 +398,46 @@
 		parseContactInfo(nameQuery);
 	}, false);
 
+	// Chat with selected recipients
+	$('#go-chat').click(function() {
+		user = "You";
+
+		if (contactSuggestions) {
+			contactInfo = testMultiContacts;
+		}
+		else {
+			//If we are contacting an unregistered number
+			contactname = $('.dropdown-input').val();
+			contactnum = contactname;
+			contactnumTrimmed = [trimmedContactNum(contactnum)];
+
+			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		}
+
+		if (contactnumTrimmed <= 0) {
+			alert("Error: Invalid Contact Number");
+			return;
+		}
+
+		$('#user-container').addClass('hidden');
+		$('#main-container').removeClass('hidden');
+
+		var msgHistory = {
+			'type': 'smsloadrequest',
+			'number': contactnumTrimmed,
+			'timestamp': moment().format('YYYY-MM-DD HH:mm')
+		};
+
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
+
+		tempRequest = msgHistory;
+		//request for message history of selected number
+		conn.send(JSON.stringify(msgHistory));
+	});
+
+	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
 		var text = $('#msg').val();
 		var footer = "\n\nThis message was sent by Chatterbox App."
