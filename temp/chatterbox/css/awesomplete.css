@@ -84,15 +84,15 @@ div.awesomplete > ul:empty {
 		color: white;
 	}
 	
-		div.awesomplete mark {
-			background: hsl(65, 100%, 50%);
-		}
-		
-		div.awesomplete li:hover mark {
-			background: hsl(68, 100%, 41%);
-		}
-		
-		div.awesomplete li[aria-selected="true"] mark {
-			background: hsl(86, 100%, 21%);
-			color: inherit;
-		}
+	div.awesomplete mark {
+		background: hsl(65, 100%, 50%);
+	}
+	
+	div.awesomplete li:hover mark {
+		background: hsl(68, 100%, 41%);
+	}
+	
+	div.awesomplete li[aria-selected="true"] mark {
+		background: hsl(86, 100%, 21%);
+		color: inherit;
+	}

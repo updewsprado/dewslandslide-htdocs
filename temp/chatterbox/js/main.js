@@ -1,33 +1,49 @@
 // (function() {
-	//Provide default user name
-	//TODO: replace with session user name
-	$('#user').val("Orutra-man");
-
-	var user, contactnum, contactnumTrimmed;
+	var user, contactnum;
+	var contactnumTrimmed = [];
 	var contactInfo;
 	var contactname;
-	var multiplenums;
+	var contactSuggestions;
+	var contactsList = [];
 	var messages = [];
-	var temp, tempMsg;
+	var temp, tempMsg, tempUser, tempRequest;
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
+	var testName;
+	var testNumbers;
+	var multiContactsList = [];
+	var timerID = 0;
+	var conn = connectWS();
+	var delayReconn = 5000;
 
-	var messages_template = Handlebars.compile($('#messages-template').html());
+	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
+	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 
 	function updateMessages(msg) {
-		//substitute number for name of registered user from contactInfo
-		for (i in contactInfo) {
-			console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+		// console.log("User is: " + msg.user);
+		// console.log("Message: " + msg.msg);
 
-			if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
-				//updateMessages(msg);
-				msg.user = contactInfo[i].fullname;
-				break;
+		if (msg.user == "You") {
+			msg.isyou = 1;
+			messages.push(msg);
+		}
+		else {
+			//substitute number for name of registered user from contactInfo
+			for (i in contactInfo) {
+				// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+				if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+					msg.isyou = 0;
+					msg.user = contactInfo[i].fullname;
+					messages.push(msg);
+					break;
+				}
 			}
 		}
 
-		messages.push(msg);
-		var messages_html = messages_template({'messages': messages});
+		var messages_html = messages_template_both({'messages': messages});
 		$('#messages').html(messages_html);
 		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 	}
@@ -38,6 +54,13 @@
 	}
 
 	function initLoadMessageHistory(msgHistory) {
+		console.log(msgHistory);
+
+		if (msgHistory.data == null) {
+			return;
+		}
+
+		console.log("initLoadMessageHistory");
 		//Loop through the JSON msg and
 		//	use updateMessages multiple times
 		var history = msgHistory.data;
@@ -49,30 +72,29 @@
 		}
 	}
 
-	function loadCommunityContactRequest(msg) {
-		//TODO: load the historical message here
-		contactInfo = msg.data;
-		var totalContacts = msg.total;
-		var contact = msg.data[0];
-		var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
-		var tempnum = contact.numbers;
+	// function loadCommunityContactRequest(msg) {
+	// 	//TODO: load the historical message here
+	// 	contactInfo = msg.data;
+	// 	var totalContacts = msg.total;
+	// 	var contact = msg.data[0];
+	// 	var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
+	// 	var tempnum = contact.numbers;
 
-		console.log("fullname: " + fullname + ", number: " + tempnum);
-		$('#contactname').val(fullname);
-		$('#contactnum').val(tempnum);
-	}
+	// 	console.log("fullname: " + fullname + ", number: " + tempnum);
+	// }
 
-	var timerID = 0;
-	var conn = null;
-	conn = connectWS();
 
+
+	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.codesword.com:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
+			$("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
+			delayReconn = 5000;
 
 			if (isFirstSuccessfulConnect) {
 				//TODO: load contacts information for first successful connect
@@ -87,22 +109,46 @@
 				window.clearInterval(window.timerID);
 				window.timerID = 0;
 			}
+
+			//Enable the functionality of "send button"
+			$("#send-msg").removeClass("disabled");
 		};
 
 		tempConn.onmessage = function(e) {
 			var msg = JSON.parse(e.data);
+			tempMsg = msg;
 
 			if (msg.type == "smsload") {
 				initLoadMessageHistory(msg);
 			} 
-			else if (msg.type == "loadcommunitycontact") {
-				loadCommunityContactRequest(msg);
+			// else if (msg.type == "loadcommunitycontact") {
+			// 	loadCommunityContactRequest(msg);
+			// }
+			else if (msg.type == "loadnamesuggestions") {
+				contactSuggestions = msg.data;
+
+				if (msg.data == null) {
+					return;
+				}
+
+				var suggestionsArray = [];
+				for (var i in msg.data) {
+				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+				    					" - " + msg.data[i].numbers;
+				    suggestionsArray.push(suggestion);
+				}
+
+				comboplete.list = suggestionsArray;
 			}
 			else {
 				var numbers = /^[0-9]+$/;  
+				console.log(msg);
 				if(msg.user.match(numbers)) {
-					if (contactnum == normalizedContactNum(msg.user)) {
-						updateMessages(msg);
+					for (i in contactnumTrimmed) {
+						// console.log(contactnumTrimmed[i]);
+						if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+							updateMessages(msg);
+						}
 					}
 				}
 				else {
@@ -137,8 +183,11 @@
 	            reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
+	        	$("#connectionStatusModal").modal("show");
+				//Enable the functionality of "send button"
+				$("#send-msg").addClass("disabled");
 
-	       		//TODO: reconnect to the WSS
+	       		// reconnect to the WSS
 	       		waitForSocketConnection();
 	       	}
 	        else if(event.code == 1007)
@@ -166,25 +215,32 @@
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-						        function () {
-						            if (conn.readyState === 1) {
-						                console.log("Connection is made");
-						                return;
+		        function () {
+		            if (conn.readyState === 1) {
+		                console.log("Connection is made");
+		                return;
 
-						            } else {
-						                console.log("wait for connection...");
-						                conn = connectWS();
-						                waitForSocketConnection();
-						            }
+		            } else {
+		                console.log("wait for connection... " + delayReconn);
+		                conn = connectWS();
+		                waitForSocketConnection();
 
-						        }, 5000); // wait 5 seconds for the connection...
+						// Add 1 second for everytime the reconnection is triggered
+						//	will reset once connected
+						if (delayReconn < 10000) {
+							delayReconn += 1000;
+						}
+		            }
+
+		        }, delayReconn); // wait delayReconn seconds for the connection...
 		}
 	}
 
 	//9xx-xxxx-xxx format
-	function trimmedContactNum(targetNumber) {
+	function trimmedContactNum(inputContactNumber) {
 		var numbers = /^[0-9]+$/;  
 		var trimmed;
+		var targetNumber = inputContactNumber.replace(/[^0-9]/igm,'');
 		if(targetNumber.match(numbers)) {  
 			var size = targetNumber.length;
 
@@ -202,7 +258,7 @@
 				return -1;
 			}
 
-			targetNumber = "63" + trimmed;
+			inputContactNumber = "63" + trimmed;
 			return trimmed;
 		}  
 		else {  
@@ -224,58 +280,175 @@
 		}
 	}
 
-	$('#generate-contact').click(function() {
-		// conn = new WebSocket('ws://www.codesword.com:5050');
-		sitename = $('#sitename').val();
-		office = $('#office').val();
-
-		if (sitename == "") {
-			alert("Error: No sitename selected");
-			return;
-		}
-
-		if (office == "") {
-			office = "all";
-			$('#office').val("all");
-		}
-
-		var contactRequest = {
-			'type': 'loadcommunitycontactrequest',
-			'sitename': sitename,
-			'office': office
+	function getNameSuggestions (nameQuery) {
+		var nameSuggestionRequest = {
+			'type': 'requestnamesuggestions',
+			'namequery': nameQuery,
 		};
 
 		//request for message history of selected number
-		conn.send(JSON.stringify(contactRequest));
-	});
+		conn.send(JSON.stringify(nameSuggestionRequest));
+	};
 
-	$('#generate-contact-from-name').click(function() {
-		// conn = new WebSocket('ws://www.codesword.com:5050');
-		contactname = $('#contactname').val();
+	function parseContactInfo (multipleContactInfo) {
+		// var n = multipleContactInfo.search(' - ');
+		// var size = multipleContactInfo.length;
+		// contactname = multipleContactInfo.slice(0,n);
+		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
+		// contactnumTrimmed = [];
 
-		if (contactname == "") {
-			alert("Error: No contactname selected");
-			return;
+		parseSingleContactInfo(multipleContactInfo);
+	}
+
+	function parseSingleContactInfo (singleContactInfo) {
+		var n = singleContactInfo.search(' - ');
+		var size = singleContactInfo.length;
+		testName = singleContactInfo.slice(0,n);
+		testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
+		var tempNum;
+		var searchIndex = 0;
+		//multiContactsList = [];
+		
+		while (searchIndex >= 0) {
+			searchIndex = testNumbers.search(",");
+			var parsedInfo = {};
+			parsedInfo.fullname = testName;
+
+			if (searchIndex < 0) {
+				parsedInfo.numbers = testNumbers;
+				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
+			} 
+			else {
+				parsedInfo.numbers = testNumbers.slice(0,searchIndex);
+				contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
+				testNumbers = testNumbers.slice(searchIndex + 1);
+			}
+
+			multiContactsList.push(parsedInfo);
+		}
+	}
+
+	function getFollowingNameQuery (allNameQueries) {
+		var before = allNameQueries.match(/^.+;\s*|/)[0];
+		var size = before.length;
+		var nameQuery = allNameQueries.slice(size);
+
+		return nameQuery;
+	}
+
+	function displayContactNamesForThread () {
+		var flags = [], uniqueName = [], l = contactInfo.length, i;
+		for( i=0; i<l; i++) {
+		    if( flags[contactInfo[i].fullname]) 
+		    	continue;
+
+		    flags[contactInfo[i].fullname] = true;
+		    uniqueName.push(contactInfo[i].fullname);
 		}
 
-		var contactRequest = {
-			'type': 'loadcontactfromnamerequest',
-			'contactname': contactname,
-		};
+		var tempText = "", tempCountContacts = uniqueName.length;
+		for (i in uniqueName) {
+		    console.log(uniqueName[i]);
 
-		//request for message history of selected number
-		conn.send(JSON.stringify(contactRequest));
+		    if (i == tempCountContacts - 1)
+		        tempText = tempText + uniqueName[i];
+		    else
+		        tempText = tempText + uniqueName[i] + ", ";
+		}
+
+		$("#current-contacts h4").text(tempText);
+	}
+
+	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+		filter: function(text, input) {
+			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+		},
+
+		replace: function(text) {
+			var before = this.input.value.match(/^.+;\s*|/)[0];
+			this.input.value = before + text + "; ";
+		},
+		minChars: 3
+	});
+	comboplete.list = [];
+
+	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+		var nameQuery = $('.dropdown-input').val();
+
+		if (nameQuery.length >= 3) {
+			if (comboplete.ul.childNodes.length === 0) {
+				//comboplete.minChars = 3;
+				comboplete.evaluate();
+			} 
+			else if (comboplete.ul.hasAttribute('hidden')) {
+				comboplete.open();
+			}
+			else {
+				comboplete.close();
+			}
+		}
 	});
 
-	$('#join-chat').click(function() {
-		// conn = new WebSocket('ws://www.codesword.com:5050');
+	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+	    // get keycode of current keypress event
+	    var code = (e.keyCode || e.which);
 
-		user = $('#user').val();
-		contactname = $('#contactname').val();
-		contactnum = normalizedContactNum($('#contactnum').val());
-		contactnumTrimmed = trimmedContactNum(contactnum);
+	    // do nothing if it's an arrow key
+	    if(code == 37 || code == 38 || code == 39 || code == 40) {
+	        return;
+	    }
 
-		if (contactnum < 0) {
+		var allNameQueries = $('.dropdown-input').val();
+		var nameQuery = getFollowingNameQuery(allNameQueries);
+
+		if (allNameQueries.length < 3) {
+			//Reset the contacts list
+			multiContactsList = [];
+			contactnumTrimmed = [];
+		}
+
+		if (nameQuery.length >= 3) {
+			//Get autocomplete data from the WSS
+			getNameSuggestions(nameQuery);
+
+		}
+		else {
+			comboplete.close();
+		}
+		
+	}, false);
+
+	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+		// User made a selection from dropdown. 
+		// This is fired after the selection is applied
+		var allText = $('.dropdown-input').val();
+		var size = allText.length;
+		var allNameQueries = allText.slice(0, size-2);
+		var nameQuery = getFollowingNameQuery(allNameQueries);
+
+		parseContactInfo(nameQuery);
+	}, false);
+
+	// Chat with selected recipients
+	$('#go-chat').click(function() {
+		user = "You";
+
+		if (contactSuggestions) {
+			contactInfo = multiContactsList;
+		}
+		else {
+			//If we are contacting an unregistered number
+			contactname = $('.dropdown-input').val();
+			contactnum = contactname;
+			contactnumTrimmed = [trimmedContactNum(contactnum)];
+
+			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		}
+
+		//Display Names of contacts for the thread being loaded
+		displayContactNamesForThread();
+
+		if (contactnumTrimmed <= 0) {
 			alert("Error: Invalid Contact Number");
 			return;
 		}
@@ -283,64 +456,42 @@
 		$('#user-container').addClass('hidden');
 		$('#main-container').removeClass('hidden');
 
-		var msg = {
-			'type': 'joinchat',
-			'user': user,
-			'numbers': [contactnumTrimmed],
-			'msg': user + ' is now online',
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-		};
-
 		var msgHistory = {
 			'type': 'smsloadrequest',
 			'number': contactnumTrimmed,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-			//'timestamp': moment().format('hh:mm a')
 		};
 
-		//updateMessages(msg);
-		conn.send(JSON.stringify(msg));
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
 
-		$('#user').val('');
-
+		tempRequest = msgHistory;
 		//request for message history of selected number
-		tempMsg = msgHistory;
 		conn.send(JSON.stringify(msgHistory));
 	});
 
+	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
 		var text = $('#msg').val();
+		var footer = "\n\nThis message was sent by Chatterbox App."
+
+		var normalized = [];
+		for (i in contactnumTrimmed) {
+		   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+		}
+
 		var msg = {
 			'type': 'smssend',
 			'user': user,
-			'numbers': [contactnum],
-			'msg': text,
+			'numbers': normalized,
+			'msg': text + footer,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm')
 		};
 		updateMessages(msg);
 		conn.send(JSON.stringify(msg));
 
 		$('#msg').val('');
-	});
-
-	$('#leave-room').click(function() {
-		var msg = {
-			'type': 'leavechat',
-			'user': user,
-			'numbers': [contactnum],
-			'msg': user + ' is now offline',
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
-		};
-		updateMessages(msg);
-		conn.send(JSON.stringify(msg));
-
-		$('#messages').html('');
-		messages = [];
-
-		$('#main-container').addClass('hidden');
-		$('#user-container').removeClass('hidden');
-
-		conn.close();
 	});
 
 // })();

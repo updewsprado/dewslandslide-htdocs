@@ -1,58 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<!-- <meta charset="utf-8"> -->
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-	<title>chatterbox</title>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title>Chatter Box</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/styleBS.css">
+    <link rel="stylesheet" type="text/css" href="css/awesomplete.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-	<div id="wrapper">
-		<div id="user-container">
-			<label for="user">What's your name?</label>
-			<input type="text" id="user" name="user"><Br/>
-			<label for="sitename">Site Name (3 Letter):</label>
-			<input type="text" id="sitename" name="sitename"><Br/>
-			<label for="office">Office:</label>
-			<input type="text" id="office" name="office">
-			<button type="button" id="generate-contact">Generate Number</button><Br/>
-			<label for="contactname">Name you want to contact:</label><Br/>
-			<input class="largeTextDisplay" type="text" id="contactname" name="contactname">
-			<button type="button" id="generate-contact-from-name">Gen Num from Name</button><Br/>
-			<label for="contactnum">Number you want to contact:</label><Br/>
-			<input class="largeTextDisplay" type="text" id="contactnum" name="contactnum">
-			<button type="button" id="join-chat">Join Chat</button>
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<div class="container bootstrap snippet">
+
+    <div class="row">
+        <div id="search-contacts" class="col-md-6">
+            <label>Search for contact:</label><Br/>
+            <input class="dropdown-input" data-multiple />
+            <!-- <textarea class="dropdown-input" data-multiple></textarea> -->
+            <button type="button" id="go-chat">Go Chat!</button><Br/>
+        </div>
+        <div id="current-contacts" class="col-md-6">
+            <h4 class="bg-success"></h4>
+        </div>
+<!--         
+        <div class="bg-white">
+            <div class="input-group">
+                <input type="text" id="searchbox" name="searchbox" class="form-control border no-shadow no-rounded dropdown-input" placeholder="Search contacts here" data-multiple />
+                <span class="input-group-btn">
+                    <button class="btn btn-success no-rounded" type="button" id="go-chat">Go Chat!</button>
+                </span>
+            </div>
+        </div>   
+-->        
+    </div>
+
+    <div class="row">
+        <div id="possible-contacts" class="col-md-4">
+            
+        </div>
+    </div>
+
+    <div class="row">
+		<div class="col-md-3 bg-white ">
+<!--             
+            <div class=" row border-bottom padding-sm friend-list-header" style="height: 40px;">
+            	Contacts
+            </div> -->
+
+            <!-- =============================================================== -->
+            <!-- member list -->
+<!--             <ul class="friend-list">
+                <li class="active bounceInDown">
+                	<a href="#" class="clearfix">
+                		<img src="img/phivolcs2.png" alt="" class="img-circle">
+                		<div class="friend-name">	
+                			<strong>John Doe</strong>
+                		</div>
+                		<div class="last-message text-muted">Hello, Are you there?</div>
+                		<small class="time text-muted">Just now</small>
+                		<small class="chat-alert label label-danger">1</small>
+                	</a>
+                </li>
+                <li>
+                	<a href="#" class="clearfix">
+                		<img src="http://bootdey.com/img/Content/user_2.jpg" alt="" class="img-circle">
+                		<div class="friend-name">	
+                			<strong>Jane Doe</strong>
+                		</div>
+                		<div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                		<small class="time text-muted">5 mins ago</small>
+                	<small class="chat-alert text-muted"><i class="fa fa-check"></i></small>
+                	</a>
+                </li> 
+                <li>
+                	<a href="#" class="clearfix">
+                		<img src="img/boy_avatar.png" alt="" class="img-circle">
+                		<div class="friend-name">	
+                			<strong>Kate</strong>
+                		</div>
+                		<div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                		<small class="time text-muted">Yesterday</small>
+                		<small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                	</a>
+                </li>      
+                <li>
+                	<a href="#" class="clearfix">
+                		<img src="http://bootdey.com/img/Content/user_6.jpg" alt="" class="img-circle">
+                		<div class="friend-name">	
+                			<strong>Kate</strong>
+                		</div>
+                		<div class="last-message text-muted">Lorem ipsum dolor sit amet.</div>
+                		<small class="time text-muted">Yesterday</small>
+                		<small class="chat-alert text-muted"><i class="fa fa-reply"></i></small>
+                	</a>
+                </li>                          
+            </ul> -->
 		</div>
+        
+        <!--=========================================================-->
+        <!-- selected chat -->
+    	<div id="main-container" class="col-md-8 bg-white hidden">
+            <!-- <button type="button" id="leave-room">Leave</button> -->
+            <div class="chat-message">
+                <ul id="messages" class="chat">
 
-		<div id="main-container" class="hidden">
-			<button type="button" id="leave-room">Leave</button>
-			<div id="messages">
-				
-			</div>
-
-			<div id="msg-container">
-				<input type="text" id="msg" name="msg">
-				<button type="button" id="send-msg">Send</button>
-			</div>
-		</div>
-
+                </ul>
+            </div>
+            <div class="chat-box bg-white">
+            	<div class="input-group">
+            		<input type="text" id="msg" name="msg" class="form-control border no-shadow no-rounded" placeholder="Type your message here">
+            		<span class="input-group-btn">
+            			<button class="btn btn-success no-rounded" type="button" id="send-msg">Send</button>
+            		</span>
+            	</div><!-- /input-group -->	
+            </div>            
+		</div>        
 	</div>
+</div>
 
-	<script id="messages-template" type="text/x-handlebars-template">
-		{{#each messages}}
-		<div class="msg">
-			<div class="time">{{timestamp}}</div>
-			<div class="details">
-				<span class="user">{{user}}</span>: <span class="text">{{msg}}</span>
-			</div>
-		</div>
-		{{/each}}
-	</script>
+<!-- Modal: WSS Connection disconnected -->
+<div class="modal fade" id="connectionStatusModal" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- <button type="button" class="close" data-dismiss="modal">&times;</button> -->
+                <h4 class="modal-title text-danger">You have been disconnected!</h4>
+            </div>
+            <div class="modal-body">
+                <p>Chatterbox App will attempt to reconnect in a few seconds</p>
+            </div>
+            <div class="modal-footer">
+                <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Refresh</button> -->
+            </div>
+        </div>
+    </div>
+</div>
 
-	<script src="js/main.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+<script id="messages-template-both" type="text/x-handlebars-template">
+{{#each messages}}
+    {{#if isyou}}
+    <li class="right clearfix">
+        <span class="chat-img pull-right">
+            <img src="img/dewsl_03.png" alt="User Avatar">
+    {{else}}
+    <li class="left clearfix">
+        <span class="chat-img pull-left">
+            <img src="img/boy_avatar.png" alt="User Avatar">
+    {{/if}}
+        </span>
+        <div class="chat-body clearfix">
+            <div class="header">
+                <strong class="primary-font">{{user}}</strong>
+                <small class="pull-right text-muted"><i class="fa fa-clock-o"></i> {{timestamp}}</small>
+            </div>
+            <p>
+                {{msg}}
+            </p>
+        </div>
+    </li>
+{{/each}}
+</script>
+
+<script id="selected-contact-template" type="text/x-handlebars-template">
+
+    <div class="alert alert-danger">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <strong>{{fullname}}</strong> {{numbers}}
+    </div>
+
+</script>
+
+<script src="js/awesomplete.min.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>

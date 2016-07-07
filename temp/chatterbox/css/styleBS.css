@@ -12,6 +12,23 @@ body {
   background-color: #fff;
 }
 
+#search-contacts {
+  position: fixed;
+  list-style: none;
+  margin-left: 0px;
+  margin-top: 0px;
+  z-index: 10;
+}
+
+#current-contacts {
+  position: fixed;
+  list-style: none;
+  text-align: right;
+  right: 0px;
+  margin-right: 5%;
+  z-index: 10;
+}
+
 .friend-list-header {
   position: fixed;
 }
@@ -21,6 +38,7 @@ body {
   list-style: none;
   margin-left: -40px;
   margin-top: 60px;
+  z-index: 0;
 }
 
 .friend-list li {
