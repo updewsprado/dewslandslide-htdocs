@@ -459,7 +459,7 @@
 		var msgHistory = {
 			'type': 'smsloadrequest',
 			'number': contactnumTrimmed,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 		};
 
 		$('#user').val('You');
@@ -486,7 +486,7 @@
 			'user': user,
 			'numbers': normalized,
 			'msg': text + footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 		};
 		updateMessages(msg);
 		conn.send(JSON.stringify(msg));
