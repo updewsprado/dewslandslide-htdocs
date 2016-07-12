@@ -9,6 +9,7 @@
 	var temp, tempMsg, tempUser, tempRequest;
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
+	var officesAndSites;
 	var testName;
 	var testNumbers;
 	var multiContactsList = [];
@@ -72,18 +73,27 @@
 		}
 	}
 
-	// function loadCommunityContactRequest(msg) {
-	// 	//TODO: load the historical message here
-	// 	contactInfo = msg.data;
-	// 	var totalContacts = msg.total;
-	// 	var contact = msg.data[0];
-	// 	var fullname = contact.fullname.replace(/\?/g,function(){return "\u00f1"});
-	// 	var tempnum = contact.numbers;
+	function loadOfficesAndSites(msg) {
+		var offices = msg.offices;
+		var sitenames = msg.sitenames;
+		var office, sitename;
 
-	// 	console.log("fullname: " + fullname + ", number: " + tempnum);
-	// }
+		//Load the offices on the modal
+		for (var i = 0; i < offices.length; i++) {
+			var modIndex = i % 5;
 
+			office = offices[i];
+			$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" value="'+office+'">'+office+'</label></div>');
+		}
 
+		//Load the site names on the modal
+		for (var i = 0; i < sitenames.length; i++) {
+			var modIndex = i % 6;
+
+			sitename = sitenames[i];
+			$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" value="'+sitename+'">'+sitename+'</label></div>');
+		}
+	}
 
 	//Connect the app to the Web Socket Server
 	function connectWS() {
@@ -99,6 +109,8 @@
 			if (isFirstSuccessfulConnect) {
 				//TODO: load contacts information for first successful connect
 				//contacts currently 9KB in size. too big for the WSS setup
+
+				getOfficesAndSitenames();
 
 				//set flag to false after successful loading
 				isFirstSuccessfulConnect = false;
@@ -121,9 +133,11 @@
 			if (msg.type == "smsload") {
 				initLoadMessageHistory(msg);
 			} 
-			// else if (msg.type == "loadcommunitycontact") {
-			// 	loadCommunityContactRequest(msg);
-			// }
+			else if (msg.type == "loadofficeandsites") {
+				// loadCommunityContactRequest(msg);
+				officesAndSites = msg;
+				loadOfficesAndSites(officesAndSites);
+			}
 			else if (msg.type == "loadnamesuggestions") {
 				contactSuggestions = msg.data;
 
@@ -493,5 +507,37 @@
 
 		$('#msg').val('');
 	});
+
+	//CHECK ALL Offices in the advanced search
+	$('#checkAllOffices').click(function() {
+		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', true);
+	});
+
+	//UNcheck ALL Offices in the advanced search
+	$('#uncheckAllOffices').click(function() {
+		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
+	});
+
+	//CHECK ALL Offices in the advanced search
+	$('#checkAllSitenames').click(function() {
+		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', true);
+	});
+	
+	//UNcheck ALL Offices in the advanced search
+	$('#uncheckAllSitenames').click(function() {
+		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
+	});
+
+	var isFirstAdvancedSearchActivation = false;
+
+	//Load the office and site names from wSS
+	function getOfficesAndSitenames () {
+		var msg = {
+			'type': 'loadofficeandsitesrequest'
+		};
+		conn.send(JSON.stringify(msg));
+	}
+	
+
 
 // })();
