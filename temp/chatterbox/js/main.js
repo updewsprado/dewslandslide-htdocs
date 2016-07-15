@@ -10,6 +10,7 @@
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 	var officesAndSites;
+	var groupTags = [];
 	var testName;
 	var testNumbers;
 	var multiContactsList = [];
@@ -29,17 +30,21 @@
 			messages.push(msg);
 		}
 		else {
-			//substitute number for name of registered user from contactInfo
-			for (i in contactInfo) {
-				// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
-
-				if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+			if (contactInfo == "groups") {
+				messages.push(msg);
+			} else {
+				//substitute number for name of registered user from contactInfo
+				for (i in contactInfo) {
 					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
 
-					msg.isyou = 0;
-					msg.user = contactInfo[i].fullname;
-					messages.push(msg);
-					break;
+					if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+						// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
+						msg.isyou = 0;
+						msg.user = contactInfo[i].fullname;
+						messages.push(msg);
+						break;
+					}
 				}
 			}
 		}
@@ -83,7 +88,7 @@
 			var modIndex = i % 5;
 
 			office = offices[i];
-			$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" value="'+office+'">'+office+'</label></div>');
+			$("#offices-"+modIndex).append('<div class="checkbox"><label><input name="offices" type="checkbox" value="'+office+'">'+office+'</label></div>');
 		}
 
 		//Load the site names on the modal
@@ -91,7 +96,7 @@
 			var modIndex = i % 6;
 
 			sitename = sitenames[i];
-			$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" value="'+sitename+'">'+sitename+'</label></div>');
+			$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" type="checkbox" value="'+sitename+'">'+sitename+'</label></div>');
 		}
 	}
 
@@ -167,12 +172,14 @@
 				}
 				else {
 					//Assumption: Alpha numeric users only come from the browser client
-					var tempNum;
-					for (tempNum in msg.numbers) {
-						if (tempNum.search(contactnumTrimmed) >= 0) {
-							updateMessages(msg);
-						}
-					}
+					// var tempNum;
+					// for (tempNum in msg.numbers) {
+					// 	if (tempNum.search(contactnumTrimmed) >= 0) {
+					// 		updateMessages(msg);
+					// 	}
+					// }
+
+					updateMessages(msg);
 				}
 			}
 		}
@@ -508,6 +515,35 @@
 		$('#msg').val('');
 	});
 
+	// Send a message to the selected recipients
+	$('#go-load-groups').click(function() {
+		//Reset the group tags
+		groupTags = [];
+
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+		   tagOffices.push(this.value);
+		});
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+		   tagSitenames.push(this.value);
+		});
+
+		groupTags = {
+			'type': 'smsloadrequestgroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames
+		};
+
+		contactInfo = "groups";
+
+		//Request for message exchanges from the groups selected
+		conn.send(JSON.stringify(groupTags));
+
+		$('#main-container').removeClass('hidden');
+	});
+
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', true);
@@ -518,12 +554,12 @@
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
 	});
 
-	//CHECK ALL Offices in the advanced search
+	//CHECK ALL Site Names in the advanced search
 	$('#checkAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', true);
 	});
 	
-	//UNcheck ALL Offices in the advanced search
+	//UNcheck ALL Site Names in the advanced search
 	$('#uncheckAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 	});
