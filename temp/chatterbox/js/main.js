@@ -31,6 +31,40 @@
 		}
 		else {
 			if (contactInfo == "groups") {
+				//TODO: only push the message if it belongs to the groupTags
+				//Don't include message if "msg.name" is "unknown"
+				if (msg.name == "unknown") {
+					return;
+				}
+
+				//Use "sitenames" as the primary filter
+				var isTargetSite = false;
+				for (i in groupTags.sitenames) {
+					if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						isTargetSite = true;
+						continue;
+					}
+				}
+
+				if (isTargetSite == false) {
+					return;
+				}
+
+				//Use "offices" as the secondary filter
+				var isOffices = false;
+				for (i in groupTags.offices) {
+					if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						isOffices = true;
+						continue;
+					}
+				}
+
+				if (isOffices == false) {
+					return;
+				}
+
+				msg.isyou = 0;
+				msg.user = msg.name;
 				messages.push(msg);
 			} else {
 				//substitute number for name of registered user from contactInfo
@@ -162,25 +196,35 @@
 			else {
 				var numbers = /^[0-9]+$/;  
 				console.log(msg);
-				if(msg.user.match(numbers)) {
-					for (i in contactnumTrimmed) {
-						// console.log(contactnumTrimmed[i]);
-						if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
-							updateMessages(msg);
-						}
-					}
-				}
-				else {
-					//Assumption: Alpha numeric users only come from the browser client
-					// var tempNum;
-					// for (tempNum in msg.numbers) {
-					// 	if (tempNum.search(contactnumTrimmed) >= 0) {
-					// 		updateMessages(msg);
-					// 	}
-					// }
 
+				if (contactInfo == "groups") {
 					updateMessages(msg);
 				}
+				else {
+					if(msg.user.match(numbers)) {
+						console.log("all numbers");
+						for (i in contactnumTrimmed) {
+							// console.log(contactnumTrimmed[i]);
+							if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+								updateMessages(msg);
+								break;
+							}
+						}
+					}
+					else {
+						console.log("alphanumeric keywords for msg.user");
+						//Assumption: Alpha numeric users only come from the browser client
+						// var tempNum;
+						// for (tempNum in msg.numbers) {
+						// 	if (tempNum.search(contactnumTrimmed) >= 0) {
+						// 		updateMessages(msg);
+						// 	}
+						// }
+
+						updateMessages(msg);
+					}
+				}
+
 			}
 		}
 
@@ -536,6 +580,9 @@
 			'sitenames': tagSitenames
 		};
 
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
 		contactInfo = "groups";
 
 		//Request for message exchanges from the groups selected
