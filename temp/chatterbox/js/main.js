@@ -7,6 +7,7 @@
 	var contactsList = [];
 	var messages = [];
 	var temp, tempMsg, tempUser, tempRequest;
+	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 	var officesAndSites;
@@ -21,17 +22,62 @@
 	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 
+	function arraysEqual(a, b) {
+		if (a === b) return true;
+		if (a == null || b == null) return false;
+		if (a.length != b.length) return false;
+
+		// If you don't care about the order of the elements inside
+		// the array, you should sort both arrays here.
+
+		for (var i = 0; i < a.length; ++i) {
+			if (a[i] !== b[i]) return false;
+		}
+		return true;
+	}
+
 	function updateMessages(msg) {
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
 
 		if (msg.user == "You") {
+			//TODO: must include logic for filtering the messages the current 
+			//	user is supposed to receive for either "groups/tags" mode or
+			//	normal usage
 			msg.isyou = 1;
-			messages.push(msg);
+
+			//If in "groups/tags" mode, accept message from "You" only if the
+			//recipients are exactly the offices and sitenames you've selected
+			if (contactInfo == "groups") {
+				console.log("type is group/tags")
+
+				if (msgType == "smsloadrequestgroup") {
+					console.log("type smsloadrequestgroup")
+					messages.push(msg);
+				}
+
+				// //only push the message if it belongs to the groupTags
+				// messages.push(msg);
+				if(arraysEqual(msg.offices, groupTags.offices)) {
+					if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+						console.log("type found match for group send receive")
+						console.log("the message before it gets pushed:");
+						console.log(msg);
+						messages.push(msg);
+					}
+				}
+			} 
+			else {
+				if (msgType == "smsloadrequestgroup") {
+					return;
+				}
+
+				messages.push(msg);
+			}
 		}
 		else {
 			if (contactInfo == "groups") {
-				//TODO: only push the message if it belongs to the groupTags
+				//only push the message if it belongs to the groupTags
 				//Don't include message if "msg.name" is "unknown"
 				if (msg.name == "unknown") {
 					return;
@@ -168,8 +214,9 @@
 		tempConn.onmessage = function(e) {
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
+			msgType = msg.type;
 
-			if (msg.type == "smsload") {
+			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
 			} 
 			else if (msg.type == "loadofficeandsites") {
@@ -207,21 +254,25 @@
 							// console.log(contactnumTrimmed[i]);
 							if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
 								updateMessages(msg);
-								break;
+								return;
 							}
 						}
 					}
 					else {
 						console.log("alphanumeric keywords for msg.user");
 						//Assumption: Alpha numeric users only come from the browser client
-						// var tempNum;
-						// for (tempNum in msg.numbers) {
-						// 	if (tempNum.search(contactnumTrimmed) >= 0) {
-						// 		updateMessages(msg);
-						// 	}
-						// }
 
-						updateMessages(msg);
+						//Update messages on user interface only if recipient is found in 
+						//	target contact info
+						for (i in contactnumTrimmed) {
+							// console.log(contactnumTrimmed[i]);
+							for (j in msg.numbers) {
+								if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.numbers[j])) {
+									updateMessages(msg);
+									return;
+								}
+							}
+						}
 					}
 				}
 
@@ -424,6 +475,29 @@
 		$("#current-contacts h4").text(tempText);
 	}
 
+	function displayGroupTagsForThread () {
+		var tempText = "[Sitenames: ";
+		var tempCountSitenames = groupTags.sitenames.length;
+		for (i in groupTags.sitenames) {
+		    if (i == tempCountSitenames - 1)
+		        tempText = tempText + groupTags.sitenames[i];
+		    else
+		        tempText = tempText + groupTags.sitenames[i] + ", ";
+		}
+
+		tempText = tempText + "]; [Offices: ";
+		var tempCountOffices = groupTags.offices.length;
+		for (i in groupTags.offices) {
+		    if (i == tempCountOffices - 1)
+		        tempText = tempText + groupTags.offices[i];
+		    else
+		        tempText = tempText + groupTags.offices[i] + ", ";
+		}
+
+		tempText = tempText + "]";
+		$("#current-contacts h4").text(tempText);
+	}
+
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
 		filter: function(text, input) {
 			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
@@ -536,33 +610,82 @@
 		conn.send(JSON.stringify(msgHistory));
 	});
 
+	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
-		var text = $('#msg').val();
-		var footer = "\n\nThis message was sent by Chatterbox App."
+		//For group type communication
+		if (contactInfo == "groups") {
+			var text = $('#msg').val();
+			var footer = "\n\nThis message was sent by Chatterbox App."
 
-		var normalized = [];
-		for (i in contactnumTrimmed) {
-		   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+			var tagOffices = [];
+			$('input[name="offices"]:checked').each(function() {
+			   tagOffices.push(this.value);
+			});
+
+			var tagSitenames = [];
+			$('input[name="sitenames"]:checked').each(function() {
+			   tagSitenames.push(this.value);
+			});
+
+			var msg = {
+				'type': 'smssendgroup',
+				'user': user,
+				'offices': tagOffices,
+				'sitenames': tagSitenames,
+				'msg': text + footer,
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+			};
+
+			console.log(msg);
+			conn.send(JSON.stringify(msg));
+
+			// //Create msg.name before updating the message
+			// msg.name = "";
+			// for (i in tagOffices) {
+			// 	msg.name = msg.name + " " + tagOffices[i];
+			// }
+
+			// for (i in tagSitenames) {
+			// 	msg.name = msg.name + " " + tagSitenames[i];
+			// }
+
+			msgType = "smssendgroup";
+			testMsg = msg;
+			updateMessages(msg);
+
+			$('#msg').val('');
+		} 
+		//For non group tags communication
+		else {
+			var text = $('#msg').val();
+			var footer = "\n\nThis message was sent by Chatterbox App."
+
+			var normalized = [];
+			for (i in contactnumTrimmed) {
+			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+			}
+
+			var msg = {
+				'type': 'smssend',
+				'user': user,
+				'numbers': normalized,
+				'msg': text + footer,
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+			};
+			updateMessages(msg);
+			conn.send(JSON.stringify(msg));
+
+			$('#msg').val('');
 		}
-
-		var msg = {
-			'type': 'smssend',
-			'user': user,
-			'numbers': normalized,
-			'msg': text + footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
-		};
-		updateMessages(msg);
-		conn.send(JSON.stringify(msg));
-
-		$('#msg').val('');
 	});
 
 	// Send a message to the selected recipients
 	$('#go-load-groups').click(function() {
 		//Reset the group tags
 		groupTags = [];
+
+		user = "You";
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
@@ -574,11 +697,17 @@
 		   tagSitenames.push(this.value);
 		});
 
+		//sort the sitename values in the array alphabetically
+		tagSitenames.sort();
+
 		groupTags = {
 			'type': 'smsloadrequestgroup',
 			'offices': tagOffices,
 			'sitenames': tagSitenames
 		};
+
+		//Display Group Tags for the thread being loaded
+		displayGroupTagsForThread();
 
 		$('#user').val('You');
 		$('#messages').html('');
