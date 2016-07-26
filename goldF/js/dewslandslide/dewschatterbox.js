@@ -1,4 +1,4 @@
-(function() {
+// (function() {
 	var user, contactnum;
 	var contactnumTrimmed = [];
 	var contactInfo;
@@ -613,10 +613,13 @@
 	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
+		// first_name came from PHP Session Variable. Look for chatterbox.php
+		//	in case you want to edit it.
+		var footer = "\n\n- " + first_name + " from PHIVOLCS-DYNASLOPE";
+
 		//For group type communication
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
-			var footer = "\n\nThis message was sent by Chatterbox App."
 
 			var tagOffices = [];
 			$('input[name="offices"]:checked').each(function() {
@@ -659,7 +662,6 @@
 		//For non group tags communication
 		else {
 			var text = $('#msg').val();
-			var footer = "\n\nThis message was sent by Chatterbox App."
 
 			var normalized = [];
 			for (i in contactnumTrimmed) {
@@ -751,4 +753,4 @@
 	}
 
 
-})();
+// })();
