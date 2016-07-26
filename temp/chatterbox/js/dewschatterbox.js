@@ -1,4 +1,4 @@
-// (function() {
+(function() {
 	var user, contactnum;
 	var contactnumTrimmed = [];
 	var contactInfo;
@@ -751,4 +751,4 @@
 	}
 
 
-// })();
+})();
