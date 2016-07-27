@@ -19,8 +19,24 @@
 	var conn = connectWS();
 	var delayReconn = 5000;
 
+	// first_name came from PHP Session Variable. Look for chatterbox.php
+	//	in case you want to edit it.
+	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
+
+	// Get remaining characters count
+	var remChars = 800 - $("#msg").val().length - footer.length;
+	$("#remaining_chars").text(remChars);
+
+	// Set the maximum length of text possible for the user
+	$("#msg").attr("maxlength", remChars);
+
 	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+
+	function updateRemainingCharacters() {
+		remChars = 800 - $("#msg").val().length - footer.length;
+		$("#remaining_chars").text(remChars);
+	}
 
 	function arraysEqual(a, b) {
 		if (a === b) return true;
@@ -613,10 +629,6 @@
 	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
-		// first_name came from PHP Session Variable. Look for chatterbox.php
-		//	in case you want to edit it.
-		var footer = "\n\n- " + first_name + " from PHIVOLCS-DYNASLOPE";
-
 		//For group type communication
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
@@ -680,6 +692,8 @@
 
 			$('#msg').val('');
 		}
+
+		updateRemainingCharacters();
 	});
 
 	// Send a message to the selected recipients
@@ -740,6 +754,13 @@
 	//UNcheck ALL Site Names in the advanced search
 	$('#uncheckAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
+	});
+
+
+
+	// Update the "remaining characters" information below the text area
+	$('#msg').bind('input propertychange', function() {
+		updateRemainingCharacters();
 	});
 
 	var isFirstAdvancedSearchActivation = false;
