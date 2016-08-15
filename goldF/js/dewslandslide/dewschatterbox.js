@@ -17,7 +17,7 @@
 	var multiContactsList = [];
 	var timerID = 0;
 	var conn = connectWS();
-	var delayReconn = 5000;
+	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.
@@ -32,6 +32,43 @@
 
 	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+
+	function setTargetTime(hour, minute) {
+		var t = new Date();
+		t.setHours(hour);
+		t.setMinutes(minute);
+		t.setSeconds(0);
+		t.setMilliseconds(0);
+
+		return t;
+	}
+
+	function modalDisconnectActivation(modalAction='show', hour, minute) {
+		var timeTarget = setTargetTime(hour, minute)
+		var timeNow = new Date().getTime();
+		var offsetmilliseconds = timeTarget - timeNow;
+
+		//Current time is already greater than the target time
+		if (offsetmilliseconds < 0) {
+			return;
+		}
+
+		if (modalAction == 'show') {
+			setTimeout(
+				function() {
+					$('#connectionStatusModal').modal();
+					conn.close();
+				}, 
+				offsetmilliseconds);
+		} 
+		else if (modalAction == 'hide') {
+			setTimeout(
+				function() {
+					conn = connectWS();
+				}, 
+				offsetmilliseconds);
+		}
+	}
 
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
@@ -205,7 +242,7 @@
 			console.log("Connection established!");
 			$("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
-			delayReconn = 5000;
+			delayReconn = 10000;
 
 			if (isFirstSuccessfulConnect) {
 				//TODO: load contacts information for first successful connect
@@ -359,7 +396,7 @@
 
 						// Add 1 second for everytime the reconnection is triggered
 						//	will reset once connected
-						if (delayReconn < 10000) {
+						if (delayReconn < 20000) {
 							delayReconn += 1000;
 						}
 		            }
@@ -773,5 +810,12 @@
 		conn.send(JSON.stringify(msg));
 	}
 
+	//Activate "Disconnect Notice" at 12:00 and 19:00
+	modalDisconnectActivation('show', 12, 0);
+	modalDisconnectActivation('show', 19, 0);
+
+	//Attempt to reconnect at 12:05 and 19:05
+	modalDisconnectActivation('hide', 12, 5);
+	modalDisconnectActivation('hide', 19, 5);
 
 // })();
