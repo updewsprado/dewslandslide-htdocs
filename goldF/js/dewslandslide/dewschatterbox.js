@@ -56,6 +56,10 @@
 		if (modalAction == "show") {
 			setTimeout(
 				function() {
+					//Hide the advanced search when disconnected
+					$("#advanced-search").modal("hide");
+					//Hide the modal backdrop
+					$('.modal-backdrop').remove();
 					$('#connectionStatusModal').modal();
 					conn.close();
 				}, 
