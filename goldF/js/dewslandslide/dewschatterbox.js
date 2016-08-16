@@ -188,7 +188,11 @@
 
 		var messages_html = messages_template_both({'messages': messages});
 		$('#messages').html(messages_html);
-		$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+		//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+
+		//Scroll to the bottom of the page
+		var maxScroll = $(document).height() - $(window).height();
+		$('html, body').scrollTop(maxScroll);
 	}
 
 	function loadMessageHistory(msg) {
