@@ -45,9 +45,12 @@ body {
 .friend-list {
   position: fixed;
   list-style: none;
-  margin-left: -40px;
-  margin-top: 60px;
+  margin-left: -50px;
+  margin-top: 110px;
   z-index: 0;
+  width: 25%;
+  height: 75%;
+  overflow-y: scroll;
 }
 
 .friend-list li {
@@ -82,7 +85,7 @@ body {
 }
 
 .friend-list li a .last-message {
-  width: 65%;
+  width: 70%;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

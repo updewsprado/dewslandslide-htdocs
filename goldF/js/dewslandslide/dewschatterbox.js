@@ -43,7 +43,7 @@
 		return t;
 	}
 
-	function modalDisconnectActivation(modalAction='show', hour, minute) {
+	function modalDisconnectActivation(modalAction="show", hour, minute) {
 		var timeTarget = setTargetTime(hour, minute)
 		var timeNow = new Date().getTime();
 		var offsetmilliseconds = timeTarget - timeNow;
@@ -53,7 +53,7 @@
 			return;
 		}
 
-		if (modalAction == 'show') {
+		if (modalAction == "show") {
 			setTimeout(
 				function() {
 					$('#connectionStatusModal').modal();
@@ -61,7 +61,7 @@
 				}, 
 				offsetmilliseconds);
 		} 
-		else if (modalAction == 'hide') {
+		else if (modalAction == "hide") {
 			setTimeout(
 				function() {
 					conn = connectWS();
@@ -810,12 +810,12 @@
 		conn.send(JSON.stringify(msg));
 	}
 
-	//Activate "Disconnect Notice" at 12:00 and 19:00
-	modalDisconnectActivation('show', 12, 0);
-	modalDisconnectActivation('show', 19, 0);
+	//Activate "Disconnect Notice" at 11:59 and 19:00
+	modalDisconnectActivation("show", 11, 59);
+	modalDisconnectActivation("show", 18, 59);
 
 	//Attempt to reconnect at 12:05 and 19:05
-	modalDisconnectActivation('hide', 12, 5);
-	modalDisconnectActivation('hide', 19, 5);
+	modalDisconnectActivation("hide", 12, 5);
+	modalDisconnectActivation("hide", 19, 5);
 
 // })();
