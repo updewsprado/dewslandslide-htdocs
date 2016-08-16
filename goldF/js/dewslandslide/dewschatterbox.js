@@ -810,11 +810,13 @@
 		conn.send(JSON.stringify(msg));
 	}
 
-	//Activate "Disconnect Notice" at 11:59 and 19:00
+	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
+	modalDisconnectActivation("show", 4, 59);
 	modalDisconnectActivation("show", 11, 59);
 	modalDisconnectActivation("show", 18, 59);
 
-	//Attempt to reconnect at 12:05 and 19:05
+	//Attempt to reconnect at 5:05, 12:05 and 19:05
+	modalDisconnectActivation("hide", 5, 5);
 	modalDisconnectActivation("hide", 12, 5);
 	modalDisconnectActivation("hide", 19, 5);
 
