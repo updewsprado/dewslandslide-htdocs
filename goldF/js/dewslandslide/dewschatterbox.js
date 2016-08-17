@@ -6,7 +6,8 @@
 	var contactSuggestions;
 	var contactsList = [];
 	var messages = [];
-	var quick_inbox = [];
+	var quick_inbox_registered = [];
+	var quick_inbox_unknown = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -205,22 +206,30 @@
 			console.log("Name and User is: " + msg.name + ", " + msg.user);
 			console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
 
+			var targetInbox;
+			var quick_inbox_html;
+
 			if (msg.name == "unknown") {
 				msg.isunknown = 1;
+				targetInbox = "#quick-inbox-unknown-display";
+
+				//Message Pushing using unshift (push at the start of the array)
+				quick_inbox_unknown.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
 			}
 			else {
 				msg.isunknown = 0;
+				targetInbox = "#quick-inbox-display";
+
+				//Message Pushing using unshift (push at the start of the array)
+				quick_inbox_registered.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
 			}
 
-			//Message Pushing using unshift (push at the start of the array)
-			quick_inbox.unshift(msg);
-
-			var quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox});
-			$('#quick-inbox-display').html(quick_inbox_html);
-			//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+			$(targetInbox).html(quick_inbox_html);
 
 			//Scroll to the top of the quick inbox
-			$("#quick-inbox-display").scrollTop(0);
+			$(targetInbox).scrollTop(0);
 		}
 	}
 

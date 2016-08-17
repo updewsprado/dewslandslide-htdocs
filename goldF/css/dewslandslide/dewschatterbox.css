@@ -38,6 +38,16 @@ body {
   z-index: 8;
 }
 
+.inbox-tab {
+  position: fixed;
+  list-style: none;
+  margin-left: 0px;
+  margin-top: 110px;
+  z-index: 0;
+  width: 20%;
+  height: 75%;
+}
+
 .friend-list-header {
   position: fixed;
 }
@@ -46,7 +56,7 @@ body {
   position: fixed;
   list-style: none;
   margin-left: -50px;
-  margin-top: 110px;
+  margin-top: 140px;
   z-index: 0;
   width: 20%;
   height: 75%;
