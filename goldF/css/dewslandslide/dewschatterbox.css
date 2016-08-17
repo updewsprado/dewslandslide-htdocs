@@ -48,7 +48,7 @@ body {
   margin-left: -50px;
   margin-top: 110px;
   z-index: 0;
-  width: 25%;
+  width: 20%;
   height: 75%;
   overflow-y: scroll;
 }
@@ -84,6 +84,10 @@ body {
   color: #777;
 }
 
+.friend-list li a .unknown-number {
+  color: #7F0D13;
+}
+
 .friend-list li a .last-message {
   width: 70%;
   white-space: nowrap;
@@ -93,7 +97,7 @@ body {
 
 .friend-list li a .time {
   position: absolute;
-  top: 10px;
+  top: 0px;
   right: 8px;
 }
 

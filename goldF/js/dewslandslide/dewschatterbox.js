@@ -6,6 +6,7 @@
 	var contactSuggestions;
 	var contactsList = [];
 	var messages = [];
+	var quick_inbox = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -32,6 +33,7 @@
 
 	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+	var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 
 	function setTargetTime(hour, minute) {
 		var t = new Date();
@@ -195,6 +197,33 @@
 		$('html, body').scrollTop(maxScroll);
 	}
 
+	function updateQuickInbox(msg) {
+		if (msg.user == "You") {
+			//Don't do anything if the message came from Dynaslope
+		}
+		else {
+			console.log("Name and User is: " + msg.name + ", " + msg.user);
+			console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
+
+			if (msg.name == "unknown") {
+				msg.isunknown = 1;
+			}
+			else {
+				msg.isunknown = 0;
+			}
+
+			//Message Pushing using unshift (push at the start of the array)
+			quick_inbox.unshift(msg);
+
+			var quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox});
+			$('#quick-inbox-display').html(quick_inbox_html);
+			//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
+
+			//Scroll to the top of the quick inbox
+			$("#quick-inbox-display").scrollTop(0);
+		}
+	}
+
 	function loadMessageHistory(msg) {
 		//TODO: load the historical message here
 		alert("loadMessageHistory!");
@@ -309,6 +338,9 @@
 					updateMessages(msg);
 				}
 				else {
+					//Update the Quick Inbox from the incoming real time messages
+					updateQuickInbox(msg);
+
 					if(msg.user.match(numbers)) {
 						console.log("all numbers");
 						for (i in contactnumTrimmed) {
@@ -513,24 +545,37 @@
 		return nameQuery;
 	}
 
-	function displayContactNamesForThread () {
-		var flags = [], uniqueName = [], l = contactInfo.length, i;
-		for( i=0; i<l; i++) {
-		    if( flags[contactInfo[i].fullname]) 
-		    	continue;
+	function displayContactNamesForThread (source="normal") {
+		if (source == "normal") {
+			var flags = [], uniqueName = [], l = contactInfo.length, i;
+			for( i=0; i<l; i++) {
+			    if( flags[contactInfo[i].fullname]) 
+			    	continue;
 
-		    flags[contactInfo[i].fullname] = true;
-		    uniqueName.push(contactInfo[i].fullname);
+			    flags[contactInfo[i].fullname] = true;
+			    uniqueName.push(contactInfo[i].fullname);
+			}
+
+			var tempText = "", tempCountContacts = uniqueName.length;
+			for (i in uniqueName) {
+			    console.log(uniqueName[i]);
+
+			    if (i == tempCountContacts - 1)
+			        tempText = tempText + uniqueName[i];
+			    else
+			        tempText = tempText + uniqueName[i] + ", ";
+			}
 		}
-
-		var tempText = "", tempCountContacts = uniqueName.length;
-		for (i in uniqueName) {
-		    console.log(uniqueName[i]);
-
-		    if (i == tempCountContacts - 1)
-		        tempText = tempText + uniqueName[i];
-		    else
-		        tempText = tempText + uniqueName[i] + ", ";
+		else if (source == "quickInbox") {
+			if (qiFullContact.search("unknown") >= 0) {
+				//Number is Unknown
+				tempText = qiFullContact;
+			} 
+			else {
+				//Number is known
+				var posDash = qiFullContact.search(" - ");
+				tempText = qiFullContact.slice(0, posDash);
+			}
 		}
 
 		$("#current-contacts h4").text(tempText);
@@ -629,16 +674,40 @@
 		parseContactInfo(nameQuery);
 	}, false);
 
-	// Chat with selected recipients
-	$('#go-chat').click(function() {
-		user = "You";
-
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
+	var qiFullContact = null;
+	function quickInboxStartChat(fullContact=null) {
+		if (fullContact == null) {
+			console.log("Error: User or Name is null");
+			return;
 		}
 		else {
+			console.log("User: " + fullContact);
+		}
+
+
+		qiFullContact = fullContact;
+		startChat(source="quickInbox");
+	}
+
+	function startChat(source="normal") {
+		user = "You";
+
+		if (source == "normal") {
+			if (contactSuggestions) {
+				contactInfo = multiContactsList;
+			}
+			else {
+				//If we are contacting an unregistered number
+				contactname = $('.dropdown-input').val();
+				contactnum = contactname;
+				contactnumTrimmed = [trimmedContactNum(contactnum)];
+
+				contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+			}
+		}
+		else if (source == "quickInbox") {
 			//If we are contacting an unregistered number
-			contactname = $('.dropdown-input').val();
+			contactname = qiFullContact;
 			contactnum = contactname;
 			contactnumTrimmed = [trimmedContactNum(contactnum)];
 
@@ -646,7 +715,7 @@
 		}
 
 		//Display Names of contacts for the thread being loaded
-		displayContactNamesForThread();
+		displayContactNamesForThread(source);
 
 		if (contactnumTrimmed <= 0) {
 			alert("Error: Invalid Contact Number");
@@ -669,6 +738,11 @@
 		tempRequest = msgHistory;
 		//request for message history of selected number
 		conn.send(JSON.stringify(msgHistory));
+	}
+
+	// Chat with selected recipients
+	$('#go-chat').click(function() {
+		startChat();
 	});
 
 	var testMsg;
