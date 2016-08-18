@@ -257,6 +257,25 @@
 		}
 	}
 
+	function initLoadQuickInbox(quickInboxMsg) {
+		// console.log(quickInboxMsg);
+
+		if (quickInboxMsg.data == null) {
+			return;
+		}
+
+		console.log("initLoadQuickInbox");
+		//Loop through the JSON msg and
+		//	use updateMessages multiple times
+		var qiMessages = quickInboxMsg.data;
+		temp = quickInboxMsg.data;
+		var msg;
+		for (var i = qiMessages.length - 1; i >= 0; i--) {
+			msg = qiMessages[i];
+			updateQuickInbox(msg);
+		}
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -296,6 +315,16 @@
 
 				getOfficesAndSitenames();
 
+				//getInitialQuickInboxMessages();
+
+				//TODO: Optimize the loading speed
+				//Set a 2 sec delay before getting the initial quick inbox messages
+				setTimeout(
+					function() {
+						getInitialQuickInboxMessages();
+					}, 
+					2000);
+
 				//set flag to false after successful loading
 				isFirstSuccessfulConnect = false;
 			}
@@ -318,6 +347,9 @@
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
 			} 
+			else if (msg.type == "smsloadquickinbox") {
+				initLoadQuickInbox(msg)
+			}
 			else if (msg.type == "loadofficeandsites") {
 				// loadCommunityContactRequest(msg);
 				officesAndSites = msg;
@@ -897,6 +929,14 @@
 	function getOfficesAndSitenames () {
 		var msg = {
 			'type': 'loadofficeandsitesrequest'
+		};
+		conn.send(JSON.stringify(msg));
+	}
+
+	//Load the office and site names from wSS
+	function getInitialQuickInboxMessages () {
+		var msg = {
+			'type': 'smsloadquickinboxrequest'
 		};
 		conn.send(JSON.stringify(msg));
 	}
