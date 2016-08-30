@@ -8,7 +8,7 @@
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$sql = "SELECT * FROM site_column WHERE s_id > $sid and s_id < 100";
+		$sql = "SELECT * FROM site_column ";
 		
 		$result = mysqli_query($con, $sql);
 
@@ -61,7 +61,7 @@
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$sql = "SELECT name FROM site_column WHERE s_id < 100 ORDER BY name ASC";
+		$sql = "SELECT name FROM site_column ORDER BY name ASC";
 		
 		$result = mysqli_query($con, $sql);
 
@@ -90,7 +90,7 @@
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$sql = "SELECT * FROM site_column WHERE s_id > $sid and s_id < 100";
+		$sql = "SELECT * FROM site_column ";
 		
 		$result = mysqli_query($con, $sql);
 
@@ -175,7 +175,7 @@
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$sql = "SELECT * FROM site_column_props WHERE s_id > $sid AND s_id < 100 ORDER BY s_id ASC";
+		$sql = "SELECT * FROM site_column_props  ORDER BY s_id ASC";
 		
 		$result = mysqli_query($con, $sql);
 
@@ -217,7 +217,7 @@
 		  echo "Failed to connect to MySQL: " . mysqli_connect_error();
 		}
 
-		$sql = "SELECT * FROM site_column_props WHERE s_id > $sid AND s_id < 100 ORDER BY s_id ASC";
+		$sql = "SELECT * FROM site_column_props  ORDER BY s_id ASC";
 		
 		$result = mysqli_query($con, $sql);
 
@@ -362,7 +362,7 @@
 
 		$sql = "SELECT name 
 				FROM site_column 
-				WHERE s_id < 100 AND CHAR_LENGTH(name) = 5 AND SUBSTRING(name, 4, 1) = 's' 
+				WHERE  CHAR_LENGTH(name) = 5 AND SUBSTRING(name, 4, 1) = 's' 
 				ORDER BY name ASC;";
 		
 		$result = mysqli_query($con, $sql);

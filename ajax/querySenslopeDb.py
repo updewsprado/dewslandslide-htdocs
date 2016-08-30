@@ -1,4 +1,4 @@
-#import MySQLdb
+import MySQLdb
 import ConfigParser
 from datetime import datetime as dtm
 from datetime import timedelta as tda
@@ -8,14 +8,6 @@ import pandas as pd
 import numpy as np
 import StringIO
 #import filterSensorData
-import platform
-
-curOS = platform.system()
-
-if curOS == "Windows":
-    import MySQLdb as mysqlDriver
-elif curOS == "Linux":
-    import pymysql as mysqlDriver
 
 # Scripts for connecting to local database
 # Needs config file: server-config.txt
@@ -45,10 +37,10 @@ class coordsArray:
 def SenslopeDBConnect(nameDB):
     while True:
         try:
-            db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=nameDB)
+            db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=nameDB)
             cur = db.cursor()
             return db, cur
-        except mysqlDriver.OperationalError:
+        except MySQLdb.OperationalError:
             print '.',
 
 def PrintOut(line):
@@ -72,7 +64,7 @@ def DoesTableExist(table_name):
     
 
 def GetLatestTimestamp(nameDb, table):
-    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     try:
@@ -101,9 +93,9 @@ def GetLatestTimestamp2(table_name):
         return a[0][0]
     else: 
         return ''
-		
+        
 def CreateAccelTable(table_name, nameDB):
-    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     cur.execute("USE %s"%nameDB)
@@ -111,13 +103,13 @@ def CreateAccelTable(table_name, nameDB):
     db.close()
 
 def CreateColAlertsTable(table_name, nameDB):
-    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     cur.execute("USE %s"%nameDB)
     cur.execute("CREATE TABLE IF NOT EXISTS %s(sitecode varchar(8), timestamp datetime, id int, alerts varchar(8), PRIMARY KEY (sitecode, timestamp, id))" %table_name)
     db.close()
-	
+    
 #GetDBResultset(query): executes a mysql like code "query"
 #    Parameters:
 #        query: str
@@ -170,11 +162,11 @@ def GetDBDataFrame(query):
 #Push a dataframe object into a table
 def PushDBDataFrame(df,table_name):     
     db, cur = SenslopeDBConnect(Namedb)
-    #con = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=Namedb)
-    
+
     df.to_sql(con=db, name=table_name, if_exists='append', flavor='mysql')
     db.commit()
     db.close()
+
 
 #GetRawAccelData(siteid = "", fromTime = "", maxnode = 40): 
 #    retrieves raw data from the database table specified by parameters
@@ -191,15 +183,17 @@ def PushDBDataFrame(df,table_name):
 #    Returns:
 #        df: dataframe object 
 #            dataframe object of the result set 
-def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode = -1):
+def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode = -1, batt=0):
 
     if not siteid:
         raise ValueError('no site id entered')
     
     if printtostdout:
         PrintOut('Querying database ...')
-
-    query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid)        
+    if batt == 1:
+        query = "select timestamp,id,xvalue,yvalue,zvalue,batt from senslopedb.%s " % (siteid)   
+    else:
+        query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid)
 
     if not fromTime:
         fromTime = "2010-01-01"
@@ -218,14 +212,61 @@ def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid
         query = query + " and id = %s;" % (targetnode)
     
     PrintOut(query)
-    df =  GetDBDataFrame(query)
     
-    df.columns = ['ts','id','x','y','z']
+    df =  GetDBDataFrame(query)
+    if batt == 1:
+        df.columns = ['ts','id','x','y','z','v']
+    else:
+        df.columns = ['ts','id','x','y','z']
     # change ts column to datetime
     df.ts = pd.to_datetime(df.ts)
     
     return df
 
+#TODO: This code should have the GID as input and part of the query to make --> used targetnode and edited ConvertSomsRaw.py
+#   the processing time faster
+def GetSomsData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid=0, targetnode = -1, v=0):
+
+    if not siteid:
+        raise ValueError('no site id entered')
+    
+    if printtostdout:
+        PrintOut('Querying database ...')
+    if v==1:
+        query = "select timestamp,id,mvalue from senslopedb.%s " % (siteid) 
+    else:    
+        query = "select timestamp,id,msgid,mval1,mval2 from senslopedb.%s " % (siteid)        
+
+    if not fromTime:
+        fromTime = "2010-01-01"
+        
+    query = query + " where timestamp > '%s'" % fromTime
+    
+    if toTime:
+        query = query + " and timestamp < '%s'" % toTime
+
+#    if len(siteid) == 5:
+#        query = query + " and (msgid & 1) = (%s & 1)" % (msgid);
+    if msgid!=0:
+        query = query + " and msgid = '%s'" % msgid
+        
+    if targetnode <= 0:
+        query = query + " and id >= 1 and id <= %s ;" % (str(maxnode))
+    else:
+        query = query + " and id = %s;" % (targetnode)
+    
+    PrintOut(query)
+    df =  GetDBDataFrame(query)
+    if v==1:
+        df.columns = ['ts','id','mval1']
+    else:
+        df.columns = ['ts','id','msgid','mval1','mval2']
+    
+    # change ts column to datetime
+    df.ts = pd.to_datetime(df.ts)
+    
+    return df
+    
 #GetRawRainData(siteid = "", fromTime = "", maxnode = 40): 
 #    retrieves raw data from the database table specified by parameters
 #    
@@ -314,7 +355,8 @@ def GetSensorList():
         query = 'SELECT name, num_nodes, seg_length, col_length FROM site_column_props'
         
         df = psql.read_sql(query, db)
-        df.to_csv("column_properties.csv",index=False,header=False);
+        if PrintColProps:
+            df.to_csv("column_properties.csv",index=False,header=False);
         
         # make a sensor list of columnArray class functions
         sensors = []
@@ -506,7 +548,7 @@ def PushLastGoodData(df,name):
 #    last good data set to the database    
 def GenerateLastGoodData():
     
-    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     
@@ -530,7 +572,7 @@ def GenerateLastGoodData():
         print s.name, s.nos
         
         df = GetRawAccelData(s.name,'',s.nos)
-        #df = filterSensorData.applyFilters(df,True,True,False)         
+        df = filterSensorData.applyFilters(df,True,True,False)         
         
         dflgd = GetLastGoodData(df,s.nos,True)
         del df           
@@ -562,6 +604,8 @@ try:
     mlowlim = cfg.get(valueSect,'mlowlim')
     muplim = cfg.get(valueSect,'muplim')
     islimval = cfg.getboolean(valueSect,'LimitValues')
+    
+    PrintColProps = cfg.get('I/O', 'PrintColProps')
 except:
     #default values are used for missing configuration files or for cases when
     #sensitive info like db access credentials must not be viewed using a browser
