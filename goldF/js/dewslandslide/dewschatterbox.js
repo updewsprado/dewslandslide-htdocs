@@ -323,7 +323,7 @@
 					function() {
 						getInitialQuickInboxMessages();
 					}, 
-					2000);
+					500);
 
 				//set flag to false after successful loading
 				isFirstSuccessfulConnect = false;
