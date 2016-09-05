@@ -586,64 +586,73 @@
 		return nameQuery;
 	}
 
-	function displayContactNamesForThread (source="normal") {
-		if (source == "normal") {
-			var flags = [], uniqueName = [], l = contactInfo.length, i;
-			for( i=0; i<l; i++) {
-			    if( flags[contactInfo[i].fullname]) 
-			    	continue;
+function displayContactNamesForThread (source="normal") {
+	if (source == "normal") {
+		var flags = [], uniqueName = [], l = contactInfo.length, i;
+		for( i=0; i<l; i++) {
+			if( flags[contactInfo[i].fullname]) 
+				continue;
 
-			    flags[contactInfo[i].fullname] = true;
-			    uniqueName.push(contactInfo[i].fullname);
-			}
-
-			var tempText = "", tempCountContacts = uniqueName.length;
-			for (i in uniqueName) {
-			    console.log(uniqueName[i]);
-
-			    if (i == tempCountContacts - 1)
-			        tempText = tempText + uniqueName[i];
-			    else
-			        tempText = tempText + uniqueName[i] + ", ";
-			}
-		}
-		else if (source == "quickInbox") {
-			if (qiFullContact.search("unknown") >= 0) {
-				//Number is Unknown
-				tempText = qiFullContact;
-			} 
-			else {
-				//Number is known
-				var posDash = qiFullContact.search(" - ");
-				tempText = qiFullContact.slice(0, posDash);
-			}
+			flags[contactInfo[i].fullname] = true;
+			uniqueName.push(contactInfo[i].fullname);
 		}
 
-		$("#current-contacts h4").text(tempText);
+		var tempText = "", tempCountContacts = uniqueName.length;
+		for (i in uniqueName) {
+			console.log(uniqueName[i]);
+
+			if (i == tempCountContacts - 1)
+				tempText = tempText + uniqueName[i];
+			else
+				tempText = tempText + uniqueName[i] + ", ";
+		}
+	}
+	else if (source == "quickInbox") {
+		if (qiFullContact.search("unknown") >= 0) {
+//Number is Unknown
+tempText = qiFullContact;
+document.title = tempText;
+} 
+else {
+//Number is known
+var posDash = qiFullContact.search(" - ");
+tempText = qiFullContact.slice(0, posDash);
+}
+}
+
+$("#current-contacts h4").text(tempText);
+document.title = tempText;
+}
+
+function displayGroupTagsForThread () {
+	var tempText = "[Sitenames: ";
+	var titleSites = "";
+	var tempCountSitenames = groupTags.sitenames.length;
+	for (i in groupTags.sitenames) {
+		if (i == tempCountSitenames - 1) {
+			tempText = tempText + groupTags.sitenames[i];
+			titleSites = titleSites + groupTags.sitenames[i];
+		} else {
+			tempText = tempText + groupTags.sitenames[i] + ", ";
+			titleSites = titleSites + groupTags.sitenames[i] + ", ";
+		}
 	}
 
-	function displayGroupTagsForThread () {
-		var tempText = "[Sitenames: ";
-		var tempCountSitenames = groupTags.sitenames.length;
-		for (i in groupTags.sitenames) {
-		    if (i == tempCountSitenames - 1)
-		        tempText = tempText + groupTags.sitenames[i];
-		    else
-		        tempText = tempText + groupTags.sitenames[i] + ", ";
+	tempText = tempText + "]; [Offices: ";
+	var tempCountOffices = groupTags.offices.length;
+	for (i in groupTags.offices) {
+		if (i == tempCountOffices - 1){
+			tempText = tempText + groupTags.offices[i];
+		} else {
+			tempText = tempText + groupTags.offices[i] + ", ";
 		}
-
-		tempText = tempText + "]; [Offices: ";
-		var tempCountOffices = groupTags.offices.length;
-		for (i in groupTags.offices) {
-		    if (i == tempCountOffices - 1)
-		        tempText = tempText + groupTags.offices[i];
-		    else
-		        tempText = tempText + groupTags.offices[i] + ", ";
-		}
-
-		tempText = tempText + "]";
-		$("#current-contacts h4").text(tempText);
 	}
+
+	document.title = titleSites;
+
+	tempText = tempText + "]";
+	$("#current-contacts h4").text(tempText);
+}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
 		filter: function(text, input) {
