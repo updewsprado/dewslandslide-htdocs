@@ -905,6 +905,200 @@ function displayGroupTagsForThread () {
 		$('#main-container').removeClass('hidden');
 	});
 
+	$(document).ready(function() {
+	var table = $('#response-contact-container').DataTable();
+	});
+
+	$('input[type="radio"]').on('change', function(e) {
+		if ($("input[name='category']:checked").val() == "employee_contacts_radio") {
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/get_employee_contacts",             
+				dataType: "html",              
+				success: function(response){
+					$("#response-contact-container").DataTable().clear();
+					$("#response-contact-container").DataTable().destroy();
+					$('#response-contact-container').show();
+					$("#response-contact-container").html(response);
+					$("#response-contact-container").DataTable();
+				}
+			});
+		} else {
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/get_community_contacts",             
+				dataType: "html",              
+				success: function(response){
+					$("#response-contact-container").DataTable().clear();
+					$("#response-contact-container").DataTable().destroy();
+					$('#response-contact-container').show();
+					$("#response-contact-container").html(response); 
+					$("#response-contact-container").DataTable();
+				}
+			});
+		}
+	});
+
+	String.prototype.capitalize = function() {
+	return this.charAt(0).toUpperCase() + this.slice(1);
+	}
+
+	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
+		$('#edit-contact-settings').modal('show');
+		$('#edit-contact').modal('hide');
+	});
+
+	$('#response-contact-container').on('click', 'tr:has(td)', function(){
+		var table = $('#response-contact-container').DataTable();
+		var data = table.row(this).data();
+		$('#edit-contact-settings').modal('hide');
+		$('.modal-backdrop').remove();
+
+		var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel'];
+		var employee_contacts = ['eid','firstname','lastname','nickname','birthdate','email','numbers','grouptags'];
+		var container = document.getElementById("contact-settings-wrapper");
+
+		while (container.hasChildNodes()) {
+			container.removeChild(container.lastChild);
+		}
+
+		var category = document.createElement("input");
+
+		category.type = "text";
+		category.name = "category"
+		category.value = data[0];
+		category.setAttribute("hidden", true);
+		container.appendChild(category);
+
+		for(var i=1; i< data.length; i++) {
+
+			var label = document.createElement("label");
+			var input = document.createElement("input");
+
+			if (data[0].charAt(0)=="c") {
+				var t = document.createTextNode(community_contacts[i].capitalize());
+				label.appendChild(t);
+				container.appendChild(label);
+				input.id = community_contacts[i];
+				input.name = community_contacts[i];
+				input.className = "form-control";
+				input.value = data[i];
+				input.setAttribute("required","true");
+				container.appendChild(input);
+				container.appendChild(document.createElement("br"));
+			} else {
+				var t = document.createTextNode(employee_contacts[i].capitalize());
+				label.appendChild(t);
+				container.appendChild(label);
+				input.id = employee_contacts[i];
+				if (employee_contacts[i] == "birthdate"){
+					input.type = "date";
+				} else {
+					input.type = "text";
+				}
+				input.name = employee_contacts[i];
+				input.className = "form-control";
+				input.value = data[i];
+				input.setAttribute("required","true");
+				container.appendChild(input);
+				container.appendChild(document.createElement("br"));
+			}
+			console.log(data[i]);
+		}
+		$('#edit-contact').modal('show');
+	});
+
+
+	// GETS the Office and site options
+	$('#btn-contact-settings').click(function() {
+		$('#sitename').empty();
+		$('#office').empty();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getdistinctsitename",             
+			dataType: "json",              
+			success: function(response){
+				var counter = 0;
+				select = document.getElementById('sitename');
+				for (counter=0;counter < response.length;counter++){
+					var opt = document.createElement('option');
+					opt.value = response[counter].sitename;
+					opt.innerHTML = response[counter].sitename;
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+				opt.value = "OTHERS";
+				opt.innerHTML = "OTHERS";
+				select.appendChild(opt);
+			}
+		});
+
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getdistinctofficename",             	
+			dataType: "json",              
+			success: function(response){
+				var counter = 0;
+				select = document.getElementById('office');
+				for (counter=0;counter < response.length;counter++){
+					var opt = document.createElement('option');
+					opt.value = response[counter].office;
+					opt.innerHTML = response[counter].office;
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+				opt.value = "OTHERS";
+				opt.innerHTML = "OTHERS";
+				select.appendChild(opt);
+			}
+		});
+	});
+
+	//Get Disticnt Offices.
+	$('#office').on('change',function() {
+		if ($("#office").val() == "OTHERS") {
+			$("#other-officename").show();
+			console.log("show");
+		} else {
+			$("#other-officename").hide();
+			console.log("hide");
+		}
+	});
+
+	//Get Disticnt Offices.
+	$('#sitename').on('change',function() {
+		if ($("#sitename").val() == "OTHERS") {
+			$("#other-sitename").show();
+			console.log("show");
+		} else {
+			$("#other-sitename").hide();
+			console.log("hide");
+		}
+	});
+
+	//Clear Field inputs for Employee Contact
+	$('#btn-clear-ec').on('click',function(){
+		$('#firstname').val('');
+		$('#lastname').val('');
+		$('#grouptags').val('');
+		$('#nickname').val('');
+		$('#email').val('');
+		$('#numbers').val('');
+		$('#grouptags').val('');
+	});
+
+	// Clear Field inputs for Community Contact
+	$('#btn-clear-cc').on('click',function(){
+		$('#firstname').val('');
+		$('#lastname').val('');
+		$('#prefix').val('');
+		$('#sitename').val('');
+		$('#office').val('');
+		$('#rel').val('');
+	});
+
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', true);
