@@ -1254,7 +1254,6 @@ function sendViaAlertMonitor(data){
 		success: function(response){
 			var i = data["comments"].indexOf(';');
 			data["comments"] = data["comments"].substr(0,i);
-			console.log(data["comments"]);
 			var counter = 0;
 			for (counter = 0;counter < Object.keys(response).length;counter++){
 				if (Object.keys(response)[counter] == data["internal_alert"]){
