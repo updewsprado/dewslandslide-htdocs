@@ -1185,9 +1185,9 @@ $('#confirm-ewi').click(function(){
 	$('#main-container').removeClass('hidden');
 
 	getEWI(function(output){
-		if (counter == 1){
+		if (counter == 1 || counter == 0){
 			var template = setEWILocation(output);
-		} else {
+		}else {
 			var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
 			$('#msg').val(nssEWITemplate);
 		}
