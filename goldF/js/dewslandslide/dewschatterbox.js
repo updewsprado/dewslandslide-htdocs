@@ -1163,6 +1163,9 @@ $('#confirm-ewi').click(function(){
 		$('input[name="sitenames"]:checked').each(function() {
 			tagSitenames.push(this.value);
 		});
+	} else {
+		tagSitenames.push($('#sites').val());
+		$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
 	}
 
 
