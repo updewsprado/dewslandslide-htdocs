@@ -1279,7 +1279,7 @@ function sendViaAlertMonitor(data){
 }
 
 function templateSendViaAMD(){
-
+	var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
 	var text = $('#constructed-ewi-amd').val();
 
 	// Assume All 4 offices will be included in the EWI
@@ -1296,7 +1296,7 @@ function templateSendViaAMD(){
 		'user': user,
 		'offices': tagOffices,
 		'sitenames': tagSitenames,
-		'msg': text + footer,
+		'msg': text+footer,
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
 
