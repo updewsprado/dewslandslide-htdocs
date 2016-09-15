@@ -379,8 +379,10 @@
 					updateMessages(msg);
 				}
 				else {
-					//Update the Quick Inbox from the incoming real time messages
-					updateQuickInbox(msg);
+					if (msg.type == "smsrcv") {
+						//Update the Quick Inbox from the incoming real time messages
+						updateQuickInbox(msg);
+					}
 
 					if(msg.user.match(numbers)) {
 						console.log("all numbers");
