@@ -22,7 +22,7 @@ if(isset($_GET['site'])) {
 
   $rainData = array();
   // $sql = "SELECT timestamp, rval, cumm FROM rain_noah WHERE site = $site AND timestamp > '2015-03-01'";
-  $sql = "SELECT timestamp ,meas FROM senslopedb.gndmeas where site_id ='$site' AND timestamp > '2013-03-01' and crack_id ='$crack'";
+  $sql = "SELECT timestamp ,meas FROM senslopedb.gndmeas where site_id ='$site' AND timestamp > '2013-03-01' and crack_id ='$crack'and meas <= '1000'";
   $result = mysqli_query($conn, $sql);
 
   $ctr = 0;
