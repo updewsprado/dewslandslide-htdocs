@@ -55,7 +55,7 @@ body {
   list-style: none;
   margin-left: 0px;
   margin-top: 110px;
-  z-index: 1;
+  z-index: 0;
   width: 20%;
   height: 68.2%;
   /*height: 75%;*/
