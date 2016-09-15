@@ -1,43 +1,7 @@
 
 
 	var blockRedraw = false;
-	var end_date = new Date();
-	var start_date = new Date(end_date.getFullYear(), end_date.getMonth(), end_date.getDate()-10);
-
-	function setDate(fromDate, toDate) {
-	    var end_date;
-	    var from_date;
-
-		if(toDate == "") {
-			end_date = new Date();
-		}
-		else {
-			end_date = new Date(toDate);
-		}
-
-		if(fromDate == "") {
-			if (end_date.getMonth() == 0) {
-				from_date = new Date(12 + '-' + end_date.getDate() + '-' + (end_date.getFullYear() - 1));
-			}
-			else{
-				from_date = new Date((end_date.getMonth()) + '-' + end_date.getDate() + '-' + end_date.getFullYear());
-			};
-		}
-		else {
-			from_date = new Date(fromDate);
-		}
-
-		$(function() {
-	    	$( "#datepicker" ).datepicker({ dateFormat: "yy-mm-dd" });
-	        $( "#datepicker" ).datepicker("setDate", from_date);
-		});
-
-	    $(function() {
-	    	$( "#datepicker2" ).datepicker({ dateFormat: "yy-mm-dd" });
-	        $( "#datepicker2" ).datepicker("setDate", '+1');
-		});
-	}
-
+	
 	//setDate();
 // 
 	function createCORSRequest(method, url) {
@@ -110,7 +74,7 @@
 	// TO DO:
 	function downloadData(frm) {
 
-	  if (frm.dateinput.value == "") {
+	  if (fromData == "") {
 		document.getElementById("txtHint").innerHTML="";
 		return;
 	  }
@@ -141,7 +105,7 @@
 	  };
 
 	  // var url1 = "/temp/somsfull.php?&fdate=" + frm.dateinput.value  + "&tdate=" + frm.dateinput2.value  + "&site=" + frm.sites.value "&db=" + frm.dbase.value;
-	  var url = "/temp/getSenslopeData.php?accel3&from=" + frm.dateinput.value + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value;
+	  var url = "/temp/getSenslopeData.php?accel3&from=" + fromData + "&to=" + frm.dateinput2.value + "&nid=" + frm.node.value + "&site=" + frm.sites.value + "&db=" + frm.dbase.value;
 	  xmlhttp.open("GET",url,true);
 	  // xmlhttp.open("GET",url1,true);
 	  xmlhttp.send();
@@ -186,9 +150,8 @@
 
 function showAccel(frm) {
 	var rsiteid = '';
-
-	var dfrom = document.getElementById("formDate").dateinput.value;
-	var dto = document.getElementById("formDate").dateinput2.value;
+	var dfrom = $('#reportrange span').html().slice(0,10);
+	var dto = $('#reportrange span').html().slice(13,23);
 	var selectedSite = frm.sitegeneral.value;
 	var domainName = window.location.hostname;
 
@@ -294,10 +257,14 @@ function showAccel(frm) {
 					{
 						drawCallback: function(me, initial) {
 							if (blockRedraw || initial)
+								 if (dataannotation.length > 0) {
+	                          me.setAnnotations(dataannotation);
+	                        }
 								return;
 							blockRedraw = true;
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
+                            
 							for (var j = 0; j < numSeparateGraphs; j++) {
 								if (gs[j] == me)
 									continue;
@@ -308,6 +275,16 @@ function showAccel(frm) {
 								}
 								);
 							}
+
+							var ann = dataannotation;
+	                      var html = "";
+	                      for (var i = 0; i < ann.length; i++) {
+	                        var name = "nameAnnotation" + i;
+	                        html += "<span id='" + name + "'>"
+	                        html += name + ": " + (ann[i].shortText || '(icon)')
+	                        html += " -> " + ann[i].text + "</span><br/>";
+	                         // $('#anModal').modal('show');
+	                      }
 
 							if (g2!=0){
 								g2.updateOptions({
@@ -330,6 +307,11 @@ function showAccel(frm) {
 						showRoller: true,
                         rollPeriod: roll_period,
                         colors: colorsLine,
+                        annotationClickHandler: function(ann, point, dg, event) {
+              						document.getElementById("link").innerHTML += nameAnnotation(ann) + "<br/>";
+              						$('#anModal').modal('show');
+             						}
+					
 					}
 					)
 				);
@@ -356,9 +338,8 @@ function showAccel(frm) {
 
 function showAccelSecond(frm) {
 	var rsiteid = '';
-
-	var dfrom = document.getElementById("formDate").dateinput.value;
-	var dto = document.getElementById("formDate").dateinput2.value;
+	var dfrom = $('#reportrange span').html().slice(0,10);
+	var dto = $('#reportrange span').html().slice(13,23);
 	var selectedSite = frm.sitegeneral.value;
 	var domainName = window.location.hostname;
 	var set = 2;
@@ -464,7 +445,11 @@ function showAccelSecond(frm) {
 					columndata,
 					{
 						drawCallback: function(me, initial) {
-							if (blockRedraw || initial) return;
+						if (blockRedraw || initial)
+							 if (dataannotation.length > 0) {
+	                          me.setAnnotations(dataannotation);
+	                        }
+								return;
 							blockRedraw = true;
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
@@ -479,6 +464,15 @@ function showAccelSecond(frm) {
 								);
 							}
 
+							var ann = dataannotation;
+	                      var html = "";
+	                      for (var i = 0; i < ann.length; i++) {
+	                        var name = "nameAnnotation" + i;
+	                        html += "<span id='" + name + "'>"
+	                        html += name + ": " + (ann[i].shortText || '(icon)')
+	                        html += " -> " + ann[i].text + "</span><br/>";
+	                         // $('#anModal').modal('show');
+	                      }
 							if (g2!=0){
 								g2.updateOptions({
 									dateWindow: column_plot_range,
@@ -500,6 +494,10 @@ function showAccelSecond(frm) {
 						showRoller: true,
                         rollPeriod: roll_period,
                          colors: colorsLine,
+                         annotationClickHandler: function(ann, point, dg, event) {
+              						document.getElementById("link").innerHTML += nameAnnotation(ann) + "<br/>";
+              						$('#anModal').modal('show');
+             						}
 					}
 					)
 				);
@@ -519,9 +517,8 @@ function showAccelSecond(frm) {
 
 function showSoms(frm) {
 	var rsiteid = '';
-
-	var dfrom = document.getElementById("formDate").dateinput.value;
-	var dto = document.getElementById("formDate").dateinput2.value;
+	var dfrom = $('#reportrange span').html().slice(0,10);
+	var dto = $('#reportrange span').html().slice(13,23);
 	var selectedSite = frm.sitegeneral.value;
 	var domainName = window.location.hostname;
 	var version =document.getElementById("header-site").innerHTML;
@@ -642,10 +639,15 @@ var vis = [
 					columndata,
 					{
 						drawCallback: function(me, initial) {
-							if (blockRedraw || initial) return;
+							if (blockRedraw || initial)
+								 if (dataannotation.length > 0) {
+	                          me.setAnnotations(dataannotation);
+	                        }
+								return;
 							blockRedraw = true;
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
+                             
 							for (var j = 0; j < numSeparateGraphs; j++) {
 								if (gs[j] == me)
 									continue;
@@ -656,6 +658,16 @@ var vis = [
 								}
 								);
 							}
+
+							var ann = dataannotation;
+	                      var html = "";
+	                      for (var i = 0; i < ann.length; i++) {
+	                        var name = "nameAnnotation" + i;
+	                        html += "<span id='" + name + "'>"
+	                        html += name + ": " + (ann[i].shortText || '(icon)')
+	                        html += " -> " + ann[i].text + "</span><br/>";
+	                         // $('#anModal').modal('show');
+	                      }
 
 							if (g2!=0){
 								g2.updateOptions({
@@ -678,6 +690,10 @@ var vis = [
 						showRoller: true,
                         rollPeriod: roll_period,
                          colors: colorsLine,
+                         annotationClickHandler: function(ann, point, dg, event) {
+              						document.getElementById("link").innerHTML += nameAnnotation(ann) + "<br/>";
+              						$('#anModal').modal('show');
+             						}
 					}
 					)
 				);
@@ -697,9 +713,8 @@ var vis = [
 
 function showSoms2(frm) {
 	var rsiteid = '';
-
-	var dfrom = document.getElementById("formDate").dateinput.value;
-	var dto = document.getElementById("formDate").dateinput2.value;
+	var dfrom = $('#reportrange span').html().slice(0,10);
+	var dto = $('#reportrange span').html().slice(13,23);
 	var selectedSite = frm.sitegeneral.value;
 	var domainName = window.location.hostname;
 	var version =document.getElementById("header-site").innerHTML;
@@ -808,7 +823,11 @@ var vis = [
 					columndata,
 					{
 						drawCallback: function(me, initial) {
-							if (blockRedraw || initial) return;
+						if (blockRedraw || initial)
+							 if (dataannotation.length > 0) {
+	                          me.setAnnotations(dataannotation);
+	                        }
+								return;
 							blockRedraw = true;
 							column_plot_range = me.xAxisRange();
                             roll_period = me.rollPeriod();
@@ -823,6 +842,15 @@ var vis = [
 								);
 							}
 
+							var ann = dataannotation;
+	                      var html = "";
+	                      for (var i = 0; i < ann.length; i++) {
+	                        var name = "nameAnnotation" + i;
+	                        html += "<span id='" + name + "'>"
+	                        html += name + ": " + (ann[i].shortText || '(icon)')
+	                        html += " -> " + ann[i].text + "</span><br/>";
+	                         // $('#anModal').modal('show');
+	                      }
 							if (g2!=0){
 								g2.updateOptions({
 									dateWindow: column_plot_range,
@@ -844,6 +872,11 @@ var vis = [
 						showRoller: true,
                         rollPeriod: roll_period,
                          colors: colorsLine,
+                         annotationClickHandler: function(ann, point, dg, event) {
+              						document.getElementById("link").innerHTML += nameAnnotation(ann) + "<br/>";
+              						$('#anModal').modal('show');
+             						}
+
 					}
 					)
 				);
@@ -863,10 +896,10 @@ var vis = [
  
 
 function showAndClearField(frm){
-  if (frm.dateinput.value == "")
+  if (fromData == "")
 	  alert("Hey! You didn't enter anything!");
   else
-	  alert("The field contains the text: " + frm.dateinput.value);
-  frm.dateinput.value = "";
+	  alert("The field contains the text: " + fromData);
+  fromData = "";
 }
 
