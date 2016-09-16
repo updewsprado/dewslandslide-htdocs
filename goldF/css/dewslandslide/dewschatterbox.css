@@ -85,6 +85,39 @@ body {
   max-height: 473px;
 }
 
+#ewi-modal-cs-dialog {
+  width:  25%;
+  min-width: 250px;
+}
+
+#chat-commands {
+  padding-top: 10px;
+}
+
+.ewi-container {
+  display: inline;
+}
+
+.alert-site-container {
+  display: flex;
+}
+
+#ewi-template-select {
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100%;
+  display: block;
+}
+
+#alert-group {
+  width: 55%;
+}
+
+#site-group {
+  width: 45%;
+  margin-left: 10px;
+}
+
 .save-reset-container {
   padding-top: 10px;
 }
