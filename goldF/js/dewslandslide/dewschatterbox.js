@@ -18,6 +18,10 @@
 	var testNumbers;
 	var multiContactsList = [];
 	var timerID = 0;
+	var tempMessagePagination = [];
+	var paginateIndi = 20;
+	var paginateGroup = 70;
+	var ewiFlagger = false;
 	var conn = connectWS();
 var delayReconn = 10000;	//10 Seconds
 
@@ -37,7 +41,7 @@ var selected_contact_template = Handlebars.compile($('#selected-contact-template
 var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 
 function setTargetTime(hour, minute) {
-	var t = new Date();
+	var t = new Date();	
 	t.setHours(hour);
 	t.setMinutes(minute);
 	t.setSeconds(0);
@@ -97,6 +101,7 @@ return true;
 }
 
 function updateMessages(msg) {
+	
 // console.log("User is: " + msg.user);
 // console.log("Message: " + msg.msg);
 
@@ -109,10 +114,10 @@ msg.isyou = 1;
 //If in "groups/tags" mode, accept message from "You" only if the
 //recipients are exactly the offices and sitenames you've selected
 if (contactInfo == "groups") {
-	console.log("type is group/tags")
+	//console.log("type is group/tags")
 
 	if (msgType == "smsloadrequestgroup") {
-		console.log("type smsloadrequestgroup")
+		//console.log("type smsloadrequestgroup")
 		messages.push(msg);
 	}
 
@@ -122,7 +127,6 @@ if(arraysEqual(msg.offices, groupTags.offices)) {
 	if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
 		console.log("type found match for group send receive")
 		console.log("the message before it gets pushed:");
-		console.log(msg);
 		messages.push(msg);
 	}
 }
@@ -188,14 +192,15 @@ break;
 }
 }
 }
+if (ewiFlagger == false){
+	var messages_html = messages_template_both({'messages': messages});
+	$('#messages').html(messages_html);
+	//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
 
-var messages_html = messages_template_both({'messages': messages});
-$('#messages').html(messages_html);
-//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
-
-//Scroll to the bottom of the page
-var maxScroll = $(document).height() - $(window).height();
-$('html, body').scrollTop(maxScroll);
+	//Scroll to the bottom of the page
+	var maxScroll = $(document).height() - $(window).height();
+	$('html, body').scrollTop(maxScroll);
+}
 }
 
 function updateQuickInbox(msg) {
@@ -234,28 +239,87 @@ $(targetInbox).scrollTop(0);
 }
 
 function loadMessageHistory(msg) {
-//TODO: load the historical message here
-alert("loadMessageHistory!");
+	//TODO: load the historical message here
+	alert("loadMessageHistory!");
 }
 
 function initLoadMessageHistory(msgHistory) {
-	console.log(msgHistory);
-
+	paginateGroup = 70; // Return Limit to 70
+	paginateIndi = 20; // Return Limit to 20
+	tempMessagePagination = msgHistory;
 	if (msgHistory.data == null) {
 		return;
 	}
-
 	console.log("initLoadMessageHistory");
-//Loop through the JSON msg and
-//	use updateMessages multiple times
-var history = msgHistory.data;
-temp = msgHistory.data;
-var msg;
-for (var i = history.length - 1; i >= 0; i--) {
-	msg = history[i];
-	updateMessages(msg);
+	//Loop through the JSON msg and
+	//	use updateMessages multiple times
+	var history = msgHistory.data;
+	temp = msgHistory.data;
+	var msg;
+
+	if (msgHistory.type == "smsload") {
+		for (var i = history.length - 1; i >= 0; i--) {
+			if (i < paginateIndi) {
+				msg = history[i];
+				updateMessages(msg);
+			}
+		}
+	} else if (msgHistory.type == "smsloadrequestgroup") {
+		var pips=0;
+		for (var i = history.length - 1; i >= 0; i--) {
+			if (i < paginateGroup) {
+				msg = history[i];
+				updateMessages(msg);
+			}
+		}
+	} else {
+		// DO SOMETHING OR CATCH ERROR
+	}
 }
-}
+
+$(window).scroll(function(){
+	var scroll = $(window).scrollTop();	
+	if (scroll == 0){
+
+		var history = tempMessagePagination.data;
+		var msg;
+		messages = [];
+		
+		if ((history.length-paginateIndi) >= 10) {
+			if (tempMessagePagination.	data == null) {
+				return;
+			}
+
+			if (tempMessagePagination.type == "smsload") {
+				paginateIndi = paginateIndi+10;
+				for (var i = history.length - 1; i >= 0; i--) {
+					if (i < paginateIndi) {
+						msg = history[i];
+						updateMessages(msg);
+					}
+				}
+
+			} else if (tempMessagePagination.type == "smsloadrequestgroup") {
+				paginateGroup = paginateGroup+10;
+				for (var i = history.length - 1; i >= 0; i--) {
+					if (i < paginateGroup) {
+						msg = history[i];
+						updateMessages(msg);
+					}
+				}
+			} else {
+				// DO SOMETHING OR CATCH ERROR
+				console.log('ERROR, Scroll malfunction');
+			}
+		} else {
+			for (var i = history.length - 1; i >= 0; i--) {
+				msg = history[i];
+				updateMessages(msg);
+			}
+		}
+		$('html, body').scrollTop(950);
+	}
+});
 
 function loadOfficesAndSites(msg) {
 	var offices = msg.offices;
@@ -342,8 +406,6 @@ else if (msg.type == "loadnamesuggestions") {
 }
 else {
 	var numbers = /^[0-9]+$/;  
-	console.log(msg);
-
 	if (contactInfo == "groups") {
 		updateMessages(msg);
 	}
@@ -581,11 +643,11 @@ function displayContactNamesForThread (source="normal") {
 	//Number is Unknown
 	tempText = qiFullContact;
 	document.title = tempText;
-	} else {
+} else {
 	//Number is known
 	var posDash = qiFullContact.search(" - ");
 	tempText = qiFullContact.slice(0, posDash);
-	}
+}
 }
 
 $("#current-contacts h4").text(tempText);
@@ -642,12 +704,12 @@ Awesomplete.$('.dropdown-input').addEventListener("click", function() {
 		if (comboplete.ul.childNodes.length === 0) {
 		//comboplete.minChars = 3;
 		comboplete.evaluate();
-		} else if (comboplete.ul.hasAttribute('hidden')) {
-			comboplete.open();
-		} else {
-			comboplete.close();
-		}
+	} else if (comboplete.ul.hasAttribute('hidden')) {
+		comboplete.open();
+	} else {
+		comboplete.close();
 	}
+}
 });
 
 Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
@@ -673,7 +735,7 @@ Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
 		getNameSuggestions(nameQuery);
 	} else {
 		comboplete.close();
-}
+	}
 
 }, false);
 
@@ -715,8 +777,8 @@ function startChat(source="normal") {
 		contactnumTrimmed = [trimmedContactNum(contactnum)];
 
 		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
-		}
-	} else if (source == "quickInbox") {
+	}
+} else if (source == "quickInbox") {
 		//If we are contacting an unregistered number
 		contactname = qiFullContact;
 		contactnum = contactname;
@@ -759,6 +821,7 @@ $('#go-chat').click(function() {
 var testMsg;
 // Send a message to the selected recipients
 $('#send-msg').click(function() {
+	ewiFlagger = false;
 	//For group type communication
 	if (contactInfo == "groups") {
 		var text = $('#msg').val();
@@ -782,8 +845,6 @@ $('#send-msg').click(function() {
 			'msg': text + footer,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 		};
-
-		console.log(msg);
 		conn.send(JSON.stringify(msg));
 
 		// //Create msg.name before updating the message
@@ -1279,8 +1340,10 @@ function sendViaAlertMonitor(data){
 }
 
 function templateSendViaAMD(){
+	ewiFlagger = true;
 	var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
 	var text = $('#constructed-ewi-amd').val();
+	try {
 
 	// Assume All 4 offices will be included in the EWI
 	var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
@@ -1289,25 +1352,33 @@ function templateSendViaAMD(){
 	$('input[name="sitenames"]').prop('checked', false);
 
 	var tagSitenames = [];
-	tagSitenames.push($('#site-abbr').val());
+	tagSitenames.push($('#site-abbr').val().toUpperCase());
 
 	var msg = {
 		'type': 'smssendgroup',
-		'user': user,
+		'user': 'You',
 		'offices': tagOffices,
 		'sitenames': tagSitenames,
 		'msg': text+footer,
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
 
+	console.log('---------___DETECT_---------');
 	console.log(msg);
 	conn.send(JSON.stringify(msg));
-
 	msgType = "smssendgroup";
-	testMsg = msg;
-	alert("Message sent");
+	updateMessages(msg);
+	
 	$('#constructed-ewi-amd').val('');
+	$('#result-ewi-message').text('Success!, Message sent.');
+	$('#success-ewi-modal').modal('toggle');
 	$('#ewi-asap-modal').modal('toggle');
+} catch(err) {
+	$('#result-ewi-message').text('Failed!, Please check the template.');
+	alert(err.stack);
+	$('#success-ewi-modal').modal('toggle');
+	$('#ewi-asap-modal').modal('toggle');
+}
 }
 
 //CHECK ALL Offices in the advanced search
