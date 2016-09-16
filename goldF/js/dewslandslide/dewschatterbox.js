@@ -17,6 +17,7 @@
 	var testName;
 	var testNumbers;
 	var multiContactsList = [];
+	var ewiFlagger = false;
 	var timerID = 0;
 	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
@@ -802,6 +803,7 @@ function displayGroupTagsForThread () {
 	$('#send-msg').click(function() {
 		//For group type communication
 		if (contactInfo == "groups") {
+			ewiFlagger = false;
 			var text = $('#msg').val();
 
 			var tagOffices = [];
@@ -1062,10 +1064,8 @@ function displayGroupTagsForThread () {
 	$('#office').on('change',function() {
 		if ($("#office").val() == "OTHERS") {
 			$("#other-officename").show();
-			console.log("show");
 		} else {
 			$("#other-officename").hide();
-			console.log("hide");
 		}
 	});
 
@@ -1073,10 +1073,8 @@ function displayGroupTagsForThread () {
 	$('#sitename').on('change',function() {
 		if ($("#sitename").val() == "OTHERS") {
 			$("#other-sitename").show();
-			console.log("show");
 		} else {
 			$("#other-sitename").hide();
-			console.log("hide");
 		}
 	});
 
@@ -1100,6 +1098,261 @@ function displayGroupTagsForThread () {
 		$('#office').val('');
 		$('#rel').val('');
 	});
+// Fetched the Alert and Sites EWI
+	$('#btn-ewi').on('click',function(){
+		$('#alert-lvl').empty();
+		$('#sites').empty();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",
+			success: function(response){
+				var alertList = Object.keys(response).length;
+				var counter = 0;
+				select = document.getElementById('alert-lvl');
+				for (counter=0;counter<alertList;counter++){
+					var opt = document.createElement('option');
+					opt.value = Object.keys(response)[counter];
+					opt.innerHTML = Object.keys(response)[counter];
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+			}
+		});
+
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getdistinctsitename",             
+			dataType: "json",              
+			success: function(response){
+				var counter = 0;
+				select = document.getElementById('sites');
+				for (counter=0;counter < response.length;counter++){
+					var opt = document.createElement('option');
+					opt.value = response[counter].sitename;
+					opt.innerHTML = response[counter].sitename;
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+				opt.value = "NSS";
+				opt.innerHTML = "NO SITE SELECTED";
+				select.className = "form-control";
+				select.setAttribute("required","true");
+				select.appendChild(opt);
+
+				var counter = 0;
+				$('input[name="sitenames"]:checked').each(function() {
+					counter++;
+				});
+
+				if (counter == 1){
+					$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
+				} else {
+					$('select option[value="NSS"]').attr("selected",true);
+				}
+			}
+		});
+	});
+
+	$('#confirm-ewi').click(function(){
+
+		groupTags = [];
+		user = "You";
+		var tagOffices = [];
+		var tagSitenames = [];
+
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
+
+		var counter = 0;
+		$('input[name="sitenames"]:checked').each(function() {
+			counter++;
+		});
+
+		if (counter == 1){
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"]').prop('checked', false);
+
+			$('input[name="sitenames"]').each(function() {
+				if ($('#sites').val() == this.value) {
+					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+				}
+			});
+		} else if (counter > 1){
+			var tagSitenames = [];
+			$('input[name="sitenames"]:checked').each(function() {
+				tagSitenames.push(this.value);
+			});
+		} else {
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
+		}
+
+
+		tagSitenames.sort();
+		groupTags = {
+			'type': 'smsloadrequestgroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames
+		};
+
+		displayGroupTagsForThread();
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
+		contactInfo = "groups";
+		conn.send(JSON.stringify(groupTags));
+		$('#main-container').removeClass('hidden');
+
+		getEWI(function(output){
+			if (counter == 1 || counter == 0){
+				var template = setEWILocation(output);
+			}else {
+				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
+				$('#msg').val(nssEWITemplate);
+			}
+		});
+
+	});
+
+	function getEWI(handledTemplate){
+		var constructedEWI = "";
+		var dateReplaced = "";
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				var d = new Date();
+				var currentPanahon = d.getHours();
+				if (currentPanahon >= 12 && currentPanahon <= 18) {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
+				} else if (currentPanahon > 18 && currentPanahon <=23) {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
+				} else {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
+				}
+
+				//Changes the Date
+				var year = $('#ewi-date-picker').val().substring(0, 4);
+				var month = $('#ewi-date-picker').val().substring(5, 7);
+				var day = $('#ewi-date-picker').val().substring(8, 10);
+
+				var months = {1: "January",2: "February",3: "March",
+				4: "April",5: "May",6: "June",
+				7: "July",8: "August", 9: "September",
+				10: "October", 11: "November", 12: "December"};
+
+				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+				dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
+				handledTemplate(dateReplaced);
+			}
+		});
+	}
+
+	function setEWILocation(consEWI){
+		var finalEWI = "";
+		if (consEWI != "") {
+			$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+			.done(function(response) {
+				var location = JSON.parse(response);
+				var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+				var formatSbmp = sbmp.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
+				finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
+				$('#msg').val(finalEWI);
+			});
+		} else {
+			$('#msg').val("Site is not available");
+		}
+	}
+
+	function sendViaAlertMonitor(data){
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				var i = data["comments"].indexOf(';');
+				data["comments"] = data["comments"].substr(0,i);
+				var counter = 0;
+				for (counter = 0;counter < Object.keys(response).length;counter++){
+					if (Object.keys(response)[counter] == data["internal_alert"]){
+						var preConstructedEWI = response[Object.keys(response)[counter]];
+						var constructedEWIDate = "";
+						var finalEWI = ""
+						var d = new Date();
+						var currentPanahon = d.getHours();
+						if (currentPanahon >= 12 && currentPanahon <= 18) {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+						} else if (currentPanahon > 18 && currentPanahon <=23) {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+						} else {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
+						}
+
+						constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
+						var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+						var formatSbmp = ewiLocation.replace("null","");
+						if (formatSbmp.charAt(0) == ",") {
+							formatSbmp = formatSbmp.substr(1);
+						}
+						var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+						$('#site-abbr').val(data["name"]);
+						$('#constructed-ewi-amd').val(finalEWI);
+					}
+				}
+			}
+		});
+		$('#ewi-asap-modal').modal('toggle');
+	}
+
+	function templateSendViaAMD(){
+		ewiFlagger = true;
+		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+		var text = $('#constructed-ewi-amd').val();
+		try {
+			// Assume All 4 offices will be included in the EWI
+			var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+
+			$('input[name="offices"]').prop('checked', false);
+			$('input[name="sitenames"]').prop('checked', false);
+
+			var tagSitenames = [];
+			tagSitenames.push($('#site-abbr').val().toUpperCase());
+
+			var msg = {
+				'type': 'smssendgroup',
+				'user': 'You',
+				'offices': tagOffices,
+				'sitenames': tagSitenames,
+				'msg': text+footer,
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+			};
+
+			console.log('---------___DETECT_---------');
+			console.log(msg);
+			conn.send(JSON.stringify(msg));
+			msgType = "smssendgroup";
+			updateMessages(msg);
+			
+			$('#constructed-ewi-amd').val('');
+			$('#result-ewi-message').text('Success!, Message sent.');
+			$('#success-ewi-modal').modal('toggle');
+			$('#ewi-asap-modal').modal('toggle');
+		} catch(err) {
+			$('#result-ewi-message').text('Failed!, Please check the template.');
+			alert(err.stack);
+			$('#success-ewi-modal').modal('toggle');
+			$('#ewi-asap-modal').modal('toggle');
+		}
+	}
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
