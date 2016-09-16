@@ -19,8 +19,6 @@
 	var multiContactsList = [];
 	var timerID = 0;
 	var tempMessagePagination = [];
-	var paginateIndi = 20;
-	var paginateGroup = 70;
 	var ewiFlagger = false;
 	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
@@ -244,9 +242,7 @@
 	}
 
 	function initLoadMessageHistory(msgHistory) {
-		paginateGroup = 70; // Return Limit to 70
-		paginateIndi = 20; // Return Limit to 20
-		tempMessagePagination = msgHistory;
+
 		if (msgHistory.data == null) {
 			return;
 		}
@@ -257,69 +253,11 @@
 		var history = msgHistory.data;
 		temp = msgHistory.data;
 		var msg;
-		if (msgHistory.type == "smsload") {
 		for (var i = history.length - 1; i >= 0; i--) {
-			if (i < paginateIndi) {
-				msg = history[i];
-				updateMessages(msg);
-			}
-		}
-		} else if (msgHistory.type == "smsloadrequestgroup") {
-			var pips=0;
-			for (var i = history.length - 1; i >= 0; i--) {
-				if (i < paginateGroup) {
-					msg = history[i];
-					updateMessages(msg);
-				}
-			}
-		} else {
-			// DO SOMETHING OR CATCH ERROR
+			msg = history[i];
+			updateMessages(msg);
 		}
 	}
-
-	$(window).scroll(function(){
-		var scroll = $(window).scrollTop();	
-		if (scroll == 0){
-
-			var history = tempMessagePagination.data;
-			var msg;
-			messages = [];
-			
-			if ((history.length-paginateIndi) >= 10) {
-				if (tempMessagePagination.	data == null) {
-					return;
-				}
-
-				if (tempMessagePagination.type == "smsload") {
-					paginateIndi = paginateIndi+10;
-					for (var i = history.length - 1; i >= 0; i--) {
-						if (i < paginateIndi) {
-							msg = history[i];
-							updateMessages(msg);
-						}
-					}
-
-				} else if (tempMessagePagination.type == "smsloadrequestgroup") {
-					paginateGroup = paginateGroup+10;
-					for (var i = history.length - 1; i >= 0; i--) {
-						if (i < paginateGroup) {
-							msg = history[i];
-							updateMessages(msg);
-						}
-					}
-				} else {
-					// DO SOMETHING OR CATCH ERROR
-					console.log('ERROR, Scroll malfunction');
-				}
-			} else {
-				for (var i = history.length - 1; i >= 0; i--) {
-					msg = history[i];
-					updateMessages(msg);
-				}
-			}
-			$('html, body').scrollTop(950);
-		}
-	});
 
 	function initLoadQuickInbox(quickInboxMsg) {
 		// console.log(quickInboxMsg);
