@@ -292,7 +292,7 @@
 	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		var tempConn = new WebSocket('ws://www.codesword.com:5050');
+		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
 		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
