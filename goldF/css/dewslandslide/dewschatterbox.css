@@ -198,6 +198,10 @@ img {
   background-color: #fff;
 }
 
+#btn-ewi {
+  margin-top: 5px;
+}
+
 .chat li .chat-body {
   position: relative;
   font-size: 11px;
