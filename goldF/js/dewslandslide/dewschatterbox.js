@@ -1160,12 +1160,6 @@
 			'sitenames': tagSitenames
 		};
 
-		displayGroupTagsForThread();
-		$('#user').val('You');
-		$('#messages').html('');
-		messages = [];
-		contactInfo = "groups";
-		conn.send(JSON.stringify(groupTags));
 		$('#main-container').removeClass('hidden');
 
 		getEWI(function(output){
