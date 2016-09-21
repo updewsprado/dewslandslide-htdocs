@@ -38,7 +38,7 @@
 	var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 
 	function setTargetTime(hour, minute) {
-		var t = new Date();	
+		var t = new Date();
 		t.setHours(hour);
 		t.setMinutes(minute);
 		t.setSeconds(0);
@@ -58,16 +58,18 @@
 		}
 
 		if (modalAction == "show") {
-			
-			setTimeout(function() {
-			//Hide the advanced search when disconnected
-			$("#advanced-search").modal("hide");
-			//Hide the modal backdrop
-			$('.modal-backdrop').remove();
-			$('#connectionStatusModal').modal();
-			conn.close();},offsetmilliseconds);
-
-		} else if (modalAction == "hide") {
+			setTimeout(
+				function() {
+					//Hide the advanced search when disconnected
+					$("#advanced-search").modal("hide");
+					//Hide the modal backdrop
+					$('.modal-backdrop').remove();
+					$('#connectionStatusModal').modal();
+					conn.close();
+				}, 
+				offsetmilliseconds);
+		} 
+		else if (modalAction == "hide") {
 			setTimeout(
 				function() {
 					conn = connectWS();
@@ -95,7 +97,7 @@
 		return true;
 	}
 
-	function updateMessages(msg) {	
+	function updateMessages(msg) {
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
 
@@ -108,71 +110,77 @@
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
 			if (contactInfo == "groups") {
-				//console.log("type is group/tags")
+				console.log("type is group/tags")
 
 				if (msgType == "smsloadrequestgroup") {
-					//console.log("type smsloadrequestgroup")
+					console.log("type smsloadrequestgroup")
 					messages.push(msg);
 				}
 
-			// //only push the message if it belongs to the groupTags
-			// messages.push(msg);
-			if(arraysEqual(msg.offices, groupTags.offices)) {
-				if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-					console.log("type found match for group send receive")
-					console.log("the message before it gets pushed:");
-					messages.push(msg);
+				// //only push the message if it belongs to the groupTags
+				// messages.push(msg);
+				if(arraysEqual(msg.offices, groupTags.offices)) {
+					if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+						console.log("type found match for group send receive")
+						console.log("the message before it gets pushed:");
+						console.log(msg);
+						messages.push(msg);
+					}
 				}
+			} 
+			else {
+				if (msgType == "smsloadrequestgroup") {
+					return;
+				}
+
+				messages.push(msg);
 			}
-		} else {
-			if (msgType == "smsloadrequestgroup") {
-				return;
-			}
-			messages.push(msg);
-			}
-		} else {
+		}
+		else {
 			if (contactInfo == "groups") {
-			//only push the message if it belongs to the groupTags
-			//Don't include message if "msg.name" is "unknown"
-			if (msg.name == "unknown") {
-				return;
-			}
-
-			//Use "sitenames" as the primary filter
-			var isTargetSite = false;
-			for (i in groupTags.sitenames) {
-				if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
-					isTargetSite = true;
-					continue;
+				//only push the message if it belongs to the groupTags
+				//Don't include message if "msg.name" is "unknown"
+				if (msg.name == "unknown") {
+					return;
 				}
-			}
 
-			if (isTargetSite == false) {
-				return;
-			}
-
-			//Use "offices" as the secondary filter
-			var isOffices = false;
-			for (i in groupTags.offices) {
-				if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
-					isOffices = true;
-					continue;
+				//Use "sitenames" as the primary filter
+				var isTargetSite = false;
+				for (i in groupTags.sitenames) {
+					if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						isTargetSite = true;
+						continue;
+					}
 				}
-			}
 
-			if (isOffices == false) {
-				return;
-			}
+				if (isTargetSite == false) {
+					return;
+				}
 
-			msg.isyou = 0;
-			msg.user = msg.name;
-			messages.push(msg);
+				//Use "offices" as the secondary filter
+				var isOffices = false;
+				for (i in groupTags.offices) {
+					if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						isOffices = true;
+						continue;
+					}
+				}
+
+				if (isOffices == false) {
+					return;
+				}
+
+				msg.isyou = 0;
+				msg.user = msg.name;
+				messages.push(msg);
 			} else {
 				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
 					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
 					if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
 						// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+
 						msg.isyou = 0;
 						msg.user = contactInfo[i].fullname;
 						messages.push(msg);
@@ -181,6 +189,7 @@
 				}
 			}
 		}
+
 		if (ewiFlagger == false){
 			var messages_html = messages_template_both({'messages': messages});
 			$('#messages').html(messages_html);
@@ -194,8 +203,9 @@
 
 	function updateQuickInbox(msg) {
 		if (msg.user == "You") {
-		//Don't do anything if the message came from Dynaslope
-		} else {
+			//Don't do anything if the message came from Dynaslope
+		}
+		else {
 			console.log("Name and User is: " + msg.name + ", " + msg.user);
 			console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
 
@@ -206,17 +216,17 @@
 				msg.isunknown = 1;
 				targetInbox = "#quick-inbox-unknown-display";
 
-			//Message Pushing using unshift (push at the start of the array)
-			quick_inbox_unknown.unshift(msg);
-			quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+				//Message Pushing using unshift (push at the start of the array)
+				quick_inbox_unknown.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
 			}
 			else {
 				msg.isunknown = 0;
 				targetInbox = "#quick-inbox-display";
 
-			//Message Pushing using unshift (push at the start of the array)
-			quick_inbox_registered.unshift(msg);
-			quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+				//Message Pushing using unshift (push at the start of the array)
+				quick_inbox_registered.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
 			}
 
 			$(targetInbox).html(quick_inbox_html);
@@ -233,9 +243,11 @@
 
 	function initLoadMessageHistory(msgHistory) {
 		console.log(msgHistory);
+
 		if (msgHistory.data == null) {
 			return;
 		}
+
 		console.log("initLoadMessageHistory");
 		//Loop through the JSON msg and
 		//	use updateMessages multiple times
@@ -293,7 +305,6 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -302,13 +313,23 @@
 			delayReconn = 10000;
 
 			if (isFirstSuccessfulConnect) {
-			//TODO: load contacts information for first successful connect
-			//contacts currently 9KB in size. too big for the WSS setup
+				//TODO: load contacts information for first successful connect
+				//contacts currently 9KB in size. too big for the WSS setup
 
-			getOfficesAndSitenames();
+				getOfficesAndSitenames();
 
-			//set flag to false after successful loading
-			isFirstSuccessfulConnect = false;
+				//getInitialQuickInboxMessages();
+
+				//TODO: Optimize the loading speed
+				//Set a 2 sec delay before getting the initial quick inbox messages
+				setTimeout(
+					function() {
+						getInitialQuickInboxMessages();
+					}, 
+					500);
+
+				//set flag to false after successful loading
+				isFirstSuccessfulConnect = false;
 			}
 
 			// a setInterval has been fired
@@ -328,11 +349,16 @@
 
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
-			} else if (msg.type == "loadofficeandsites") {
+			} 
+			else if (msg.type == "smsloadquickinbox") {
+				initLoadQuickInbox(msg)
+			}
+			else if (msg.type == "loadofficeandsites") {
 				// loadCommunityContactRequest(msg);
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
-			} else if (msg.type == "loadnamesuggestions") {
+			}
+			else if (msg.type == "loadnamesuggestions") {
 				contactSuggestions = msg.data;
 
 				if (msg.data == null) {
@@ -341,19 +367,21 @@
 
 				var suggestionsArray = [];
 				for (var i in msg.data) {
-					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-					" - " + msg.data[i].numbers;
-					suggestionsArray.push(suggestion);
+				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+				    					" - " + msg.data[i].numbers;
+				    suggestionsArray.push(suggestion);
 				}
 
 				comboplete.list = suggestionsArray;
-			} else {
+			}
+			else {
 				var numbers = /^[0-9]+$/;  
+				console.log(msg);
+
 				if (contactInfo == "groups") {
 					updateMessages(msg);
-				} else {
-					//Update the Quick Inbox from the incoming real time messages
-					// updateQuickInbox(msg);
+				}
+				else {
 					if (msg.type == "smsrcv") {
 						//Update the Quick Inbox from the incoming real time messages
 						updateQuickInbox(msg);
@@ -362,13 +390,14 @@
 					if(msg.user.match(numbers)) {
 						console.log("all numbers");
 						for (i in contactnumTrimmed) {
-						// console.log(contactnumTrimmed[i]);
-						if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
-							updateMessages(msg);
-							return;
+							// console.log(contactnumTrimmed[i]);
+							if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+								updateMessages(msg);
+								return;
+							}
 						}
-						}
-					} else {
+					}
+					else {
 						console.log("alphanumeric keywords for msg.user");
 						//Assumption: Alpha numeric users only come from the browser client
 
@@ -385,77 +414,80 @@
 						}
 					}
 				}
+
 			}
 		}
 
-	tempConn.onclose = function(e) {
-		WSS_CONNECTION_STATUS = -1;
+		tempConn.onclose = function(e) {
+			WSS_CONNECTION_STATUS = -1;
 
-		var reason;
-		//alert(event.code);
-		// See http://tools.ietf.org/html/rfc6455#section-7.4.1
-		if (event.code == 1000)
-			reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
-		else if(event.code == 1001)
-			reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
-		else if(event.code == 1002)
-			reason = "An endpoint is terminating the connection due to a protocol error";
-		else if(event.code == 1003)
-			reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
-		else if(event.code == 1004)
-			reason = "Reserved. The specific meaning might be defined in the future.";
-		else if(event.code == 1005)
-			reason = "No status code was actually present.";
-		else if(event.code == 1006) {
-			reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
-			$("#connectionStatusModal").modal("show");
-		//Enable the functionality of "send button"
-		$("#send-msg").addClass("disabled");
+	        var reason;
+	        //alert(event.code);
+	        // See http://tools.ietf.org/html/rfc6455#section-7.4.1
+	        if (event.code == 1000)
+	            reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
+	        else if(event.code == 1001)
+	            reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
+	        else if(event.code == 1002)
+	            reason = "An endpoint is terminating the connection due to a protocol error";
+	        else if(event.code == 1003)
+	            reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
+	        else if(event.code == 1004)
+	            reason = "Reserved. The specific meaning might be defined in the future.";
+	        else if(event.code == 1005)
+	            reason = "No status code was actually present.";
+	        else if(event.code == 1006) {
+	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
+	        	$("#connectionStatusModal").modal("show");
+				//Enable the functionality of "send button"
+				$("#send-msg").addClass("disabled");
 
-		// reconnect to the WSS
-		waitForSocketConnection();
-		} else if(event.code == 1007)
-			reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
-		else if(event.code == 1008)
-			reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
-		else if(event.code == 1009)
-			reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
-			else if(event.code == 1010) // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
-				reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
-			else if(event.code == 1011)
-				reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
-			else if(event.code == 1015)
-				reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
-			else
-				reason = "Unknown reason";
+	       		// reconnect to the WSS
+	       		waitForSocketConnection();
+	       	}
+	        else if(event.code == 1007)
+	            reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
+	        else if(event.code == 1008)
+	            reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
+	        else if(event.code == 1009)
+	           reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
+	        else if(event.code == 1010) // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
+	            reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
+	        else if(event.code == 1011)
+	            reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
+	        else if(event.code == 1015)
+	            reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
+	        else
+	            reason = "Unknown reason";
 
-			console.log(reason);
+	        console.log(reason);
 		}
+
 		return tempConn;
 	}
-
 
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-				function () {
-					if (conn.readyState === 1) {
-						console.log("Connection is made");
-						return;
+		        function () {
+		            if (conn.readyState === 1) {
+		                console.log("Connection is made");
+		                return;
 
-					} else {
-						console.log("wait for connection... " + delayReconn);
-						conn = connectWS();
-						waitForSocketConnection();
+		            } else {
+		                console.log("wait for connection... " + delayReconn);
+		                conn = connectWS();
+		                waitForSocketConnection();
 
 						// Add 1 second for everytime the reconnection is triggered
 						//	will reset once connected
 						if (delayReconn < 20000) {
 							delayReconn += 1000;
 						}
-					}
-				}, delayReconn); // wait delayReconn seconds for the connection...
+		            }
+
+		        }, delayReconn); // wait delayReconn seconds for the connection...
 		}
 	}
 
@@ -469,18 +501,22 @@
 
 			if (size == 12) {
 				trimmed = targetNumber.slice(2, size);
-			} else if (size == 11) {
+			} 
+			else if (size == 11) {
 				trimmed = targetNumber.slice(1, size);
-			} else if (size == 10) {
+			}
+			else if (size == 10) {
 				trimmed = targetNumber;
-			} else {
+			}
+			else {
 				console.log('Error: No such number in the Philippines');  
 				return -1;
 			}
 
 			inputContactNumber = "63" + trimmed;
 			return trimmed;
-		} else {  
+		}  
+		else {  
 			console.log('Please input numeric characters only');  
 			return -1;
 		}  
@@ -489,11 +525,12 @@
 	//639xx-xxxx-xxx format
 	function normalizedContactNum(targetNumber) {
 		var trimmed = trimmedContactNum(targetNumber);
-
+		
 		if (trimmed < 0) {
 			console.log("Error: Invalid Contact Number");
 			return -1;
-		} else {
+		} 
+		else {
 			return "63" + trimmed;
 		}
 	}
@@ -503,6 +540,7 @@
 			'type': 'requestnamesuggestions',
 			'namequery': nameQuery,
 		};
+
 		//request for message history of selected number
 		conn.send(JSON.stringify(nameSuggestionRequest));
 	};
@@ -525,7 +563,7 @@
 		var tempNum;
 		var searchIndex = 0;
 		//multiContactsList = [];
-
+		
 		while (searchIndex >= 0) {
 			searchIndex = testNumbers.search(",");
 			var parsedInfo = {};
@@ -553,72 +591,73 @@
 		return nameQuery;
 	}
 
-	function displayContactNamesForThread (source="normal") {
-		if (source == "normal") {
-			var flags = [], uniqueName = [], l = contactInfo.length, i;
-			for( i=0; i<l; i++) {
-				if( flags[contactInfo[i].fullname]) 
-					continue;
+function displayContactNamesForThread (source="normal") {
+	if (source == "normal") {
+		var flags = [], uniqueName = [], l = contactInfo.length, i;
+		for( i=0; i<l; i++) {
+			if( flags[contactInfo[i].fullname]) 
+				continue;
 
-				flags[contactInfo[i].fullname] = true;
-				uniqueName.push(contactInfo[i].fullname);
-			}
-
-			var tempText = "", tempCountContacts = uniqueName.length;
-			for (i in uniqueName) {
-				console.log(uniqueName[i]);
-
-				if (i == tempCountContacts - 1)
-					tempText = tempText + uniqueName[i];
-				else
-					tempText = tempText + uniqueName[i] + ", ";
-			}
+			flags[contactInfo[i].fullname] = true;
+			uniqueName.push(contactInfo[i].fullname);
 		}
-		else if (source == "quickInbox") {
-			if (qiFullContact.search("unknown") >= 0) {
-		//Number is Unknown
-		tempText = qiFullContact;
-		document.title = tempText;
+
+		var tempText = "", tempCountContacts = uniqueName.length;
+		for (i in uniqueName) {
+			console.log(uniqueName[i]);
+
+			if (i == tempCountContacts - 1)
+				tempText = tempText + uniqueName[i];
+			else
+				tempText = tempText + uniqueName[i] + ", ";
+		}
+	}
+	else if (source == "quickInbox") {
+		if (qiFullContact.search("unknown") >= 0) {
+//Number is Unknown
+tempText = qiFullContact;
+document.title = tempText;
+} 
+else {
+//Number is known
+var posDash = qiFullContact.search(" - ");
+tempText = qiFullContact.slice(0, posDash);
+}
+}
+
+$("#current-contacts h4").text(tempText);
+document.title = tempText;
+}
+
+function displayGroupTagsForThread () {
+	var tempText = "[Sitenames: ";
+	var titleSites = "";
+	var tempCountSitenames = groupTags.sitenames.length;
+	for (i in groupTags.sitenames) {
+		if (i == tempCountSitenames - 1) {
+			tempText = tempText + groupTags.sitenames[i];
+			titleSites = titleSites + groupTags.sitenames[i];
 		} else {
-			//Number is known
-			var posDash = qiFullContact.search(" - ");
-			tempText = qiFullContact.slice(0, posDash);
+			tempText = tempText + groupTags.sitenames[i] + ", ";
+			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
 
+	tempText = tempText + "]; [Offices: ";
+	var tempCountOffices = groupTags.offices.length;
+	for (i in groupTags.offices) {
+		if (i == tempCountOffices - 1){
+			tempText = tempText + groupTags.offices[i];
+		} else {
+			tempText = tempText + groupTags.offices[i] + ", ";
+		}
+	}
+
+	document.title = titleSites;
+
+	tempText = tempText + "]";
 	$("#current-contacts h4").text(tempText);
-	document.title = tempText;
-	}
-
-	function displayGroupTagsForThread () {
-		var tempText = "[Sitenames: ";
-		var titleSites = "";
-		var tempCountSitenames = groupTags.sitenames.length;
-		for (i in groupTags.sitenames) {
-			if (i == tempCountSitenames - 1) {
-				tempText = tempText + groupTags.sitenames[i];
-				titleSites = titleSites + groupTags.sitenames[i];
-			} else {
-				tempText = tempText + groupTags.sitenames[i] + ", ";
-				titleSites = titleSites + groupTags.sitenames[i] + ", ";
-			}
-		}
-
-		tempText = tempText + "]; [Offices: ";
-		var tempCountOffices = groupTags.offices.length;
-		for (i in groupTags.offices) {
-			if (i == tempCountOffices - 1){
-				tempText = tempText + groupTags.offices[i];
-			} else {
-				tempText = tempText + groupTags.offices[i] + ", ";
-			}
-		}
-
-		document.title = titleSites;
-
-		tempText = tempText + "]";
-		$("#current-contacts h4").text(tempText);
-	}
+}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
 		filter: function(text, input) {
@@ -631,7 +670,6 @@
 		},
 		minChars: 3
 	});
-
 	comboplete.list = [];
 
 	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
@@ -639,24 +677,26 @@
 
 		if (nameQuery.length >= 3) {
 			if (comboplete.ul.childNodes.length === 0) {
-			//comboplete.minChars = 3;
-			comboplete.evaluate();
-		} else if (comboplete.ul.hasAttribute('hidden')) {
-			comboplete.open();
-		} else {
-			comboplete.close();
+				//comboplete.minChars = 3;
+				comboplete.evaluate();
+			} 
+			else if (comboplete.ul.hasAttribute('hidden')) {
+				comboplete.open();
+			}
+			else {
+				comboplete.close();
+			}
 		}
-	}
 	});
 
 	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-		// get keycode of current keypress event
-		var code = (e.keyCode || e.which);
+	    // get keycode of current keypress event
+	    var code = (e.keyCode || e.which);
 
-		// do nothing if it's an arrow key
-		if(code == 37 || code == 38 || code == 39 || code == 40) {
-			return;
-		}
+	    // do nothing if it's an arrow key
+	    if(code == 37 || code == 38 || code == 39 || code == 40) {
+	        return;
+	    }
 
 		var allNameQueries = $('.dropdown-input').val();
 		var nameQuery = getFollowingNameQuery(allNameQueries);
@@ -670,10 +710,12 @@
 		if (nameQuery.length >= 3) {
 			//Get autocomplete data from the WSS
 			getNameSuggestions(nameQuery);
-		} else {
+
+		}
+		else {
 			comboplete.close();
 		}
-
+		
 	}, false);
 
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
@@ -688,7 +730,6 @@
 	}, false);
 
 	var qiFullContact = null;
-
 	function quickInboxStartChat(fullContact=null) {
 		if (fullContact == null) {
 			console.log("Error: User or Name is null");
@@ -697,6 +738,8 @@
 		else {
 			console.log("User: " + fullContact);
 		}
+
+
 		qiFullContact = fullContact;
 		startChat(source="quickInbox");
 	}
@@ -707,22 +750,24 @@
 		if (source == "normal") {
 			if (contactSuggestions) {
 				contactInfo = multiContactsList;
-			} else {
-			//If we are contacting an unregistered number
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
-
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 			}
-		} else if (source == "quickInbox") {
+			else {
 				//If we are contacting an unregistered number
-				contactname = qiFullContact;
+				contactname = $('.dropdown-input').val();
 				contactnum = contactname;
 				contactnumTrimmed = [trimmedContactNum(contactnum)];
 
 				contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 			}
+		}
+		else if (source == "quickInbox") {
+			//If we are contacting an unregistered number
+			contactname = qiFullContact;
+			contactnum = contactname;
+			contactnumTrimmed = [trimmedContactNum(contactnum)];
+
+			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		}
 
 		//Display Names of contacts for the thread being loaded
 		displayContactNamesForThread(source);
@@ -758,19 +803,18 @@
 	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
-		ewiFlagger = false;
 		//For group type communication
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
 
 			var tagOffices = [];
 			$('input[name="offices"]:checked').each(function() {
-				tagOffices.push(this.value);
+			   tagOffices.push(this.value);
 			});
 
 			var tagSitenames = [];
 			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
+			   tagSitenames.push(this.value);
 			});
 
 			var msg = {
@@ -781,6 +825,8 @@
 				'msg': text + footer,
 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 			};
+
+			console.log(msg);
 			conn.send(JSON.stringify(msg));
 
 			// //Create msg.name before updating the message
@@ -798,14 +844,14 @@
 			updateMessages(msg);
 
 			$('#msg').val('');
-
-		} else {
-			//For non group tags communication
+		} 
+		//For non group tags communication
+		else {
 			var text = $('#msg').val();
 
 			var normalized = [];
 			for (i in contactnumTrimmed) {
-				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
 			}
 
 			var msg = {
@@ -820,26 +866,25 @@
 
 			$('#msg').val('');
 		}
+
 		updateRemainingCharacters();
 	});
 
 	// Send a message to the selected recipients
 	$('#go-load-groups').click(function() {
-
 		//Reset the group tags
-		$('#msg').val("");
 		groupTags = [];
 
 		user = "You";
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
+		   tagOffices.push(this.value);
 		});
 
 		var tagSitenames = [];
 		$('input[name="sitenames"]:checked').each(function() {
-			tagSitenames.push(this.value);
+		   tagSitenames.push(this.value);
 		});
 
 		//sort the sitename values in the array alphabetically
@@ -861,13 +906,13 @@
 
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(groupTags));
+
 		$('#main-container').removeClass('hidden');
 	});
 
-
 	$(document).ready(function() {
-		var table = $('#response-contact-container').DataTable();
-	} );
+	var table = $('#response-contact-container').DataTable();
+	});
 
 	$('input[type="radio"]').on('change', function(e) {
 		if ($("input[name='category']:checked").val() == "employee_contacts_radio") {
@@ -900,7 +945,7 @@
 	});
 
 	String.prototype.capitalize = function() {
-		return this.charAt(0).toUpperCase() + this.slice(1);
+	return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
 	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
@@ -968,6 +1013,7 @@
 		$('#edit-contact').modal('show');
 	});
 
+
 	// GETS the Office and site options
 	$('#btn-contact-settings').click(function() {
 		$('#sitename').empty();
@@ -1030,8 +1076,10 @@
 	$('#sitename').on('change',function() {
 		if ($("#sitename").val() == "OTHERS") {
 			$("#other-sitename").show();
+			console.log("show");
 		} else {
 			$("#other-sitename").hide();
+			console.log("hide");
 		}
 	});
 
@@ -1056,8 +1104,7 @@
 		$('#rel').val('');
 	});
 
-
-	// Fetched the Alert and Sites EWI
+		// Fetched the Alert and Sites EWI
 
 	$('#btn-ewi').on('click',function(){
 		$('#alert-lvl').empty();
@@ -1321,7 +1368,7 @@
 	$('#checkAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', true);
 	});
-
+	
 	//UNcheck ALL Site Names in the advanced search
 	$('#uncheckAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -1344,6 +1391,14 @@
 		conn.send(JSON.stringify(msg));
 	}
 
+	//Load the office and site names from wSS
+	function getInitialQuickInboxMessages () {
+		var msg = {
+			'type': 'smsloadquickinboxrequest'
+		};
+		conn.send(JSON.stringify(msg));
+	}
+
 	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
 	modalDisconnectActivation("show", 4, 59);
 	modalDisconnectActivation("show", 11, 59);
@@ -1354,4 +1409,4 @@
 	modalDisconnectActivation("hide", 12, 5);
 	modalDisconnectActivation("hide", 19, 5);
 
-// })();// })();
+// })();
