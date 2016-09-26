@@ -1018,6 +1018,7 @@ function startChat(source="normal") {
 	//Reset the timestamp flaggers
 	tempTimestampIndi = "";
 	convoFlagger = false;
+	counters = 0;
 
 	user = "You";
 
