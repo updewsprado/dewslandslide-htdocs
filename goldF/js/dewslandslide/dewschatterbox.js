@@ -104,7 +104,6 @@
 	function updateMessages(msg) {
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
-
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
@@ -210,11 +209,22 @@
 					lastMessageTimeStampIndi = messages[counters]['timestamp'];
 				}
 			}
-
-			var messages_html = messages_template_both({'messages': messages});
-			$('#messages').html(messages_html);
-			var maxScroll = $(document).height() - $(window).height();
-			$('html, body').scrollTop(maxScroll);
+			if (msg.type == "smssend" || msg.type == "smssendgroup") {
+				var messages_html = messages_template_both({'messages': messages});
+				var htmlString = $('#messages').html();
+				$('#messages').html(htmlString+messages_html);
+				var maxScroll = $(document).height() - $(window).height();
+				$('html, body').scrollTop(maxScroll);
+				// Clears the messages container if already displayed.
+				messages = [];
+		
+			} else {
+				var messages_html = messages_template_both({'messages': messages});
+				$('#messages').html(messages_html);
+				var maxScroll = $(document).height() - $(window).height();
+				$('html, body').scrollTop(maxScroll);
+		
+			}
 		}
 	}
 
@@ -320,9 +330,9 @@
 					messages.push(oldMessages);
 				} else {
 					if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
-					oldMessages.isyou = 0;
-					oldMessages.user = contactInfo[i].fullname;
-					messages.push(oldMessages);
+						oldMessages.isyou = 0;
+						oldMessages.user = contactInfo[i].fullname;
+						messages.push(oldMessages);
 					} else {
 						oldMessages.isyou = 0;
 						oldMessages.user = contactInfo[i].numbers;
@@ -349,35 +359,37 @@
 
 			var oldMessagesIndi = msg.data;
 			var oldMsg;
+			messages = [];
 
 			if (msg.data != null){
-		 		for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
-				oldMsg = oldMessagesIndi[i];
-				oldMsg["type"] = "oldMessages";
-				updateOldMessages(oldMsg);
-				if (messages[counters].user == 'You'){
-					if (lastMessageTimeStampYou == "") {
-						lastMessageTimeStampYou = messages[counters]['timestamp'];
-						tempTimestampYou = lastMessageTimeStampYou;
+				for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
+					oldMsg = oldMessagesIndi[i];
+					oldMsg["type"] = "oldMessages";
+					updateOldMessages(oldMsg);
+					console.log(messages);
+					if (messages[counters].user == 'You'){
+						if (lastMessageTimeStampYou == "") {
+							lastMessageTimeStampYou = messages[counters]['timestamp'];
+							tempTimestampYou = lastMessageTimeStampYou;
+						}
+					} else {
+						if (lastMessageTimeStampIndi == "") {
+							lastMessageTimeStampIndi = messages[counters]['timestamp'];
+							tempTimestampIndi = lastMessageTimeStampIndi;
+						}
 					}
-				} else {
-					if (lastMessageTimeStampIndi == "") {
-						lastMessageTimeStampIndi = messages[counters]['timestamp'];
-						tempTimestampIndi = lastMessageTimeStampIndi;
-					}
+
+					console.log(tempTimestampYou);
+					console.log(tempTimestampIndi);
+
+					counters++;
 				}
 
-				console.log(tempTimestampYou);
-				console.log(tempTimestampIndi);
-
-				counters++;
-			}
-
-			var htmlStringMessage = $('#messages').html();
-			lastMessageTimeStamp = messages[0]['timestamp'];
-			var messages_html = messages_template_both({'messages': messages});
-			$('#messages').html(messages_html+htmlStringMessage);
-			$('html, body').scrollTop(200);
+				var htmlStringMessage = $('#messages').html();
+				lastMessageTimeStamp = messages[0]['timestamp'];
+				var messages_html = messages_template_both({'messages': messages});
+				$('#messages').html(messages_html+htmlStringMessage);
+				$('html, body').scrollTop(200);
 			} else {
 				alert("End of the Conversation");
 				console.log("Invalid Request/End of the Conversation");
@@ -390,27 +402,27 @@
 
 			if (msg.data != null) {
 				for (var i = oldMessagesGroup.length - 1; i >= 0; i--) {
-				oldMsg = oldMessagesGroup[i];
-				oldMsg["type"] = "oldMessagesGroup";
-				updateOldMessages(oldMsg);
-				if (messages[counters].user == 'You'){
-					if (lastMessageTimeStampYou == "") {
-						lastMessageTimeStampYou = messages[counters]['timestamp'];
-						tempTimestampYou = lastMessageTimeStampYou;
+					oldMsg = oldMessagesGroup[i];
+					oldMsg["type"] = "oldMessagesGroup";
+					updateOldMessages(oldMsg);
+					if (messages[counters].user == 'You'){
+						if (lastMessageTimeStampYou == "") {
+							lastMessageTimeStampYou = messages[counters]['timestamp'];
+							tempTimestampYou = lastMessageTimeStampYou;
+						}
+					} else {
+						if (lastMessageTimeStampGroup == "") {
+							lastMessageTimeStampGroup = messages[counters]['timestamp'];
+							tempTimestampGroup = lastMessageTimeStampGroup;
+						}
 					}
-				} else {
-					if (lastMessageTimeStampGroup == "") {
-						lastMessageTimeStampGroup = messages[counters]['timestamp'];
-						tempTimestampGroup = lastMessageTimeStampGroup;
-					}
-				}
 
-				counters++;
-			}
-			var htmlStringMessage = $('#messages').html();
-			var messages_html = messages_template_both({'messages': messages});
-			$('#messages').html(messages_html+htmlStringMessage);
-			$('html, body').scrollTop(200);
+					counters++;
+				}
+				var htmlStringMessage = $('#messages').html();
+				var messages_html = messages_template_both({'messages': messages});
+				$('#messages').html(messages_html+htmlStringMessage);
+				$('html, body').scrollTop(200);
 			} else {
 				alert("End of the Conversation");
 				console.log("Invalid Request/End of the Conversation");
@@ -872,66 +884,66 @@
 	//Number is Unknown
 	tempText = qiFullContact;
 	document.title = tempText;
-	} 
-	else {
+} 
+else {
 	//Number is known
 	var posDash = qiFullContact.search(" - ");
 	tempText = qiFullContact.slice(0, posDash);
-	}
+}
+}
+
+$("#current-contacts h4").text(tempText);
+document.title = tempText;
+}
+
+function displayGroupTagsForThread () {
+	var tempText = "[Sitenames: ";
+	var titleSites = "";
+	var tempCountSitenames = groupTags.sitenames.length;
+	for (i in groupTags.sitenames) {
+		if (i == tempCountSitenames - 1) {
+			tempText = tempText + groupTags.sitenames[i];
+			titleSites = titleSites + groupTags.sitenames[i];
+		} else {
+			tempText = tempText + groupTags.sitenames[i] + ", ";
+			titleSites = titleSites + groupTags.sitenames[i] + ", ";
+		}
 	}
 
+	tempText = tempText + "]; [Offices: ";
+	var tempCountOffices = groupTags.offices.length;
+	for (i in groupTags.offices) {
+		if (i == tempCountOffices - 1){
+			tempText = tempText + groupTags.offices[i];
+		} else {
+			tempText = tempText + groupTags.offices[i] + ", ";
+		}
+	}
+
+	document.title = titleSites;
+
+	tempText = tempText + "]";
 	$("#current-contacts h4").text(tempText);
-	document.title = tempText;
-	}
+}
 
-	function displayGroupTagsForThread () {
-		var tempText = "[Sitenames: ";
-		var titleSites = "";
-		var tempCountSitenames = groupTags.sitenames.length;
-		for (i in groupTags.sitenames) {
-			if (i == tempCountSitenames - 1) {
-				tempText = tempText + groupTags.sitenames[i];
-				titleSites = titleSites + groupTags.sitenames[i];
-			} else {
-				tempText = tempText + groupTags.sitenames[i] + ", ";
-				titleSites = titleSites + groupTags.sitenames[i] + ", ";
-			}
-		}
+var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+	filter: function(text, input) {
+		return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+	},
 
-		tempText = tempText + "]; [Offices: ";
-		var tempCountOffices = groupTags.offices.length;
-		for (i in groupTags.offices) {
-			if (i == tempCountOffices - 1){
-				tempText = tempText + groupTags.offices[i];
-			} else {
-				tempText = tempText + groupTags.offices[i] + ", ";
-			}
-		}
+	replace: function(text) {
+		var before = this.input.value.match(/^.+;\s*|/)[0];
+		this.input.value = before + text + "; ";
+	},
+	minChars: 3
+});
+comboplete.list = [];
 
-		document.title = titleSites;
+Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+	var nameQuery = $('.dropdown-input').val();
 
-		tempText = tempText + "]";
-		$("#current-contacts h4").text(tempText);
-	}
-
-	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-		filter: function(text, input) {
-			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-		},
-
-		replace: function(text) {
-			var before = this.input.value.match(/^.+;\s*|/)[0];
-			this.input.value = before + text + "; ";
-		},
-		minChars: 3
-	});
-	comboplete.list = [];
-
-	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-		var nameQuery = $('.dropdown-input').val();
-
-		if (nameQuery.length >= 3) {
-			if (comboplete.ul.childNodes.length === 0) {
+	if (nameQuery.length >= 3) {
+		if (comboplete.ul.childNodes.length === 0) {
 					//comboplete.minChars = 3;
 					comboplete.evaluate();
 				} 
@@ -944,7 +956,7 @@
 			}
 		});
 
-	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
 		    // get keycode of current keypress event
 		    var code = (e.keyCode || e.which);
 
@@ -973,7 +985,7 @@
 			
 		}, false);
 
-	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 			// User made a selection from dropdown. 
 			// This is fired after the selection is applied
 			var allText = $('.dropdown-input').val();
@@ -984,22 +996,22 @@
 			parseContactInfo(nameQuery);
 		}, false);
 
-	var qiFullContact = null;
-	function quickInboxStartChat(fullContact=null) {
-		if (fullContact == null) {
-			console.log("Error: User or Name is null");
-			return;
-		}
-		else {
-			console.log("User: " + fullContact);
-		}
-
-
-		qiFullContact = fullContact;
-		startChat(source="quickInbox");
+var qiFullContact = null;
+function quickInboxStartChat(fullContact=null) {
+	if (fullContact == null) {
+		console.log("Error: User or Name is null");
+		return;
+	}
+	else {
+		console.log("User: " + fullContact);
 	}
 
-	function startChat(source="normal") {
+
+	qiFullContact = fullContact;
+	startChat(source="quickInbox");
+}
+
+function startChat(source="normal") {
 	//Reset the timestamp flaggers
 	tempTimestampIndi = "";
 
@@ -1083,7 +1095,6 @@
 				'msg': text + footer,
 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 			};
-
 			console.log(msg);
 			conn.send(JSON.stringify(msg));
 
@@ -1099,6 +1110,8 @@
 
 			msgType = "smssendgroup";
 			testMsg = msg;
+			counters = 0;
+			messages = [];
 			updateMessages(msg);
 
 			$('#msg').val('');
@@ -1132,8 +1145,8 @@
 	$('#go-load-groups').click(function() {
 		// Reset the timeStamp flaggers
 		tempTimestampYou = "";
-	 	tempTimestampGroup = "";
-	 	counters = 0;
+		tempTimestampGroup = "";
+		counters = 0;
 		//Reset the group tags
 		groupTags = [];
 
