@@ -281,7 +281,6 @@
 	}
 
 	function updateOldMessages(oldMessages){
-		// Clear messages
 
 		if (contactInfo == "groups") {
 			if (oldMessages.user == "You"){
@@ -315,15 +314,20 @@
 			}
 		} else {
 			//substitute number for name of registered user from contactInfo
-			for (i in contactInfo) {
-
-				if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
+			for (i in contactInfo) {	
+				if (oldMessages.user == 'You') {
+					oldMessages.isyou = 1;
+					messages.push(oldMessages);
+				} else {
+					if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
 					oldMessages.isyou = 0;
 					oldMessages.user = contactInfo[i].fullname;
 					messages.push(oldMessages);
-				} else {
-					oldMessages.isyou = 1;
-					messages.push(oldMessages);
+					} else {
+						oldMessages.isyou = 0;
+						oldMessages.user = contactInfo[i].numbers;
+						messages.push(oldMessages);
+					}
 				}
 			}
 		}
