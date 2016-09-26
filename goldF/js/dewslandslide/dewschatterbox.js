@@ -23,6 +23,7 @@
 	var lastMessageTimeStampYou="";
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
+	var convoFlagger = false;
 	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
 
@@ -391,6 +392,7 @@
 				$('#messages').html(messages_html+htmlStringMessage);
 				$('html, body').scrollTop(200);
 			} else {
+				convoFlagger = true;
 				alert("End of the Conversation");
 				console.log("Invalid Request/End of the Conversation");
 			}
@@ -424,6 +426,7 @@
 				$('#messages').html(messages_html+htmlStringMessage);
 				$('html, body').scrollTop(200);
 			} else {
+				convoFlagger = true;
 				alert("End of the Conversation");
 				console.log("Invalid Request/End of the Conversation");
 			}
@@ -434,7 +437,7 @@
 	$(window).scroll(function(){
 		var scroll = $(window).scrollTop();
 		if ($(document).height() > $(window).height()) {
-			if (scroll == 0){
+			if (scroll == 0 && convoFlagger == false){
 				if (msgType == "smsload") {
 					getOldMessage();
 				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
@@ -1014,6 +1017,7 @@ function quickInboxStartChat(fullContact=null) {
 function startChat(source="normal") {
 	//Reset the timestamp flaggers
 	tempTimestampIndi = "";
+	convoFlagger = false;
 
 	user = "You";
 
@@ -1147,6 +1151,7 @@ function startChat(source="normal") {
 		tempTimestampYou = "";
 		tempTimestampGroup = "";
 		counters = 0;
+		convoFlagger = false;
 		//Reset the group tags
 		groupTags = [];
 
