@@ -18,6 +18,10 @@
 	var testNumbers;
 	var multiContactsList = [];
 	var timerID = 0;
+	var lastMessageTimeStamp;
+	var lastMessageTimeStampIndi="";
+	var lastMessageTimeStampYou="";
+	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
@@ -110,10 +114,10 @@
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
 			if (contactInfo == "groups") {
-				console.log("type is group/tags")
+				// console.log("type is group/tags")
 
 				if (msgType == "smsloadrequestgroup") {
-					console.log("type smsloadrequestgroup")
+					// console.log("type smsloadrequestgroup")
 					messages.push(msg);
 				}
 
@@ -190,12 +194,25 @@
 			}
 		}
 
-		if (ewiFlagger == false){
+		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup")){
+			if (messages[counters]['user'] == 'You'){
+				if (lastMessageTimeStampYou == "") {
+					lastMessageTimeStampYou = messages[counters]['timestamp'];
+				}
+			} else {
+
+				if (lastMessageTimeStampGroup == "") {
+					lastMessageTimeStampGroup = messages[counters]['timestamp'];
+				}
+
+				if (lastMessageTimeStampIndi == "") {
+					
+					lastMessageTimeStampIndi = messages[counters]['timestamp'];
+				}
+			}
+
 			var messages_html = messages_template_both({'messages': messages});
 			$('#messages').html(messages_html);
-			//$('#messages').animate({ scrollTop: $('#messages')[0].scrollHeight}, 300 );
-
-			//Scroll to the bottom of the page
 			var maxScroll = $(document).height() - $(window).height();
 			$('html, body').scrollTop(maxScroll);
 		}
@@ -240,9 +257,9 @@
 		//TODO: load the historical message here
 		alert("loadMessageHistory!");
 	}
-
+	var counters = 0;
 	function initLoadMessageHistory(msgHistory) {
-		console.log(msgHistory);
+		// console.log(msgHistory);
 
 		if (msgHistory.data == null) {
 			return;
@@ -257,7 +274,234 @@
 		for (var i = history.length - 1; i >= 0; i--) {
 			msg = history[i];
 			updateMessages(msg);
+			counters++;
+
 		}
+		counters = 0;
+	}
+
+	function updateOldMessages(oldMessages){
+		// Clear messages
+
+		if (contactInfo == "groups") {
+			if (oldMessages.user == "You"){
+				oldMessages.isyou = 1;
+				messages.push(oldMessages);
+			} else {
+				oldMessages.isyou = 0;
+				var isTargetSite = false;
+				for (i in groupTags.sitenames) {
+					if ((oldMessages.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						isTargetSite = true;
+						continue;
+					}
+				}
+				if (isTargetSite == false) {
+					return;
+				}
+				var isOffices = false;
+				for (i in groupTags.offices) {
+					if ((oldMessages.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						isOffices = true;
+						continue;
+					}
+				}
+
+				if (isOffices == false) {
+					return;
+				}
+				oldMessages.user = oldMessages.name;
+				messages.push(oldMessages);
+			}
+		} else {
+			//substitute number for name of registered user from contactInfo
+			for (i in contactInfo) {
+
+				if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
+					oldMessages.isyou = 0;
+					oldMessages.user = contactInfo[i].fullname;
+					messages.push(oldMessages);
+				} else {
+					oldMessages.isyou = 1;
+					messages.push(oldMessages);
+				}
+			}
+		}
+	}
+
+	var tempTimestampYou;
+	var tempTimestampIndi;
+	var tempTimestampGroup;
+
+	function loadOldMessages(msg){
+		counters = 0;
+		lastMessageTimeStampYou = "";
+		lastMessageTimeStampIndi = "";
+		lastMessageTimeStampGroup = "";
+
+		console.log("Loading Old Messages");
+		// console.log(msg);
+		if (msg.type == "oldMessage") {
+
+			var oldMessagesIndi = msg.data;
+			var oldMsg;
+
+			if (msg.data != null){
+		 		for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
+				oldMsg = oldMessagesIndi[i];
+				oldMsg["type"] = "oldMessages";
+				updateOldMessages(oldMsg);
+				if (messages[counters].user == 'You'){
+					if (lastMessageTimeStampYou == "") {
+						lastMessageTimeStampYou = messages[counters]['timestamp'];
+						tempTimestampYou = lastMessageTimeStampYou;
+					}
+				} else {
+					if (lastMessageTimeStampIndi == "") {
+						lastMessageTimeStampIndi = messages[counters]['timestamp'];
+						tempTimestampIndi = lastMessageTimeStampIndi;
+					}
+				}
+
+				console.log(tempTimestampYou);
+				console.log(tempTimestampIndi);
+
+				counters++;
+			}
+
+			var htmlStringMessage = $('#messages').html();
+			lastMessageTimeStamp = messages[0]['timestamp'];
+			var messages_html = messages_template_both({'messages': messages});
+			$('#messages').html(messages_html+htmlStringMessage);
+			$('html, body').scrollTop(200);
+			} else {
+				alert("End of the Conversation");
+				console.log("Invalid Request/End of the Conversation");
+			}
+
+		} else if (msg.type == "oldMessageGroup") {
+			var oldMessagesGroup = msg.data;
+			var oldMsg;
+			messages = [];
+
+			if (msg.data != null) {
+				for (var i = oldMessagesGroup.length - 1; i >= 0; i--) {
+				oldMsg = oldMessagesGroup[i];
+				oldMsg["type"] = "oldMessagesGroup";
+				updateOldMessages(oldMsg);
+				if (messages[counters].user == 'You'){
+					if (lastMessageTimeStampYou == "") {
+						lastMessageTimeStampYou = messages[counters]['timestamp'];
+						tempTimestampYou = lastMessageTimeStampYou;
+					}
+				} else {
+					if (lastMessageTimeStampGroup == "") {
+						lastMessageTimeStampGroup = messages[counters]['timestamp'];
+						tempTimestampGroup = lastMessageTimeStampGroup;
+					}
+				}
+
+				counters++;
+			}
+			var htmlStringMessage = $('#messages').html();
+			var messages_html = messages_template_both({'messages': messages});
+			$('#messages').html(messages_html+htmlStringMessage);
+			$('html, body').scrollTop(200);
+			} else {
+				alert("End of the Conversation");
+				console.log("Invalid Request/End of the Conversation");
+			}
+		}
+
+	}
+
+	$(window).scroll(function(){
+		var scroll = $(window).scrollTop();
+		if ($(document).height() > $(window).height()) {
+			if (scroll == 0){
+				if (msgType == "smsload") {
+					getOldMessage();
+				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+					getOldMessageGroup();
+				} else {
+					console.log("Invalid Request/End of the Conversation");
+				}
+			}
+		}
+	});
+
+	function getOldMessage(){
+
+		if (lastMessageTimeStampYou == "") {
+			lastMessageTimeStampYou = tempTimestampYou;
+		}
+
+		if (lastMessageTimeStampIndi == "") {
+			lastMessageTimeStampIndi = tempTimestampIndi;
+		}
+
+		var request = {
+			'type': 'oldMessage',
+			'number': contactnumTrimmed,
+			'timestampYou': lastMessageTimeStampYou,
+			'timestampIndi': lastMessageTimeStampIndi
+		};
+
+		tempTimestampYou  = lastMessageTimeStampYou;
+		tempTimestampIndi = lastMessageTimeStampIndi;
+
+		$('#user').val('You');
+		messages = [];
+
+		conn.send(JSON.stringify(request));
+	}
+
+	function getOldMessageGroup(){
+		groupTags = [];
+		user = "You";
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+
+		tagSitenames.sort();
+		if (lastMessageTimeStampYou == "") {
+			lastMessageTimeStampYou = tempTimestampYou;
+		}
+
+		if (lastMessageTimeStampGroup == "") {
+			lastMessageTimeStampGroup = tempTimestampGroup;
+		}
+
+		request = {
+			'type': 'oldMessageGroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames,
+			'lastMessageTimeStampYou': lastMessageTimeStampYou,
+			'lastMessageTimeStampGroup':lastMessageTimeStampGroup
+		};
+
+		groupTags = {
+			'type': 'oldMessageGroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames
+		};
+
+		tempTimestampYou  = lastMessageTimeStampYou;
+		tempTimestampGroup = lastMessageTimeStampGroup;
+
+		$('#user').val('You');
+
+		messages = [];
+		contactInfo = "groups";
+
+		//Request for message exchanges from the groups selected
+		conn.send(JSON.stringify(request));
 	}
 
 	function initLoadQuickInbox(quickInboxMsg) {
@@ -305,6 +549,7 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -349,7 +594,13 @@
 
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
-			} 
+			} else if (msg.type == "oldMessage"){
+				loadOldMessages(msg);
+				msgType = "smsload"
+			} else if (msg.type == "oldMessageGroup"){
+				loadOldMessages(msg);
+				msgType = "smsloadrequestgroup";
+			}
 			else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
 			}
@@ -367,9 +618,9 @@
 
 				var suggestionsArray = [];
 				for (var i in msg.data) {
-				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-				    					" - " + msg.data[i].numbers;
-				    suggestionsArray.push(suggestion);
+					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+					" - " + msg.data[i].numbers;
+					suggestionsArray.push(suggestion);
 				}
 
 				comboplete.list = suggestionsArray;
@@ -421,21 +672,21 @@
 		tempConn.onclose = function(e) {
 			WSS_CONNECTION_STATUS = -1;
 
-	        var reason;
+			var reason;
 	        //alert(event.code);
 	        // See http://tools.ietf.org/html/rfc6455#section-7.4.1
 	        if (event.code == 1000)
-	            reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
+	        	reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
 	        else if(event.code == 1001)
-	            reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
+	        	reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
 	        else if(event.code == 1002)
-	            reason = "An endpoint is terminating the connection due to a protocol error";
+	        	reason = "An endpoint is terminating the connection due to a protocol error";
 	        else if(event.code == 1003)
-	            reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
+	        	reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
 	        else if(event.code == 1004)
-	            reason = "Reserved. The specific meaning might be defined in the future.";
+	        	reason = "Reserved. The specific meaning might be defined in the future.";
 	        else if(event.code == 1005)
-	            reason = "No status code was actually present.";
+	        	reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 	        	$("#connectionStatusModal").modal("show");
@@ -445,47 +696,47 @@
 	       		// reconnect to the WSS
 	       		waitForSocketConnection();
 	       	}
-	        else if(event.code == 1007)
-	            reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
-	        else if(event.code == 1008)
-	            reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
-	        else if(event.code == 1009)
-	           reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
+	       	else if(event.code == 1007)
+	       		reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
+	       	else if(event.code == 1008)
+	       		reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
+	       	else if(event.code == 1009)
+	       		reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
 	        else if(event.code == 1010) // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
-	            reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
+	        	reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
 	        else if(event.code == 1011)
-	            reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
+	        	reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
 	        else if(event.code == 1015)
-	            reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
+	        	reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
 	        else
-	            reason = "Unknown reason";
+	        	reason = "Unknown reason";
 
 	        console.log(reason);
-		}
+	    }
 
-		return tempConn;
+	    return tempConn;
 	}
 
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-		        function () {
-		            if (conn.readyState === 1) {
-		                console.log("Connection is made");
-		                return;
+				function () {
+					if (conn.readyState === 1) {
+						console.log("Connection is made");
+						return;
 
-		            } else {
-		                console.log("wait for connection... " + delayReconn);
-		                conn = connectWS();
-		                waitForSocketConnection();
+					} else {
+						console.log("wait for connection... " + delayReconn);
+						conn = connectWS();
+						waitForSocketConnection();
 
 						// Add 1 second for everytime the reconnection is triggered
 						//	will reset once connected
 						if (delayReconn < 20000) {
 							delayReconn += 1000;
 						}
-		            }
+					}
 
 		        }, delayReconn); // wait delayReconn seconds for the connection...
 		}
@@ -591,73 +842,73 @@
 		return nameQuery;
 	}
 
-function displayContactNamesForThread (source="normal") {
-	if (source == "normal") {
-		var flags = [], uniqueName = [], l = contactInfo.length, i;
-		for( i=0; i<l; i++) {
-			if( flags[contactInfo[i].fullname]) 
-				continue;
+	function displayContactNamesForThread (source="normal") {
+		if (source == "normal") {
+			var flags = [], uniqueName = [], l = contactInfo.length, i;
+			for( i=0; i<l; i++) {
+				if( flags[contactInfo[i].fullname]) 
+					continue;
 
-			flags[contactInfo[i].fullname] = true;
-			uniqueName.push(contactInfo[i].fullname);
+				flags[contactInfo[i].fullname] = true;
+				uniqueName.push(contactInfo[i].fullname);
+			}
+
+			var tempText = "", tempCountContacts = uniqueName.length;
+			for (i in uniqueName) {
+				console.log(uniqueName[i]);
+
+				if (i == tempCountContacts - 1)
+					tempText = tempText + uniqueName[i];
+				else
+					tempText = tempText + uniqueName[i] + ", ";
+			}
 		}
-
-		var tempText = "", tempCountContacts = uniqueName.length;
-		for (i in uniqueName) {
-			console.log(uniqueName[i]);
-
-			if (i == tempCountContacts - 1)
-				tempText = tempText + uniqueName[i];
-			else
-				tempText = tempText + uniqueName[i] + ", ";
-		}
+		else if (source == "quickInbox") {
+			if (qiFullContact.search("unknown") >= 0) {
+	//Number is Unknown
+	tempText = qiFullContact;
+	document.title = tempText;
+	} 
+	else {
+	//Number is known
+	var posDash = qiFullContact.search(" - ");
+	tempText = qiFullContact.slice(0, posDash);
 	}
-	else if (source == "quickInbox") {
-		if (qiFullContact.search("unknown") >= 0) {
-//Number is Unknown
-tempText = qiFullContact;
-document.title = tempText;
-} 
-else {
-//Number is known
-var posDash = qiFullContact.search(" - ");
-tempText = qiFullContact.slice(0, posDash);
-}
-}
-
-$("#current-contacts h4").text(tempText);
-document.title = tempText;
-}
-
-function displayGroupTagsForThread () {
-	var tempText = "[Sitenames: ";
-	var titleSites = "";
-	var tempCountSitenames = groupTags.sitenames.length;
-	for (i in groupTags.sitenames) {
-		if (i == tempCountSitenames - 1) {
-			tempText = tempText + groupTags.sitenames[i];
-			titleSites = titleSites + groupTags.sitenames[i];
-		} else {
-			tempText = tempText + groupTags.sitenames[i] + ", ";
-			titleSites = titleSites + groupTags.sitenames[i] + ", ";
-		}
 	}
 
-	tempText = tempText + "]; [Offices: ";
-	var tempCountOffices = groupTags.offices.length;
-	for (i in groupTags.offices) {
-		if (i == tempCountOffices - 1){
-			tempText = tempText + groupTags.offices[i];
-		} else {
-			tempText = tempText + groupTags.offices[i] + ", ";
-		}
-	}
-
-	document.title = titleSites;
-
-	tempText = tempText + "]";
 	$("#current-contacts h4").text(tempText);
-}
+	document.title = tempText;
+	}
+
+	function displayGroupTagsForThread () {
+		var tempText = "[Sitenames: ";
+		var titleSites = "";
+		var tempCountSitenames = groupTags.sitenames.length;
+		for (i in groupTags.sitenames) {
+			if (i == tempCountSitenames - 1) {
+				tempText = tempText + groupTags.sitenames[i];
+				titleSites = titleSites + groupTags.sitenames[i];
+			} else {
+				tempText = tempText + groupTags.sitenames[i] + ", ";
+				titleSites = titleSites + groupTags.sitenames[i] + ", ";
+			}
+		}
+
+		tempText = tempText + "]; [Offices: ";
+		var tempCountOffices = groupTags.offices.length;
+		for (i in groupTags.offices) {
+			if (i == tempCountOffices - 1){
+				tempText = tempText + groupTags.offices[i];
+			} else {
+				tempText = tempText + groupTags.offices[i] + ", ";
+			}
+		}
+
+		document.title = titleSites;
+
+		tempText = tempText + "]";
+		$("#current-contacts h4").text(tempText);
+	}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
 		filter: function(text, input) {
@@ -677,57 +928,57 @@ function displayGroupTagsForThread () {
 
 		if (nameQuery.length >= 3) {
 			if (comboplete.ul.childNodes.length === 0) {
-				//comboplete.minChars = 3;
-				comboplete.evaluate();
-			} 
-			else if (comboplete.ul.hasAttribute('hidden')) {
-				comboplete.open();
+					//comboplete.minChars = 3;
+					comboplete.evaluate();
+				} 
+				else if (comboplete.ul.hasAttribute('hidden')) {
+					comboplete.open();
+				}
+				else {
+					comboplete.close();
+				}
+			}
+		});
+
+	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+		    // get keycode of current keypress event
+		    var code = (e.keyCode || e.which);
+
+		    // do nothing if it's an arrow key
+		    if(code == 37 || code == 38 || code == 39 || code == 40) {
+		    	return;
+		    }
+
+		    var allNameQueries = $('.dropdown-input').val();
+		    var nameQuery = getFollowingNameQuery(allNameQueries);
+
+		    if (allNameQueries.length < 3) {
+				//Reset the contacts list
+				multiContactsList = [];
+				contactnumTrimmed = [];
+			}
+
+			if (nameQuery.length >= 3) {
+				//Get autocomplete data from the WSS
+				getNameSuggestions(nameQuery);
+
 			}
 			else {
 				comboplete.close();
 			}
-		}
-	});
-
-	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-	    // get keycode of current keypress event
-	    var code = (e.keyCode || e.which);
-
-	    // do nothing if it's an arrow key
-	    if(code == 37 || code == 38 || code == 39 || code == 40) {
-	        return;
-	    }
-
-		var allNameQueries = $('.dropdown-input').val();
-		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		if (allNameQueries.length < 3) {
-			//Reset the contacts list
-			multiContactsList = [];
-			contactnumTrimmed = [];
-		}
-
-		if (nameQuery.length >= 3) {
-			//Get autocomplete data from the WSS
-			getNameSuggestions(nameQuery);
-
-		}
-		else {
-			comboplete.close();
-		}
-		
-	}, false);
+			
+		}, false);
 
 	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
-		// User made a selection from dropdown. 
-		// This is fired after the selection is applied
-		var allText = $('.dropdown-input').val();
-		var size = allText.length;
-		var allNameQueries = allText.slice(0, size-2);
-		var nameQuery = getFollowingNameQuery(allNameQueries);
+			// User made a selection from dropdown. 
+			// This is fired after the selection is applied
+			var allText = $('.dropdown-input').val();
+			var size = allText.length;
+			var allNameQueries = allText.slice(0, size-2);
+			var nameQuery = getFollowingNameQuery(allNameQueries);
 
-		parseContactInfo(nameQuery);
-	}, false);
+			parseContactInfo(nameQuery);
+		}, false);
 
 	var qiFullContact = null;
 	function quickInboxStartChat(fullContact=null) {
@@ -745,13 +996,16 @@ function displayGroupTagsForThread () {
 	}
 
 	function startChat(source="normal") {
-		user = "You";
+	//Reset the timestamp flaggers
+	tempTimestampIndi = "";
 
-		if (source == "normal") {
-			if (contactSuggestions) {
-				contactInfo = multiContactsList;
-			}
-			else {
+	user = "You";
+
+	if (source == "normal") {
+		if (contactSuggestions) {
+			contactInfo = multiContactsList;
+		}
+		else {
 				//If we are contacting an unregistered number
 				contactname = $('.dropdown-input').val();
 				contactnum = contactname;
@@ -809,12 +1063,12 @@ function displayGroupTagsForThread () {
 
 			var tagOffices = [];
 			$('input[name="offices"]:checked').each(function() {
-			   tagOffices.push(this.value);
+				tagOffices.push(this.value);
 			});
 
 			var tagSitenames = [];
 			$('input[name="sitenames"]:checked').each(function() {
-			   tagSitenames.push(this.value);
+				tagSitenames.push(this.value);
 			});
 
 			var msg = {
@@ -851,7 +1105,7 @@ function displayGroupTagsForThread () {
 
 			var normalized = [];
 			for (i in contactnumTrimmed) {
-			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
 			}
 
 			var msg = {
@@ -872,6 +1126,10 @@ function displayGroupTagsForThread () {
 
 	// Send a message to the selected recipients
 	$('#go-load-groups').click(function() {
+		// Reset the timeStamp flaggers
+		tempTimestampYou = "";
+	 	tempTimestampGroup = "";
+	 	counters = 0;
 		//Reset the group tags
 		groupTags = [];
 
@@ -879,12 +1137,12 @@ function displayGroupTagsForThread () {
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
-		   tagOffices.push(this.value);
+			tagOffices.push(this.value);
 		});
 
 		var tagSitenames = [];
 		$('input[name="sitenames"]:checked').each(function() {
-		   tagSitenames.push(this.value);
+			tagSitenames.push(this.value);
 		});
 
 		//sort the sitename values in the array alphabetically
@@ -911,7 +1169,7 @@ function displayGroupTagsForThread () {
 	});
 
 	$(document).ready(function() {
-	var table = $('#response-contact-container').DataTable();
+		var table = $('#response-contact-container').DataTable();
 	});
 
 	$('input[type="radio"]').on('change', function(e) {
@@ -945,7 +1203,7 @@ function displayGroupTagsForThread () {
 	});
 
 	String.prototype.capitalize = function() {
-	return this.charAt(0).toUpperCase() + this.slice(1);
+		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
 	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
@@ -1106,137 +1364,137 @@ function displayGroupTagsForThread () {
 
 		// Fetched the Alert and Sites EWI
 
-	$('#btn-ewi').on('click',function(){
-		$('#alert-lvl').empty();
-		$('#sites').empty();
-		$.ajax({
-			type: "GET",
-			url: "../chatterbox/getewi",             	
-			dataType: "json",
-			success: function(response){
-				var alertList = Object.keys(response).length;
-				var counter = 0;
-				select = document.getElementById('alert-lvl');
-				for (counter=0;counter<alertList;counter++){
-					var opt = document.createElement('option');
-					opt.value = Object.keys(response)[counter];
-					opt.innerHTML = Object.keys(response)[counter];
-					select.className = "form-control";
-					select.setAttribute("required","true");
-					select.appendChild(opt);
-				}
-			}
-		});
-
-		$.ajax({
-			type: "GET",
-			url: "../chatterbox/getdistinctsitename",             
-			dataType: "json",              
-			success: function(response){
-				var counter = 0;
-				select = document.getElementById('sites');
-				for (counter=0;counter < response.length;counter++){
-					var opt = document.createElement('option');
-					opt.value = response[counter].sitename;
-					opt.innerHTML = response[counter].sitename;
-					select.className = "form-control";
-					select.setAttribute("required","true");
-					select.appendChild(opt);
-				}
-				opt.value = "NSS";
-				opt.innerHTML = "NO SITE SELECTED";
-				select.className = "form-control";
-				select.setAttribute("required","true");
-				select.appendChild(opt);
-
-				var counter = 0;
-				$('input[name="sitenames"]:checked').each(function() {
-					counter++;
-				});
-
-				if (counter == 1){
-					$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-				} else {
-					$('select option[value="NSS"]').attr("selected",true);
-				}
-			}
-		});
-	});
-
-	$('#confirm-ewi').click(function(){
-
-		groupTags = [];
-		user = "You";
-		var tagOffices = [];
-		var tagSitenames = [];
-
-		var tagOffices = [];
-		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
-		});
-
-		var counter = 0;
-		$('input[name="sitenames"]:checked').each(function() {
-			counter++;
-		});
-
-		if (counter == 1){
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"]').prop('checked', false);
-
-			$('input[name="sitenames"]').each(function() {
-				if ($('#sites').val() == this.value) {
-					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+		$('#btn-ewi').on('click',function(){
+			$('#alert-lvl').empty();
+			$('#sites').empty();
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/getewi",             	
+				dataType: "json",
+				success: function(response){
+					var alertList = Object.keys(response).length;
+					var counter = 0;
+					select = document.getElementById('alert-lvl');
+					for (counter=0;counter<alertList;counter++){
+						var opt = document.createElement('option');
+						opt.value = Object.keys(response)[counter];
+						opt.innerHTML = Object.keys(response)[counter];
+						select.className = "form-control";
+						select.setAttribute("required","true");
+						select.appendChild(opt);
+					}
 				}
 			});
-		} else if (counter > 1){
+
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/getdistinctsitename",             
+				dataType: "json",              
+				success: function(response){
+					var counter = 0;
+					select = document.getElementById('sites');
+					for (counter=0;counter < response.length;counter++){
+						var opt = document.createElement('option');
+						opt.value = response[counter].sitename;
+						opt.innerHTML = response[counter].sitename;
+						select.className = "form-control";
+						select.setAttribute("required","true");
+						select.appendChild(opt);
+					}
+					opt.value = "NSS";
+					opt.innerHTML = "NO SITE SELECTED";
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+
+					var counter = 0;
+					$('input[name="sitenames"]:checked').each(function() {
+						counter++;
+					});
+
+					if (counter == 1){
+						$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
+					} else {
+						$('select option[value="NSS"]').attr("selected",true);
+					}
+				}
+			});
+		});
+
+		$('#confirm-ewi').click(function(){
+
+			groupTags = [];
+			user = "You";
+			var tagOffices = [];
 			var tagSitenames = [];
-			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
+
+			var tagOffices = [];
+			$('input[name="offices"]:checked').each(function() {
+				tagOffices.push(this.value);
 			});
-		} else {
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
-		}
 
+			var counter = 0;
+			$('input[name="sitenames"]:checked').each(function() {
+				counter++;
+			});
 
-		tagSitenames.sort();
-		groupTags = {
-			'type': 'smsloadrequestgroup',
-			'offices': tagOffices,
-			'sitenames': tagSitenames
-		};
+			if (counter == 1){
+				tagSitenames.push($('#sites').val());
+				$('input[name="sitenames"]').prop('checked', false);
 
-		$('#main-container').removeClass('hidden');
-
-		getEWI(function(output){
-			if (counter == 1 || counter == 0){
-				var template = setEWILocation(output);
-			}else {
-				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-				$('#msg').val(nssEWITemplate);
+				$('input[name="sitenames"]').each(function() {
+					if ($('#sites').val() == this.value) {
+						$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+					}
+				});
+			} else if (counter > 1){
+				var tagSitenames = [];
+				$('input[name="sitenames"]:checked').each(function() {
+					tagSitenames.push(this.value);
+				});
+			} else {
+				tagSitenames.push($('#sites').val());
+				$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
 			}
+
+
+			tagSitenames.sort();
+			groupTags = {
+				'type': 'smsloadrequestgroup',
+				'offices': tagOffices,
+				'sitenames': tagSitenames
+			};
+
+			$('#main-container').removeClass('hidden');
+
+			getEWI(function(output){
+				if (counter == 1 || counter == 0){
+					var template = setEWILocation(output);
+				}else {
+					var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
+					$('#msg').val(nssEWITemplate);
+				}
+			});
+
 		});
 
-	});
-
-	function getEWI(handledTemplate){
-		var constructedEWI = "";
-		var dateReplaced = "";
-		$.ajax({
-			type: "GET",
-			url: "../chatterbox/getewi",             	
-			dataType: "json",	
-			success: function(response){
-				var d = new Date();
-				var currentPanahon = d.getHours();
-				if (currentPanahon >= 12 && currentPanahon <= 18) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
-				} else if (currentPanahon > 18 && currentPanahon <=23) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
-				} else {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
-				}
+		function getEWI(handledTemplate){
+			var constructedEWI = "";
+			var dateReplaced = "";
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/getewi",             	
+				dataType: "json",	
+				success: function(response){
+					var d = new Date();
+					var currentPanahon = d.getHours();
+					if (currentPanahon >= 12 && currentPanahon <= 18) {
+						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
+					} else if (currentPanahon > 18 && currentPanahon <=23) {
+						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
+					} else {
+						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
+					}
 
 				//Changes the Date
 				var year = $('#ewi-date-picker').val().substring(0, 4);
@@ -1253,72 +1511,72 @@ function displayGroupTagsForThread () {
 				handledTemplate(dateReplaced);
 			}
 		});
-	}
-
-	function setEWILocation(consEWI){
-		var finalEWI = "";
-		if (consEWI != "") {
-			$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
-			.done(function(response) {
-				var location = JSON.parse(response);
-				var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
-				var formatSbmp = sbmp.replace("null","");
-				if (formatSbmp.charAt(0) == ",") {
-					formatSbmp = formatSbmp.substr(1);
-				}
-				finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
-				$('#msg').val(finalEWI);
-			});
-		} else {
-			$('#msg').val("Site is not available");
 		}
-	}
 
-	function sendViaAlertMonitor(data){
-		$.ajax({
-			type: "GET",
-			url: "../chatterbox/getewi",             	
-			dataType: "json",	
-			success: function(response){
-				var i = data["comments"].indexOf(';');
-				data["comments"] = data["comments"].substr(0,i);
-				var counter = 0;
-				for (counter = 0;counter < Object.keys(response).length;counter++){
-					if (Object.keys(response)[counter] == data["internal_alert"]){
-						var preConstructedEWI = response[Object.keys(response)[counter]];
-						var constructedEWIDate = "";
-						var finalEWI = ""
-						var d = new Date();
-						var currentPanahon = d.getHours();
-						if (currentPanahon >= 12 && currentPanahon <= 18) {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-						} else if (currentPanahon > 18 && currentPanahon <=23) {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-						} else {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-						}
+		function setEWILocation(consEWI){
+			var finalEWI = "";
+			if (consEWI != "") {
+				$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+				.done(function(response) {
+					var location = JSON.parse(response);
+					var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+					var formatSbmp = sbmp.replace("null","");
+					if (formatSbmp.charAt(0) == ",") {
+						formatSbmp = formatSbmp.substr(1);
+					}
+					finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
+					$('#msg').val(finalEWI);
+				});
+			} else {
+				$('#msg').val("Site is not available");
+			}
+		}
 
-						constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
-						var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-						var formatSbmp = ewiLocation.replace("null","");
-						if (formatSbmp.charAt(0) == ",") {
-							formatSbmp = formatSbmp.substr(1);
+		function sendViaAlertMonitor(data){
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/getewi",             	
+				dataType: "json",	
+				success: function(response){
+					var i = data["comments"].indexOf(';');
+					data["comments"] = data["comments"].substr(0,i);
+					var counter = 0;
+					for (counter = 0;counter < Object.keys(response).length;counter++){
+						if (Object.keys(response)[counter] == data["internal_alert"]){
+							var preConstructedEWI = response[Object.keys(response)[counter]];
+							var constructedEWIDate = "";
+							var finalEWI = ""
+							var d = new Date();
+							var currentPanahon = d.getHours();
+							if (currentPanahon >= 12 && currentPanahon <= 18) {
+								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+							} else if (currentPanahon > 18 && currentPanahon <=23) {
+								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+							} else {
+								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
+							}
+
+							constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
+							var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+							var formatSbmp = ewiLocation.replace("null","");
+							if (formatSbmp.charAt(0) == ",") {
+								formatSbmp = formatSbmp.substr(1);
+							}
+							var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+							$('#site-abbr').val(data["name"]);
+							$('#constructed-ewi-amd').val(finalEWI);
 						}
-						var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-						$('#site-abbr').val(data["name"]);
-						$('#constructed-ewi-amd').val(finalEWI);
 					}
 				}
-			}
-		});
-		$('#ewi-asap-modal').modal('toggle');
-	}
+			});
+			$('#ewi-asap-modal').modal('toggle');
+		}
 
-	function templateSendViaAMD(){
-		ewiFlagger = true;
-		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
-		var text = $('#constructed-ewi-amd').val();
-		try {
+		function templateSendViaAMD(){
+			ewiFlagger = true;
+			var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+			var text = $('#constructed-ewi-amd').val();
+			try {
 
 		// Assume All 4 offices will be included in the EWI
 		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
@@ -1352,7 +1610,7 @@ function displayGroupTagsForThread () {
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
 	}
-	}
+}
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
@@ -1373,8 +1631,6 @@ function displayGroupTagsForThread () {
 	$('#uncheckAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 	});
-
-
 
 	// Update the "remaining characters" information below the text area
 	$('#msg').bind('input propertychange', function() {
