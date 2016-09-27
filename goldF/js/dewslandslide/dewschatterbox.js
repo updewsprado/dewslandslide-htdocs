@@ -28,7 +28,7 @@
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
-	//	in case you want to edit it.
+	//	in case you want to edit it.	
 	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
 	// Get remaining characters count
@@ -105,6 +105,7 @@
 	function updateMessages(msg) {
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
+
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
@@ -114,10 +115,10 @@
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
 			if (contactInfo == "groups") {
-				// console.log("type is group/tags")
+				console.log("type is group/tags")
 
 				if (msgType == "smsloadrequestgroup") {
-					// console.log("type smsloadrequestgroup")
+					console.log("type smsloadrequestgroup")
 					messages.push(msg);
 				}
 
@@ -264,7 +265,7 @@
 		}
 	}
 
-	function loadMessageHistory(msg) {
+function loadMessageHistory(msg) {
 		//TODO: load the historical message here
 		alert("loadMessageHistory!");
 	}
@@ -367,7 +368,6 @@
 					oldMsg = oldMessagesIndi[i];
 					oldMsg["type"] = "oldMessages";
 					updateOldMessages(oldMsg);
-					console.log(messages);
 					if (messages[counters].user == 'You'){
 						if (lastMessageTimeStampYou == "") {
 							lastMessageTimeStampYou = messages[counters]['timestamp'];
@@ -379,9 +379,6 @@
 							tempTimestampIndi = lastMessageTimeStampIndi;
 						}
 					}
-
-					console.log(tempTimestampYou);
-					console.log(tempTimestampIndi);
 
 					counters++;
 				}
@@ -568,7 +565,6 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -613,7 +609,7 @@
 
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
-			} else if (msg.type == "oldMessage"){
+			}  else if (msg.type == "oldMessage"){
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
@@ -637,9 +633,9 @@
 
 				var suggestionsArray = [];
 				for (var i in msg.data) {
-					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-					" - " + msg.data[i].numbers;
-					suggestionsArray.push(suggestion);
+				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+				    					" - " + msg.data[i].numbers;
+				    suggestionsArray.push(suggestion);
 				}
 
 				comboplete.list = suggestionsArray;
@@ -691,21 +687,21 @@
 		tempConn.onclose = function(e) {
 			WSS_CONNECTION_STATUS = -1;
 
-			var reason;
+	        var reason;
 	        //alert(event.code);
 	        // See http://tools.ietf.org/html/rfc6455#section-7.4.1
 	        if (event.code == 1000)
-	        	reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
+	            reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
 	        else if(event.code == 1001)
-	        	reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
+	            reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
 	        else if(event.code == 1002)
-	        	reason = "An endpoint is terminating the connection due to a protocol error";
+	            reason = "An endpoint is terminating the connection due to a protocol error";
 	        else if(event.code == 1003)
-	        	reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
+	            reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
 	        else if(event.code == 1004)
-	        	reason = "Reserved. The specific meaning might be defined in the future.";
+	            reason = "Reserved. The specific meaning might be defined in the future.";
 	        else if(event.code == 1005)
-	        	reason = "No status code was actually present.";
+	            reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 	        	$("#connectionStatusModal").modal("show");
@@ -715,47 +711,47 @@
 	       		// reconnect to the WSS
 	       		waitForSocketConnection();
 	       	}
-	       	else if(event.code == 1007)
-	       		reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
-	       	else if(event.code == 1008)
-	       		reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
-	       	else if(event.code == 1009)
-	       		reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
+	        else if(event.code == 1007)
+	            reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
+	        else if(event.code == 1008)
+	            reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
+	        else if(event.code == 1009)
+	           reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
 	        else if(event.code == 1010) // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
-	        	reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
+	            reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
 	        else if(event.code == 1011)
-	        	reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
+	            reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
 	        else if(event.code == 1015)
-	        	reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
+	            reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
 	        else
-	        	reason = "Unknown reason";
+	            reason = "Unknown reason";
 
 	        console.log(reason);
-	    }
+		}
 
-	    return tempConn;
+		return tempConn;
 	}
 
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-				function () {
-					if (conn.readyState === 1) {
-						console.log("Connection is made");
-						return;
+		        function () {
+		            if (conn.readyState === 1) {
+		                console.log("Connection is made");
+		                return;
 
-					} else {
-						console.log("wait for connection... " + delayReconn);
-						conn = connectWS();
-						waitForSocketConnection();
+		            } else {
+		                console.log("wait for connection... " + delayReconn);
+		                conn = connectWS();
+		                waitForSocketConnection();
 
 						// Add 1 second for everytime the reconnection is triggered
 						//	will reset once connected
 						if (delayReconn < 20000) {
 							delayReconn += 1000;
 						}
-					}
+		            }
 
 		        }, delayReconn); // wait delayReconn seconds for the connection...
 		}
@@ -884,149 +880,149 @@
 		}
 		else if (source == "quickInbox") {
 			if (qiFullContact.search("unknown") >= 0) {
-	//Number is Unknown
-	tempText = qiFullContact;
-	document.title = tempText;
-} 
-else {
-	//Number is known
-	var posDash = qiFullContact.search(" - ");
-	tempText = qiFullContact.slice(0, posDash);
-}
-}
-
-$("#current-contacts h4").text(tempText);
-document.title = tempText;
-}
-
-function displayGroupTagsForThread () {
-	var tempText = "[Sitenames: ";
-	var titleSites = "";
-	var tempCountSitenames = groupTags.sitenames.length;
-	for (i in groupTags.sitenames) {
-		if (i == tempCountSitenames - 1) {
-			tempText = tempText + groupTags.sitenames[i];
-			titleSites = titleSites + groupTags.sitenames[i];
-		} else {
-			tempText = tempText + groupTags.sitenames[i] + ", ";
-			titleSites = titleSites + groupTags.sitenames[i] + ", ";
+			//Number is Unknown
+			tempText = qiFullContact;
+			document.title = tempText;
+			} 
+			else {
+			//Number is known
+			var posDash = qiFullContact.search(" - ");
+			tempText = qiFullContact.slice(0, posDash);
+			}
 		}
+
+		$("#current-contacts h4").text(tempText);
+		document.title = tempText;
 	}
 
-	tempText = tempText + "]; [Offices: ";
-	var tempCountOffices = groupTags.offices.length;
-	for (i in groupTags.offices) {
-		if (i == tempCountOffices - 1){
-			tempText = tempText + groupTags.offices[i];
-		} else {
-			tempText = tempText + groupTags.offices[i] + ", ";
+	function displayGroupTagsForThread () {
+		var tempText = "[Sitenames: ";
+		var titleSites = "";
+		var tempCountSitenames = groupTags.sitenames.length;
+		for (i in groupTags.sitenames) {
+			if (i == tempCountSitenames - 1) {
+				tempText = tempText + groupTags.sitenames[i];
+				titleSites = titleSites + groupTags.sitenames[i];
+			} else {
+				tempText = tempText + groupTags.sitenames[i] + ", ";
+				titleSites = titleSites + groupTags.sitenames[i] + ", ";
+			}
 		}
+
+		tempText = tempText + "]; [Offices: ";
+		var tempCountOffices = groupTags.offices.length;
+		for (i in groupTags.offices) {
+			if (i == tempCountOffices - 1){
+				tempText = tempText + groupTags.offices[i];
+			} else {
+				tempText = tempText + groupTags.offices[i] + ", ";
+			}
+		}
+
+		document.title = titleSites;
+
+		tempText = tempText + "]";
+		$("#current-contacts h4").text(tempText);
 	}
 
-	document.title = titleSites;
+	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+		filter: function(text, input) {
+			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+		},
 
-	tempText = tempText + "]";
-	$("#current-contacts h4").text(tempText);
-}
+		replace: function(text) {
+			var before = this.input.value.match(/^.+;\s*|/)[0];
+			this.input.value = before + text + "; ";
+		},
+		minChars: 3
+	});
+	comboplete.list = [];
 
-var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-	filter: function(text, input) {
-		return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-	},
+	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+		var nameQuery = $('.dropdown-input').val();
 
-	replace: function(text) {
-		var before = this.input.value.match(/^.+;\s*|/)[0];
-		this.input.value = before + text + "; ";
-	},
-	minChars: 3
-});
-comboplete.list = [];
-
-Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-	var nameQuery = $('.dropdown-input').val();
-
-	if (nameQuery.length >= 3) {
-		if (comboplete.ul.childNodes.length === 0) {
-					//comboplete.minChars = 3;
-					comboplete.evaluate();
-				} 
-				else if (comboplete.ul.hasAttribute('hidden')) {
-					comboplete.open();
-				}
-				else {
-					comboplete.close();
-				}
-			}
-		});
-
-Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-		    // get keycode of current keypress event
-		    var code = (e.keyCode || e.which);
-
-		    // do nothing if it's an arrow key
-		    if(code == 37 || code == 38 || code == 39 || code == 40) {
-		    	return;
-		    }
-
-		    var allNameQueries = $('.dropdown-input').val();
-		    var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		    if (allNameQueries.length < 3) {
-				//Reset the contacts list
-				multiContactsList = [];
-				contactnumTrimmed = [];
-			}
-
-			if (nameQuery.length >= 3) {
-				//Get autocomplete data from the WSS
-				getNameSuggestions(nameQuery);
-
+		if (nameQuery.length >= 3) {
+			if (comboplete.ul.childNodes.length === 0) {
+				//comboplete.minChars = 3;
+				comboplete.evaluate();
+			} 
+			else if (comboplete.ul.hasAttribute('hidden')) {
+				comboplete.open();
 			}
 			else {
 				comboplete.close();
 			}
-			
-		}, false);
+		}
+	});
 
-Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
-			// User made a selection from dropdown. 
-			// This is fired after the selection is applied
-			var allText = $('.dropdown-input').val();
-			var size = allText.length;
-			var allNameQueries = allText.slice(0, size-2);
-			var nameQuery = getFollowingNameQuery(allNameQueries);
+	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+	    // get keycode of current keypress event
+	    var code = (e.keyCode || e.which);
 
-			parseContactInfo(nameQuery);
-		}, false);
+	    // do nothing if it's an arrow key
+	    if(code == 37 || code == 38 || code == 39 || code == 40) {
+	        return;
+	    }
 
-var qiFullContact = null;
-function quickInboxStartChat(fullContact=null) {
-	if (fullContact == null) {
-		console.log("Error: User or Name is null");
-		return;
-	}
-	else {
-		console.log("User: " + fullContact);
-	}
+		var allNameQueries = $('.dropdown-input').val();
+		var nameQuery = getFollowingNameQuery(allNameQueries);
 
+		if (allNameQueries.length < 3) {
+			//Reset the contacts list
+			multiContactsList = [];
+			contactnumTrimmed = [];
+		}
 
-	qiFullContact = fullContact;
-	startChat(source="quickInbox");
-}
+		if (nameQuery.length >= 3) {
+			//Get autocomplete data from the WSS
+			getNameSuggestions(nameQuery);
 
-function startChat(source="normal") {
-	//Reset the timestamp flaggers
-	tempTimestampIndi = "";
-	convoFlagger = false;
-	counters = 0;
-
-	user = "You";
-
-	if (source == "normal") {
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
 		}
 		else {
+			comboplete.close();
+		}
+		
+	}, false);
+
+	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+		// User made a selection from dropdown. 
+		// This is fired after the selection is applied
+		var allText = $('.dropdown-input').val();
+		var size = allText.length;
+		var allNameQueries = allText.slice(0, size-2);
+		var nameQuery = getFollowingNameQuery(allNameQueries);
+
+		parseContactInfo(nameQuery);
+	}, false);
+
+	var qiFullContact = null;
+	function quickInboxStartChat(fullContact=null) {
+		if (fullContact == null) {
+			console.log("Error: User or Name is null");
+			return;
+		}
+		else {
+			console.log("User: " + fullContact);
+		}
+
+
+		qiFullContact = fullContact;
+		startChat(source="quickInbox");
+	}
+
+	function startChat(source="normal") {
+		//Reset the timestamp flaggers
+		tempTimestampIndi = "";
+		convoFlagger = false;
+		counters = 0;
+
+		user = "You";
+
+		if (source == "normal") {
+			if (contactSuggestions) {
+				contactInfo = multiContactsList;
+			}
+			else {
 				//If we are contacting an unregistered number
 				contactname = $('.dropdown-input').val();
 				contactnum = contactname;
@@ -1084,12 +1080,12 @@ function startChat(source="normal") {
 
 			var tagOffices = [];
 			$('input[name="offices"]:checked').each(function() {
-				tagOffices.push(this.value);
+			   tagOffices.push(this.value);
 			});
 
 			var tagSitenames = [];
 			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
+			   tagSitenames.push(this.value);
 			});
 
 			var msg = {
@@ -1100,6 +1096,7 @@ function startChat(source="normal") {
 				'msg': text + footer,
 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 			};
+
 			console.log(msg);
 			conn.send(JSON.stringify(msg));
 
@@ -1127,7 +1124,7 @@ function startChat(source="normal") {
 
 			var normalized = [];
 			for (i in contactnumTrimmed) {
-				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
 			}
 
 			var msg = {
@@ -1160,12 +1157,12 @@ function startChat(source="normal") {
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
+		   tagOffices.push(this.value);
 		});
 
 		var tagSitenames = [];
 		$('input[name="sitenames"]:checked').each(function() {
-			tagSitenames.push(this.value);
+		   tagSitenames.push(this.value);
 		});
 
 		//sort the sitename values in the array alphabetically
@@ -1192,7 +1189,7 @@ function startChat(source="normal") {
 	});
 
 	$(document).ready(function() {
-		var table = $('#response-contact-container').DataTable();
+	var table = $('#response-contact-container').DataTable();
 	});
 
 	$('input[type="radio"]').on('change', function(e) {
@@ -1226,7 +1223,7 @@ function startChat(source="normal") {
 	});
 
 	String.prototype.capitalize = function() {
-		return this.charAt(0).toUpperCase() + this.slice(1);
+	return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
 	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
@@ -1387,137 +1384,137 @@ function startChat(source="normal") {
 
 		// Fetched the Alert and Sites EWI
 
-		$('#btn-ewi').on('click',function(){
-			$('#alert-lvl').empty();
-			$('#sites').empty();
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",
-				success: function(response){
-					var alertList = Object.keys(response).length;
-					var counter = 0;
-					select = document.getElementById('alert-lvl');
-					for (counter=0;counter<alertList;counter++){
-						var opt = document.createElement('option');
-						opt.value = Object.keys(response)[counter];
-						opt.innerHTML = Object.keys(response)[counter];
-						select.className = "form-control";
-						select.setAttribute("required","true");
-						select.appendChild(opt);
-					}
-				}
-			});
-
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getdistinctsitename",             
-				dataType: "json",              
-				success: function(response){
-					var counter = 0;
-					select = document.getElementById('sites');
-					for (counter=0;counter < response.length;counter++){
-						var opt = document.createElement('option');
-						opt.value = response[counter].sitename;
-						opt.innerHTML = response[counter].sitename;
-						select.className = "form-control";
-						select.setAttribute("required","true");
-						select.appendChild(opt);
-					}
-					opt.value = "NSS";
-					opt.innerHTML = "NO SITE SELECTED";
+	$('#btn-ewi').on('click',function(){
+		$('#alert-lvl').empty();
+		$('#sites').empty();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",
+			success: function(response){
+				var alertList = Object.keys(response).length;
+				var counter = 0;
+				select = document.getElementById('alert-lvl');
+				for (counter=0;counter<alertList;counter++){
+					var opt = document.createElement('option');
+					opt.value = Object.keys(response)[counter];
+					opt.innerHTML = Object.keys(response)[counter];
 					select.className = "form-control";
 					select.setAttribute("required","true");
 					select.appendChild(opt);
-
-					var counter = 0;
-					$('input[name="sitenames"]:checked').each(function() {
-						counter++;
-					});
-
-					if (counter == 1){
-						$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-					} else {
-						$('select option[value="NSS"]').attr("selected",true);
-					}
 				}
-			});
-		});
-
-		$('#confirm-ewi').click(function(){
-
-			groupTags = [];
-			user = "You";
-			var tagOffices = [];
-			var tagSitenames = [];
-
-			var tagOffices = [];
-			$('input[name="offices"]:checked').each(function() {
-				tagOffices.push(this.value);
-			});
-
-			var counter = 0;
-			$('input[name="sitenames"]:checked').each(function() {
-				counter++;
-			});
-
-			if (counter == 1){
-				tagSitenames.push($('#sites').val());
-				$('input[name="sitenames"]').prop('checked', false);
-
-				$('input[name="sitenames"]').each(function() {
-					if ($('#sites').val() == this.value) {
-						$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
-					}
-				});
-			} else if (counter > 1){
-				var tagSitenames = [];
-				$('input[name="sitenames"]:checked').each(function() {
-					tagSitenames.push(this.value);
-				});
-			} else {
-				tagSitenames.push($('#sites').val());
-				$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
 			}
-
-
-			tagSitenames.sort();
-			groupTags = {
-				'type': 'smsloadrequestgroup',
-				'offices': tagOffices,
-				'sitenames': tagSitenames
-			};
-
-			$('#main-container').removeClass('hidden');
-
-			getEWI(function(output){
-				if (counter == 1 || counter == 0){
-					var template = setEWILocation(output);
-				}else {
-					var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-					$('#msg').val(nssEWITemplate);
-				}
-			});
-
 		});
 
-		function getEWI(handledTemplate){
-			var constructedEWI = "";
-			var dateReplaced = "";
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",	
-				success: function(response){
-					var d = new Date();
-					var currentPanahon = d.getHours();
-					if (currentPanahon >= 12 && currentPanahon <= 18) {
-						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
-					} else if (currentPanahon > 18 && currentPanahon <=23) {
-						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
-					} else {
-						constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
-					}
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getdistinctsitename",             
+			dataType: "json",              
+			success: function(response){
+				var counter = 0;
+				select = document.getElementById('sites');
+				for (counter=0;counter < response.length;counter++){
+					var opt = document.createElement('option');
+					opt.value = response[counter].sitename;
+					opt.innerHTML = response[counter].sitename;
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+				opt.value = "NSS";
+				opt.innerHTML = "NO SITE SELECTED";
+				select.className = "form-control";
+				select.setAttribute("required","true");
+				select.appendChild(opt);
+
+				var counter = 0;
+				$('input[name="sitenames"]:checked').each(function() {
+					counter++;
+				});
+
+				if (counter == 1){
+					$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
+				} else {
+					$('select option[value="NSS"]').attr("selected",true);
+				}
+			}
+		});
+	});
+
+	$('#confirm-ewi').click(function(){
+
+		groupTags = [];
+		user = "You";
+		var tagOffices = [];
+		var tagSitenames = [];
+
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
+
+		var counter = 0;
+		$('input[name="sitenames"]:checked').each(function() {
+			counter++;
+		});
+
+		if (counter == 1){
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"]').prop('checked', false);
+
+			$('input[name="sitenames"]').each(function() {
+				if ($('#sites').val() == this.value) {
+					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+				}
+			});
+		} else if (counter > 1){
+			var tagSitenames = [];
+			$('input[name="sitenames"]:checked').each(function() {
+				tagSitenames.push(this.value);
+			});
+		} else {
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
+		}
+
+
+		tagSitenames.sort();
+		groupTags = {
+			'type': 'smsloadrequestgroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames
+		};
+
+		$('#main-container').removeClass('hidden');
+
+		getEWI(function(output){
+			if (counter == 1 || counter == 0){
+				var template = setEWILocation(output);
+			}else {
+				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
+				$('#msg').val(nssEWITemplate);
+			}
+		});
+
+	});
+
+	function getEWI(handledTemplate){
+		var constructedEWI = "";
+		var dateReplaced = "";
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				var d = new Date();
+				var currentPanahon = d.getHours();
+				if (currentPanahon >= 12 && currentPanahon <= 18) {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
+				} else if (currentPanahon > 18 && currentPanahon <=23) {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
+				} else {
+					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
+				}
 
 				//Changes the Date
 				var year = $('#ewi-date-picker').val().substring(0, 4);
@@ -1534,72 +1531,72 @@ function startChat(source="normal") {
 				handledTemplate(dateReplaced);
 			}
 		});
+	}
+
+	function setEWILocation(consEWI){
+		var finalEWI = "";
+		if (consEWI != "") {
+			$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+			.done(function(response) {
+				var location = JSON.parse(response);
+				var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+				var formatSbmp = sbmp.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
+				finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
+				$('#msg').val(finalEWI);
+			});
+		} else {
+			$('#msg').val("Site is not available");
 		}
+	}
 
-		function setEWILocation(consEWI){
-			var finalEWI = "";
-			if (consEWI != "") {
-				$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
-				.done(function(response) {
-					var location = JSON.parse(response);
-					var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
-					var formatSbmp = sbmp.replace("null","");
-					if (formatSbmp.charAt(0) == ",") {
-						formatSbmp = formatSbmp.substr(1);
-					}
-					finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
-					$('#msg').val(finalEWI);
-				});
-			} else {
-				$('#msg').val("Site is not available");
-			}
-		}
-
-		function sendViaAlertMonitor(data){
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",	
-				success: function(response){
-					var i = data["comments"].indexOf(';');
-					data["comments"] = data["comments"].substr(0,i);
-					var counter = 0;
-					for (counter = 0;counter < Object.keys(response).length;counter++){
-						if (Object.keys(response)[counter] == data["internal_alert"]){
-							var preConstructedEWI = response[Object.keys(response)[counter]];
-							var constructedEWIDate = "";
-							var finalEWI = ""
-							var d = new Date();
-							var currentPanahon = d.getHours();
-							if (currentPanahon >= 12 && currentPanahon <= 18) {
-								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-							} else if (currentPanahon > 18 && currentPanahon <=23) {
-								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-							} else {
-								constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-							}
-
-							constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
-							var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-							var formatSbmp = ewiLocation.replace("null","");
-							if (formatSbmp.charAt(0) == ",") {
-								formatSbmp = formatSbmp.substr(1);
-							}
-							var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-							$('#site-abbr').val(data["name"]);
-							$('#constructed-ewi-amd').val(finalEWI);
+	function sendViaAlertMonitor(data){
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				var i = data["comments"].indexOf(';');
+				data["comments"] = data["comments"].substr(0,i);
+				var counter = 0;
+				for (counter = 0;counter < Object.keys(response).length;counter++){
+					if (Object.keys(response)[counter] == data["internal_alert"]){
+						var preConstructedEWI = response[Object.keys(response)[counter]];
+						var constructedEWIDate = "";
+						var finalEWI = ""
+						var d = new Date();
+						var currentPanahon = d.getHours();
+						if (currentPanahon >= 12 && currentPanahon <= 18) {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+						} else if (currentPanahon > 18 && currentPanahon <=23) {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+						} else {
+							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
 						}
+
+						constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
+						var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+						var formatSbmp = ewiLocation.replace("null","");
+						if (formatSbmp.charAt(0) == ",") {
+							formatSbmp = formatSbmp.substr(1);
+						}
+						var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+						$('#site-abbr').val(data["name"]);
+						$('#constructed-ewi-amd').val(finalEWI);
 					}
 				}
-			});
-			$('#ewi-asap-modal').modal('toggle');
-		}
+			}
+		});
+		$('#ewi-asap-modal').modal('toggle');
+	}
 
-		function templateSendViaAMD(){
-			ewiFlagger = true;
-			var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
-			var text = $('#constructed-ewi-amd').val();
-			try {
+	function templateSendViaAMD(){
+		ewiFlagger = true;
+		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+		var text = $('#constructed-ewi-amd').val();
+		try {
 
 		// Assume All 4 offices will be included in the EWI
 		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
@@ -1627,13 +1624,13 @@ function startChat(source="normal") {
 		$('#result-ewi-message').text('Success!, Message sent.');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
-	} catch(err) {
-		$('#result-ewi-message').text('Failed!, Please check the template.');
-		alert(err.stack);
-		$('#success-ewi-modal').modal('toggle');
-		$('#ewi-asap-modal').modal('toggle');
+		} catch(err) {
+			$('#result-ewi-message').text('Failed!, Please check the template.');
+			alert(err.stack);
+			$('#success-ewi-modal').modal('toggle');
+			$('#ewi-asap-modal').modal('toggle');
+		}
 	}
-}
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
@@ -1654,6 +1651,8 @@ function startChat(source="normal") {
 	$('#uncheckAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 	});
+
+
 
 	// Update the "remaining characters" information below the text area
 	$('#msg').bind('input propertychange', function() {
