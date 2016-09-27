@@ -28,7 +28,7 @@
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
-	//	in case you want to edit it.	
+	//	in case you want to edit it.
 	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
 	// Get remaining characters count
@@ -265,10 +265,11 @@
 		}
 	}
 
-function loadMessageHistory(msg) {
+	function loadMessageHistory(msg) {
 		//TODO: load the historical message here
 		alert("loadMessageHistory!");
 	}
+
 	var counters = 0;
 	function initLoadMessageHistory(msgHistory) {
 		// console.log(msgHistory);
@@ -287,7 +288,6 @@ function loadMessageHistory(msg) {
 			msg = history[i];
 			updateMessages(msg);
 			counters++;
-
 		}
 		counters = 0;
 	}
@@ -609,7 +609,7 @@ function loadMessageHistory(msg) {
 
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
-			}  else if (msg.type == "oldMessage"){
+			} else if (msg.type == "oldMessage"){
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
@@ -1624,12 +1624,12 @@ function loadMessageHistory(msg) {
 		$('#result-ewi-message').text('Success!, Message sent.');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
-		} catch(err) {
-			$('#result-ewi-message').text('Failed!, Please check the template.');
-			alert(err.stack);
-			$('#success-ewi-modal').modal('toggle');
-			$('#ewi-asap-modal').modal('toggle');
-		}
+	} catch(err) {
+		$('#result-ewi-message').text('Failed!, Please check the template.');
+		alert(err.stack);
+		$('#success-ewi-modal').modal('toggle');
+		$('#ewi-asap-modal').modal('toggle');
+	}
 	}
 
 	//CHECK ALL Offices in the advanced search
