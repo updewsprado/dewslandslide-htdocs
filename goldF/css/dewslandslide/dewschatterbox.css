@@ -20,6 +20,19 @@ body {
   z-index: 10;
 }
 
+#search-lbl {
+  display: flex;
+  float: right;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+#search-key {
+  width: 60%;
+  margin-left: 31%;
+  margin-right: 10px;
+}
+
 #div-advanced-search {
   position: fixed;
   list-style: none;

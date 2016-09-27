@@ -894,7 +894,17 @@
 
 		$("#current-contacts h4").text(tempText);
 		document.title = tempText;
+		$('#search-lbl h5').show();
 	}
+
+	$('#search-lbl h5').click(function(){
+		if ($('#search-key').is(":visible") == true) {
+			$('#search-key').hide();
+		} else {
+			$('#search-key').show();
+			$('#search-key').val("");
+		}
+	});
 
 	function displayGroupTagsForThread () {
 		var tempText = "[Sitenames: ";
@@ -924,6 +934,7 @@
 
 		tempText = tempText + "]";
 		$("#current-contacts h4").text(tempText);
+		$('#search-lbl h5').show();
 	}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
