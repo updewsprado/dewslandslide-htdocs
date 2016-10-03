@@ -1559,35 +1559,40 @@
 			url: "../chatterbox/getewi",             	
 			dataType: "json",	
 			success: function(response){
-				var i = data["comments"].indexOf(';');
-				data["comments"] = data["comments"].substr(0,i);
-				var counter = 0;
-				for (counter = 0;counter < Object.keys(response).length;counter++){
-					if (Object.keys(response)[counter] == data["internal_alert"]){
-						var preConstructedEWI = response[Object.keys(response)[counter]];
-						var constructedEWIDate = "";
-						var finalEWI = ""
-						var d = new Date();
-						var currentPanahon = d.getHours();
-						if (currentPanahon >= 12 && currentPanahon <= 18) {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-						} else if (currentPanahon > 18 && currentPanahon <=23) {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-						} else {
-							constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-						}
-
-						constructedEWIDate = constructedEWIDate.replace("%%DATE%%",data["time_released"].slice(0, -9));
-						var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-						var formatSbmp = ewiLocation.replace("null","");
-						if (formatSbmp.charAt(0) == ",") {
-							formatSbmp = formatSbmp.substr(1);
-						}
-						var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-						$('#site-abbr').val(data["name"]);
-						$('#constructed-ewi-amd').val(finalEWI);
-					}
+				var preConstructedEWI = response[data["internal_alert_level"]];
+				var constructedEWIDate = "";
+				var finalEWI = ""
+				var d = new Date();
+				var currentPanahon = d.getHours();
+				if (currentPanahon >= 12 && currentPanahon <= 18) {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+				} else if (currentPanahon > 18 && currentPanahon <=23) {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+				} else {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
 				}
+
+				//Changes the Date
+				var year = data["data_timestamp"].slice(0, -9).substring(0, 4);
+				var month = data["data_timestamp"].slice(0, -9).substring(5, 7);
+				var day = data["data_timestamp"].slice(0, -9).substring(8, 10);
+
+				var months = {1: "January",2: "February",3: "March",
+				4: "April",5: "May",6: "June",
+				7: "July",8: "August", 9: "September",
+				10: "October", 11: "November", 12: "December"};
+
+				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+
+				constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
+				var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+				var formatSbmp = ewiLocation.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
+				var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				$('#site-abbr').val(data["name"]);
+				$('#constructed-ewi-amd').val(finalEWI);
 			}
 		});
 		$('#ewi-asap-modal').modal('toggle');
