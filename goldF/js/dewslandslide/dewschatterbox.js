@@ -1324,6 +1324,7 @@
 			dataType: "json",              
 			success: function(response){
 				var counter = 0;
+				debugger;
 				select = document.getElementById('office');
 				for (counter=0;counter < response.length;counter++){
 					var opt = document.createElement('option');
@@ -1333,8 +1334,11 @@
 					select.setAttribute("required","true");
 					select.appendChild(opt);
 				}
+				var opt = document.createElement('option');
 				opt.value = "OTHERS";
 				opt.innerHTML = "OTHERS";
+				select.className = "form-control";
+				select.setAttribute("required","true");
 				select.appendChild(opt);
 			}
 		});
