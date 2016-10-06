@@ -1324,7 +1324,6 @@
 			dataType: "json",              
 			success: function(response){
 				var counter = 0;
-				debugger;
 				select = document.getElementById('office');
 				for (counter=0;counter < response.length;counter++){
 					var opt = document.createElement('option');
