@@ -16,21 +16,8 @@ body {
   position: fixed;
   list-style: none;
   margin-left: 0px;
-  margin-top: 30px;
+  margin-top: 30px; 
   z-index: 10;
-}
-
-#search-lbl {
-  display: flex;
-  float: right;
-  width: 100%;
-  justify-content: flex-end;
-}
-
-#search-key {
-  width: 60%;
-  margin-left: 31%;
-  margin-right: 10px;
 }
 
 #div-advanced-search {
@@ -38,7 +25,33 @@ body {
   list-style: none;
   margin-left: 0px;
   margin-top: 75px;
-  z-index: 8;
+  z-index: 9;
+  width: 18%;
+}
+
+#search-lbl {
+  display: none;
+  float: right;
+  width: 100%;
+  justify-content: flex-end;
+  margin: 5px 5px;
+  border-radius: 10px;
+  padding: 0px 30px 10px 30px;
+  margin: 0;
+}
+
+#search-lbl div {
+  display: inline-flex;
+}
+#search-area {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+#search-key {
+  width: 100%;
+  padding: 0 10px 0 10px;
 }
 
 #current-contacts {
@@ -67,7 +80,7 @@ body {
   position: fixed;
   list-style: none;
   margin-left: 0px;
-  margin-top: 110px;
+  margin-top: 100px;
   z-index: 0;
   width: 20%;
   height: 68.2%;
@@ -93,6 +106,12 @@ body {
   width: 92%;
 }
 
+#search-global-result{
+  max-height: 400px;
+  overflow-y: scroll;
+  padding-right: 10px;
+}
+
 #response-contact-container_wrapper {
   overflow-y: scroll;
   max-height: 473px;
@@ -106,14 +125,25 @@ body {
   position: fixed;
 }
 
+#input-search-global {
+  min-width: 150px;
+}
+
+.search-result-container {
+  height: 610px; 
+  min-height: 400px;  
+  overflow-y: scroll;
+
+}
+
 .friend-list {
-  position: fixed;
+  position: fixed;  
   list-style: none;
   margin-left: -45px;
-  margin-top: 140px;
+  margin-top: 120px;
   z-index: 0;
   width: 20%;
-  height: 75%;
+  height: 70%;
   overflow-y: scroll;
 }
 
@@ -178,7 +208,7 @@ small, .small {
 }
 
 .chat-message {
-  padding: 60px 20px 130px;
+  padding: 110px 20px 130px;
 }
 
 .chat {
@@ -213,6 +243,14 @@ img {
 
 #btn-ewi {
   margin-top: 5px;
+}
+
+#btn-standard-search{
+  text-align: center;
+  justify-content: center;
+  line-height: 35px;
+  font-size: 20px;
+  margin-left: 10px;
 }
 
 .chat li .chat-body {
@@ -282,7 +320,7 @@ img {
 .chat-box {
   position: fixed;
   bottom: 0;
-  left: 444px;
+  left: 20%;
   right: 0;
   padding: 15px;
   border-top: 1px solid #eee;

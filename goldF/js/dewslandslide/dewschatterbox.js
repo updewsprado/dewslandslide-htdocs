@@ -6,6 +6,7 @@
 	var contactSuggestions;
 	var contactsList = [];
 	var messages = [];
+	var searchResults = [];
 	var quick_inbox_registered = [];
 	var quick_inbox_unknown = [];
 	var temp, tempMsg, tempUser, tempRequest;
@@ -103,9 +104,11 @@
 	}
 
 	function updateMessages(msg) {
+// Hides the Search 
+		$('#search-key').hide();
+		
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
-
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
@@ -114,22 +117,29 @@
 
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
+
 			if (contactInfo == "groups") {
 				console.log("type is group/tags")
 
 				if (msgType == "smsloadrequestgroup") {
 					console.log("type smsloadrequestgroup")
 					messages.push(msg);
+				} else {
+					searchResults.push(msg);
 				}
 
 				// //only push the message if it belongs to the groupTags
 				// messages.push(msg);
 				if(arraysEqual(msg.offices, groupTags.offices)) {
-					if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-						console.log("type found match for group send receive")
-						console.log("the message before it gets pushed:");
-						console.log(msg);
-						messages.push(msg);
+					if (msgType == "searchMessageGroup") {
+						searchResults.push(msg);
+					} else {
+						if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+							console.log("type found match for group send receive")
+							console.log("the message before it gets pushed:");
+							console.log(msg);
+							messages.push(msg);
+						}
 					}
 				}
 			} 
@@ -137,18 +147,21 @@
 				if (msgType == "smsloadrequestgroup") {
 					return;
 				}
-
-				messages.push(msg);
+				if (msgType == "searchMessage" || msgType == "smsLoadSearched") {
+					searchResults.push(msg);
+				} else if (msgType == "searchMessageGlobal"){
+					searchResults.push(msg);
+				} else {
+					messages.push(msg);
+				}
 			}
-		}
-		else {
+		} else {
 			if (contactInfo == "groups") {
 				//only push the message if it belongs to the groupTags
 				//Don't include message if "msg.name" is "unknown"
 				if (msg.name == "unknown") {
 					return;
 				}
-
 				//Use "sitenames" as the primary filter
 				var isTargetSite = false;
 				for (i in groupTags.sitenames) {
@@ -175,57 +188,77 @@
 					return;
 				}
 
-				msg.isyou = 0;
-				msg.user = msg.name;
-				messages.push(msg);
+				if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+					msg.isyou = 0;
+					msg.user = msg.name;
+					searchResults.push(msg);
+				} else {
+					msg.isyou = 0;
+					msg.user = msg.name;
+					messages.push(msg);	
+				}
+				
 			} else {
 				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
 					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
-
-					if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
-						// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
-
-						msg.isyou = 0;
-						msg.user = contactInfo[i].fullname;
-						messages.push(msg);
-						break;
+					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
+						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched"){
+						if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+							msg.isyou = 0;
+							msg.user = contactInfo[i].fullname;
+							searchResults.push(msg);
+							break;
+						}
+					} else {
+						if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+							msg.isyou = 0;
+							msg.user = contactInfo[i].fullname;
+							messages.push(msg);
+							break;
+						}
 					}
 				}
 			}
 		}
 
-		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup")){
-			if (messages[counters]['user'] == 'You'){
-				if (lastMessageTimeStampYou == "") {
-					lastMessageTimeStampYou = messages[counters]['timestamp'];
-				}
-			} else {
+		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
+		 	!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
 
-				if (lastMessageTimeStampGroup == "") {
-					lastMessageTimeStampGroup = messages[counters]['timestamp'];
-				}
+			try{
+				if (messages[counters]['user'] == 'You'){
+					if (lastMessageTimeStampYou == "") {
+						lastMessageTimeStampYou = messages[counters]['timestamp'];
+					}
+				} else {
 
-				if (lastMessageTimeStampIndi == "") {
-					
-					lastMessageTimeStampIndi = messages[counters]['timestamp'];
+					if (lastMessageTimeStampGroup == "") {
+						lastMessageTimeStampGroup = messages[counters]['timestamp'];
+					}
+
+					if (lastMessageTimeStampIndi == "") {
+						
+						lastMessageTimeStampIndi = messages[counters]['timestamp'];
+					}
 				}
-			}
-			if (msg.type == "smssend" || msg.type == "smssendgroup") {
-				var messages_html = messages_template_both({'messages': messages});
-				var htmlString = $('#messages').html();
-				$('#messages').html(htmlString+messages_html);
-				var maxScroll = $(document).height() - $(window).height();
-				$('html, body').scrollTop(maxScroll);
-				// Clears the messages container if already displayed.
-				messages = [];
-		
-			} else {
-				var messages_html = messages_template_both({'messages': messages});
-				$('#messages').html(messages_html);
-				var maxScroll = $(document).height() - $(window).height();
-				$('html, body').scrollTop(maxScroll);
-		
+				if (msg.type == "smssend" || msg.type == "smssendgroup") {
+					var messages_html = messages_template_both({'messages': messages});
+					var htmlString = $('#messages').html();
+					$('#messages').html(htmlString+messages_html);
+					var maxScroll = $(document).height() - $(window).height();
+					$('html, body').scrollTop(maxScroll);
+					// Clears the messages container if already displayed.
+					messages = [];
+			
+				} else {
+					var messages_html = messages_template_both({'messages': messages});
+					$('#messages').html(messages_html);
+					var maxScroll = $(document).height() - $(window).height();
+					$('html, body').scrollTop(maxScroll);
+				}
+			} catch(err){
+				console.log(err);
+				console.log("Not a Scroll/Search related feature");
 			}
 		}
 	}
@@ -271,6 +304,7 @@
 	}
 
 	var counters = 0;
+
 	function initLoadMessageHistory(msgHistory) {
 		// console.log(msgHistory);
 
@@ -379,7 +413,6 @@
 							tempTimestampIndi = lastMessageTimeStampIndi;
 						}
 					}
-
 					counters++;
 				}
 
@@ -415,7 +448,6 @@
 							tempTimestampGroup = lastMessageTimeStampGroup;
 						}
 					}
-
 					counters++;
 				}
 				var htmlStringMessage = $('#messages').html();
@@ -616,6 +648,18 @@
 			} else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
 				msgType = "smsloadrequestgroup";
+			} else if (msg.type == "searchMessage"){
+				loadSearchedMessage(msg);
+				msgType = "searchMessage";
+			} else if (msg.type == "searchMessageGlobal") {
+				loadSearchedMessage(msg);
+			} else if (msg.type == "searchMessageGroup") {
+				loadSearchedMessage(msg);
+				msgType = "searchMessageGroup";
+			} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
+				loadSearchedMessage(msg);
+			} else if (msg.type == "smsloadGlobalSearched"){
+				loadSearchedMessage(msg);
 			}
 			else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
@@ -681,7 +725,6 @@
 						}
 					}
 				}
-
 			}
 		}
 
@@ -891,20 +934,342 @@
 			tempText = qiFullContact.slice(0, posDash);
 			}
 		}
-
 		$("#current-contacts h4").text(tempText);
 		document.title = tempText;
+		$('#search-lbl').css('display', 'block')
 		$('#search-lbl h5').show();
 	}
 
-	$('#search-lbl h5').click(function(){
-		if ($('#search-key').is(":visible") == true) {
+	$('#btn-standard-search').click(function(){
+		console.log("HIT");
+		if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
+			searchMessage();
+		} else if ($('#search-key').is(":visible") == true && $('#search-key').val() == ""){
 			$('#search-key').hide();
 		} else {
 			$('#search-key').show();
-			$('#search-key').val("");
+			$('#search-key').val("");	
 		}
 	});
+
+	$('#btn-search-global').click(function(){
+		searchMessageGlobal($('#search-global-keyword').val());
+	});
+
+	function searchMessage(){
+		messages = [];
+		searchResults = [];
+		if (msgType == "smsload" || msgType == "searchMessage") {
+			searchMessageIndividual();
+		} else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup"){
+			searchMessageGroup();
+		} else {
+			console.log(msgType);
+			console.log("Invalid Request");
+		}
+	}
+
+	function searchMessageIndividual(){
+		var request = {
+			'type': 'searchMessageIndividual',
+			'number': contactnumTrimmed,
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+			'searchKey': $('#search-key').val()
+		};
+
+		conn.send(JSON.stringify(request));
+	}
+
+	function searchMessageGroup(){
+		//Reset the group tags
+		groupTags = [];
+
+		user = "You";
+
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+		   tagOffices.push(this.value);
+		});
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+		   tagSitenames.push(this.value);
+		});
+
+		//sort the sitename values in the array alphabetically
+		tagSitenames.sort();
+
+		request = {
+			'type': 'searchMessageGroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames,
+			'searchKey': $('#search-key').val()
+		};
+
+		groupTags = {
+			'type': 'searchMessageGroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames,
+			'searchKey': $('#search-key').val()
+		};
+
+		messages = [];
+		contactInfo = "groups";
+
+		//Request for message exchanges from the groups selected
+		conn.send(JSON.stringify(request));
+	}
+
+	function searchMessageGlobal(searchKey){
+		request = {
+			'type': "searchMessageGlobal",
+			'searchKey': searchKey
+		}
+		conn.send(JSON.stringify(request));
+	}
+
+	var coloredTimestamp;
+	function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null){
+		coloredTimestamp = "id_"+timestamp;
+		if (type == "searchMessage") {
+			var request = {
+			'type': 'smsLoadSearched',
+			'number': contactnumTrimmed,
+			'timestamp': timestamp
+			};
+
+			conn.send(JSON.stringify(request));
+		} else if (type == "searchMessageGroup"){
+
+			$('#search-result-modal').modal('toggle');
+			var timestampYou = "";
+			var timestampGroup = "";
+
+			var tagOffices = [];
+			$('input[name="offices"]:checked').each(function() {
+			   tagOffices.push(this.value);
+			});
+
+			var tagSitenames = [];
+			$('input[name="sitenames"]:checked').each(function() {
+			   tagSitenames.push(this.value);
+			});
+
+			if (user == 'You') {
+				timestampYou = timestamp;
+			} else {
+				timestampGroup = timestamp;
+			}
+
+			request = {
+				'type': 'smsLoadGroupSearched',
+				'offices': tagOffices,
+				'sitenames': tagSitenames,
+				'timestampYou': timestampYou,
+				'timestampGroup': timestampGroup
+			};
+
+			conn.send(JSON.stringify(request));
+
+		} else if (type == "searchMessageGlobal"){
+
+			// console.log(msg);
+
+			$("#current-contacts h4").text(user);
+			document.title = user;
+			$('#search-lbl').css('display', 'block')
+			$('#search-lbl h5').show();
+			contactnumTrimmed = [];
+
+			request = {
+				'type': 'smsloadGlobalSearched',
+				'user': user,
+				'user_number': user_number,
+				'sms_msg': sms_message,
+				'timestamp': timestamp
+			}
+			contactnumTrimmed = [user_number];
+			user = "You";
+
+			conn.send(JSON.stringify(request));
+
+		}
+	}
+
+	//HandleBars Helper
+	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
+	  if(v1 === v2 || v1 == v3 || v1 == v4) {
+	    return options.fn(this)
+	  } else {
+	  	return options.inverse(this);	
+	  }
+	});
+
+	Handlebars.registerHelper('breaklines', function(text) {
+	    text = Handlebars.Utils.escapeExpression(text);
+	    text = text.replace(/(\r\n|\n|\r)/gm, ' ');
+	    return new Handlebars.SafeString(text);
+	});
+
+	Handlebars.registerHelper('escape', function(variable) {
+	  return variable.replace(/(['"-])/g, '\\$1');
+	});
+
+	function loadSearchedMessage(msg){
+		counters = 0;
+		if (msg.type == "searchMessage" || msg.type == "searchMessageGroup") {
+			console.log(msg);
+			messages = [];
+			searchResults = [];
+			var searchedResult = msg.data;
+			var res;
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateMessages(res);
+					counters++;
+				}
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
+			}
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#search-result').html(messages_html);
+			$('#search-result-modal').modal('toggle');
+
+			// var list = document.getElementById("messages");
+	  	//    var targetLi = document.getElementById("id_2016-09-13 12:24:21"); // id tag of the <li> element // To be changed.
+
+	  	//    $('html, body').scrollTop(targetLi.offsetTop - 300);
+
+		searchResults = [];
+		if (msg.type == "searchMessage") {
+			msgType = "smsload";
+		} else {
+			msgType = "smsloadrequestgroup";
+		}
+		counters = 0;
+
+		} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
+			messages = [];
+			var searchedResult = msg.data;
+			var res;
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateMessages(res);
+					if (contact_header == ""){
+						if (res.user != "You"){
+							contact_header = res.user;
+						}
+					}
+					console.log(contact_header);
+					counters++;
+				}
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
+			}
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#messages').html(messages_html);
+			messages = [];
+			if (msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
+				msgType = "smsload";
+			} else if (msg.type == "smsLoadGroupSearched") {
+				msgType = "smsloadrequestgroup";
+			}
+			counters = 0;
+
+	        var targetLi = document.getElementById(coloredTimestamp);
+	        targetLi.style.borderColor = "#dff0d8";
+	        targetLi.style.borderRadius = "3px";
+	        targetLi.style.borderWidth = "5px";
+	        $('html, body').scrollTop(targetLi.offsetTop - 300);
+
+		} else if (msg.type == "smsloadGlobalSearched"){
+			messages = [];
+			var searchedResult = msg.data;
+			var res;
+			var contact_header = "";
+
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					if (contact_header == ""){
+						if (res.user != "You"){
+							contact_header = res.user;
+						}
+					}
+					console.log(contact_header);
+					counters++;
+				}
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
+			}
+			msgType = "smsload";
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#messages').html(messages_html);
+			counters = 0;
+
+			$("#current-contacts h4").text(contact_header);
+			document.title = contact_header;
+
+			$('#main-container').removeClass('hidden');
+			$('#search-global-message-modal').modal('hide');
+			$('body').removeClass('modal-open');
+			$('.modal-backdrop').remove();
+
+			// Colors the div of the searched key message
+
+	        var targetLi = document.getElementById(coloredTimestamp);
+	        targetLi.style.borderColor = "#dff0d8";
+	        targetLi.style.borderRadius = "3px";
+	        targetLi.style.borderWidth = "5px";
+	        $('html, body').scrollTop(targetLi.offsetTop - 300);
+
+		} else if (msg.type == "searchMessageGlobal"){
+			messages = [];
+			var searchedResult = msg.data;
+			var res;
+
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					counters++;
+				}
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
+			}
+
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#search-global-result').html(messages_html);
+			var maxScroll = $(document).height() - $(window).height();
+			$('#search-global-result').scrollTop(maxScroll);
+
+		} else {
+			console.log("No Result/Invalid Request");
+		}
+
+		// Resets the Search Result container
+		searchResults = [];
+		counters = 0;
+	}
+
+
+
+	function updateGlobalMessage(msg){
+		if (msg.user == "You") {
+			msg.isyou = 1;
+			searchResults.push(msg);
+		} else {
+			msg.isyou = 0;
+			searchResults.push(msg);
+		}
+	}
 
 	function displayGroupTagsForThread () {
 		var tempText = "[Sitenames: ";
@@ -934,6 +1299,8 @@
 
 		tempText = tempText + "]";
 		$("#current-contacts h4").text(tempText);
+		document.title = tempText;
+		$('#search-lbl').css('display', 'block')
 		$('#search-lbl h5').show();
 	}
 
@@ -1086,6 +1453,8 @@
 	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
+		messages = [];
+		counters = 0;
 		//For group type communication
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
@@ -1109,7 +1478,6 @@
 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 			};
 
-			console.log(msg);
 			conn.send(JSON.stringify(msg));
 
 			// //Create msg.name before updating the message
@@ -1201,7 +1569,7 @@
 	});
 
 	$(document).ready(function() {
-	var table = $('#response-contact-container').DataTable();
+		var table = $('#response-contact-container').DataTable();
 	});
 
 	$('input[type="radio"]').on('change', function(e) {
@@ -1358,10 +1726,8 @@
 	$('#office').on('change',function() {
 		if ($("#office").val() == "OTHERS") {
 			$("#other-officename").show();
-			console.log("show");
 		} else {
 			$("#other-officename").hide();
-			console.log("hide");
 		}
 	});
 
@@ -1369,10 +1735,8 @@
 	$('#sitename').on('change',function() {
 		if ($("#sitename").val() == "OTHERS") {
 			$("#other-sitename").show();
-			console.log("show");
 		} else {
 			$("#other-sitename").hide();
-			console.log("hide");
 		}
 	});
 
@@ -1672,7 +2036,15 @@
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 	});
 
-
+	$('#btn-gbl-search').click(function(){
+		$('#search-global-message-modal').modal("toggle");
+		searchResults = [];
+		counter = 0;
+		console.log("HIT");
+		var myNode = document.getElementById("search-global-result");
+		myNode.innerHTML = '';
+		$('#search-global-keyword').val('');
+	});
 
 	// Update the "remaining characters" information below the text area
 	$('#msg').bind('input propertychange', function() {
