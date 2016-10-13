@@ -6,11 +6,11 @@
 	font: 12px Arial;
 }
 
-path { 
+/*path { 
     stroke: steelblue;
     stroke-width: 2;
     fill: none;
-}
+}*/
 
 .axis path,
 .axis line {

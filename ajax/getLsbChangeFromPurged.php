@@ -17,18 +17,19 @@
 	}
 
 	if(isset($_GET['start'])) {
-	    $temp = $_GET['start'];
-	    $date = date_create($temp);
-		$start = date_format($date, 'Y-m-d+H:i:s');
+	    $start = $_GET['start'];
+	 //    $date = date_create($temp);
+		// $start = date_format($date, 'Y-m-d+H:i:s');
+
 	}
 	else {
 		$start = "nil";
 	}
 
 	if(isset($_GET['end'])) {
-	    $temp = $_GET['end'];
-	    $date = date_create($temp);
-		$end = date_format($date, 'Y-m-d+H:i:s');
+	    $end = $_GET['end'];
+	 //    $date = date_create($temp);
+		// $end = date_format($date, 'Y-m-d+H:i:s');
 	}
 	else {
 		$end = "nil";
@@ -45,7 +46,7 @@
 	//echo "Operating System: $os <Br>";
 
 	if (strpos($os,'WIN') !== false) {
-	    $pythonPath = 'C:\Anaconda\python.exe';
+	    $pythonPath = 'c:\Users\USER\Anaconda2\python.exe';
 	}
 	elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
 		$pythonPath = '/home/ubuntu/anaconda2/bin/python';

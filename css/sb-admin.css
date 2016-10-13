@@ -350,7 +350,7 @@ ul.alert-dropdown {
 .list_menu {
   list-style: none;
   padding-top: 5px;
-  width: 520px;
+  width: 305px;
   height: auto;
   z-index: 1000;
   padding-left: 5px;
@@ -624,7 +624,7 @@ ul.alert-dropdown {
 /* line 148, sass/scss/modules/_components.scss */
 .slide_right_close {
   position: fixed;
-  right: -520px;
+  right: -305px;
   padding-right: 0px;
   z-index: 1000;
 }
