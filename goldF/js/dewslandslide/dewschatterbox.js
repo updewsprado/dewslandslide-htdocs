@@ -25,7 +25,7 @@
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var convoFlagger = false;
-	var conn = connectWS();
+	var conn = connectWS();	
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
@@ -104,9 +104,10 @@
 	}
 
 	function updateMessages(msg) {
-// Hides the Search 
+
+		// Hides the Search 
 		$('#search-key').hide();
-		
+
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
 		if (msg.user == "You") {
@@ -202,8 +203,11 @@
 				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
 					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
+					// console.log(contactInfo);
+
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
-						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched"){
+						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched"){
+
 						if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
 							msg.isyou = 0;
 							msg.user = contactInfo[i].fullname;
@@ -367,11 +371,11 @@
 				} else {
 					if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
 						oldMessages.isyou = 0;
-						oldMessages.user = contactInfo[i].fullname;
+						oldMessages.user = contactInfo[i].numbers;
 						messages.push(oldMessages);
 					} else {
 						oldMessages.isyou = 0;
-						oldMessages.user = contactInfo[i].numbers;
+						oldMessages.user = contactInfo[i].fullname;
 						messages.push(oldMessages);
 					}
 				}
@@ -460,13 +464,13 @@
 				console.log("Invalid Request/End of the Conversation");
 			}
 		}
-
 	}
 
 	$(window).scroll(function(){
 		var scroll = $(window).scrollTop();
 		if ($(document).height() > $(window).height()) {
 			if (scroll == 0 && convoFlagger == false){
+				console.log(msgType);
 				if (msgType == "smsload") {
 					getOldMessage();
 				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
@@ -487,7 +491,7 @@
 		if (lastMessageTimeStampIndi == "") {
 			lastMessageTimeStampIndi = tempTimestampIndi;
 		}
-
+		
 		var request = {
 			'type': 'oldMessage',
 			'number': contactnumTrimmed,
@@ -941,7 +945,6 @@
 	}
 
 	$('#btn-standard-search').click(function(){
-		console.log("HIT");
 		if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
 			searchMessage();
 		} else if ($('#search-key').is(":visible") == true && $('#search-key').val() == ""){
@@ -970,6 +973,15 @@
 	}
 
 	function searchMessageIndividual(){
+		for (var numLen = 0; numLen < contactnumTrimmed.length; numLen++){
+			if (contactnumTrimmed[numLen].length == 12){
+				contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(2);
+			} else if (contactnumTrimmed[numLen].length == 11){
+				contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(1);
+			} else {
+				// Do nothing
+			}
+		}
 		var request = {
 			'type': 'searchMessageIndividual',
 			'number': contactnumTrimmed,
@@ -1030,6 +1042,7 @@
 
 	var coloredTimestamp;
 	function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null){
+		$('#search-result-modal').modal('hide');
 		coloredTimestamp = "id_"+timestamp;
 		if (type == "searchMessage") {
 			var request = {
@@ -1040,8 +1053,6 @@
 
 			conn.send(JSON.stringify(request));
 		} else if (type == "searchMessageGroup"){
-
-			$('#search-result-modal').modal('toggle');
 			var timestampYou = "";
 			var timestampGroup = "";
 
@@ -1074,6 +1085,7 @@
 		} else if (type == "searchMessageGlobal"){
 
 			// console.log(msg);
+			contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 
 			$("#current-contacts h4").text(user);
 			document.title = user;
@@ -1118,7 +1130,6 @@
 	function loadSearchedMessage(msg){
 		counters = 0;
 		if (msg.type == "searchMessage" || msg.type == "searchMessageGroup") {
-			console.log(msg);
 			messages = [];
 			searchResults = [];
 			var searchedResult = msg.data;
@@ -1137,13 +1148,7 @@
 			$('#search-result').html(messages_html);
 			$('#search-result-modal').modal('toggle');
 
-			// var list = document.getElementById("messages");
-	  	//    var targetLi = document.getElementById("id_2016-09-13 12:24:21"); // id tag of the <li> element // To be changed.
-
-	  	//    $('html, body').scrollTop(targetLi.offsetTop - 300);
-
-		searchResults = [];
-		if (msg.type == "searchMessage") {
+		if (msg.type == "searchMessage") { // DISABLED FOR NOW: ISSUE: Does not fetch the old message via scroll feature
 			msgType = "smsload";
 		} else {
 			msgType = "smsloadrequestgroup";
@@ -1163,16 +1168,17 @@
 							contact_header = res.user;
 						}
 					}
-					console.log(contact_header);
 					counters++;
 				}
 			} catch(err) {
 				console.log(err);
 				console.log("No Result/Invalid Request");
 			}
+
 			var messages_html = messages_template_both({'messages': searchResults});
 			$('#messages').html(messages_html);
 			messages = [];
+
 			if (msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
 				msgType = "smsload";
 			} else if (msg.type == "smsLoadGroupSearched") {
@@ -1201,7 +1207,6 @@
 							contact_header = res.user;
 						}
 					}
-					console.log(contact_header);
 					counters++;
 				}
 			} catch(err) {
@@ -1418,7 +1423,6 @@
 
 			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 		}
-
 		//Display Names of contacts for the thread being loaded
 		displayContactNamesForThread(source);
 
@@ -1507,6 +1511,7 @@
 			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
 			}
 
+			user = "You";
 			var msg = {
 				'type': 'smssend',
 				'user': user,
@@ -1967,7 +1972,7 @@
 				var formatSbmp = ewiLocation.replace("null","");
 				if (formatSbmp.charAt(0) == ",") {
 					formatSbmp = formatSbmp.substr(1);
-				}
+				}	
 				var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
 				$('#site-abbr').val(data["name"]);
 				$('#constructed-ewi-amd').val(finalEWI);
@@ -2040,7 +2045,6 @@
 		$('#search-global-message-modal').modal("toggle");
 		searchResults = [];
 		counter = 0;
-		console.log("HIT");
 		var myNode = document.getElementById("search-global-result");
 		myNode.innerHTML = '';
 		$('#search-global-keyword').val('');
