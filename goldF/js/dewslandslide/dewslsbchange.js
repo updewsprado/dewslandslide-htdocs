@@ -13,10 +13,10 @@ function showLSBChangeGeneral(frm, e) {
 
     var dfrom = window.location.href.slice(35,45);
     var dto = window.location.href.slice(46,56);
-    // alert(baseURL);
-    // $('#container').append('<img src="/images/box.gif" class="imgspin" style="display: block; margin: auto;"></img>');
+    // console.log("http://localhost/ajax/getLsbChangeFromPurged.php?site="+frm.sitegeneral.value+"&node=1&start="+dfrom+"&end="+dto);
+    
 $.ajax({
-    url: "http://www.dewslandslide.com/ajax/getLsbChangeFromPurged.php?site="+frm.sitegeneral.value+"&node=1&start="+dfrom+"&end="+dto,
+    url: "http://ajax/getLsbChangeFromPurged.php?site="+frm.sitegeneral.value+"&node=1&start="+dfrom+"&end="+dto,
      
   dataType: "text",
    success: function(data)
@@ -43,12 +43,7 @@ $.ajax({
           // initHighcharts: function() {
                     $('#container').highcharts({
                 chart: {
-                   events: {
-                load: function(){
-                     $('#loading').modal("hide");
-                }
-            },
-                   type: 'area',
+                     type: 'area',
                     zoomType: 'x',
                     
                       backgroundColor: {
