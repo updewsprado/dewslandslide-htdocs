@@ -16,7 +16,7 @@ function showLSBChangeGeneral(frm, e) {
     // alert(baseURL);
     // $('#container').append('<img src="/images/box.gif" class="imgspin" style="display: block; margin: auto;"></img>');
 $.ajax({
-    url: "http://"+baseURL+"/ajax/getLsbChangeFromPurged.php?site="+frm.sitegeneral.value+"&node=1&start="+dfrom+"&end="+dto,
+    url: "http://www.dewslandslide.com/ajax/getLsbChangeFromPurged.php?site="+frm.sitegeneral.value+"&node=1&start="+dfrom+"&end="+dto,
      
   dataType: "text",
    success: function(data)
