@@ -1,6 +1,3 @@
-	
-
-
 	var opts = {
 		lines: 11, // The number of lines to draw
 		length: 6, // The length of each line

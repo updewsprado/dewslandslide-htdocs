@@ -1,4 +1,3 @@
-
 function showLSBChange(frm) {
 	showLSBChangeGeneral(frm, 'lsb-change-canvas');
 }
