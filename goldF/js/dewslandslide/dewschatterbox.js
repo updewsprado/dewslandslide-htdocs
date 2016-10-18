@@ -19,13 +19,14 @@
 	var testNumbers;
 	var multiContactsList = [];
 	var timerID = 0;
+	var ewirecipients;
 	var lastMessageTimeStamp;
 	var lastMessageTimeStampIndi="";
 	var lastMessageTimeStampYou="";
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var convoFlagger = false;
-	var conn = connectWS();	
+	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
@@ -310,25 +311,49 @@
 	var counters = 0;
 
 	function initLoadMessageHistory(msgHistory) {
-		// console.log(msgHistory);
+		if (msgHistory['hasNull'] == true) {
+			for (var i = 0; i < msgHistory['data'].length; i++){
+				console.log(msgHistory['data'][i]);
+			    $('.list-ewi-recipient').append("<li class='list-group-item'><div class='checkbox'><label><input type='checkbox' name='ewi_recipients' value='"+JSON.stringify(msgHistory['data'][i])+"'>"+
+			    	msgHistory['data'][i].office+" "+msgHistory['data'][i].sitename+" "+msgHistory['data'][i].lastname+", "+msgHistory['data'][i].firstname+
+			    	" - "+msgHistory['data'][i].number+"</label></div></li>");
+			}
+			$('#ewi-recipient-update-modal').modal('toggle');
+		} else {
 
-		if (msgHistory.data == null) {
-			return;
-		}
+			if (msgHistory.data == null) {
+				return;
+			}
 
-		console.log("initLoadMessageHistory");
-		//Loop through the JSON msg and
-		//	use updateMessages multiple times
-		var history = msgHistory.data;
-		temp = msgHistory.data;
-		var msg;
-		for (var i = history.length - 1; i >= 0; i--) {
-			msg = history[i];
-			updateMessages(msg);
-			counters++;
+			console.log("initLoadMessageHistory");
+			//Loop through the JSON msg and
+			//	use updateMessages multiple times
+			var history = msgHistory.data;
+			ewirecipients = msgHistory;
+			temp = msgHistory.data;
+			var msg;
+			for (var i = history.length - 1; i >= 0; i--) {
+				msg = history[i];
+				updateMessages(msg);
+				counters++;
+			}
+			counters = 0;
 		}
-		counters = 0;
 	}
+
+	$('#confirm-ewi-recipients').click(function(){
+		var recipientsUpdate = [];
+		$('input[name="ewi_recipients"]:checked').each(function() {
+			recipientsUpdate.push(JSON.parse(this.value));
+		});
+
+		request = {'type': "updateEwiRecipients",
+					'data': recipientsUpdate
+				}
+
+		console.log(recipientsUpdate);
+		conn.send(JSON.stringify(request));
+	});
 
 	function updateOldMessages(oldMessages){
 
@@ -643,10 +668,14 @@
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
-
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
 				initLoadMessageHistory(msg);
-			}  else if (msg.type == "oldMessage"){
+			}  else if (msg.type == "hasNullEWIRecipient"){
+				initLoadMessageHistory(msg);
+			} else if (msg.type == "resumeLoading") {
+				$('#ewi-recipient-update-modal').modal('toggle');
+				loadGroups();
+			} else if (msg.type == "oldMessage"){
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
@@ -1459,6 +1488,7 @@
 	$('#send-msg').click(function() {
 		messages = [];
 		counters = 0;
+		ewi_filter = "";
 		//For group type communication
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
@@ -1479,7 +1509,8 @@
 				'offices': tagOffices,
 				'sitenames': tagSitenames,
 				'msg': text + footer,
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+				'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
 			};
 
 			conn.send(JSON.stringify(msg));
@@ -1529,7 +1560,7 @@
 	});
 
 	// Send a message to the selected recipients
-	$('#go-load-groups').click(function() {
+	function loadGroups(){
 		// Reset the timeStamp flaggers
 		tempTimestampYou = "";
 		tempTimestampGroup = "";
@@ -1571,6 +1602,10 @@
 		conn.send(JSON.stringify(groupTags));
 
 		$('#main-container').removeClass('hidden');
+	}
+
+	$('#go-load-groups').click(function() {
+		loadGroups();
 	});
 
 	$(document).ready(function() {
