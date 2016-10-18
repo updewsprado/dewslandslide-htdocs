@@ -64,6 +64,32 @@ body {
   z-index: 8;
 }
 
+#chat-commands {
+  margin: 0px 0px 5px 0;
+  width: 100px;
+  padding:0;
+}
+
+#commands-container{
+  width: 100%;
+  display: table-cell;
+}
+
+#send-msg {
+  width: 80px;
+}
+
+#btn-ewi {
+  width: 80px;
+}
+
+.opt-ewi-recipients {
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: normal;
+  cursor: pointer;
+}
+
 .contact-settings-container {
   display: flex;
 }
@@ -74,6 +100,10 @@ body {
   border-radius: 10px;
   padding: 10px 10px;
   margin: 10px 10px;
+}
+
+#confirm-ewi-recipients{
+  width: 100%;
 }
 
 .inbox-tab {
@@ -88,6 +118,10 @@ body {
 }
 .search-category {
   margin-bottom: 10px;
+}
+
+.list-ewi-recipient {
+  padding: 0;
 }
 
 .modal {
@@ -239,10 +273,6 @@ img {
 .chat li.left .chat-body {
   margin-left: 70px;
   background-color: #fff;
-}
-
-#btn-ewi {
-  margin-top: 5px;
 }
 
 #btn-standard-search{
