@@ -777,7 +777,7 @@ function data1(dfrom,dto,selectedSite,frm){
 			return $.ajax({ 
 			   dataType: "json",
 			  url: "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb",  success: function(result) {
-					// console.log("/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb");
+					console.log("/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb");
 			  		var end = new Date().getTime();
 			  		console.log(end);
 			  }
@@ -792,7 +792,7 @@ function data2(dfrom,dto,selectedSite,frm){
 		return	$.ajax({ 
 			   dataType: "json",
 			  url: "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb" + "&dataset=2" ,success: function(result) {
-					// console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32");	
+					console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32");	
 			  	var end = new Date().getTime();
 			  		console.log(end);
 			  }
@@ -806,7 +806,7 @@ function data3(dfrom,dto,selectedSite,frm){
 		return	$.ajax({ 
 			   dataType: "json",
 			  url: "/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32" ,success: function(result) {
-					// console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32");	
+					console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=32");	
 			  	var end = new Date().getTime();
 			  		console.log(end);
 			  }
@@ -819,7 +819,7 @@ function data4(dfrom,dto,selectedSite,frm){
 		return	 $.ajax({ 
 			    dataType: "json",
 			  url: "/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=33" ,success: function(result) {
-					// console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=33");	
+					 console.log("/ajax/generateFilteredData.php?start=" + dfrom + "&end=" + dto + "&node=" + frm.node.value + "&site=" + selectedSite + "&showid=0&msgid=33");	
 			  		var end = new Date().getTime();
 			  		console.log(end);
 			  }
