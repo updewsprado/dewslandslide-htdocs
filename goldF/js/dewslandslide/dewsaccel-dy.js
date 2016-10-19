@@ -878,7 +878,7 @@ function showSoms(frm) {
 			             var divname =["Soil Moisture"];
 			              var namediv= ["Soil Moisture"];
 			             var d1 =mDataSeries;
-			             var color =["#222"];
+			             var color =["#fff"];
 			             $("#accelC").hide();
 			             $("#accelR").hide();
 		         }
