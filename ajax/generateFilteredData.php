@@ -53,7 +53,7 @@
 	//echo "Operating System: $os <Br>";
 
 	if (strpos($os,'WIN') !== false) {
-	    $pythonPath = 'C:\Anaconda\python.exe';
+	    $pythonPath = 'c:\Users\USER\Anaconda2\python.exe';
 	}
 	elseif ((strpos($os,'Ubuntu') !== false) || (strpos($os,'Linux') !== false)) {
 		$pythonPath = '/home/ubuntu/anaconda2/bin/python';
@@ -68,7 +68,7 @@
     $fileName = 'generateFilteredData.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$node.' '.$start.' '.$end.' '.$msgid.' '.$showid;
 
-    //echo "$command";
+    echo "$command";
     exec($command, $output, $return);
     echo($output[0]);
     //echo($output[1]);
