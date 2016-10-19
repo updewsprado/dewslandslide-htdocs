@@ -35,7 +35,7 @@ function showAccel(frm) {
 	 for (i = 0; i < datName.length; i++) {
 	 	
 	 }
-	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
+	$.when(d1_data , d2_data  ).done(function(data , data2 ) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
 		var jsonRespo3 = "";
@@ -224,10 +224,10 @@ function showAccel(frm) {
 		           		}
 	 });
 
-	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
+	$.when(d1_data , d2_data  ).done(function(data , data2 ) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
-		var jsonRespo3 ="";
+		var jsonRespo3 = "";
 		var jsonRespo4 = "";
 		var yDataSeries=[] , yDataSeries2=[] ,  yDataSeries3=[] , yDataSeries4=[]
 		 
@@ -414,7 +414,7 @@ function showAccel(frm) {
 		           		}
 	 });
 
-	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
+	$.when(d1_data , d2_data ).done(function(data , data2 ) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
 		var jsonRespo3 = "";
