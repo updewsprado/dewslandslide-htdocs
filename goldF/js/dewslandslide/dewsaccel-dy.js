@@ -38,8 +38,8 @@ function showAccel(frm) {
 	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
-		var jsonRespo3 = data3[0];
-		var jsonRespo4 = data4[0];
+		var jsonRespo3 = "";
+		var jsonRespo4 = "";
 		var xDataSeries=[] , xDataSeries2=[] ,  xDataSeries3=[] , xDataSeries4=[]
 		 
 		          for (i = 0; i < jsonRespo.length; i++) {
@@ -227,8 +227,8 @@ function showAccel(frm) {
 	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
-		var jsonRespo3 = data3[0];
-		var jsonRespo4 = data4[0];
+		var jsonRespo3 ="";
+		var jsonRespo4 = "";
 		var yDataSeries=[] , yDataSeries2=[] ,  yDataSeries3=[] , yDataSeries4=[]
 		 
 		          for (i = 0; i < jsonRespo.length; i++) {
@@ -417,8 +417,8 @@ function showAccel(frm) {
 	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
-		var jsonRespo3 = data3[0];
-		var jsonRespo4 = data4[0];
+		var jsonRespo3 = "";
+		var jsonRespo4 = "";
 		var zDataSeries=[] , zDataSeries2=[] ,  zDataSeries3=[] , zDataSeries4=[]
 		 
 		          for (i = 0; i < jsonRespo.length; i++) {
@@ -604,7 +604,7 @@ function showAccel(frm) {
 		           		}
 	 });
 
-	$.when(d1_data , d2_data ,d3_data ,d4_data ).done(function(data , data2 ,data3 ,data4) {
+	$.when(d1_data , d2_data ).done(function(data , data2 ) {
 		var jsonRespo = data[0];
 		var jsonRespo2 = data2[0];
 		var vDataSeries=[] , vDataSeries2=[];
