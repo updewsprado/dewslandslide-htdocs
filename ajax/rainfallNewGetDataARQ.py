@@ -39,7 +39,7 @@ def getDF():
     dfs1 = pd.rolling_sum(df,288)
     dfs = dfs[dfs>=0]
     dfs1 = dfs1[dfs1>=0]
-    dfa = pd.DataFrame({"rval":df,"cumm":dfs,"72hrs":dfs1})
+    dfa = pd.DataFrame({"rval":df,"cumm":dfs,"hrs72":dfs1})
    
     dfa = dfa.fillna(0)
     
