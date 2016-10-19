@@ -1,4 +1,4 @@
-import MySQLdb
+#import MySQLdb
 import ConfigParser
 from datetime import datetime as dtm
 from datetime import timedelta as tda
@@ -7,7 +7,15 @@ import pandas.io.sql as psql
 import pandas as pd
 import numpy as np
 import StringIO
-#import filterSensorData
+import filterSensorData
+import platform
+
+curOS = platform.system()
+
+if curOS == "Windows":
+    import MySQLdb as mysqlDriver
+elif curOS == "Linux":
+    import pymysql as mysqlDriver
 
 # Scripts for connecting to local database
 # Needs config file: server-config.txt
@@ -37,10 +45,10 @@ class coordsArray:
 def SenslopeDBConnect(nameDB):
     while True:
         try:
-            db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=nameDB)
+            db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb, db=nameDB)
             cur = db.cursor()
             return db, cur
-        except MySQLdb.OperationalError:
+        except mysqlDriver.OperationalError:
             print '.',
 
 def PrintOut(line):
@@ -64,13 +72,13 @@ def DoesTableExist(table_name):
     
 
 def GetLatestTimestamp(nameDb, table):
-    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     try:
         cur.execute("select max(timestamp) from %s.%s" %(nameDb,table))
     except:
-        print "Error in getting maximum timstamp"
+        print "Error in getting maximum timestamp"
 
     a = cur.fetchall()
     if a:
@@ -95,7 +103,7 @@ def GetLatestTimestamp2(table_name):
         return ''
         
 def CreateAccelTable(table_name, nameDB):
-    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     cur.execute("USE %s"%nameDB)
@@ -103,10 +111,14 @@ def CreateAccelTable(table_name, nameDB):
     db.close()
 
 def CreateColAlertsTable(table_name, nameDB):
-    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
-    #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
+
     cur.execute("USE %s"%nameDB)
+    
+    query = "DROP TABLE IF EXISTS `senslopedb`.%s;" %table_name
+    cur.execute(query)
+    
     cur.execute("CREATE TABLE IF NOT EXISTS %s(sitecode varchar(8), timestamp datetime, id int, alerts varchar(8), PRIMARY KEY (sitecode, timestamp, id))" %table_name)
     db.close()
     
@@ -183,50 +195,112 @@ def PushDBDataFrame(df,table_name):
 #    Returns:
 #        df: dataframe object 
 #            dataframe object of the result set 
-def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode = -1, batt=0):
-
+#def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode = -1, batt=0):
+#
+#    if not siteid:
+#        raise ValueError('no site id entered')
+#    
+#    if printtostdout:
+#        PrintOut('Querying database ...')
+#    # added getting battery data (v2&v3)
+#    if batt == 1:
+#        query = "select timestamp,id,xvalue,yvalue,zvalue,batt from senslopedb.%s " % (siteid) 
+#    else:
+#        query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid) 
+#
+#    if not fromTime:
+#        fromTime = "2010-01-01"
+#        
+#    query = query + " where timestamp >= '%s'" % fromTime
+#    
+#    if toTime != '':
+#        query = query + " and timestamp <= '%s'" % toTime
+#
+#    if len(siteid) == 5:
+#        query = query + " and msgid in (%s,%s-21)" % (str(msgid), str(msgid));
+#    
+#    if targetnode <= 0:
+#        query = query + " and id >= 1 and id <= %s ;" % (str(maxnode))
+#    else:
+#        query = query + " and id = %s;" % (targetnode)
+#    
+#    PrintOut(query)
+#    
+#    df =  GetDBDataFrame(query)
+#    if batt == 1:
+#        df.columns = ['ts','id','x','y','z','v']
+#    else:
+#        df.columns = ['ts','id','x','y','z']
+#    # change ts column to datetime
+#    df.ts = pd.to_datetime(df.ts)
+#    
+#    return df
+def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode ="", batt=0):
     if not siteid:
         raise ValueError('no site id entered')
-    
+        
     if printtostdout:
         PrintOut('Querying database ...')
-    if batt == 1:
-        query = "select timestamp,id,xvalue,yvalue,zvalue,batt from senslopedb.%s " % (siteid)   
-    else:
-        query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid)
-
-    if not fromTime:
-        fromTime = "2010-01-01"
         
-    query = query + " where timestamp > '%s'" % fromTime
+    if (len(siteid) == 5):
+        query = "SELECT timestamp,id,xvalue,yvalue,zvalue FROM %s"  %siteid
+        
+        targetnode_query = " WHERE id IN (SELECT node_id FROM node_accel_table WHERE site_name = '%s' and accel = 1)" %siteid 
+        if targetnode != '':
+            targetnode_query = " WHERE id IN ('%d')" %targetnode
+        query = query + targetnode_query
     
-    if toTime:
-        query = query + " and timestamp < '%s'" % toTime
+        query = query + " AND msgid in (11, 32)"
+        if not fromTime:
+            fromTime = "2010-01-01"
+        query = query + " AND timestamp >= '%s'" %fromTime
+        
+        toTime_query = ''
+        if toTime != '':
+            toTime_query =  " AND timestamp <= '%s'" %toTime
+        elif toTime:
+            toTime_query = ''
+            
+        query = query + toTime_query
+        query = query + " UNION ALL"
+        query = query + " SELECT timestamp,id,xvalue,yvalue,zvalue FROM %s"  %siteid
 
-    if len(siteid) == 5:
-        query = query + " and (msgid & 1) = (%s & 1)" % (msgid);
-    
-    if targetnode <= 0:
-        query = query + " and id >= 1 and id <= %s ;" % (str(maxnode))
-    else:
-        query = query + " and id = %s;" % (targetnode)
-    
-    PrintOut(query)
-    
+        targetnode_query = " WHERE id IN (SELECT node_id FROM node_accel_table WHERE site_name = '%s' and accel = 2)" %siteid 
+        if targetnode != '':
+            targetnode_query = " WHERE id IN ('%d')" %targetnode
+        query = query + targetnode_query
+
+        query = query + " AND msgid in (12, 33)"
+        query = query+ " AND timestamp > '%s'" %fromTime
+        query = query + toTime_query
+
+    elif (len(siteid) == 4):
+        query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid)
+        
+        if not fromTime:
+            fromTime = "2010-01-01"
+            
+        query = query + " where timestamp >= '%s'" % fromTime
+        
+        if toTime != '':
+            query = query + " and timestamp <= '%s'" % toTime
+        
+        if targetnode != '':
+            query = query + " and id = %s;" % (targetnode)
+        else:
+            query = query + " and id >= 1 and id <= %s ;" % (str(maxnode))
+        
     df =  GetDBDataFrame(query)
-    if batt == 1:
-        df.columns = ['ts','id','x','y','z','v']
-    else:
-        df.columns = ['ts','id','x','y','z']
-    # change ts column to datetime
-    df.ts = pd.to_datetime(df.ts)
     
+    df.columns = ['ts','id','x','y','z']
+        
+    df.ts = pd.to_datetime(df.ts)
     return df
 
-#TODO: This code should have the GID as input and part of the query to make --> used targetnode and edited ConvertSomsRaw.py
+#TODO: This code should have the GID as input and part of the query to make -> used targetnode and edited ConvertSomsRaw.py
 #   the processing time faster
 def GetSomsData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid=0, targetnode = -1, v=0):
-
+    ''' added querying v1 soms data'''
     if not siteid:
         raise ValueError('no site id entered')
     
@@ -279,7 +353,7 @@ def GetSomsData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid=0, 
 #    Returns:
 #        df: dataframe object 
 #            dataframe object of the result set 
-def GetRawRainData(siteid = "", fromTime = ""):
+def GetRawRainData(siteid = "", fromTime = "", toTime=""):
 
     if not siteid:
         raise ValueError('no site id entered')
@@ -307,6 +381,9 @@ def GetRawRainData(siteid = "", fromTime = ""):
             fromTime = "2010-01-01"
             
         query = query + " where timestamp > '%s'" % fromTime
+        
+        if toTime:
+            query = query + " and timestamp < '%s'" % toTime
     
         df =  GetDBDataFrame(query)
         
@@ -318,15 +395,7 @@ def GetRawRainData(siteid = "", fromTime = ""):
         
     except UnboundLocalError:
         print 'No ' + siteid + ' table in SQL'
-
-
-
-#GetSensorList():
-#    returns a list of columnArray objects from the database tables
-#    
-#    Returns:
-#        sensorlist: list
-#            list of columnArray (see class definition above)
+    
 
 def GetCoordsList():
     try:
@@ -347,6 +416,13 @@ def GetCoordsList():
     except:
         raise ValueError('Could not get sensor list from database')
 
+#GetSensorList():
+#    returns a list of columnArray objects from the database tables
+#    
+#    Returns:
+#        sensorlist: list
+#            list of columnArray (see class definition above)
+
 def GetSensorList():
     try:
         db, cur = SenslopeDBConnect(Namedb)
@@ -355,8 +431,6 @@ def GetSensorList():
         query = 'SELECT name, num_nodes, seg_length, col_length FROM site_column_props'
         
         df = psql.read_sql(query, db)
-        if PrintColProps:
-            df.to_csv("column_properties.csv",index=False,header=False);
         
         # make a sensor list of columnArray class functions
         sensors = []
@@ -382,6 +456,31 @@ def GetSensorDF():
         return df
     except:
         raise ValueError('Could not get sensor list from database')
+
+#returns list of non-working nodes from the node status table
+#function will only return the latest entry per site per node with
+#"Not OK" status
+def GetNodeStatus(statusid = 1):
+    if statusid == 1:
+        status = "Not OK"
+    elif statusid == 2:
+        status = "Use with Caution"
+    elif statusid == 3:
+        status = "Special Case"
+    
+    try:
+        query = 'SELECT ns1.site, ns1.node, ns1.status FROM node_status ns1 '
+        query += 'WHERE ns1.post_id = '
+        query += '(SELECT max(ns2.post_id) FROM node_status ns2 '
+        query += 'WHERE ns2.site = ns1.site AND ns2.node = ns1.node) '
+        query += 'AND ns1.status = "%s" ' % (status)
+        query += 'order by site asc, node asc'
+        
+        df = GetDBDataFrame(query)
+        return df
+    except:
+        raise ValueError('Could not get sensor list from database')
+
 
 #GetRainList():
 #    returns a list of columnArray objects from the database tables
@@ -468,6 +567,9 @@ def GetRainProps():
 #        dflgd: dataframe object
 #            dataframe object of the resulting last good data
 def GetLastGoodData(df, nos, fillMissing=False):
+    if df.empty:
+        print "Error: Empty dataframe inputted"
+        return
     # groupby id first
     dfa = df.groupby('id')
     # extract the latest timestamp per id, drop the index
@@ -489,7 +591,7 @@ def GetLastGoodData(df, nos, fillMissing=False):
     else:
         dflgd = dfa.sort(['id']).reset_index(level=1,drop=True)
         
-    print dflgd
+#    print dflgd
     
     return dflgd
     
@@ -513,6 +615,49 @@ def GetLastGoodDataFromDb(col):
     df.ts = pd.to_datetime(df.ts)
     
     return df
+    
+#GetSingleLGDPM
+#   This function returns the last good data prior to the monitoring window
+#   Inputs:
+#       site (e.g. sinb, mamb, agbsb)
+#       node (e.g. 1,2...15...30)
+#       startTS (e.g. 2016-04-25 15:00:00, 2016-02-01 05:00:00, 
+#                YYYY-MM-DD HH:mm:SS)
+#   Output:
+#       returns the dataframe for the last good data prior to the monitoring window
+    
+def GetSingleLGDPM(site, node, startTS):
+    query = "SELECT timestamp, id, xvalue, yvalue, zvalue"
+    if len(site) == 5:
+        query = query + ", msgid"
+    query = query + " from %s WHERE id = %s and timestamp < '%s' " % (site, node, startTS)
+    if len(site) == 5:
+        query = query + "and (msgid = 32 or msgid = 11) "
+#        query = query + "ORDER BY timestamp DESC LIMIT 2"
+#    else:
+    query = query + "ORDER BY timestamp DESC LIMIT 240"
+    
+    lgdpm = GetDBDataFrame(query)
+
+#    if len(site) == 5:
+#        if len(set(lgdpm.timestamp)) == 1:
+#            lgdpm.loc[(lgdpm.msgid == 11) | (lgdpm.msgid == 32)]
+#        else:
+#            try:
+#                lgdpm = lgdpm.loc[lgdpm.timestamp == lgdpm.timestamp[0]]
+#            except:
+#                print 'no data for node ' + str(node) + ' of ' + site
+    
+    if len(site) == 5:
+        lgdpm.columns = ['ts','id','x','y','z', 'msgid']
+    else:
+        lgdpm.columns = ['ts','id','x','y','z']
+    lgdpm = lgdpm[['ts', 'id', 'x', 'y', 'z']]
+
+    lgdpm = filterSensorData.applyFilters(lgdpm)
+    lgdpm = lgdpm.sort_index(ascending = False)[0:1]
+    
+    return lgdpm
     
 #PushLastGoodData(df,name):
 #    writes a dataframe of the last good data to the database table lastgooddata
@@ -548,12 +693,16 @@ def PushLastGoodData(df,name):
 #    last good data set to the database    
 def GenerateLastGoodData():
     
-    db = MySQLdb.connect(host = Hostdb, user = Userdb, passwd = Passdb)
+    db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
     #cur.execute("CREATE DATABASE IF NOT EXISTS %s" %nameDB)
     
-    query = """    DROP TABLE IF EXISTS `senslopedb`.`lastgooddata`;
-        CREATE TABLE  `senslopedb`.`lastgooddata` (
+    #Separated the consecutive drop table and create table in one query in
+    #   order to fix "commands out of sync" error
+    query = "DROP TABLE IF EXISTS `senslopedb`.`lastgooddata`;"
+    cur.execute(query)
+    
+    query = """ CREATE TABLE  `senslopedb`.`lastgooddata` (
           `name` varchar(8) NOT NULL DEFAULT '',
           `id` int(11) NOT NULL DEFAULT '0',
           `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -562,8 +711,8 @@ def GenerateLastGoodData():
           `zvalue` int(11) DEFAULT NULL,
           PRIMARY KEY (`name`,`id`)
           ); """
-    
     cur.execute(query)
+    
     db.close()
     
     slist = GetSensorList()
@@ -571,14 +720,16 @@ def GenerateLastGoodData():
     for s in slist:
         print s.name, s.nos
         
-        df = GetRawAccelData(s.name,'',s.nos)
+        df = GetRawAccelData(siteid=s.name,maxnode=s.nos)
         df = filterSensorData.applyFilters(df,True,True,False)         
         
         dflgd = GetLastGoodData(df,s.nos,True)
         del df           
           
-        PushLastGoodData(dflgd,s.name)
-   
+        try:
+            PushLastGoodData(dflgd,s.name)
+        except (AttributeError,TypeError):
+            PrintOut("Error. Empty database")
 
             
 # import values from config file
@@ -605,12 +756,12 @@ try:
     muplim = cfg.get(valueSect,'muplim')
     islimval = cfg.getboolean(valueSect,'LimitValues')
     
-    PrintColProps = cfg.get('I/O', 'PrintColProps')
 except:
     #default values are used for missing configuration files or for cases when
     #sensitive info like db access credentials must not be viewed using a browser
     #print "No file named: %s. Trying Default Configuration" % (configFile)
-    Hostdb = "127.0.0.1"
+    Hostdb = "127.0.0.1"    
+#    Hostdb = "192.168.1.102"
     Userdb = "root"
     Passdb = "senslope"
     Namedb = "senslopedb"
