@@ -1657,7 +1657,7 @@
 		$('#edit-contact-settings').modal('hide');
 		$('.modal-backdrop').remove();
 
-		var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel'];
+		var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel','ewirecipient'];
 		var employee_contacts = ['eid','firstname','lastname','nickname','birthdate','email','numbers','grouptags'];
 		var container = document.getElementById("contact-settings-wrapper");
 
@@ -2055,6 +2055,10 @@
 			$('#ewi-asap-modal').modal('toggle');
 		}
 	}
+
+	$('#sbt-update-contact-info').click(function(){
+		$('#edit-contact').modal('toggle');
+	});
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
