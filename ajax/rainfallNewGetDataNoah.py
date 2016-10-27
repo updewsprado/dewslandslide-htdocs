@@ -22,7 +22,7 @@ def getDF():
     df = pd.io.sql.read_sql(query,engine)
     df.columns = ['ts','cumm','rval']
     df = df.set_index(['ts'])
-    df = df["cumm"].astype(float)
+    df = df["rval"].astype(float)
     df = df[df>= 0]
     df = df.resample('15Min', how = "sum")
     dfs = pd.rolling_sum(df,96,min_periods=1)
