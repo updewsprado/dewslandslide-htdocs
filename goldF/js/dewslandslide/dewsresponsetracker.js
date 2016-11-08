@@ -235,6 +235,50 @@ $(document).ready(function(e) {
 			        },
 			        series: series_value
 			    });
+
+			     $('#average-delay-container').highcharts({
+			        chart: {
+			            type: 'column'
+			        },
+			        title: {
+			            text: 'Average delay of Reply'
+			        },
+			        subtitle: {
+			            text: period_range['percentReply']
+			        },
+			        xAxis: {
+			            type: 'category'
+			        },
+			        yAxis: {
+			            title: {
+			                text: 'Total time delay'
+			            }
+			        },
+			        legend: {
+			            enabled: false
+			        },
+			        plotOptions: {
+			            series: {
+			                borderWidth: 0,
+			                dataLabels: {
+			                    enabled: true,
+			                    format: '{point.y:.0f} Minutes'
+			                }
+			            }
+			        },
+
+			        tooltip: {
+			            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+			            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+			        },
+
+			        series: [{
+			            name: 'Time',
+			            colorByPoint: true,
+			            data: column_value
+			        }]
+
+			    });
 		});
 	}
 
@@ -601,8 +645,36 @@ $(document).ready(function(e) {
 			for (var x = 0;x<data[i].values.length;x++){
 				//If the filterkey is empty, the category is ALL SITES
 				if ($('#filter-key').val() == "") {
-					console.log(data);
+					for (var o = 0; o < data[i].values[x].length;o++){
+						if (chatterbox_date == "" || sender_date == "") {
+							if (data[i].values[x][o].user == "You") {
+								chatterbox_date = data[i].values[x][o].timestamp;
+							} else {
+								sender_date = data[i].values[x][o].timestamp;
+							}
+						}
+
+						//Computes the delay and push it to an array.
+						if (chatterbox_date != "" && sender_date != ""){
+							if (moment(chatterbox_date) > moment(sender_date)) {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date1.diff(date2,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							} else {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date2.diff(date1,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							}
+						}
+					}
 				} else {
+
 					if (chatterbox_date == "" || sender_date == "") {
 						if (data[i].values[x].user == "You") {
 							chatterbox_date = data[i].values[x].timestamp;
@@ -652,14 +724,24 @@ $(document).ready(function(e) {
 	}
 
 	function getTimeFromMins(mins) {
-	    if (mins >= 24 * 60 || mins < 0) {
-	        throw new RangeError("Valid input should be greater than or equal to 0 and less than 1440.");
-	    }
-	    var h = mins / 60 | 0,
-	        m = mins % 60 | 0;
-	    var duration_summary = moment.utc().hours(h).minutes(m).format("HH:mm");
-	    var returning_value = duration_summary.substring(0,2)+ " Hours and "+ duration_summary.substring(3,5) + " Minutes";
-	    return returning_value;
+		MINS_PER_YEAR = 24 * 365 * 60
+	    MINS_PER_MONTH = 24 * 30 * 60
+	    MINS_PER_WEEK = 24 * 7 * 60
+	    MINS_PER_DAY = 24 * 60
+	    MINS_PER_HOUR = 60
+	    minutes = mins;
+	    years = Math.floor(minutes / MINS_PER_YEAR);
+	    minutes = minutes - years * MINS_PER_YEAR;
+	    months = Math.floor(minutes / MINS_PER_MONTH);
+	    minutes = minutes - months * MINS_PER_MONTH;
+	    weeks = Math.floor(minutes / MINS_PER_WEEK);
+	    minutes = minutes - weeks * MINS_PER_WEEK;
+	    days = Math.floor(minutes / MINS_PER_DAY);
+	    minutes = minutes - days * MINS_PER_DAY;
+	    hours = Math.floor(minutes / MINS_PER_HOUR);
+	    minutes = minutes % MINS_PER_HOUR;
+	    return years + " year(s) " + months + " month(s) " + weeks + " week(s) " + days + " day(s) "+ hours + " hour(s) " + Math.round(minutes) + " minute(s)"
+
 	}
 
 	function doSortDates(dates){
