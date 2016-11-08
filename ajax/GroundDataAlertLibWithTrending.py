@@ -6,6 +6,7 @@ import matplotlib.dates as md
 plt.ioff()
 
 from datetime import datetime, date, time, timedelta
+import time as mytime
 import pandas as pd
 import numpy as np
 import ConfigParser
@@ -170,13 +171,14 @@ def crack_eval(df,out_folder,end):
     try:
         if RoundTime(end) != RoundTime(df.timestamp.iloc[-1]):
             crack_alert = 'nd'
+            vel = 'none'
         else:
     
             #Obtain the time difference and displacement between the latest values
             if len(df) >= 2:
                 time_delta = (df.timestamp.iloc[-1]  - df.timestamp.iloc[-2]) / np.timedelta64(1,'D')
                 abs_disp = np.abs(df.meas.iloc[-1]-df.meas.iloc[-2])
-                
+                vel = abs_disp/float(time_delta)
                 crack_alert = 'nd'    
                 
                 #Based on alert table
@@ -195,14 +197,14 @@ def crack_eval(df,out_folder,end):
                             crack_alert = 'l2'
                         else:
                             crack_alert = 'l0'
-                elif time_delta >= 3.:
+                elif time_delta >= 2.75:
                     if abs_disp >= 30:
                         crack_alert = 'l3'
                     elif abs_disp >= 1.5:
                         crack_alert = 'l2'
                     else:
                         crack_alert = 'l0'
-                elif time_delta >= 1.:
+                elif time_delta >= 0.75:
                     if abs_disp >= 10:
                         crack_alert = 'l3'
                     elif abs_disp >= 0.5:
@@ -242,13 +244,16 @@ def crack_eval(df,out_folder,end):
                 
             else:
                 crack_alert = 'l0'
+                vel = 'none'
         
 
     except:
         print 'Timestamp error for '+' '.join(list(np.concatenate((df.site_id.values,df.crack_id.values))))
         crack_alert = 'nd'
+        vel = 'none'
     
-    print crack_alert
+    print 'Crack Alert = {}'.format(crack_alert)
+    print 'Vel = {}'.format(vel)
     return crack_alert
 
 def site_eval(df):
@@ -329,6 +334,15 @@ def moving_average(series,sigma = 3):
     var = filters.convolve1d(np.power(series-average,2),b/b.sum())
     return average,var
 
+def goodness_of_fit(x,y,reg):
+    mean = np.mean(y)
+    n = float(len(y))
+    SS_tot = np.sum(np.power(y-mean,2))
+    SS_res = np.sum(np.power(y-reg,2))
+    coef_determination = 1 - SS_res/SS_tot
+    RMSE = np.sqrt(SS_res/n)
+    return SS_res,coef_determination,RMSE  
+
 def check_trending(df,out_folder,plot = False):
     ##### Get the data from the crack dataframe    
     cur_t = (df.timestamp.values - df.timestamp.values[0])/np.timedelta64(1,'D')
@@ -343,9 +357,13 @@ def check_trending(df,out_folder,plot = False):
     v_n = sp.derivative(n=1)(t_n)
     a_n = sp.derivative(n=2)(t_n)
     
+    x_s = sp(cur_t)
     v_s = abs(sp.derivative(n=1)(cur_t))
     a_s = abs(sp.derivative(n=2)(cur_t))
     
+    SS_res,r2,RMSE = goodness_of_fit(cur_t,cur_x,x_s)
+    text = 'SSE = {} \nR-square = {} \nRMSE = {}'.format(round(SS_res,4),round(r2,4),round(RMSE,4))
+
     
     ##### Federico et al. constants    
     slope = 1.49905955613175
@@ -434,7 +452,9 @@ def check_trending(df,out_folder,plot = False):
         l3_vel, l2_vel = velocity_alert_values(cur_t[-2]-cur_t[-1])
         ylim_values = ax3.get_ylim()
         ax3.plot(ax3.get_xlim(),[l3_vel,l3_vel],'--',lw = 2., color = tableau20[2],label = 'L3 Velocity')
+        ax3.plot(ax3.get_xlim(),[-l3_vel,-l3_vel],'--',lw = 2., color = tableau20[2])
         ax3.plot(ax3.get_xlim(),[l2_vel,l2_vel],'--',lw = 2., color = tableau20[16],label = 'L2 Velocity')
+        ax3.plot(ax3.get_xlim(),[-l2_vel,-l2_vel],'--',lw = 2., color = tableau20[16])
         ax3.set_ylim(ylim_values)
         ax3.set_ylabel('velocity (cm/day)')
         ax3.set_xlabel('time (days)')
@@ -448,6 +468,7 @@ def check_trending(df,out_folder,plot = False):
         tsn = pd.to_datetime(df.timestamp.values[-1]).strftime("%Y-%m-%d_%H-%M-%S")
         out_filename = out_folder + '{} {} {}'.format(tsn,str(df.site_id.values[0]),str(df.crack_id.values[0]))
         print out_filename        
+        print text
         plt.savefig(out_filename,facecolor='w', edgecolor='w',orientation='landscape',mode='w',bbox_inches = 'tight')
         
         print cur_a, a_t_up, a_t_down
@@ -487,6 +508,17 @@ def del_data(df):
     db.close()
 
 def GroundDataTrendingPlotJSON(site,crack,end = None):
+    
+    ##### Federico et al. constants######    
+    slope = 1.49905955613175
+    intercept = -3.00263765777028
+    t_crit = 4.53047399738543
+    var_v_log = 215.515369339559
+    v_log_mean = 2.232839766
+    sum_res_square = 49.8880017417971
+    n = 30.    
+    ####################################
+    
     if end == None:
         end = datetime.now()
     df = get_latest_ground_df(site,end)
@@ -499,6 +531,7 @@ def GroundDataTrendingPlotJSON(site,crack,end = None):
     cur_t = (df.timestamp.values - df.timestamp.values[0])/np.timedelta64(1,'D')
     cur_x = df.meas.values
     cur_ts = df.timestamp.values
+    cur_ts = pd.to_datetime(cur_ts)
     
     ##### Interpolate the last 10 data points
     _,var = moving_average(cur_x)
@@ -514,6 +547,16 @@ def GroundDataTrendingPlotJSON(site,crack,end = None):
         x_n = sp(t_n)
         v_s = abs(sp.derivative(n=1)(cur_t))
         a_s = abs(sp.derivative(n=2)(cur_t))
+        
+        v_t = np.linspace(min(v_s),max(v_s),num = 20)
+        unc = t_crit*np.sqrt(1/(n-2)*sum_res_square*(1/n + (np.log(v_t) - v_log_mean)**2/var_v_log))
+        
+        a_t = slope * np.log(v_t) + intercept
+        a_tu = a_t + unc
+        a_td = a_t - unc
+        
+                
+        
     except:
         print "Interpolation Error for site {} crack {} at timestamp ".format(site,crack,end)
         t_n = np.linspace(cur_t[0],cur_t[-1],len(cur_t))
@@ -521,11 +564,30 @@ def GroundDataTrendingPlotJSON(site,crack,end = None):
         x_n = cur_x
         v_s = np.zeros(len(x_n))
         a_s = np.zeros(len(x_n))
+        v_t = np.zeros(20)
+        a_t = np.zeros(20)
+        a_tu = np.zeros(20)
+        a_td = np.zeros(20)
         
-    ts_n = map(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'), ts_n)
-    cur_ts = map(lambda x: pd.to_datetime(x).strftime('%Y-%m-%d %H:%M:%S'), cur_ts)
-    to_json = {'av' : {'v':list(v_s),'a':list(a_s)},'dvt':{'gnd':{'ts':list(cur_ts),'surfdisp':list(cur_x)},'interp':{'ts':list(ts_n),'surfdisp':list(x_n)}}}
+    #logarithmic axes
+    v_s = np.log(v_s)
+    v_s = v_s[~np.logical_or(np.isnan(v_s),np.isinf(v_s))]
+    
+    a_s = np.log(a_s)
+    a_s = a_s[~np.logical_or(np.isnan(a_s),np.isinf(a_s))]
+    a_t = a_t[~np.logical_or(np.isnan(a_t),np.isinf(a_t))]
+    a_tu = a_tu[~np.logical_or(np.isnan(a_tu),np.isinf(a_tu))]
+    a_td = a_td[~np.logical_or(np.isnan(a_td),np.isinf(a_td))]
+    v_t = np.log(v_t)
+    v_t = v_t[~np.logical_or(np.isnan(v_t),np.isinf(v_t))]
+    
+    
+    
+    ts_n = map(lambda x: mytime.mktime(x.timetuple())*1000, ts_n)
+    cur_ts = map(lambda x: mytime.mktime(x.timetuple())*1000, cur_ts)
+    to_json = {'av' : {'v':list(v_s),'a':list(a_s),'v_threshold':list(v_t),'a_threshold_line':list(a_t),'a_threshold_up':list(a_tu),'a_threshold_down':list(a_td)},'dvt':{'gnd':{'ts':list(cur_ts),'surfdisp':list(cur_x)},'interp':{'ts':list(ts_n),'surfdisp':list(x_n)}}}
     print json.dumps(to_json)
+    
 
 def velocity_alert_values(time_delta):
     #INPUT: Time delta interval between measurements
