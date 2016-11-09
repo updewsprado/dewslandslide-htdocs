@@ -102,7 +102,7 @@ $(document).ready(function(e) {
 				changePanelResolution();
 				$('#reliability-chart-container').highcharts({
 		            chart: {
-		                zoomType: 'xy'
+		                zoomType: 'x'
 		            },
 			        title: {
 			            text: 'Percent of Reply for '+$('#filter-key').val(),
@@ -218,7 +218,7 @@ $(document).ready(function(e) {
 				changePanelResolution();
 				$('#reliability-chart-container').highcharts({
 		            chart: {
-		                zoomType: 'xy'
+		                zoomType: 'x'
 		            },
 			        title: {
 			            text: 'Percent of Reply for All Sites',
@@ -332,7 +332,7 @@ $(document).ready(function(e) {
 				changePanelResolution();
 				$('#reliability-chart-container').highcharts({
 		            chart: {
-		                zoomType: 'xy'
+		                zoomType: 'x'
 		            },
 			        title: {
 			            text: 'Percent of Reply for '+$('#filter-key').val(),
@@ -816,47 +816,32 @@ $(document).ready(function(e) {
 				var trimmed_id = series_value[x].name.replace(/ /g,'');
 				toggle_link.setAttribute("data-toggle", "collapse");
 				toggle_link.setAttribute("href", "#"+trimmed_id);
-				//-----
+
 				var panel_collapse = document.createElement('div');
 				panel_collapse.className = 'panel-collapse collapse';
 				panel_collapse.id = trimmed_id;
 				var panel_body = document.createElement('div');
 				panel_body.className = 'panel-body';
 				var lmessage = document.createElement('h5');
-				var lblmessage = document.createElement('strong');
-				lblmessage.innerHTML = "Latest Message: ";
-				lmessage.appendChild(lblmessage);
+				lmessage.innerHTML = "<strong>Latest Message: </strong>"+"Sample Message";
 				var lmessage_timestamp = document.createElement('h5');
-				var lblmessage_timestamp = document.createElement('strong');
-				lblmessage_timestamp.innerHTML = "Timestamp: ";
-				lmessage_timestamp.appendChild(lblmessage_timestamp);
+				lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+"SAMPLE MESSAGE TIMESTAMP";
 				var lreply = document.createElement('h5');
-				var lblreply = document.createElement('strong');
-				lblreply.innerHTML = "Latest Reply: ";
-				lreply.appendChild(lblreply);
+				lreply.innerHTML = "<strong>Latest Reply: </strong>"+"SAMPLE REPLY";
 				var lreply_timestamp = document.createElement('h5');
-				var lblreply_timestamp = document.createElement('strong');
-				lblreply_timestamp.innerHTML = "Timestamp: ";
-				lreply_timestamp.appendChild(lblreply_timestamp);
+				lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+"SAMPLE REPLY TIMESTAMP";
 				var areply = document.createElement('h5');
-				var lblareply = document.createElement('strong');
-				lblareply.innerHTML = "Average Reply: ";
-				areply.appendChild(lblareply);
+				areply.innerHTML = "<strong>Average Reply: </strong>"+"SAMPLE AVE REPLY";
 				var lpercent_reply = document.createElement('h5');
-				var lblpercent_reply = document.createElement('strong');
-				lblpercent_reply.innerHTML = "Latest % of Reply: ";
-				lpercent_reply.appendChild(lblpercent_reply);
+				lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+"SAMPLE % OF REPLY";
 
-				//---
 				panel_body.appendChild(lmessage);
 				panel_body.appendChild(lmessage_timestamp);
 				panel_body.appendChild(lreply);
 				panel_body.appendChild(lreply_timestamp);
 				panel_body.appendChild(areply);
 				panel_body.appendChild(lpercent_reply);
-				//---
 
-				//-----
 				panel_title.appendChild(toggle_link);
 				panel_heading.appendChild(panel_title);
 				panel_default.appendChild(panel_heading);
