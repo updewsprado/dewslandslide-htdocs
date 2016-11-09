@@ -23,11 +23,28 @@ $(document).ready(function(e) {
 
     	resetVariables();
 
-    	if ($('#category-selection').val() != null &&  $('#period-selection').val() != null) {
+    	if ($('#category-selection').val() != null) {
 			data['filterKey'] = $('#filter-key').val();
 			data['category'] = $('#category-selection').val();
-			data['period'] = $('#period-selection').val();
-			data['current_date'] = moment().format('YYYY-MM-DD HH:mm:ss');
+			if ($('#period-selection').val() != null && $('#period-selection').val() != ""){
+				data['period'] = $('#period-selection').val();
+				data['current_date'] = moment().format('YYYY-MM-DD HH:mm:ss');
+			} else {
+				if ($('#from-date').val() != "" && $('#to-date').val() != ""){
+					var from_period = $('#from-date').val();
+					var to_period = $('#to-date').val();
+					if (from_period < to_period){
+						data['period'] = from_period+" 23:59:59";
+						data['current_date'] = to_period+" 23:59:59";		
+					} else {
+						alert('Invalid Request, From-date date must be less than to To-date');
+						return;
+					}
+				} else {
+					alert('Invalid Request, Please recheck inputs');
+					return;
+				}
+			}
 			// Minus the period on the current date
 			switch(data['period'].charAt(1)) {
 			    case "m":
@@ -52,9 +69,7 @@ $(document).ready(function(e) {
     	} else {
     		alert('Invalid Request, Please recheck inputs');
     	}
-    	
 	});
-
 
 	// Analytics Section
 	function getAnalyticsPerson(data){
@@ -165,7 +180,8 @@ $(document).ready(function(e) {
 			        }]
 
 			    });
-
+	    	//Generates Detailed information for each Node
+    		detailedInfoGenerator();
 			});
 	}
 
@@ -197,7 +213,8 @@ $(document).ready(function(e) {
 				    useUTC: false
 				  }
 				});
-
+		    	//Generates Detailed information for each Node
+	    		detailedInfoGenerator();
 				changePanelResolution();
 				$('#reliability-chart-container').highcharts({
 		            chart: {
@@ -391,8 +408,9 @@ $(document).ready(function(e) {
 		            colorByPoint: true,
 		            data: column_value
 		        }]
-
 		    });
+    	//Generates Detailed information for each Node
+		detailedInfoGenerator();
 		});
 	}
 
@@ -464,12 +482,14 @@ $(document).ready(function(e) {
     		$("#reliability-pane").attr('class', 'col-md-12');
     		$("#adp-pane").attr('class', 'col-md-12');
     		$("#detailed-pane").attr('class', 'col-md-12');
+    		$(".panel-group").attr('class', 'panel-group col-md-6');
 
     	} else {
 			var chart = $('#reliability-chart-container').highcharts();
     		$("#reliability-pane").attr('class', 'col-md-8');
     		$("#adp-pane").attr('class', 'col-md-6');
     		$("#detailed-pane").attr('class', 'col-md-6');
+    		$(".panel-group").attr('class', 'panel-group');
     	}
 	}
 
@@ -741,7 +761,6 @@ $(document).ready(function(e) {
 	    hours = Math.floor(minutes / MINS_PER_HOUR);
 	    minutes = minutes % MINS_PER_HOUR;
 	    return years + " year(s) " + months + " month(s) " + weeks + " week(s) " + days + " day(s) "+ hours + " hour(s) " + Math.round(minutes) + " minute(s)"
-
 	}
 
 	function doSortDates(dates){
@@ -771,10 +790,54 @@ $(document).ready(function(e) {
 	}
 	// End of Analytics Section
 
+	//Detailed Info Section
+	function detailedInfoGenerator(){
+		console.log(series_value);
+		console.log(column_value);
+
+		var myNode = document.getElementById("detailed-info-container");
+		while (myNode.firstChild) {
+			myNode.removeChild(myNode.firstChild);
+		}
+
+		if (series_value.length == column_value.length){
+			for (var x = 0; x < series_value.length;x++){
+				var detail_info_container = document.getElementById('detailed-info-container');
+				var panel_group = document.createElement('div');
+				panel_group.className = 'panel-group';
+				var panel_default = document.createElement('div');
+				panel_default.className = 'panel panel-default';
+				var panel_heading = document.createElement('div');
+				panel_heading.className = 'panel-heading';
+				var panel_title = document.createElement('h4');
+				panel_title.className = 'panel-title';
+				var toggle_link = document.createElement('a');
+				toggle_link.innerHTML = series_value[x].name;
+				var trimmed_id = series_value[x].name.replace(/ /g,'');
+				toggle_link.setAttribute("data-toggle", "collapse");
+				toggle_link.setAttribute("href", "#"+trimmed_id);
+				//-----
+
+				//-----
+				panel_title.appendChild(toggle_link);
+				panel_heading.appendChild(panel_title);
+				panel_default.appendChild(panel_heading);
+				panel_group.appendChild(panel_default);
+				detail_info_container.appendChild(panel_group);  
+			}
+		} else {
+			console.log("Invalid Request");
+		}
+	}
+
+	//End of 
+
 	$('#from-date').datepicker({
+		format: 'yyyy-mm-dd'
 	});
 
 	$('#to-date').datepicker({
+		format: 'yyyy-mm-dd'
 	});
 
 	// Resets the Period selector to default if the from-to function is used
