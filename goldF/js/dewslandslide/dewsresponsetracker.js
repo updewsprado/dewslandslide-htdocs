@@ -482,7 +482,7 @@ $(document).ready(function(e) {
     		$("#reliability-pane").attr('class', 'col-md-12');
     		$("#adp-pane").attr('class', 'col-md-12');
     		$("#detailed-pane").attr('class', 'col-md-12');
-    		$(".panel-group").attr('class', 'panel-group col-md-6');
+    		$(".panel-group").attr('class', 'panel-group col-md-4');
 
     	} else {
 			var chart = $('#reliability-chart-container').highcharts();
@@ -817,13 +817,53 @@ $(document).ready(function(e) {
 				toggle_link.setAttribute("data-toggle", "collapse");
 				toggle_link.setAttribute("href", "#"+trimmed_id);
 				//-----
+				var panel_collapse = document.createElement('div');
+				panel_collapse.className = 'panel-collapse collapse';
+				panel_collapse.id = trimmed_id;
+				var panel_body = document.createElement('div');
+				panel_body.className = 'panel-body';
+				var lmessage = document.createElement('h5');
+				var lblmessage = document.createElement('strong');
+				lblmessage.innerHTML = "Latest Message: ";
+				lmessage.appendChild(lblmessage);
+				var lmessage_timestamp = document.createElement('h5');
+				var lblmessage_timestamp = document.createElement('strong');
+				lblmessage_timestamp.innerHTML = "Timestamp: ";
+				lmessage_timestamp.appendChild(lblmessage_timestamp);
+				var lreply = document.createElement('h5');
+				var lblreply = document.createElement('strong');
+				lblreply.innerHTML = "Latest Reply: ";
+				lreply.appendChild(lblreply);
+				var lreply_timestamp = document.createElement('h5');
+				var lblreply_timestamp = document.createElement('strong');
+				lblreply_timestamp.innerHTML = "Timestamp: ";
+				lreply_timestamp.appendChild(lblreply_timestamp);
+				var areply = document.createElement('h5');
+				var lblareply = document.createElement('strong');
+				lblareply.innerHTML = "Average Reply: ";
+				areply.appendChild(lblareply);
+				var lpercent_reply = document.createElement('h5');
+				var lblpercent_reply = document.createElement('strong');
+				lblpercent_reply.innerHTML = "Latest % of Reply: ";
+				lpercent_reply.appendChild(lblpercent_reply);
+
+				//---
+				panel_body.appendChild(lmessage);
+				panel_body.appendChild(lmessage_timestamp);
+				panel_body.appendChild(lreply);
+				panel_body.appendChild(lreply_timestamp);
+				panel_body.appendChild(areply);
+				panel_body.appendChild(lpercent_reply);
+				//---
 
 				//-----
 				panel_title.appendChild(toggle_link);
 				panel_heading.appendChild(panel_title);
 				panel_default.appendChild(panel_heading);
+				panel_collapse.appendChild(panel_body);
+				panel_default.appendChild(panel_collapse);  
 				panel_group.appendChild(panel_default);
-				detail_info_container.appendChild(panel_group);  
+				detail_info_container.appendChild(panel_group); 
 			}
 		} else {
 			console.log("Invalid Request");
