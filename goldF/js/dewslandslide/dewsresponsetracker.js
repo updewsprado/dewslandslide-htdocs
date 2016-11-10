@@ -9,6 +9,7 @@ $(document).ready(function(e) {
 	var period_range = [];
 	var chart_category = [];
 	var data = {};
+	var detailedInformation = [];
 
     $(document).ajaxStart(function () {
     	$('#loading').modal('toggle');
@@ -499,6 +500,12 @@ $(document).ready(function(e) {
 		var reply_stats = 0;
 		var tempDay = "";
 		var data_hc = [];
+		var luser = "";
+		var lmessage = "";
+		var lmtimestamp = "";
+		var lreply = "";
+		var lrtimestamp = "";
+		detailedInformation = [];
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
@@ -516,8 +523,17 @@ $(document).ready(function(e) {
 						for (var o = 0; o < data[i].values[x].length;o++){
 							tempDay = data[i].values[x][o].timestamp.substring(8,11);
 							if (data[i].values[x][o].user == "You") {
+								if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+									luser = data[i].values[x][o].user;
+									lmessage = data[i].values[x][o].msg;
+									lmtimestamp = data[i].values[x][o].timestamp;
+								}
 								sent++;
 							} else {
+								if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+									lreply = data[i].values[x][o].msg;
+									lrtimestamp = data[i].values[x][o].timestamp;
+								}
 								replies++;
 							}
 
@@ -531,15 +547,25 @@ $(document).ready(function(e) {
 							if (data[i].values[x].length == 1) {
 								reply_stats_with_dates = [moment(data[i].values[x][0].timestamp.substring(0,9)).valueOf(),reply_stats];
 								data_hc.push(reply_stats_with_dates);
+								reply_stats = 0;
 							}
 						}
 
 					} else {
 						tempDay = data[i].values[x].timestamp.substring(8,11);
 						if (data[i].values[x].user == "You") {
+							if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+								luser = data[i].values[x].user;
+								lmessage = data[i].values[x].msg;
+								lmtimestamp = data[i].values[x].timestamp;
+							}
 							sent++;
 						} else {
 							replies++;
+							if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+								lreply = data[i].values[x].msg;
+								lrtimestamp = data[i].values[x].timestamp;
+							}
 						}
 
 						if (replies > sent) {
@@ -553,19 +579,30 @@ $(document).ready(function(e) {
 						if (data[i].values.length == 1) {
 							reply_stats_with_dates = [moment(data[i].values[x].timestamp.substring(0,9)).valueOf(),reply_stats];
 							data_hc.push(reply_stats_with_dates);
+							reply_stats = 0;
 						}
 					}
 
 				} else {
 					// Check if the Key is empty
 					// If empty the category is for all sites
+
 					if ($('#filter-key').val() == "") {
 						for (var o = 0; o < data[i].values[x].length;o++){
 							if (tempDay == data[i].values[x][o].timestamp.substring(8,11)) {
 
 								if (data[i].values[x][o].user == "You") {
+									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+										luser = data[i].values[x][o].user;
+										lmessage = data[i].values[x][o].msg;
+										lmtimestamp = data[i].values[x][o].timestamp;
+									}
 									sent++;
 								} else {
+									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+										lreply = data[i].values[x][o].msg;
+										lrtimestamp = data[i].values[x][o].timestamp;
+									}
 									replies++;
 								}
 
@@ -578,15 +615,30 @@ $(document).ready(function(e) {
 								}
 
 							} else {
+								if (o != 0){
+									timestamp_holder = moment(data[i].values[x][o-1].timestamp).valueOf()
+								} else {
+									timestamp_holder = moment(data[i].values[x][o].timestamp).valueOf()
+								}
 								reply_stats_with_dates = [moment(data[i].values[x][o].timestamp).valueOf(),reply_stats];
 								data_hc.push(reply_stats_with_dates);
 								sent = 0;
 								replies = 0;
+								reply_stats = 0;
 								tempDay = data[i].values[x][o].timestamp.substring(8,11);
 
 								if (data[i].values[x][o].user == "You") {
+									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+										luser = data[i].values[x][o].user;
+										lmessage = data[i].values[x][o].msg;
+										lmtimestamp = data[i].values[x][o].timestamp;
+									}
 									sent++;
 								} else {
+									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
+										lreply = data[i].values[x][o].msg;
+										lrtimestamp = data[i].values[x][o].timestamp;
+									}
 									replies++;
 								}
 
@@ -604,8 +656,17 @@ $(document).ready(function(e) {
 						if (tempDay == data[i].values[x].timestamp.substring(8,11)) {
 
 							if (data[i].values[x].user == "You") {
+								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+									luser = data[i].values[x].user;
+									lmessage = data[i].values[x].msg;
+									lmtimestamp = data[i].values[x].timestamp;
+								}
 								sent++;
 							} else {
+								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+									lreply = data[i].values[x].msg;
+									lrtimestamp = data[i].values[x].timestamp;
+								}
 								replies++;
 							}
 
@@ -618,15 +679,25 @@ $(document).ready(function(e) {
 							}
 
 						} else {
-							reply_stats_with_dates = [moment(data[i].values[x].timestamp).valueOf(),reply_stats];
+							reply_stats_with_dates = [moment(data[i].values[x-1].timestamp).valueOf(),reply_stats];
 							data_hc.push(reply_stats_with_dates);
 							sent = 0;
 							replies = 0;
+							reply_stats = 0;
 							tempDay = data[i].values[x].timestamp.substring(8,11);
 
 							if (data[i].values[x].user == "You") {
+								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+									luser = data[i].values[x].user;
+									lmessage = data[i].values[x].msg;
+									lmtimestamp = data[i].values[x].timestamp;
+								}
 								sent++;
 							} else {
+								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
+									lreply = data[i].values[x].msg;
+									lrtimestamp = data[i].values[x].timestamp;
+								}
 								replies++;
 							}
 
@@ -643,16 +714,38 @@ $(document).ready(function(e) {
 			}
 
 			var name_hc = data[i].number;
+			
 			// Sort the dates Asc order
-
 			doSortDates(data_hc);
 
 			series_stats = {
 				name: name_hc,
 				data: data_hc
 			};
+
+			if(lmessage == ""){lmessage = "N/A"}
+			if(lmtimestamp == ""){lmtimestamp = "N/A"}
+			if(lreply == ""){lreply = "N/A"}
+			if(lrtimestamp == ""){lrtimestamp = "N/A"}
+
+			var detailedInfo = {
+				user: luser,
+				lmes: lmessage,
+				lmt: lmtimestamp,
+				lru: name_hc,
+				lrep: lreply,
+				lrt: lrtimestamp
+			}
+
 			series_value.push(series_stats);
+			detailedInformation.push(detailedInfo);
+			luser = "";
+			lmessage = "";
+			lmtimestamp = "";
+			lreply = "";
+			lrtimestamp = "";
 		}
+
 	}
 
 	function analyzeAverageDelayReply(data){
@@ -792,14 +885,10 @@ $(document).ready(function(e) {
 
 	//Detailed Info Section
 	function detailedInfoGenerator(){
-		console.log(series_value);
-		console.log(column_value);
-
 		var myNode = document.getElementById("detailed-info-container");
 		while (myNode.firstChild) {
 			myNode.removeChild(myNode.firstChild);
 		}
-
 		if (series_value.length == column_value.length){
 			for (var x = 0; x < series_value.length;x++){
 				var detail_info_container = document.getElementById('detailed-info-container');
@@ -823,17 +912,32 @@ $(document).ready(function(e) {
 				var panel_body = document.createElement('div');
 				panel_body.className = 'panel-body';
 				var lmessage = document.createElement('h5');
-				lmessage.innerHTML = "<strong>Latest Message: </strong>"+"Sample Message";
+				lmessage.innerHTML = "<strong>Latest Message: </strong>"+detailedInformation[x].lmes;
 				var lmessage_timestamp = document.createElement('h5');
-				lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+"SAMPLE MESSAGE TIMESTAMP";
+				lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lmt;
 				var lreply = document.createElement('h5');
-				lreply.innerHTML = "<strong>Latest Reply: </strong>"+"SAMPLE REPLY";
+				lreply.innerHTML = "<strong>Latest Reply: </strong>"+detailedInformation[x].lrep;
 				var lreply_timestamp = document.createElement('h5');
-				lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+"SAMPLE REPLY TIMESTAMP";
+				lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lrt;
 				var areply = document.createElement('h5');
-				areply.innerHTML = "<strong>Average Reply: </strong>"+"SAMPLE AVE REPLY";
+				var perc_reply = "";
+				if (isNaN(column_value[x].y) == true){
+					perc_reply = "N/A";
+				} else {
+					perc_reply = column_value[x].summary;
+				}
+				areply.innerHTML = "<strong>Average Delay of Reply: </strong>"+perc_reply;
 				var lpercent_reply = document.createElement('h5');
-				lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+"SAMPLE % OF REPLY";
+				var ave_rep = "";
+				var ave_rep_tstamp = "";
+				if (series_value[x].data.length == 0){
+					ave_rep = "N/A";
+					ave_rep_tstamp = "N/A";
+				} else {
+					ave_rep = series_value[x].data[series_value[x].data.length-1][1]+" <strong>% As Of</strong>";
+					ave_rep_tstamp = moment.utc(series_value[x].data[series_value[x].data.length-1][0]).format('YYYY-MM-DD HH:mm:ss');
+				}
+				lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+ave_rep+" "+ave_rep_tstamp;
 
 				panel_body.appendChild(lmessage);
 				panel_body.appendChild(lmessage_timestamp);
