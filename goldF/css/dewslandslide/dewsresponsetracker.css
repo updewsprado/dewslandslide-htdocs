@@ -45,3 +45,7 @@
 #date-selector-rtracker {
 	margin-bottom: 10px;
 }
+
+#div-data-resolution label,#data-resolution {
+    margin-right: 25px;
+}

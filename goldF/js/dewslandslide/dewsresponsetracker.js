@@ -1,6 +1,7 @@
 $(document).ready(function(e) {
 
 	var persons = [];
+	var sites = [];
 	var chatStamps = [];
 	var series_value = [];
 	var column_value = [];
@@ -8,6 +9,7 @@ $(document).ready(function(e) {
 	var series_data = [];
 	var period_range = [];
 	var chart_category = [];
+	var resolution = [];
 	var data = {};
 	var detailedInformation = [];
 
@@ -23,7 +25,7 @@ $(document).ready(function(e) {
     $('#confirm-filter-btn').click(function(){
 
     	resetVariables();
-
+    	console.log(resolution);
     	if ($('#category-selection').val() != null) {
 			data['filterKey'] = $('#filter-key').val();
 			data['category'] = $('#category-selection').val();
@@ -494,7 +496,15 @@ $(document).ready(function(e) {
     	}
 	}
 
-	function analyzeNumberOfReplies(data){
+	function analyzeNumberOfReplies(data,resolution){
+		//Check if resolution is null
+		//If null the resolution will be per day.
+		if (typeof(resolution)==='undefined'){
+			var resolution = [];
+			resolution[0] = '8';
+			resolution[1] = '11';
+		}
+
 		var sent = 0;
 		var replies = 0;
 		var reply_stats = 0;
@@ -521,7 +531,7 @@ $(document).ready(function(e) {
 					// If empty the category is for all sites
 					if ($('#filter-key').val() == "") {
 						for (var o = 0; o < data[i].values[x].length;o++){
-							tempDay = data[i].values[x][o].timestamp.substring(8,11);
+							tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]); // Daily
 							if (data[i].values[x][o].user == "You") {
 								if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
 									luser = data[i].values[x][o].user;
@@ -552,7 +562,7 @@ $(document).ready(function(e) {
 						}
 
 					} else {
-						tempDay = data[i].values[x].timestamp.substring(8,11);
+						tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]); // Daily for weekly -7 Days
 						if (data[i].values[x].user == "You") {
 							if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
 								luser = data[i].values[x].user;
@@ -589,7 +599,7 @@ $(document).ready(function(e) {
 
 					if ($('#filter-key').val() == "") {
 						for (var o = 0; o < data[i].values[x].length;o++){
-							if (tempDay == data[i].values[x][o].timestamp.substring(8,11)) {
+							if (tempDay == data[i].values[x][o].timestamp.substring(resolution[0],resolution[1])) {
 
 								if (data[i].values[x][o].user == "You") {
 									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
@@ -625,7 +635,7 @@ $(document).ready(function(e) {
 								sent = 0;
 								replies = 0;
 								reply_stats = 0;
-								tempDay = data[i].values[x][o].timestamp.substring(8,11);
+								tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]);
 
 								if (data[i].values[x][o].user == "You") {
 									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
@@ -653,7 +663,7 @@ $(document).ready(function(e) {
 						}
 					} else {
 
-						if (tempDay == data[i].values[x].timestamp.substring(8,11)) {
+						if (tempDay == data[i].values[x].timestamp.substring(resolution[0],resolution[1])) {
 
 							if (data[i].values[x].user == "You") {
 								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
@@ -684,7 +694,7 @@ $(document).ready(function(e) {
 							sent = 0;
 							replies = 0;
 							reply_stats = 0;
-							tempDay = data[i].values[x].timestamp.substring(8,11);
+							tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]);
 
 							if (data[i].values[x].user == "You") {
 								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
@@ -745,7 +755,6 @@ $(document).ready(function(e) {
 			lreply = "";
 			lrtimestamp = "";
 		}
-
 	}
 
 	function analyzeAverageDelayReply(data){
@@ -885,81 +894,239 @@ $(document).ready(function(e) {
 
 	//Detailed Info Section
 	function detailedInfoGenerator(){
+		$('#ntc-data-resolution').css("display", "block");
+		$('#div-data-resolution').css("opacity", "1");
 		var myNode = document.getElementById("detailed-info-container");
 		while (myNode.firstChild) {
 			myNode.removeChild(myNode.firstChild);
 		}
-		if (series_value.length == column_value.length){
-			for (var x = 0; x < series_value.length;x++){
-				var detail_info_container = document.getElementById('detailed-info-container');
-				var panel_group = document.createElement('div');
-				panel_group.className = 'panel-group';
-				var panel_default = document.createElement('div');
-				panel_default.className = 'panel panel-default';
-				var panel_heading = document.createElement('div');
-				panel_heading.className = 'panel-heading';
-				var panel_title = document.createElement('h4');
-				panel_title.className = 'panel-title';
-				var toggle_link = document.createElement('a');
-				toggle_link.innerHTML = series_value[x].name;
-				var trimmed_id = series_value[x].name.replace(/ /g,'');
-				toggle_link.setAttribute("data-toggle", "collapse");
-				toggle_link.setAttribute("href", "#"+trimmed_id);
 
-				var panel_collapse = document.createElement('div');
-				panel_collapse.className = 'panel-collapse collapse';
-				panel_collapse.id = trimmed_id;
-				var panel_body = document.createElement('div');
-				panel_body.className = 'panel-body';
-				var lmessage = document.createElement('h5');
-				lmessage.innerHTML = "<strong>Latest Message: </strong>"+detailedInformation[x].lmes;
-				var lmessage_timestamp = document.createElement('h5');
-				lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lmt;
-				var lreply = document.createElement('h5');
-				lreply.innerHTML = "<strong>Latest Reply: </strong>"+detailedInformation[x].lrep;
-				var lreply_timestamp = document.createElement('h5');
-				lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lrt;
-				var areply = document.createElement('h5');
-				var perc_reply = "";
-				if (isNaN(column_value[x].y) == true){
-					perc_reply = "N/A";
-				} else {
-					perc_reply = column_value[x].summary;
-				}
-				areply.innerHTML = "<strong>Average Delay of Reply: </strong>"+perc_reply;
-				var lpercent_reply = document.createElement('h5');
-				var ave_rep = "";
-				var ave_rep_tstamp = "";
-				if (series_value[x].data.length == 0){
-					ave_rep = "N/A";
-					ave_rep_tstamp = "N/A";
-				} else {
-					ave_rep = series_value[x].data[series_value[x].data.length-1][1]+" <strong>% As Of</strong>";
-					ave_rep_tstamp = moment.utc(series_value[x].data[series_value[x].data.length-1][0]).format('YYYY-MM-DD HH:mm:ss');
-				}
-				lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+ave_rep+" "+ave_rep_tstamp;
+		for (var x = 0; x < series_value.length;x++){
+			var detail_info_container = document.getElementById('detailed-info-container');
+			var panel_group = document.createElement('div');
+			panel_group.className = 'panel-group';
+			var panel_default = document.createElement('div');
+			panel_default.className = 'panel panel-default';
+			var panel_heading = document.createElement('div');
+			panel_heading.className = 'panel-heading';
+			var panel_title = document.createElement('h4');
+			panel_title.className = 'panel-title';
+			var toggle_link = document.createElement('a');
+			toggle_link.innerHTML = series_value[x].name;
+			var trimmed_id = series_value[x].name.replace(/ /g,'');
+			toggle_link.setAttribute("data-toggle", "collapse");
+			toggle_link.setAttribute("href", "#"+trimmed_id);
 
-				panel_body.appendChild(lmessage);
-				panel_body.appendChild(lmessage_timestamp);
-				panel_body.appendChild(lreply);
-				panel_body.appendChild(lreply_timestamp);
-				panel_body.appendChild(areply);
-				panel_body.appendChild(lpercent_reply);
-
-				panel_title.appendChild(toggle_link);
-				panel_heading.appendChild(panel_title);
-				panel_default.appendChild(panel_heading);
-				panel_collapse.appendChild(panel_body);
-				panel_default.appendChild(panel_collapse);  
-				panel_group.appendChild(panel_default);
-				detail_info_container.appendChild(panel_group); 
+			var panel_collapse = document.createElement('div');
+			panel_collapse.className = 'panel-collapse collapse';
+			panel_collapse.id = trimmed_id;
+			var panel_body = document.createElement('div');
+			panel_body.className = 'panel-body';
+			var lmessage = document.createElement('h5');
+			lmessage.innerHTML = "<strong>Latest Message: </strong>"+detailedInformation[x].lmes;
+			var lmessage_timestamp = document.createElement('h5');
+			lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lmt;
+			var lreply = document.createElement('h5');
+			lreply.innerHTML = "<strong>Latest Reply: </strong>"+detailedInformation[x].lrep;
+			var lreply_timestamp = document.createElement('h5');
+			lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lrt;
+			var areply = document.createElement('h5');
+			var perc_reply = "";
+			if (isNaN(column_value[x].y) == true){
+				perc_reply = "N/A";
+			} else {
+				perc_reply = column_value[x].summary;
 			}
+			areply.innerHTML = "<strong>Average Delay of Reply: </strong>"+perc_reply;
+			var lpercent_reply = document.createElement('h5');
+			var ave_rep = "";
+			var ave_rep_tstamp = "";
+			if (series_value[x].data.length == 0){
+				ave_rep = "N/A";
+				ave_rep_tstamp = "N/A";
+			} else {
+				ave_rep = series_value[x].data[series_value[x].data.length-1][1]+" <strong>% As Of</strong>";
+				ave_rep_tstamp = moment.utc(series_value[x].data[series_value[x].data.length-1][0]).format('YYYY-MM-DD HH:mm:ss');
+			}
+			lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+ave_rep+" "+ave_rep_tstamp;
+
+			panel_body.appendChild(lmessage);
+			panel_body.appendChild(lmessage_timestamp);
+			panel_body.appendChild(lreply);
+			panel_body.appendChild(lreply_timestamp);
+			panel_body.appendChild(areply);
+			panel_body.appendChild(lpercent_reply);
+
+			panel_title.appendChild(toggle_link);
+			panel_heading.appendChild(panel_title);
+			panel_default.appendChild(panel_heading);
+			panel_collapse.appendChild(panel_body);
+			panel_default.appendChild(panel_collapse);  
+			panel_group.appendChild(panel_default);
+			detail_info_container.appendChild(panel_group); 
+		}
+	}
+	//End of Detailed Info Section
+
+	//Adjusts the Data resolution
+	$('#data-resolution').change(function(){
+		var data_resolution = ['hh','dd','ww','mm'];
+		resolution = [];
+		// console.log(data[i].values[x].timestamp.substring(5,7)); // Monthly
+		// console.log(data[i].values[x].timestamp.substring(11,13)); // Hourly
+		if (data_resolution[$('#data-resolution').val()-1] == "hh") {
+			resolution[0] = "11";
+			resolution[1] = "13";
+		} else if (data_resolution[$('#data-resolution').val()-1] == "dd"){
+			resolution[0] = "8";
+			resolution[1] = "11";
+		} else if (data_resolution[$('#data-resolution').val()-1] == "ww") {
+			resolution[0] = "";
+			resolution[1] = "";
+		} else if (data_resolution[$('#data-resolution').val()-1] == "mm"){
+			resolution[0] = "5";
+			resolution[1] = "7";
 		} else {
 			console.log("Invalid Request");
 		}
+		series_value = [];
+ 		if ($('#category-selection').val() == "allsites"){
+ 			analyticsChartAllSite(sites,resolution);
+ 		} else if ($('#category-selection').val() == "site"){
+	 		analyticsChartSite(persons,resolution);
+ 		} else if ($('#category-selection').val() == "person"){
+ 			analyticsChartPerson(sites,resolution);
+ 		} else {
+ 			console.log('Invalid Request');
+ 		}
+	});
+
+	function analyticsChartSite(data,resolution){
+		analyzeNumberOfReplies(data,resolution);
+		$('#reliability-chart-container').highcharts({
+            chart: {
+                zoomType: 'x'
+            },
+	        title: {
+	            text: 'Percent of Reply for '+$('#filter-key').val(),
+	            x: -20 //center
+	        },
+	        subtitle: {
+	            text: period_range['percentReply'],
+	            x: -20
+	        },
+	        xAxis: {
+            	type: 'datetime'
+	        },
+	        yAxis: {
+	            title: {
+	                text: '% of Replies'
+	            },
+	            plotLines: [{
+	                value: 0,
+	                width: 1,
+	                color: '#808080'
+	            }]
+	        },
+	        tooltip: {
+	            valueSuffix: '%'
+	        },
+	        legend: {
+	            layout: 'vertical',
+	            align: 'right',
+	            verticalAlign: 'middle',
+	            borderWidth: 0
+	        },
+	        series: series_value
+	    });
+		//Generates Detailed information for each Node
+		detailedInfoGenerator();
 	}
 
-	//End of 
+	function analyticsChartAllSite(data,resolution){
+		analyzeNumberOfReplies(data,resolution);
+			$('#reliability-chart-container').highcharts({
+	            chart: {
+	                zoomType: 'x'
+	            },
+		        title: {
+		            text: 'Percent of Reply for All Sites',
+		            x: -20 //center
+		        },
+		        subtitle: {
+		            text: period_range['percentReply'],
+		            x: -20
+		        },
+		        xAxis: {
+	            	type: 'datetime'
+		        },
+		        yAxis: {
+		            title: {
+		                text: '% of Replies'
+		            },
+		            plotLines: [{
+		                value: 0,
+		                width: 1,
+		                color: '#808080'
+		            }]
+		        },
+		        tooltip: {
+		            valueSuffix: '%'
+		        },
+		        legend: {
+		            layout: 'vertical',
+		            align: 'right',
+		            verticalAlign: 'middle',
+		            borderWidth: 0
+		        },
+		        series: series_value
+		    });
+		//Generates Detailed information for each Node
+		detailedInfoGenerator(data,resolution);
+	}
+
+	function analyticsChartPerson(data,resolution){
+		analyzeNumberOfReplies(data,resolution);
+		$('#reliability-chart-container').highcharts({
+		    chart: {
+		        zoomType: 'x'
+		    },
+		    title: {
+		        text: 'Percent of Reply for '+$('#filter-key').val(),
+		        x: -20 //center
+		    },
+		    subtitle: {
+		        text: period_range['percentReply'],
+		        x: -20
+		    },
+		    xAxis: {
+		    	type: 'datetime'
+		    },
+		    yAxis: {
+		        title: {
+		            text: '% of Replies'
+		        },
+		        plotLines: [{
+		            value: 0,
+		            width: 1,
+		            color: '#808080'
+		        }]
+		    },
+		    tooltip: {
+		        valueSuffix: '%'
+		    },
+		    legend: {
+		        layout: 'vertical',
+		        align: 'right',
+		        verticalAlign: 'middle',
+		        borderWidth: 0
+		    },
+		    series: series_value
+		});
+		//Generates Detailed information for each Node
+		detailedInfoGenerator();
+	}
+
 
 	$('#from-date').datepicker({
 		format: 'yyyy-mm-dd'
