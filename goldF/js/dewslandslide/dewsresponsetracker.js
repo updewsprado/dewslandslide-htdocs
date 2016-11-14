@@ -10,8 +10,8 @@ $(document).ready(function(e) {
 	var period_range = [];
 	var chart_category = [];
 	var resolution = [];
-	var data = {};
 	var detailedInformation = [];
+	var data = {};
 
     $(document).ajaxStart(function () {
     	$('#loading').modal('toggle');
@@ -25,7 +25,6 @@ $(document).ready(function(e) {
     $('#confirm-filter-btn').click(function(){
 
     	resetVariables();
-    	console.log(resolution);
     	if ($('#category-selection').val() != null) {
 			data['filterKey'] = $('#filter-key').val();
 			data['category'] = $('#category-selection').val();
@@ -515,7 +514,6 @@ $(document).ready(function(e) {
 		var lmtimestamp = "";
 		var lreply = "";
 		var lrtimestamp = "";
-		detailedInformation = [];
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
@@ -533,17 +531,8 @@ $(document).ready(function(e) {
 						for (var o = 0; o < data[i].values[x].length;o++){
 							tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]); // Daily
 							if (data[i].values[x][o].user == "You") {
-								if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-									luser = data[i].values[x][o].user;
-									lmessage = data[i].values[x][o].msg;
-									lmtimestamp = data[i].values[x][o].timestamp;
-								}
 								sent++;
 							} else {
-								if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-									lreply = data[i].values[x][o].msg;
-									lrtimestamp = data[i].values[x][o].timestamp;
-								}
 								replies++;
 							}
 
@@ -564,18 +553,9 @@ $(document).ready(function(e) {
 					} else {
 						tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]); // Daily for weekly -7 Days
 						if (data[i].values[x].user == "You") {
-							if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-								luser = data[i].values[x].user;
-								lmessage = data[i].values[x].msg;
-								lmtimestamp = data[i].values[x].timestamp;
-							}
 							sent++;
 						} else {
 							replies++;
-							if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-								lreply = data[i].values[x].msg;
-								lrtimestamp = data[i].values[x].timestamp;
-							}
 						}
 
 						if (replies > sent) {
@@ -602,17 +582,8 @@ $(document).ready(function(e) {
 							if (tempDay == data[i].values[x][o].timestamp.substring(resolution[0],resolution[1])) {
 
 								if (data[i].values[x][o].user == "You") {
-									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-										luser = data[i].values[x][o].user;
-										lmessage = data[i].values[x][o].msg;
-										lmtimestamp = data[i].values[x][o].timestamp;
-									}
 									sent++;
 								} else {
-									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-										lreply = data[i].values[x][o].msg;
-										lrtimestamp = data[i].values[x][o].timestamp;
-									}
 									replies++;
 								}
 
@@ -638,17 +609,8 @@ $(document).ready(function(e) {
 								tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]);
 
 								if (data[i].values[x][o].user == "You") {
-									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-										luser = data[i].values[x][o].user;
-										lmessage = data[i].values[x][o].msg;
-										lmtimestamp = data[i].values[x][o].timestamp;
-									}
 									sent++;
 								} else {
-									if (data[i].values[x][o].msg != "" &&  data[i].values[x][o].timestamp != ""){
-										lreply = data[i].values[x][o].msg;
-										lrtimestamp = data[i].values[x][o].timestamp;
-									}
 									replies++;
 								}
 
@@ -666,17 +628,8 @@ $(document).ready(function(e) {
 						if (tempDay == data[i].values[x].timestamp.substring(resolution[0],resolution[1])) {
 
 							if (data[i].values[x].user == "You") {
-								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-									luser = data[i].values[x].user;
-									lmessage = data[i].values[x].msg;
-									lmtimestamp = data[i].values[x].timestamp;
-								}
 								sent++;
 							} else {
-								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-									lreply = data[i].values[x].msg;
-									lrtimestamp = data[i].values[x].timestamp;
-								}
 								replies++;
 							}
 
@@ -697,17 +650,8 @@ $(document).ready(function(e) {
 							tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]);
 
 							if (data[i].values[x].user == "You") {
-								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-									luser = data[i].values[x].user;
-									lmessage = data[i].values[x].msg;
-									lmtimestamp = data[i].values[x].timestamp;
-								}
 								sent++;
 							} else {
-								if (data[i].values[x].msg != "" &&  data[i].values[x].timestamp != ""){
-									lreply = data[i].values[x].msg;
-									lrtimestamp = data[i].values[x].timestamp;
-								}
 								replies++;
 							}
 
@@ -733,27 +677,7 @@ $(document).ready(function(e) {
 				data: data_hc
 			};
 
-			if(lmessage == ""){lmessage = "N/A"}
-			if(lmtimestamp == ""){lmtimestamp = "N/A"}
-			if(lreply == ""){lreply = "N/A"}
-			if(lrtimestamp == ""){lrtimestamp = "N/A"}
-
-			var detailedInfo = {
-				user: luser,
-				lmes: lmessage,
-				lmt: lmtimestamp,
-				lru: name_hc,
-				lrep: lreply,
-				lrt: lrtimestamp
-			}
-
 			series_value.push(series_stats);
-			detailedInformation.push(detailedInfo);
-			luser = "";
-			lmessage = "";
-			lmtimestamp = "";
-			lreply = "";
-			lrtimestamp = "";
 		}
 	}
 
@@ -826,17 +750,65 @@ $(document).ready(function(e) {
 				}
 			}
 
+
+			//Get's the shortest reply time. 
+			var minimum = Math.min.apply(Math, date_arr);
+			var uniqueArray = [];
+			if (minimum == 0) {
+				var intArray = date_arr.map(Number);
+				// sorts the array
+				var second = intArray.sort(function(a,b){return b-a});
+				uniqueArray = second.filter(function(item, pos) {
+				    return second.indexOf(item) == pos;
+				})
+				minimum = uniqueArray[uniqueArray.length-2];
+			} else if (minimum == Infinity) {
+				minimum = "NaN";
+			}
+
+			//Get's the average reply time. 
 			var tot = 0;
 			for (var y = 0;y < date_arr.length;y++) {
 				tot = tot + date_arr[y];
 			}
-
 			tot = tot/date_arr.length-1;
+			//Get's the Maximum / Longest reply delay
+			var maximum = Math.max.apply(Math, date_arr);
+			if (maximum == -Infinity || maximum == Infinity) {
+				maximum = "NaN";
+			}
+			//Get's the standard deviation
+			var mean = tot;
+			var steptwo = 0;
+			var toDeviation = [];
+			for (var q = 0; q < date_arr.length;q++){
+				steptwo = Math.pow((date_arr[q] - mean),2);
+				toDeviation.push(steptwo);
+			}
+
+			var tot_todeviation = 0;
+			for (var l = 0; l < toDeviation.length;l++){
+				tot_todeviation = tot_todeviation + toDeviation[l];
+			}
+
+			var toBeSquared = tot_todeviation/toDeviation.length;
+			var standard_deviation = Math.sqrt(toBeSquared);
+
 			column_value.push({
 				name: data[i].number,
 				y: tot,
 				summary: getTimeFromMins(tot)
 			});
+
+
+			detailedInformation.push({
+				min: minimum,
+				ave: tot,
+				max: maximum,
+				deviation: standard_deviation
+			})
+
+			// console.log(detailedInformation);
 
 			tot = 0;
 			date_arr = [];
@@ -922,40 +894,19 @@ $(document).ready(function(e) {
 			panel_collapse.id = trimmed_id;
 			var panel_body = document.createElement('div');
 			panel_body.className = 'panel-body';
-			var lmessage = document.createElement('h5');
-			lmessage.innerHTML = "<strong>Latest Message: </strong>"+detailedInformation[x].lmes;
-			var lmessage_timestamp = document.createElement('h5');
-			lmessage_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lmt;
-			var lreply = document.createElement('h5');
-			lreply.innerHTML = "<strong>Latest Reply: </strong>"+detailedInformation[x].lrep;
-			var lreply_timestamp = document.createElement('h5');
-			lreply_timestamp.innerHTML = "<strong>Timestamp: </strong>"+detailedInformation[x].lrt;
-			var areply = document.createElement('h5');
-			var perc_reply = "";
-			if (isNaN(column_value[x].y) == true){
-				perc_reply = "N/A";
-			} else {
-				perc_reply = column_value[x].summary;
-			}
-			areply.innerHTML = "<strong>Average Delay of Reply: </strong>"+perc_reply;
-			var lpercent_reply = document.createElement('h5');
-			var ave_rep = "";
-			var ave_rep_tstamp = "";
-			if (series_value[x].data.length == 0){
-				ave_rep = "N/A";
-				ave_rep_tstamp = "N/A";
-			} else {
-				ave_rep = series_value[x].data[series_value[x].data.length-1][1]+" <strong>% As Of</strong>";
-				ave_rep_tstamp = moment.utc(series_value[x].data[series_value[x].data.length-1][0]).format('YYYY-MM-DD HH:mm:ss');
-			}
-			lpercent_reply.innerHTML = "<strong>Latest % of Reply: </strong>"+ave_rep+" "+ave_rep_tstamp;
+			var min_reply_delay = document.createElement('h5');
+			min_reply_delay.innerHTML = "<strong>Fastest Response Delay: </strong>"+Math.round(detailedInformation[x].min)+"<strong> (Minutes)</strong>";
+			var ave_reply_delay = document.createElement('h5');
+			ave_reply_delay.innerHTML = "<strong>Average Response Delay: </strong>"+Math.round(detailedInformation[x].ave)+"<strong> (Minutes)</strong>";
+			var max_reply_delay = document.createElement('h5');
+			max_reply_delay.innerHTML = "<strong>Slowest Response Delay: </strong>"+Math.round(detailedInformation[x].max)+"<strong> (Minutes)</strong>";
+			var deviation = document.createElement('h5');
+			deviation.innerHTML = "<strong>Standard Deviation: </strong>"+Math.round(detailedInformation[x].deviation)+"<strong> (Minutes)</strong>";
 
-			panel_body.appendChild(lmessage);
-			panel_body.appendChild(lmessage_timestamp);
-			panel_body.appendChild(lreply);
-			panel_body.appendChild(lreply_timestamp);
-			panel_body.appendChild(areply);
-			panel_body.appendChild(lpercent_reply);
+			panel_body.appendChild(min_reply_delay);
+			panel_body.appendChild(ave_reply_delay);
+			panel_body.appendChild(max_reply_delay);
+			panel_body.appendChild(deviation);
 
 			panel_title.appendChild(toggle_link);
 			panel_heading.appendChild(panel_title);
