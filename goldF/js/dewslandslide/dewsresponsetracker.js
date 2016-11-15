@@ -12,6 +12,8 @@ $(document).ready(function(e) {
 	var resolution = [];
 	var detailedInformation = [];
 	var data = {};
+	var data_resolution = ['hh','dd','ww','mm'];
+	var total_message_and_response = [];
 
     $(document).ajaxStart(function () {
     	$('#loading').modal('toggle');
@@ -505,6 +507,8 @@ $(document).ready(function(e) {
 		}
 
 		var sent = 0;
+		var total_sent_message = 0;
+		var total_response_message = 0;
 		var replies = 0;
 		var reply_stats = 0;
 		var tempDay = "";
@@ -514,12 +518,15 @@ $(document).ready(function(e) {
 		var lmtimestamp = "";
 		var lreply = "";
 		var lrtimestamp = "";
+		var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
 			sent = 0;
 			replies = 0;
 			reply_stats = 0;
+			total_sent_message = 0;
+			total_response_message = 0;
 			tempDay = "";
 			data_hc = [];
 
@@ -552,10 +559,22 @@ $(document).ready(function(e) {
 
 					} else {
 						tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]); // Daily for weekly -7 Days
+
+						// if (data_resolution[$('#data-resolution').val()-1] == 'ww') {
+						// 	var mm = end_dates[data[i].values[x].timestamp.substring(5,7)];
+						// 	tempDay = parseInt(tempDay)+7;
+						// 	console.log(Math.abs(parseInt(tempDay)-parseInt(mm)));
+						// 	var nm = end_dates[data[i].values[x].timestamp.substring(5,7)+1];
+						// 	debugger;
+							
+						// }
+
 						if (data[i].values[x].user == "You") {
 							sent++;
+							total_sent_message = total_sent_message+sent;
 						} else {
 							replies++;
+							total_response_message = total_response_message+replies;
 						}
 
 						if (replies > sent) {
@@ -624,13 +643,14 @@ $(document).ready(function(e) {
 							}
 						}
 					} else {
-
 						if (tempDay == data[i].values[x].timestamp.substring(resolution[0],resolution[1])) {
 
 							if (data[i].values[x].user == "You") {
 								sent++;
+								total_sent_message = total_sent_message+sent;
 							} else {
 								replies++;
+								total_response_message = total_response_message+replies;
 							}
 
 							if (replies > sent) {
@@ -648,11 +668,15 @@ $(document).ready(function(e) {
 							replies = 0;
 							reply_stats = 0;
 							tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]);
-
+							if (data_resolution[$('#data-resolution').val()-1] == 'ww') {
+								tempDay = parseInt(tempDay)+7;
+							}
 							if (data[i].values[x].user == "You") {
 								sent++;
+								total_sent_message = total_sent_message+sent;
 							} else {
 								replies++;
+								total_response_message = total_response_message+replies;
 							}
 
 							if ( replies > sent) {
@@ -677,6 +701,12 @@ $(document).ready(function(e) {
 				data: data_hc
 			};
 
+			mes_res = {
+				total_response: total_response_message,
+				total_message: total_sent_message
+			}
+
+			total_message_and_response.push(mes_res);
 			series_value.push(series_stats);
 		}
 	}
@@ -902,11 +932,17 @@ $(document).ready(function(e) {
 			max_reply_delay.innerHTML = "<strong>Slowest Response Delay: </strong>"+Math.round(detailedInformation[x].max)+"<strong> (Minutes)</strong>";
 			var deviation = document.createElement('h5');
 			deviation.innerHTML = "<strong>Standard Deviation: </strong>"+Math.round(detailedInformation[x].deviation)+"<strong> (Minutes)</strong>";
+			var total_res = document.createElement('h5');
+			total_res.innerHTML = "<strong>Total Response Count: </strong> "+total_message_and_response[x].total_response+" <strong> Message(s)</strong>";
+			var total_mes = document.createElement('h5');
+			total_mes.innerHTML = "<strong>Total Dynaslope Message Countt: </strong> "+total_message_and_response[x].total_message+" <strong> Message(s)</strong>";
 
 			panel_body.appendChild(min_reply_delay);
 			panel_body.appendChild(ave_reply_delay);
 			panel_body.appendChild(max_reply_delay);
 			panel_body.appendChild(deviation);
+			panel_body.appendChild(total_res);
+			panel_body.appendChild(total_mes);
 
 			panel_title.appendChild(toggle_link);
 			panel_heading.appendChild(panel_title);
@@ -921,10 +957,7 @@ $(document).ready(function(e) {
 
 	//Adjusts the Data resolution
 	$('#data-resolution').change(function(){
-		var data_resolution = ['hh','dd','ww','mm'];
 		resolution = [];
-		// console.log(data[i].values[x].timestamp.substring(5,7)); // Monthly
-		// console.log(data[i].values[x].timestamp.substring(11,13)); // Hourly
 		if (data_resolution[$('#data-resolution').val()-1] == "hh") {
 			resolution[0] = "11";
 			resolution[1] = "13";
@@ -932,8 +965,8 @@ $(document).ready(function(e) {
 			resolution[0] = "8";
 			resolution[1] = "11";
 		} else if (data_resolution[$('#data-resolution').val()-1] == "ww") {
-			resolution[0] = "";
-			resolution[1] = "";
+			resolution[0] = "8";
+			resolution[1] = "11";
 		} else if (data_resolution[$('#data-resolution').val()-1] == "mm"){
 			resolution[0] = "5";
 			resolution[1] = "7";
