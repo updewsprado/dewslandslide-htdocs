@@ -5,7 +5,6 @@ $(document).ready(function(e) {
 	var chatStamps = [];
 	var series_value = [];
 	var column_value = [];
-	var point_lbl_value = [];
 	var series_data = [];
 	var period_range = [];
 	var chart_category = [];
@@ -14,20 +13,21 @@ $(document).ready(function(e) {
 	var data = {};
 	var data_resolution = ['hh','dd','ww','mm'];
 	var total_message_and_response = [];
+	var groupedSiteFlagger = false;
 
-    $(document).ajaxStart(function () {
-    	$('#loading').modal('toggle');
-    });
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
 
-    $(document).ajaxStop(function () {
-    	$('#loading').modal('toggle');
-    });
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
 
 
-    $('#confirm-filter-btn').click(function(){
+	$('#confirm-filter-btn').click(function(){
 
-    	resetVariables();
-    	if ($('#category-selection').val() != null) {
+		resetVariables();
+		if ($('#category-selection').val() != null) {
 			data['filterKey'] = $('#filter-key').val();
 			data['category'] = $('#category-selection').val();
 			if ($('#period-selection').val() != null && $('#period-selection').val() != ""){
@@ -51,393 +51,395 @@ $(document).ready(function(e) {
 			}
 			// Minus the period on the current date
 			switch(data['period'].charAt(1)) {
-			    case "m":
-			        data['period'] = moment().subtract(data['period'].charAt(0),"months").format('YYYY-MM-DD HH:mm:ss');
-			        break;
-			    case "w":
-			        data['period'] = moment().subtract(7*data['period'].charAt(0),"days").format('YYYY-MM-DD HH:mm:ss');
-			        break;
-			    case "y":
-			        data['period'] = moment().subtract(1,"years").format('YYYY-MM-DD HH:mm:ss');
-			        break;
+				case "m":
+				data['period'] = moment().subtract(data['period'].charAt(0),"months").format('YYYY-MM-DD HH:mm:ss');
+				break;
+				case "w":
+				data['period'] = moment().subtract(7*data['period'].charAt(0),"days").format('YYYY-MM-DD HH:mm:ss');
+				break;
+				case "y":
+				data['period'] = moment().subtract(1,"years").format('YYYY-MM-DD HH:mm:ss');
+				break;
 			}
-    		if ($('#category-selection').val() == 'allsites') {
-    			getAnalyticsAllSites(data);
-	    	} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null){
-	    		getAnalyticsSite(data);
-	    	} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
-	    		getAnalyticsPerson(data);
-	    	} else {
-	    		alert('Invalid Request, Please recheck inputs');
-	    	}
-    	} else {
-    		alert('Invalid Request, Please recheck inputs');
-    	}
+			if ($('#category-selection').val() == 'allsites') {
+				getAnalyticsAllSites(data);
+			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null){
+				getAnalyticsSite(data);
+			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				getAnalyticsPerson(data);
+			} else {
+				alert('Invalid Request, Please recheck inputs');
+			}
+		} else {
+			alert('Invalid Request, Please recheck inputs');
+		}
 	});
 
 	// Analytics Section
 	function getAnalyticsPerson(data){
 		$.post( "../responsetracker/analyticsPerson", {person: JSON.stringify(data)})
-			.done(function(response) {
-				var data = JSON.parse(response);
-				sites = [];
-				for (var i = 0; i < Object.keys(data).length;i++){
-					chatStamps = [];
-					for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
-						chatStamps.push(data[Object.keys(data)[i]][x]);
-					}
-
-
-					sites.push({
-						number: Object.keys(data)[i],
-						values: chatStamps
-					});
+		.done(function(response) {
+			var data = JSON.parse(response);
+			sites = [];
+			for (var i = 0; i < Object.keys(data).length;i++){
+				chatStamps = [];
+				for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
+					chatStamps.push(data[Object.keys(data)[i]][x]);
 				}
 
-				series_data = analyzeNumberOfReplies(sites);
-				averagedelay_data = analyzeAverageDelayReply(sites);
-				titleAndCategoryConstructors();
 
-				Highcharts.setOptions({
-				  global: {
-				    useUTC: false
-				  }
+				sites.push({
+					number: Object.keys(data)[i],
+					values: chatStamps
 				});
-				changePanelResolution();
-				$('#reliability-chart-container').highcharts({
-		            chart: {
-		                zoomType: 'x'
-		            },
-			        title: {
-			            text: 'Percent of Reply for '+$('#filter-key').val(),
+			}
+
+			series_data = analyzeNumberOfReplies(sites);
+			averagedelay_data = analyzeAverageDelayReply(sites);
+			titleAndCategoryConstructors();
+
+			Highcharts.setOptions({
+				global: {
+					useUTC: false
+				}
+			});
+			changePanelResolution();
+			$('#reliability-chart-container').highcharts({
+				chart: {
+					zoomType: 'x'
+				},
+				title: {
+					text: 'Percent of Reply for '+$('#filter-key').val(),
 			            x: -20 //center
 			        },
 			        subtitle: {
-			            text: period_range['percentReply'],
-			            x: -20
+			        	text: period_range['percentReply'],
+			        	x: -20
 			        },
 			        xAxis: {
-		            	type: 'datetime'
+			        	type: 'datetime'
 			        },
 			        yAxis: {
-			            title: {
-			                text: '% of Replies'
-			            },
-			            plotLines: [{
-			                value: 0,
-			                width: 1,
-			                color: '#808080'
-			            }]
+			        	title: {
+			        		text: '% of Replies'
+			        	},
+			        	plotLines: [{
+			        		value: 0,
+			        		width: 1,
+			        		color: '#808080'
+			        	}]
 			        },
 			        tooltip: {
-			            valueSuffix: '%'
+			        	valueSuffix: '%'
 			        },
 			        legend: {
-			            layout: 'vertical',
-			            align: 'right',
-			            verticalAlign: 'middle',
-			            borderWidth: 0
+			        	layout: 'vertical',
+			        	align: 'right',
+			        	verticalAlign: 'middle',
+			        	borderWidth: 0
 			        },
 			        series: series_value
 			    });
 
-			     $('#average-delay-container').highcharts({
-			        chart: {
-			            type: 'column'
-			        },
-			        title: {
-			            text: 'Average delay of Reply'
-			        },
-			        subtitle: {
-			            text: period_range['percentReply']
-			        },
-			        xAxis: {
-			            type: 'category'
-			        },
-			        yAxis: {
-			            title: {
-			                text: 'Total time delay'
-			            }
-			        },
-			        legend: {
-			            enabled: false
-			        },
-			        plotOptions: {
-			            series: {
-			                borderWidth: 0,
-			                dataLabels: {
-			                    enabled: true,
-			                    format: '{point.y:.0f} Minutes'
-			                }
-			            }
-			        },
+			$('#average-delay-container').highcharts({
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: 'Average delay of Reply'
+				},
+				subtitle: {
+					text: period_range['percentReply']
+				},
+				xAxis: {
+					type: 'category'
+				},
+				yAxis: {
+					title: {
+						text: 'Total time delay'
+					}
+				},
+				legend: {
+					enabled: false
+				},
+				plotOptions: {
+					series: {
+						borderWidth: 0,
+						dataLabels: {
+							enabled: true,
+							format: '{point.y:.0f} Minutes'
+						}
+					}
+				},
 
-			        tooltip: {
-			            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-			            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
-			        },
+				tooltip: {
+					headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+					pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+				},
 
-			        series: [{
-			            name: 'Time',
-			            colorByPoint: true,
-			            data: column_value
-			        }]
+				series: [{
+					name: 'Time',
+					colorByPoint: true,
+					data: column_value
+				}]
 
-			    });
-	    	//Generates Detailed information for each Node
-    		detailedInfoGenerator();
 			});
+	    	//Generates Detailed information for each Node
+	    	detailedInfoGenerator();
+	    });
 	}
 
 	function getAnalyticsAllSites(data){
 		$.post( "../responsetracker/analyticsAllSites", {allsites: JSON.stringify(data)})
-			.done(function(response) {
-				var data = JSON.parse(response);
-				sites = [];
-				var obj = data[0];
+		.done(function(response) {
+			var data = JSON.parse(response);
+			sites = [];
+			var obj = data[0];
 
-				for (var i=0;i < Object.keys(obj).length;i++){
-					chatStamps = [];
-					for (var x = 0; x < obj[Object.keys(obj)[i]].length; x++){
-						chatStamps.push(obj[Object.keys(obj)[i]][x]);
-					}
-					sites.push({
-						number: Object.keys(obj)[i],
-						values: chatStamps
-					})
-					// console.log(obj[Object.keys(obj)[i]]);
+			for (var i=0;i < Object.keys(obj).length;i++){
+				chatStamps = [];
+				for (var x = 0; x < obj[Object.keys(obj)[i]].length; x++){
+					chatStamps.push(obj[Object.keys(obj)[i]][x]);
 				}
+				sites.push({
+					number: Object.keys(obj)[i],
+					values: chatStamps
+				})
+							// console.log(obj[Object.keys(obj)[i]]);
+						}
 
-				series_data = analyzeNumberOfReplies(sites);
-				averagedelay_data = analyzeAverageDelayReply(sites);
-				titleAndCategoryConstructors();
+						series_data = analyzeNumberOfRepliesAllSites(sites);
+						averagedelay_data = analyzeAverageDelayReply(sites);
+						titleAndCategoryConstructors();
 
-				Highcharts.setOptions({
-				  global: {
-				    useUTC: false
-				  }
-				});
-		    	//Generates Detailed information for each Node
-	    		detailedInfoGenerator();
-				changePanelResolution();
-				$('#reliability-chart-container').highcharts({
-		            chart: {
-		                zoomType: 'x'
-		            },
-			        title: {
-			            text: 'Percent of Reply for All Sites',
-			            x: -20 //center
-			        },
-			        subtitle: {
-			            text: period_range['percentReply'],
-			            x: -20
-			        },
-			        xAxis: {
-		            	type: 'datetime'
-			        },
-			        yAxis: {
-			            title: {
-			                text: '% of Replies'
-			            },
-			            plotLines: [{
-			                value: 0,
-			                width: 1,
-			                color: '#808080'
-			            }]
-			        },
-			        tooltip: {
-			            valueSuffix: '%'
-			        },
-			        legend: {
-			            layout: 'vertical',
-			            align: 'right',
-			            verticalAlign: 'middle',
-			            borderWidth: 0
-			        },
-			        series: series_value
-			    });
+						Highcharts.setOptions({
+							global: {
+								useUTC: false
+							}
+						});
+				    	//Generates Detailed information for each Node
+				    	detailedInfoGenerator();
+				    	changePanelResolution();
+				    	$('#reliability-chart-container').highcharts({
+				    		chart: {
+				    			zoomType: 'x'
+				    		},
+				    		title: {
+				    			text: 'Percent of Reply for All Sites',
+					            x: -20 //center
+					        },
+					        subtitle: {
+					        	text: period_range['percentReply'],
+					        	x: -20
+					        },
+					        xAxis: {
+					        	type: 'datetime'
+					        },
+					        yAxis: {
+					        	title: {
+					        		text: '% of Replies'
+					        	},
+					        	plotLines: [{
+					        		value: 0,
+					        		width: 1,
+					        		color: '#808080'
+					        	}]
+					        },
+					        tooltip: {
+					        	valueSuffix: '%'
+					        },
+					        legend: {
+					        	layout: 'vertical',
+					        	align: 'right',
+					        	verticalAlign: 'middle',
+					        	borderWidth: 0
+					        },
+					        series: series_value
+					    });
 
-			     $('#average-delay-container').highcharts({
-			        chart: {
-			            type: 'column'
-			        },
-			        title: {
-			            text: 'Average delay of Reply'
-			        },
-			        subtitle: {
-			            text: period_range['percentReply']
-			        },
-			        xAxis: {
-			            type: 'category'
-			        },
-			        yAxis: {
-			            title: {
-			                text: 'Total time delay'
-			            }
-			        },
-			        legend: {
-			            enabled: false
-			        },
-			        plotOptions: {
-			            series: {
-			                borderWidth: 0,
-			                dataLabels: {
-			                    enabled: true,
-			                    format: '{point.y:.0f} Minutes'
-			                }
-			            }
-			        },
+				    	$('#average-delay-container').highcharts({
+				    		chart: {
+				    			type: 'column'
+				    		},
+				    		title: {
+				    			text: 'Average delay of Reply'
+				    		},
+				    		subtitle: {
+				    			text: period_range['percentReply']
+				    		},
+				    		xAxis: {
+				    			type: 'category'
+				    		},
+				    		yAxis: {
+				    			title: {
+				    				text: 'Total time delay'
+				    			}
+				    		},
+				    		legend: {
+				    			enabled: false
+				    		},
+				    		plotOptions: {
+				    			series: {
+				    				borderWidth: 0,
+				    				dataLabels: {
+				    					enabled: true,
+				    					format: '{point.y:.0f} Minutes'
+				    				}
+				    			}
+				    		},
 
-			        tooltip: {
-			            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-			            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
-			        },
+				    		tooltip: {
+				    			headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+				    			pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+				    		},
 
-			        series: [{
-			            name: 'Time',
-			            colorByPoint: true,
-			            data: column_value
-			        }]
+				    		series: [{
+				    			name: 'Time',
+				    			colorByPoint: true,
+				    			data: column_value
+				    		}]
 
-			    });
-		});
+				    	});
+				    });
 	}
 
 	function getAnalyticsSite(data){
 		$.post( "../responsetracker/analyticsSite", {site: JSON.stringify(data)})
-			.done(function(response) {
-				var data = JSON.parse(response);
-				// Converts object to Array
-				persons = [];
-				for (var i = 0; i < Object.keys(data).length;i++){
-					chatStamps = [];
-					for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
-						chatStamps.push(data[Object.keys(data)[i]][x]);
-					}
+		.done(function(response) {
+			var data = JSON.parse(response);
+						// Converts object to Array
+						persons = [];
+						for (var i = 0; i < Object.keys(data).length;i++){
+							chatStamps = [];
+							for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
+								chatStamps.push(data[Object.keys(data)[i]][x]);
+							}
 
 
-					persons.push({
-						number: Object.keys(data)[i],
-						values: chatStamps
-					});
-				}
+							persons.push({
+								number: Object.keys(data)[i],
+								values: chatStamps
+							});
+						}
 
-				series_data = analyzeNumberOfReplies(persons);
-				averagedelay_data = analyzeAverageDelayReply(persons);
-				titleAndCategoryConstructors();
-				// console.log(series_value);
+						series_data = analyzeNumberOfReplies(persons);
+						averagedelay_data = analyzeAverageDelayReply(persons)
+						var replyAsgroup = analyzeReplyGroupPerSite(persons);
+						
 
-				Highcharts.setOptions({
-				  global: {
-				    useUTC: false
-				  }
-				});
+						titleAndCategoryConstructors();
 
-				changePanelResolution();
-				$('#reliability-chart-container').highcharts({
-		            chart: {
-		                zoomType: 'x'
-		            },
-			        title: {
-			            text: 'Percent of Reply for '+$('#filter-key').val(),
-			            x: -20 //center
-			        },
-			        subtitle: {
-			            text: period_range['percentReply'],
-			            x: -20
-			        },
-			        xAxis: {
-		            	type: 'datetime'
-			        },
-			        yAxis: {
-			            title: {
-			                text: '% of Replies'
-			            },
-			            plotLines: [{
-			                value: 0,
-			                width: 1,
-			                color: '#808080'
-			            }]
-			        },
-			        tooltip: {
-			            valueSuffix: '%'
-			        },
-			        legend: {
-			            layout: 'vertical',
-			            align: 'right',
-			            verticalAlign: 'middle',
-			            borderWidth: 0
-			        },
-			        series: series_value
-			    });
+						Highcharts.setOptions({
+							global: {
+								useUTC: false
+							}
+						});
 
-			    $('#average-delay-container').highcharts({
-		        chart: {
-		            type: 'column'
-		        },
-		        title: {
-		            text: 'Average delay of Reply'
-		        },
-		        subtitle: {
-		            text: period_range['percentReply']
-		        },
-		        xAxis: {
-		            type: 'category'
-		        },
-		        yAxis: {
-		            title: {
-		                text: 'Total time delay'
-		            }
-		        },
-		        legend: {
-		            enabled: false
-		        },
-		        plotOptions: {
-		            series: {
-		                borderWidth: 0,
-		                dataLabels: {
-		                    enabled: true,
-		                    format: '{point.y:.0f} Minutes'
-		                }
-		            }
-		        },
+						changePanelResolution();
+						$('#reliability-chart-container').highcharts({
+							chart: {
+								zoomType: 'x'
+							},
+							title: {
+								text: 'Percent of Reply for '+$('#filter-key').val(),
+					            x: -20 //center
+					        },
+					        subtitle: {
+					        	text: period_range['percentReply'],
+					        	x: -20
+					        },
+					        xAxis: {
+					        	type: 'datetime'
+					        },
+					        yAxis: {
+					        	title: {
+					        		text: '% of Replies'
+					        	},
+					        	plotLines: [{
+					        		value: 0,
+					        		width: 1,
+					        		color: '#808080'
+					        	}]
+					        },
+					        tooltip: {
+					        	valueSuffix: '%'
+					        },
+					        legend: {
+					        	layout: 'vertical',
+					        	align: 'right',
+					        	verticalAlign: 'middle',
+					        	borderWidth: 0
+					        },
+					        series: series_value
+					    });
 
-		        tooltip: {
-		            headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-		            pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
-		        },
+						$('#average-delay-container').highcharts({
+							chart: {
+								type: 'column'
+							},
+							title: {
+								text: 'Average delay of Reply'
+							},
+							subtitle: {
+								text: period_range['percentReply']
+							},
+							xAxis: {
+								type: 'category'
+							},
+							yAxis: {
+								title: {
+									text: 'Total time delay'
+								}
+							},
+							legend: {
+								enabled: false
+							},
+							plotOptions: {
+								series: {
+									borderWidth: 0,
+									dataLabels: {
+										enabled: true,
+										format: '{point.y:.0f} Minutes'
+									}
+								}
+							},
 
-		        series: [{
-		            name: 'Time',
-		            colorByPoint: true,
-		            data: column_value
-		        }]
+							tooltip: {
+								headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+								pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+							},
+
+							series: [{
+								name: 'Time',
+								colorByPoint: true,
+								data: column_value
+							}]
+						});
+		    	//Generates Detailed information for each Node
+		    	detailedInfoGenerator();
 		    });
-    	//Generates Detailed information for each Node
-		detailedInfoGenerator();
-		});
 	}
 
 	$('#category-selection').on('change',function(){
-		// Disables the filter key input if the selected category is All sites
-		if ($('#category-selection').val() == "allsites") {
-			$("#filter-key").prop('disabled', true);
-			$('#filter-key').val("");
-		} else {
-			$("#filter-key").prop('disabled', false);
-			$.get( "../responsetracker/get"+$('#category-selection').val(), function( data ) {
-				var dataFetched = {};
-				dataFetched = JSON.parse(data);
-				if (dataFetched.type == "person") {
-					datalistPredictionPerson(dataFetched.data);
-				} else if (dataFetched.type == "site") {
-					datalistPredictionSite(dataFetched.data);
-				} else {
-					console.log('Invalid Request');
-				}
-			});
-		}
-	})
+			// Disables the filter key input if the selected category is All sites
+			if ($('#category-selection').val() == "allsites") {
+				$("#filter-key").prop('disabled', true);
+				$('#filter-key').val("");
+			} else {
+				$("#filter-key").prop('disabled', false);
+				$.get( "../responsetracker/get"+$('#category-selection').val(), function( data ) {
+					var dataFetched = {};
+					dataFetched = JSON.parse(data);
+					if (dataFetched.type == "person") {
+						datalistPredictionPerson(dataFetched.data);
+					} else if (dataFetched.type == "site") {
+						datalistPredictionSite(dataFetched.data);
+					} else {
+						console.log('Invalid Request');
+					}
+				});
+			}
+		})
 
 	function datalistPredictionPerson(data) {
 		var datalist = document.getElementById('filterlist');
@@ -475,26 +477,137 @@ $(document).ready(function(e) {
 		persons = [];
 		chatStamps = [];
 		series_value = [];
+		column_value = [];
 		series_data = [];
 		period_range = [];
 		chart_category = [];
+		total_message_and_response = [];
+		detailedInformation = [];
 		data = {};
 	}
 
 	function changePanelResolution(){
-    	if ($('#filter-key').val() == ""){
-    		$("#reliability-pane").attr('class', 'col-md-12');
-    		$("#adp-pane").attr('class', 'col-md-12');
-    		$("#detailed-pane").attr('class', 'col-md-12');
-    		$(".panel-group").attr('class', 'panel-group col-md-4');
+		if ($('#filter-key').val() == ""){
+			$("#reliability-pane").attr('class', 'col-md-12');
+			$("#adp-pane").attr('class', 'col-md-12');
+			$("#detailed-pane").attr('class', 'col-md-12');
+			$(".panel-group").attr('class', 'panel-group col-md-4');
 
-    	} else {
+		} else {
 			var chart = $('#reliability-chart-container').highcharts();
-    		$("#reliability-pane").attr('class', 'col-md-8');
-    		$("#adp-pane").attr('class', 'col-md-6');
-    		$("#detailed-pane").attr('class', 'col-md-6');
-    		$(".panel-group").attr('class', 'panel-group');
-    	}
+			$("#reliability-pane").attr('class', 'col-md-8');
+			$("#adp-pane").attr('class', 'col-md-6');
+			$("#detailed-pane").attr('class', 'col-md-6');
+			$(".panel-group").attr('class', 'panel-group');
+		}
+	}
+
+	function analyzeNumberOfRepliesAllSites(data,resolution){
+		var timestamp_users = [];
+		var reconstructed_data = [];
+		var temp_date = "";
+		var sent = 0;
+		var reply = 0;
+		var data_hc = [];
+		var total_sent_message = 0;
+		var total_response_message = 0;
+		//Check if resolution is null
+		//If null the resolution will be per day.
+		if (typeof(resolution)==='undefined'){
+			var resolution = [];
+			resolution[0] = '8';
+			resolution[1] = '11';
+		}
+
+		for (var x = 0; x < data.length;x++){
+			for (var i = 0; i < data[x].values.length;i++){
+				for (var j =  0; j < data[x].values[i].length;j++) {
+					timestamp_users.push({
+						timestamp: data[x].values[i][j].timestamp,
+						user: data[x].values[i][j].user
+					});
+				}
+			}
+			reconstructed_data.push({
+				number: data[x].number,
+				data: timestamp_users
+			});
+			timestamp_users = [];
+		}
+		sortForAllSite(reconstructed_data);
+		for (var x = 0; x < reconstructed_data.length; x++){
+			for (var i = 0; i < reconstructed_data[x].data.length; i++){
+				if (temp_date == "" || temp_date == null) {
+					temp_date = reconstructed_data[x].data[i].timestamp.substring(resolution[0],resolution[1]);
+					if (reconstructed_data[x].data[i].user == 'You') {
+						sent++;
+					} else {
+						reply++;
+					}
+				} else {
+					if (temp_date == reconstructed_data[x].data[i].timestamp.substring(resolution[0],resolution[1])){
+						if (reconstructed_data[x].data[i].user == 'You'){
+							sent++;
+						} else {
+							reply++;
+						}
+					} else {
+
+						var stats;
+						if (reply > sent || sent == 0){
+							stats = 100;
+						} else {
+							stats = (reply/sent)*100;
+						}
+						if (i != 0) {
+							var store_dates = [moment(reconstructed_data[x].data[i-1].timestamp).valueOf(),Math.round(stats)];
+						} else {
+							var store_dates = [moment(reconstructed_data[x].data[i].timestamp).valueOf(),Math.round(stats)];
+						}
+						total_sent_message = total_sent_message + sent;
+						total_response_message = total_response_message + reply;
+						data_hc.push(store_dates);
+						sent = 0;
+						reply = 0;
+						temp_date = reconstructed_data[x].data[i].timestamp.substring(resolution[0],resolution[1]);
+						if (reconstructed_data[x].data[i].user == 'You') {
+							sent++;
+						} else {
+							reply++;
+						}
+					}
+				}
+			}
+			series_value.push({
+				name: reconstructed_data[x].number,
+				data: data_hc
+			});
+			data_hc = [];
+			mes_res = {
+				total_response: total_response_message,
+				total_message: total_sent_message
+			}
+			total_message_and_response.push(mes_res);
+			total_response_message = 0;
+			total_sent_message = 0;
+		}
+	}
+
+	function sortForAllSite(dates){
+		var swapped;
+		do {
+			swapped = false;
+			for (var x = 0; x < dates.length; x++){
+				for (var i=0; i < dates[x].data.length-1; i++) {
+					if (dates[x].data[i].timestamp > dates[x].data[i+1].timestamp) {
+						var temp = dates[x].data[i];
+						dates[x].data[i] = dates[x].data[i+1];
+						dates[x].data[i+1] = temp;
+						swapped = true;
+					}
+				}
+			}
+		} while (swapped);
 	}
 
 	function analyzeNumberOfReplies(data,resolution){
@@ -532,137 +645,36 @@ $(document).ready(function(e) {
 
 			for (var x = 0;x<data[i].values.length;x++){
 				if (tempDay == "" || tempDay == null){
-					// Check if the Key is empty
-					// If empty the category is for all sites
-					if ($('#filter-key').val() == "") {
-						for (var o = 0; o < data[i].values[x].length;o++){
-							tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]); // Daily
-							if (data[i].values[x][o].user == "You") {
-								sent++;
-							} else {
-								replies++;
-							}
+					tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]); // Daily for weekly -7 Days
 
-							if (replies > sent) {
-								// If the Replies are greater than the sent messages
-								// it is automatically 100%
-								reply_stats = 100;
-							} else {
-								reply_stats = (replies / sent)*100;
-							}
-							if (data[i].values[x].length == 1) {
-								reply_stats_with_dates = [moment(data[i].values[x][0].timestamp.substring(0,9)).valueOf(),reply_stats];
-								data_hc.push(reply_stats_with_dates);
-								reply_stats = 0;
-							}
-						}
-
+					if (data[i].values[x].user == "You") {
+						sent++;
 					} else {
-						tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]); // Daily for weekly -7 Days
+						replies++;
+					}
 
-						// if (data_resolution[$('#data-resolution').val()-1] == 'ww') {
-						// 	var mm = end_dates[data[i].values[x].timestamp.substring(5,7)];
-						// 	tempDay = parseInt(tempDay)+7;
-						// 	console.log(Math.abs(parseInt(tempDay)-parseInt(mm)));
-						// 	var nm = end_dates[data[i].values[x].timestamp.substring(5,7)+1];
-						// 	debugger;
-							
-						// }
+				} else {
+
+					if (tempDay == data[i].values[x].timestamp.substring(resolution[0],resolution[1])) {
 
 						if (data[i].values[x].user == "You") {
 							sent++;
-							total_sent_message = total_sent_message+sent;
 						} else {
 							replies++;
-							total_response_message = total_response_message+replies;
 						}
 
+					} else {
 						if (replies > sent) {
 							// If the Replies are greater than the sent messages
 							// it is automatically 100%
 							reply_stats = 100;
 						} else {
-							reply_stats = (replies / sent)*100;
+							reply_stats = (reply_stats + ((replies / sent)*100))/2;
 						}
-						
-						if (data[i].values.length == 1) {
-							reply_stats_with_dates = [moment(data[i].values[x].timestamp.substring(0,9)).valueOf(),reply_stats];
-							data_hc.push(reply_stats_with_dates);
-							reply_stats = 0;
-						}
-					}
 
-				} else {
-					// Check if the Key is empty
-					// If empty the category is for all sites
-
-					if ($('#filter-key').val() == "") {
-						for (var o = 0; o < data[i].values[x].length;o++){
-							if (tempDay == data[i].values[x][o].timestamp.substring(resolution[0],resolution[1])) {
-
-								if (data[i].values[x][o].user == "You") {
-									sent++;
-								} else {
-									replies++;
-								}
-
-								if (replies > sent) {
-									// If the Replies are greater than the sent messages
-									// it is automatically 100%
-									reply_stats = (reply_stats + 100)/2;
-								} else {
-									reply_stats = (reply_stats + ((replies / sent)*100))/2;
-								}
-
-							} else {
-								if (o != 0){
-									timestamp_holder = moment(data[i].values[x][o-1].timestamp).valueOf()
-								} else {
-									timestamp_holder = moment(data[i].values[x][o].timestamp).valueOf()
-								}
-								reply_stats_with_dates = [moment(data[i].values[x][o].timestamp).valueOf(),reply_stats];
-								data_hc.push(reply_stats_with_dates);
-								sent = 0;
-								replies = 0;
-								reply_stats = 0;
-								tempDay = data[i].values[x][o].timestamp.substring(resolution[0],resolution[1]);
-
-								if (data[i].values[x][o].user == "You") {
-									sent++;
-								} else {
-									replies++;
-								}
-
-								if ( replies > sent) {
-								// If the Replies are greater than the sent messages
-								// it is automatically 100%
-									reply_stats = 100;
-								} else {
-									reply_stats = (replies / sent)*100;	
-								}
-							}
-						}
-					} else {
-						if (tempDay == data[i].values[x].timestamp.substring(resolution[0],resolution[1])) {
-
-							if (data[i].values[x].user == "You") {
-								sent++;
-								total_sent_message = total_sent_message+sent;
-							} else {
-								replies++;
-								total_response_message = total_response_message+replies;
-							}
-
-							if (replies > sent) {
-								// If the Replies are greater than the sent messages
-								// it is automatically 100%
-								reply_stats = (reply_stats + 100)/2;
-							} else {
-								reply_stats = (reply_stats + ((replies / sent)*100))/2;
-							}
-
-						} else {
 							reply_stats_with_dates = [moment(data[i].values[x-1].timestamp).valueOf(),reply_stats];
+							total_sent_message = total_sent_message+sent;
+							total_response_message = total_response_message+replies;
 							data_hc.push(reply_stats_with_dates);
 							sent = 0;
 							replies = 0;
@@ -673,26 +685,15 @@ $(document).ready(function(e) {
 							}
 							if (data[i].values[x].user == "You") {
 								sent++;
-								total_sent_message = total_sent_message+sent;
 							} else {
 								replies++;
-								total_response_message = total_response_message+replies;
-							}
-
-							if ( replies > sent) {
-							// If the Replies are greater than the sent messages
-							// it is automatically 100%
-								reply_stats = 100;
-							} else {
-								reply_stats = (replies / sent)*100;	
 							}
 						}
 					}
 				}
-			}
 
-			var name_hc = data[i].number;
-			
+				var name_hc = data[i].number;
+
 			// Sort the dates Asc order
 			doSortDates(data_hc);
 
@@ -711,8 +712,113 @@ $(document).ready(function(e) {
 		}
 	}
 
+	function DoSortDateForGroupSite(dates){
+		var swapped;
+		do {
+			swapped = false;
+			for (var i=0; i < dates.length-1; i++) {
+				if (dates[i].timestamp > dates[i+1].timestamp) {
+					var temp = dates[i];
+					dates[i] = dates[i+1];
+					dates[i+1] = temp;
+					swapped = true;
+				}
+			}
+		} while (swapped);
+	}
+
+	function analyzeReplyGroupPerSite(data,resolution){
+		var test_reconstructed_data = [];
+		var data_hc = [];
+		var sent = 0;
+		var reply = 0;
+		var temp_date = "";
+		var total_sent_message = 0;
+		var total_response_message = 0;
+		if (typeof(resolution)==='undefined'){
+			var resolution = [];
+			resolution[0] = '8';
+			resolution[1] = '11';
+		}
+
+		for (var i = 0; i < data.length;i++){
+			for (var x = 0; x < data[i].values.length;x++){
+				test_reconstructed_data.push({
+					user: data[i].values[x].user,
+					timestamp: data[i].values[x].timestamp
+				});
+			}
+		}
+
+		DoSortDateForGroupSite(test_reconstructed_data);
+		groupedSiteFlagger = true;
+		analyzeAverageDelayReply([{
+			number: $('#filter-key').val(),
+			values: test_reconstructed_data
+		}]);
+		for (var x = 0; x < test_reconstructed_data.length;x++){
+
+			if (temp_date == "" || temp_date == null) {
+				temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
+				// debugger;
+				if ( test_reconstructed_data[x].user == 'You'){
+					sent++;
+				} else {
+					reply++;
+				}
+			} else {
+				if (temp_date == test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1])) {
+					if ( test_reconstructed_data[x].user == 'You'){
+						sent++;
+					} else {
+						reply++;
+					}
+				} else {
+					var stats;
+					if (reply > sent || sent == 0){
+						stats = 100;
+					} else {
+						stats = (reply/sent)*100;
+					}
+					if (x != 0) {
+						var store_dates = [moment(test_reconstructed_data[x-1].timestamp).valueOf(),Math.round(stats)];
+					} else {
+						var store_dates = [moment(test_reconstructed_data[x].timestamp).valueOf(),Math.round(stats)];
+					}
+					data_hc.push(store_dates);
+					total_sent_message = total_sent_message + sent;
+					total_response_message = total_response_message + reply;
+					sent = 0;
+					reply = 0;
+					temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
+					if ( test_reconstructed_data[x].user == 'You'){
+						sent++;
+					} else {
+						reply++;
+					}
+				}
+			}
+		}
+
+		series_value.push({
+			name: $('#filter-key').val(),
+			data: data_hc
+		});
+
+		mes_res = {
+			total_response: total_response_message,
+			total_message: total_sent_message
+		}
+
+		total_message_and_response.push(mes_res);
+
+		groupedSiteFlagger = false;
+	}
+
 	function analyzeAverageDelayReply(data){
-		column_value = [];
+		if (groupedSiteFlagger == false){
+			column_value = [];
+		}
 		for (var i=0;i<data.length;i++){
 			var chatterbox_date = "";
 			var sender_date = "";
@@ -789,7 +895,7 @@ $(document).ready(function(e) {
 				// sorts the array
 				var second = intArray.sort(function(a,b){return b-a});
 				uniqueArray = second.filter(function(item, pos) {
-				    return second.indexOf(item) == pos;
+					return second.indexOf(item) == pos;
 				})
 				minimum = uniqueArray[uniqueArray.length-2];
 			} else if (minimum == Infinity) {
@@ -836,9 +942,7 @@ $(document).ready(function(e) {
 				ave: tot,
 				max: maximum,
 				deviation: standard_deviation
-			})
-
-			// console.log(detailedInformation);
+			});
 
 			tot = 0;
 			date_arr = [];
@@ -849,48 +953,48 @@ $(document).ready(function(e) {
 
 	function getTimeFromMins(mins) {
 		MINS_PER_YEAR = 24 * 365 * 60
-	    MINS_PER_MONTH = 24 * 30 * 60
-	    MINS_PER_WEEK = 24 * 7 * 60
-	    MINS_PER_DAY = 24 * 60
-	    MINS_PER_HOUR = 60
-	    minutes = mins;
-	    years = Math.floor(minutes / MINS_PER_YEAR);
-	    minutes = minutes - years * MINS_PER_YEAR;
-	    months = Math.floor(minutes / MINS_PER_MONTH);
-	    minutes = minutes - months * MINS_PER_MONTH;
-	    weeks = Math.floor(minutes / MINS_PER_WEEK);
-	    minutes = minutes - weeks * MINS_PER_WEEK;
-	    days = Math.floor(minutes / MINS_PER_DAY);
-	    minutes = minutes - days * MINS_PER_DAY;
-	    hours = Math.floor(minutes / MINS_PER_HOUR);
-	    minutes = minutes % MINS_PER_HOUR;
-	    return years + " year(s) " + months + " month(s) " + weeks + " week(s) " + days + " day(s) "+ hours + " hour(s) " + Math.round(minutes) + " minute(s)"
+		MINS_PER_MONTH = 24 * 30 * 60
+		MINS_PER_WEEK = 24 * 7 * 60
+		MINS_PER_DAY = 24 * 60
+		MINS_PER_HOUR = 60
+		minutes = mins;
+		years = Math.floor(minutes / MINS_PER_YEAR);
+		minutes = minutes - years * MINS_PER_YEAR;
+		months = Math.floor(minutes / MINS_PER_MONTH);
+		minutes = minutes - months * MINS_PER_MONTH;
+		weeks = Math.floor(minutes / MINS_PER_WEEK);
+		minutes = minutes - weeks * MINS_PER_WEEK;
+		days = Math.floor(minutes / MINS_PER_DAY);
+		minutes = minutes - days * MINS_PER_DAY;
+		hours = Math.floor(minutes / MINS_PER_HOUR);
+		minutes = minutes % MINS_PER_HOUR;
+		return years + " year(s) " + months + " month(s) " + weeks + " week(s) " + days + " day(s) "+ hours + " hour(s) " + Math.round(minutes) + " minute(s)"
 	}
 
 	function doSortDates(dates){
 		var swapped;
-	    do {
-	        swapped = false;
-	        for (var i=0; i < dates.length-1; i++) {
-	            if (dates[i][0] > dates[i+1][0]) {
-	                var temp = dates[i][0];
-	                dates[i][0] = dates[i+1][0];
-	                dates[i+1][0] = temp;
-	                swapped = true;
-	            }
-	        }
-	    } while (swapped);
+		do {
+			swapped = false;
+			for (var i=0; i < dates.length-1; i++) {
+				if (dates[i][0] > dates[i+1][0]) {
+					var temp = dates[i][0];
+					dates[i][0] = dates[i+1][0];
+					dates[i+1][0] = temp;
+					swapped = true;
+				}
+			}
+		} while (swapped);
 	}
 
 	function titleAndCategoryConstructors(){
 		var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-						'August', 'September', 'October', 'November', 'December'];
+		'August', 'September', 'October', 'November', 'December'];
 		var date_start = months[data['period'].substring(5,7)-1];
 		var date_end = months[data['current_date'].substring(5,7)-1];
 		period_range['percentReply'] = "Percent of Reply from "+date_start+" "+data['period'].substring(8,11)+" "+data['period'].substring(0,4) +
-										" to "+date_end+" "+data['current_date'].substring(8,11)+" "+data['current_date'].substring(0,4);
+		" to "+date_end+" "+data['current_date'].substring(8,11)+" "+data['current_date'].substring(0,4);
 		period_range['averageDelay'] = "Average Delay of Reply from "+date_start+" "+data['period'].substring(8,11)+" "+data['period'].substring(0,4) +
-										" to "+date_end+" "+data['current_date'].substring(8,11)+" "+data['current_date'].substring(0,4);
+		" to "+date_end+" "+data['current_date'].substring(8,11)+" "+data['current_date'].substring(0,4);
 	}
 	// End of Analytics Section
 
@@ -935,7 +1039,7 @@ $(document).ready(function(e) {
 			var total_res = document.createElement('h5');
 			total_res.innerHTML = "<strong>Total Response Count: </strong> "+total_message_and_response[x].total_response+" <strong> Message(s)</strong>";
 			var total_mes = document.createElement('h5');
-			total_mes.innerHTML = "<strong>Total Dynaslope Message Countt: </strong> "+total_message_and_response[x].total_message+" <strong> Message(s)</strong>";
+			total_mes.innerHTML = "<strong>Total Dynaslope Message Count: </strong> "+total_message_and_response[x].total_message+" <strong> Message(s)</strong>";
 
 			panel_body.appendChild(min_reply_delay);
 			panel_body.appendChild(ave_reply_delay);
@@ -953,7 +1057,6 @@ $(document).ready(function(e) {
 			detail_info_container.appendChild(panel_group); 
 		}
 	}
-	//End of Detailed Info Section
 
 	//Adjusts the Data resolution
 	$('#data-resolution').change(function(){
@@ -974,52 +1077,52 @@ $(document).ready(function(e) {
 			console.log("Invalid Request");
 		}
 		series_value = [];
- 		if ($('#category-selection').val() == "allsites"){
- 			analyticsChartAllSite(sites,resolution);
- 		} else if ($('#category-selection').val() == "site"){
-	 		analyticsChartSite(persons,resolution);
- 		} else if ($('#category-selection').val() == "person"){
- 			analyticsChartPerson(sites,resolution);
- 		} else {
- 			console.log('Invalid Request');
- 		}
+		if ($('#category-selection').val() == "allsites"){
+			analyticsChartAllSite(sites,resolution);
+		} else if ($('#category-selection').val() == "site"){
+			analyticsChartSite(persons,resolution);
+		} else if ($('#category-selection').val() == "person"){
+			analyticsChartPerson(sites,resolution);
+		} else {
+			console.log('Invalid Request');
+		}
 	});
 
 	function analyticsChartSite(data,resolution){
 		analyzeNumberOfReplies(data,resolution);
 		$('#reliability-chart-container').highcharts({
-            chart: {
-                zoomType: 'x'
-            },
-	        title: {
-	            text: 'Percent of Reply for '+$('#filter-key').val(),
+			chart: {
+				zoomType: 'x'
+			},
+			title: {
+				text: 'Percent of Reply for '+$('#filter-key').val(),
 	            x: -20 //center
 	        },
 	        subtitle: {
-	            text: period_range['percentReply'],
-	            x: -20
+	        	text: period_range['percentReply'],
+	        	x: -20
 	        },
 	        xAxis: {
-            	type: 'datetime'
+	        	type: 'datetime'
 	        },
 	        yAxis: {
-	            title: {
-	                text: '% of Replies'
-	            },
-	            plotLines: [{
-	                value: 0,
-	                width: 1,
-	                color: '#808080'
-	            }]
+	        	title: {
+	        		text: '% of Replies'
+	        	},
+	        	plotLines: [{
+	        		value: 0,
+	        		width: 1,
+	        		color: '#808080'
+	        	}]
 	        },
 	        tooltip: {
-	            valueSuffix: '%'
+	        	valueSuffix: '%'
 	        },
 	        legend: {
-	            layout: 'vertical',
-	            align: 'right',
-	            verticalAlign: 'middle',
-	            borderWidth: 0
+	        	layout: 'vertical',
+	        	align: 'right',
+	        	verticalAlign: 'middle',
+	        	borderWidth: 0
 	        },
 	        series: series_value
 	    });
@@ -1029,39 +1132,39 @@ $(document).ready(function(e) {
 
 	function analyticsChartAllSite(data,resolution){
 		analyzeNumberOfReplies(data,resolution);
-			$('#reliability-chart-container').highcharts({
-	            chart: {
-	                zoomType: 'x'
-	            },
-		        title: {
-		            text: 'Percent of Reply for All Sites',
+		$('#reliability-chart-container').highcharts({
+			chart: {
+				zoomType: 'x'
+			},
+			title: {
+				text: 'Percent of Reply for All Sites',
 		            x: -20 //center
 		        },
 		        subtitle: {
-		            text: period_range['percentReply'],
-		            x: -20
+		        	text: period_range['percentReply'],
+		        	x: -20
 		        },
 		        xAxis: {
-	            	type: 'datetime'
+		        	type: 'datetime'
 		        },
 		        yAxis: {
-		            title: {
-		                text: '% of Replies'
-		            },
-		            plotLines: [{
-		                value: 0,
-		                width: 1,
-		                color: '#808080'
-		            }]
+		        	title: {
+		        		text: '% of Replies'
+		        	},
+		        	plotLines: [{
+		        		value: 0,
+		        		width: 1,
+		        		color: '#808080'
+		        	}]
 		        },
 		        tooltip: {
-		            valueSuffix: '%'
+		        	valueSuffix: '%'
 		        },
 		        legend: {
-		            layout: 'vertical',
-		            align: 'right',
-		            verticalAlign: 'middle',
-		            borderWidth: 0
+		        	layout: 'vertical',
+		        	align: 'right',
+		        	verticalAlign: 'middle',
+		        	borderWidth: 0
 		        },
 		        series: series_value
 		    });
@@ -1072,38 +1175,38 @@ $(document).ready(function(e) {
 	function analyticsChartPerson(data,resolution){
 		analyzeNumberOfReplies(data,resolution);
 		$('#reliability-chart-container').highcharts({
-		    chart: {
-		        zoomType: 'x'
-		    },
-		    title: {
-		        text: 'Percent of Reply for '+$('#filter-key').val(),
+			chart: {
+				zoomType: 'x'
+			},
+			title: {
+				text: 'Percent of Reply for '+$('#filter-key').val(),
 		        x: -20 //center
 		    },
 		    subtitle: {
-		        text: period_range['percentReply'],
-		        x: -20
+		    	text: period_range['percentReply'],
+		    	x: -20
 		    },
 		    xAxis: {
 		    	type: 'datetime'
 		    },
 		    yAxis: {
-		        title: {
-		            text: '% of Replies'
-		        },
-		        plotLines: [{
-		            value: 0,
-		            width: 1,
-		            color: '#808080'
-		        }]
+		    	title: {
+		    		text: '% of Replies'
+		    	},
+		    	plotLines: [{
+		    		value: 0,
+		    		width: 1,
+		    		color: '#808080'
+		    	}]
 		    },
 		    tooltip: {
-		        valueSuffix: '%'
+		    	valueSuffix: '%'
 		    },
 		    legend: {
-		        layout: 'vertical',
-		        align: 'right',
-		        verticalAlign: 'middle',
-		        borderWidth: 0
+		    	layout: 'vertical',
+		    	align: 'right',
+		    	verticalAlign: 'middle',
+		    	borderWidth: 0
 		    },
 		    series: series_value
 		});
@@ -1122,16 +1225,16 @@ $(document).ready(function(e) {
 
 	// Resets the Period selector to default if the from-to function is used
 	$('#from-date').on('change',function(){
-	   	$('#period-selection option').prop('selected', function() {
-	        return this.defaultSelected;
-	    });
+		$('#period-selection option').prop('selected', function() {
+			return this.defaultSelected;
+		});
 	});
 
 	// Resets the Period selector to default if the from-to function is used
 	$('#to-date').on('change',function(){
-	   	$('#period-selection option').prop('selected', function() {
-	        return this.defaultSelected;
-	    });
+		$('#period-selection option').prop('selected', function() {
+			return this.defaultSelected;
+		});
 	});
 
 	$('#period-selection').on('change',function(){
@@ -1139,4 +1242,4 @@ $(document).ready(function(e) {
 		$('#from-date').val('');
 	});
 
- });
+});
