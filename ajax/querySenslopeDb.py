@@ -1,3 +1,4 @@
+
 #import MySQLdb
 import ConfigParser
 from datetime import datetime as dtm
@@ -101,7 +102,7 @@ def GetLatestTimestamp2(table_name):
         return a[0][0]
     else: 
         return ''
-        
+		
 def CreateAccelTable(table_name, nameDB):
     db = mysqlDriver.connect(host = Hostdb, user = Userdb, passwd = Passdb)
     cur = db.cursor()
@@ -121,7 +122,7 @@ def CreateColAlertsTable(table_name, nameDB):
     
     cur.execute("CREATE TABLE IF NOT EXISTS %s(sitecode varchar(8), timestamp datetime, id int, alerts varchar(8), PRIMARY KEY (sitecode, timestamp, id))" %table_name)
     db.close()
-    
+	
 #GetDBResultset(query): executes a mysql like code "query"
 #    Parameters:
 #        query: str
@@ -235,7 +236,7 @@ def PushDBDataFrame(df,table_name):
 #    df.ts = pd.to_datetime(df.ts)
 #    
 #    return df
-def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode ="", batt=0):
+def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid = 32, targetnode ="", batt=0, returndb=True):
     if not siteid:
         raise ValueError('no site id entered')
         
@@ -243,9 +244,9 @@ def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid
         PrintOut('Querying database ...')
         
     if (len(siteid) == 5):
-        query = "SELECT timestamp,id,xvalue,yvalue,zvalue FROM %s"  %siteid
+        query = " SELECT timestamp,'%s' as 'name',id,xvalue,yvalue,zvalue  FROM senslopedb.%s"  % (siteid,siteid)
         
-        targetnode_query = " WHERE id IN (SELECT node_id FROM node_accel_table WHERE site_name = '%s' and accel = 1)" %siteid 
+        targetnode_query = " WHERE id IN (SELECT node_id FROM senslopedb.node_accel_table WHERE site_name = '%s' and accel = 1)" %siteid 
         if targetnode != '':
             targetnode_query = " WHERE id IN ('%d')" %targetnode
         query = query + targetnode_query
@@ -257,15 +258,18 @@ def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid
         
         toTime_query = ''
         if toTime != '':
+            toTime = pd.to_datetime(toTime)+tda(hours=0.5)
             toTime_query =  " AND timestamp <= '%s'" %toTime
         elif toTime:
             toTime_query = ''
+        
+        query = query+ " AND batt >= 3.16 AND batt <= 3.4 "
             
         query = query + toTime_query
         query = query + " UNION ALL"
-        query = query + " SELECT timestamp,id,xvalue,yvalue,zvalue FROM %s"  %siteid
+        query = query + " SELECT timestamp,'%s' as 'name',id,xvalue,yvalue,zvalue  FROM senslopedb.%s"  % (siteid,siteid)
 
-        targetnode_query = " WHERE id IN (SELECT node_id FROM node_accel_table WHERE site_name = '%s' and accel = 2)" %siteid 
+        targetnode_query = " WHERE id IN (SELECT node_id FROM senslopedb.node_accel_table WHERE site_name = '%s' and accel = 2)" %siteid 
         if targetnode != '':
             targetnode_query = " WHERE id IN ('%d')" %targetnode
         query = query + targetnode_query
@@ -273,9 +277,11 @@ def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid
         query = query + " AND msgid in (12, 33)"
         query = query+ " AND timestamp > '%s'" %fromTime
         query = query + toTime_query
+        
+        query = query+ " AND batt >= 3.16 AND batt <= 3.4 "
 
     elif (len(siteid) == 4):
-        query = "select timestamp,id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid)
+        query = "select timestamp,'%s' as 'name',id,xvalue,yvalue,zvalue from senslopedb.%s " % (siteid,siteid)
         
         if not fromTime:
             fromTime = "2010-01-01"
@@ -286,16 +292,17 @@ def GetRawAccelData(siteid = "", fromTime = "", toTime = "", maxnode = 40, msgid
             query = query + " and timestamp <= '%s'" % toTime
         
         if targetnode != '':
-            query = query + " and id = %s;" % (targetnode)
+            query = query + " and id = %s" % (targetnode)
         else:
-            query = query + " and id >= 1 and id <= %s ;" % (str(maxnode))
-        
-    df =  GetDBDataFrame(query)
+            query = query + " and id >= 1 and id <= %s " % (str(maxnode))
     
-    df.columns = ['ts','id','x','y','z']
-        
-    df.ts = pd.to_datetime(df.ts)
-    return df
+    if returndb:     
+        df =  GetDBDataFrame(query)
+        df.columns = ['ts','name','id','x','y','z']
+        df.ts = pd.to_datetime(df.ts)
+        return df
+    else:
+        return query
 
 #TODO: This code should have the GID as input and part of the query to make -> used targetnode and edited ConvertSomsRaw.py
 #   the processing time faster
@@ -358,9 +365,6 @@ def GetRawRainData(siteid = "", fromTime = "", toTime=""):
     if not siteid:
         raise ValueError('no site id entered')
     
-    if printtostdout:
-        PrintOut('Querying database ...')
-    
     oldsite = []
     newsite = []
     rainlist = GetRainList()
@@ -376,6 +380,10 @@ def GetRawRainData(siteid = "", fromTime = "", toTime=""):
         elif siteid in newsite:
         
             query = "select timestamp, r15m from senslopedb.%s " % (siteid)
+            
+        else:
+            
+            query = "select timestamp, rval from senslopedb.%s " % (siteid)
         
         if not fromTime:
             fromTime = "2010-01-01"
@@ -384,6 +392,8 @@ def GetRawRainData(siteid = "", fromTime = "", toTime=""):
         
         if toTime:
             query = query + " and timestamp < '%s'" % toTime
+    
+        query = query + " order by timestamp"
     
         df =  GetDBDataFrame(query)
         
@@ -423,25 +433,56 @@ def GetCoordsList():
 #        sensorlist: list
 #            list of columnArray (see class definition above)
 
-def GetSensorList():
-    try:
-        db, cur = SenslopeDBConnect(Namedb)
-        cur.execute("use "+ Namedb)
-        
-        query = 'SELECT name, num_nodes, seg_length, col_length FROM site_column_props'
-        
-        df = psql.read_sql(query, db)
-        
-        # make a sensor list of columnArray class functions
-        sensors = []
-        for s in range(len(df)):
-            if df.name[s] == 'mcatb' or df.name[s] == 'messb':
-                continue
-            s = columnArray(df.name[s],df.num_nodes[s],df.seg_length[s],df.col_length[s])
+#def GetSensorList():
+#    try:
+#        db, cur = SenslopeDBConnect(Namedb)
+#        cur.execute("use "+ Namedb)
+#        
+#        query = 'SELECT name, num_nodes, seg_length, col_length FROM site_column_props'
+#        
+#        df = psql.read_sql(query, db)
+#        
+#        # make a sensor list of columnArray class functions
+#        sensors = []
+#        for s in range(len(df)):
+#            if df.name[s] == 'mcatb' or df.name[s] == 'messb':
+#                continue
+#            s = columnArray(df.name[s],df.num_nodes[s],df.seg_length[s],df.col_length[s])
+#            sensors.append(s)
+#        return sensors
+#    except:
+#        raise ValueError('Could not get sensor list from database')
+def GetSensorList(site=''):
+    if site == '':
+        try:
+            db, cur = SenslopeDBConnect(Namedb)
+            cur.execute("use "+ Namedb)
+            
+            query = 'SELECT name, num_nodes, seg_length, col_length FROM site_column_props'
+            
+            df = psql.read_sql(query, db)
+            
+            # make a sensor list of columnArray class functions
+            sensors = []
+            for s in range(len(df)):
+                if df.name[s] == 'mcatb' or df.name[s] == 'messb':
+                    continue
+                s = columnArray(df.name[s],df.num_nodes[s],df.seg_length[s],df.col_length[s])
+                sensors.append(s)
+            return sensors
+        except:
+            raise ValueError('Could not get sensor list from database')
+    else:
+            db, cur = SenslopeDBConnect(Namedb)
+            cur.execute("use "+ Namedb)
+            
+            query = "SELECT name, num_nodes, seg_length, col_length FROM site_column_props WHERE name LIKE '%"
+            query = query + str(site) + "%'"
+            df = psql.read_sql(query, db)
+            sensors = []
+            s = columnArray(df.name[0],df.num_nodes[0],df.seg_length[0],df.col_length[0])
             sensors.append(s)
-        return sensors
-    except:
-        raise ValueError('Could not get sensor list from database')
+            return sensors
 
 def GetSensorDF():
     try:
@@ -514,34 +555,31 @@ def GetRainNOAHList():
         db, cur = SenslopeDBConnect(Namedb)
         cur.execute("use "+ Namedb)
         
-        query = 'SELECT DISTINCT LEFT(name,3) as name, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props'
+        query = 'SELECT * FROM rain_props'
         
-        df = psql.read_sql(query, db)
+        df = GetDBDataFrame(query)
 
-        noahlist = []
-        for idx in df.index:
-            noah1 = df.ix[idx]['rain_noah']
-            noah2 = df.ix[idx]['rain_noah2']
-            noah3 = df.ix[idx]['rain_noah3']
-            
-            if np.isnan(noah1) == False:
-                noahlist.append(int(noah1))
-            if np.isnan(noah2) == False:
-                noahlist.append(int(noah2))
-            if np.isnan(noah3) == False:
-                noahlist.append(int(noah3))        
+        RG1 = list(df[(df['RG1'].str.contains('rain_noah_', case=False) == True)]['RG1'].values)
+        RG2 = list(df[(df['RG2'].str.contains('rain_noah_', case=False) == True)]['RG2'].values)
+        RG3 = list(df[(df['RG3'].str.contains('rain_noah_', case=False) == True)]['RG3'].values)
+        RG = RG1 + RG2 + RG3
+
+        df = pd.DataFrame({'RG': RG})
+        df['RG'] = df.RG.apply(lambda x: int(x[len('rain_noah_'):len(x)]))
+        
+        noahlist = sorted(set(df['RG'].values))
         
         return noahlist
 
     except:
         raise ValueError('Could not get sensor list from database')
 
-def GetRainProps():
+def GetRainProps(table_name='site_rain_props'):
     try:
         db, cur = SenslopeDBConnect(Namedb)
         cur.execute("use "+ Namedb)
         
-        query = 'SELECT name, max_rain_2year, rain_senslope, rain_arq, rain_noah, rain_noah2, rain_noah3 FROM site_rain_props'
+        query = 'SELECT * FROM %s' %table_name
         
         df = psql.read_sql(query, db)
         
@@ -627,7 +665,7 @@ def GetLastGoodDataFromDb(col):
 #       returns the dataframe for the last good data prior to the monitoring window
     
 def GetSingleLGDPM(site, node, startTS):
-    query = "SELECT timestamp, id, xvalue, yvalue, zvalue"
+    query = "SELECT timestamp,id, xvalue, yvalue, zvalue"
     if len(site) == 5:
         query = query + ", msgid"
     query = query + " from %s WHERE id = %s and timestamp < '%s' " % (site, node, startTS)
@@ -636,8 +674,8 @@ def GetSingleLGDPM(site, node, startTS):
 #        query = query + "ORDER BY timestamp DESC LIMIT 2"
 #    else:
     query = query + "ORDER BY timestamp DESC LIMIT 240"
-    
     lgdpm = GetDBDataFrame(query)
+    lgdpm['name'] = site 
 
 #    if len(site) == 5:
 #        if len(set(lgdpm.timestamp)) == 1:
@@ -649,10 +687,10 @@ def GetSingleLGDPM(site, node, startTS):
 #                print 'no data for node ' + str(node) + ' of ' + site
     
     if len(site) == 5:
-        lgdpm.columns = ['ts','id','x','y','z', 'msgid']
+        lgdpm.columns = ['ts','id','x','y','z', 'msgid','name']
     else:
-        lgdpm.columns = ['ts','id','x','y','z']
-    lgdpm = lgdpm[['ts', 'id', 'x', 'y', 'z']]
+        lgdpm.columns = ['ts','id','x','y','z','name']
+    lgdpm = lgdpm[['ts', 'id', 'x', 'y', 'z','name']]
 
     lgdpm = filterSensorData.applyFilters(lgdpm)
     lgdpm = lgdpm.sort_index(ascending = False)[0:1]

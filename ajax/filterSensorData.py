@@ -77,13 +77,18 @@ def checkAccelDrift(df):
     except IndexError:
         return
         
-def outlierFilter(df):
-
-    df = df.resample('30Min', how='first', fill_method = 'pad')
+def outlierFilter(dff):
+    df = dff.copy()
+#    df['ts'] = pandas.to_datetime(df['ts'], unit = 's')
+#    df = df.set_index('ts')
+#    df = df.resample('30min').first()
+##    df = df.reset_index()
+#    df = df.resample('30Min', how='first', fill_method = 'ffill')
     
-    dfmean = pd.stats.moments.rolling_mean(df,48, min_periods=1, freq=None, center=False)
-    dfsd = pd.stats.moments.rolling_std(df,48, min_periods=1, freq=None, center=False)
-    
+#    dfmean = pd.stats.moments.rolling_mean(df[['x','y','z']],48, min_periods=1, freq=None, center=False)
+    dfmean = df[['x','y','z']].rolling(min_periods=1,window=48,center=False).mean()
+#    dfsd = pd.stats.moments.rolling_std(df[['x','y','z']],48, min_periods=1, freq=None, center=False)
+    dfsd = df[['x','y','z']].rolling(min_periods=1,window=48,center=False).std()
     #setting of limits
     dfulimits = dfmean + (3*dfsd)
     dfllimits = dfmean - (3*dfsd)
@@ -98,25 +103,25 @@ def outlierFilter(df):
    
     return df
 
-def rangeFilterAccel(dff):
-    
+def rangeFilterAccel(df):
+    dff = df.copy()
     ## adjust accelerometer values for valid overshoot ranges
     dff.x[(dff.x<-2970) & (dff.x>-3072)] = dff.x[(dff.x<-2970) & (dff.x>-3072)] + 4096
     dff.y[(dff.y<-2970) & (dff.y>-3072)] = dff.y[(dff.y<-2970) & (dff.y>-3072)] + 4096
     dff.z[(dff.z<-2970) & (dff.z>-3072)] = dff.z[(dff.z<-2970) & (dff.z>-3072)] + 4096
     
-    ## remove all invalid values
-    dff.x[((dff.x > 1126) | (dff.x < 100))] = np.nan
+    
+    dff.x[abs(dff.x) > 1126] = np.nan
     dff.y[abs(dff.y) > 1126] = np.nan
     dff.z[abs(dff.z) > 1126] = np.nan
-    
-#    dfl = dff.x * dff.y * dff.z
+
     
 #    return dff[dfl.x.notnull()]
     return dff[dff.x.notnull()]
     
 ### Prado - Created this version to remove warnings
 def rangeFilterAccel2(dff):
+    
     x_index = (dff.x<-2970) & (dff.x>-3072)
     y_index = (dff.y<-2970) & (dff.y>-3072)
     z_index = (dff.z<-2970) & (dff.z>-3072)
@@ -126,7 +131,8 @@ def rangeFilterAccel2(dff):
     dff.loc[y_index,'y'] = dff.loc[y_index,'y'] + 4096
     dff.loc[z_index,'z'] = dff.loc[z_index,'z'] + 4096
     
-    x_range = ((dff.x > 1126) | (dff.x < 100))
+#    x_range = ((dff.x > 1126) | (dff.x < 100))
+    x_range = abs(dff.x) > 1126
     y_range = abs(dff.y) > 1126
     z_range = abs(dff.z) > 1126
     
@@ -135,35 +141,55 @@ def rangeFilterAccel2(dff):
     dff.loc[y_range,'y'] = np.nan
     dff.loc[z_range,'z'] = np.nan
     
-#    dfl = dff.x * dff.y * dff.z
-    
-#    return dff[dfl.x.notnull()]
     return dff[dff.x.notnull()]
     
 def orthogonalFilter(df):
-    
+
     # remove all non orthogonal value
     dfo = df[['x','y','z']]/1024.0
     mag = (dfo.x*dfo.x + dfo.y*dfo.y + dfo.z*dfo.z).apply(np.sqrt)
     lim = .08
     
     return df[((mag>(1-lim)) & (mag<(1+lim)))]
+
+def resample_df(df):
+    df.ts = pd.to_datetime(df['ts'], unit = 's')
+    df = df.set_index('ts')
+    df = df.resample('30min').first()
+    df = df.reset_index()
+    return df
     
 def applyFilters(dfl, orthof=True, rangef=True, outlierf=True):
+
+    if dfl.empty:
+        return dfl[['ts','name','id','x','y','z']]
+        
+  
     if rangef:
-        #dfl = rangeFilterAccel(dfl)   
-        dfl = rangeFilterAccel2(dfl)   
+        dfl = dfl.groupby(['id'])
+        dfl = dfl.apply(rangeFilterAccel)  
+        dfl = dfl.reset_index(drop=True)
+        dfl = dfl.reset_index(level=['ts'])
+        if dfl.empty:
+            return dfl[['ts','name','id','x','y','z']]
+
     if orthof: 
-        dfl = orthogonalFilter(dfl)
+        dfl = dfl.groupby(['id'])
+        dfl = dfl.apply(orthogonalFilter)
+        dfl = dfl.reset_index(drop=True)
+        if dfl.empty:
+            return dfl[['ts','name','id','x','y','z']]
+            
+    
     if outlierf:
+        dfl = dfl.groupby(['id'])
+        dfl = dfl.apply(resample_df)
         dfl = dfl.set_index('ts').groupby('id').apply(outlierFilter)
-        
-        #some results don't have the "extra id" which is why no removal is 
-        #necessary
-        try:
-            dfl = dfl.drop('id',1).reset_index() 
-        except:
-            #print "Extra 'id' doesn't exist already. No need to remove. Proceed!"
-            return dfl
-        
+        dfl = dfl.reset_index(level = ['ts'])
+        if dfl.empty:
+            return dfl[['ts','name','id','x','y','z']]
+
+    
+    dfl = dfl.reset_index(drop=True)     
+    dfl = dfl[['ts','name','id','x','y','z']]
     return dfl
