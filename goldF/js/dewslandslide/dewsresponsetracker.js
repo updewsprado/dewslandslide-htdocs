@@ -14,6 +14,7 @@ $(document).ready(function(e) {
 	var data_resolution = ['hh','dd','ww','mm'];
 	var total_message_and_response = [];
 	var groupedSiteFlagger = false;
+	var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
 
 	$(document).ajaxStart(function () {
 		$('#loading').modal('toggle');
@@ -439,7 +440,7 @@ $(document).ready(function(e) {
 					}
 				});
 			}
-		})
+	})
 
 	function datalistPredictionPerson(data) {
 		var datalist = document.getElementById('filterlist');
@@ -631,7 +632,6 @@ $(document).ready(function(e) {
 		var lmtimestamp = "";
 		var lreply = "";
 		var lrtimestamp = "";
-		var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
@@ -1070,6 +1070,15 @@ $(document).ready(function(e) {
 		} else if (data_resolution[$('#data-resolution').val()-1] == "ww") {
 			resolution[0] = "8";
 			resolution[1] = "11";
+			if ($('#category-selection').val() == "allsites"){
+				weeklyDataResolution(sites,resolution);
+			} else if ($('#category-selection').val() == "site"){
+				weeklyDataResolution(persons,resolution);
+			} else if ($('#category-selection').val() == "person"){
+				weeklyDataResolution(sites,resolution);
+			} else {
+				console.log('Invalid Request');
+			}
 		} else if (data_resolution[$('#data-resolution').val()-1] == "mm"){
 			resolution[0] = "5";
 			resolution[1] = "7";
@@ -1077,19 +1086,81 @@ $(document).ready(function(e) {
 			console.log("Invalid Request");
 		}
 		series_value = [];
-		if ($('#category-selection').val() == "allsites"){
-			analyticsChartAllSite(sites,resolution);
-		} else if ($('#category-selection').val() == "site"){
-			analyticsChartSite(persons,resolution);
-		} else if ($('#category-selection').val() == "person"){
-			analyticsChartPerson(sites,resolution);
-		} else {
-			console.log('Invalid Request');
+		if (data_resolution[$('#data-resolution').val()-1] != "ww") {
+			if ($('#category-selection').val() == "allsites"){
+				analyticsChartAllSite(sites,resolution);
+			} else if ($('#category-selection').val() == "site"){
+				analyticsChartSite(persons,resolution);
+			} else if ($('#category-selection').val() == "person"){
+				analyticsChartPerson(sites,resolution);
+			} else {
+				console.log('Invalid Request');
+			}
 		}
 	});
 
+	function weeklyDataResolution(data,resolution){
+		console.log(resolution);
+		console.log(data);
+		var tempDay = "";
+		var temp_month_holder = "";
+		var flagger = false;
+		var sent = 0;
+		var reply = 0;
+		debugger;
+		for (var x = 0; x < data.length; x++){
+			for (var i = 0; i < data[x].values.length ;i++){
+				if (tempDay == "" || tempDay == null){
+					tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
+					temp_month_holder = data[x].values[i].timestamp.substring(5,7);
+					if (tempDay > end_dates[data[x].values[i].timestamp.substring(5,7)]) {
+						tempDay = tempDay - end_dates[data[x].values[i].timestamp.substring(5,7)];
+						flagger = true;
+					}
+					if (data[x].values[i].user == 'You') {
+						sent++;
+					} else {
+						reply++;
+					}
+				} else {
+					if (flagger == true) {
+						if (data[x].values[i].timestamp.substring(5,7) != temp_month_holder) {
+							if (data[x].values[i].timestamp.substring(resolution[0],resolution[1]) > tempDay){
+								tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
+								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							} else {
+								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							}
+							temp_month_holder = data[x].values[i].timestamp.substring(5,7);
+							flagger = false;
+						} else {
+							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+						}		
+					} else {
+						if (tempDay > data[x].values[i].timestamp.substring(resolution[0],resolution[1])){
+							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+						} else {
+							tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
+							if (tempDay > end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))]) {
+								tempDay = tempDay - end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))];
+								flagger = true;
+							}
+							if (data[x].values[i].user == 'You') {
+								sent++;
+							} else {
+								reply++;
+							}
+							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+						}
+					}
+				}
+			}throw new Error("Something went badly wrong!");
+		}
+	}
+
 	function analyticsChartSite(data,resolution){
 		analyzeNumberOfReplies(data,resolution);
+		analyzeReplyGroupPerSite(data,resolution);
 		$('#reliability-chart-container').highcharts({
 			chart: {
 				zoomType: 'x'
@@ -1126,12 +1197,10 @@ $(document).ready(function(e) {
 	        },
 	        series: series_value
 	    });
-		//Generates Detailed information for each Node
-		detailedInfoGenerator();
 	}
 
 	function analyticsChartAllSite(data,resolution){
-		analyzeNumberOfReplies(data,resolution);
+		analyzeNumberOfRepliesAllSites(data,resolution);
 		$('#reliability-chart-container').highcharts({
 			chart: {
 				zoomType: 'x'
@@ -1168,8 +1237,6 @@ $(document).ready(function(e) {
 		        },
 		        series: series_value
 		    });
-		//Generates Detailed information for each Node
-		detailedInfoGenerator(data,resolution);
 	}
 
 	function analyticsChartPerson(data,resolution){
@@ -1210,10 +1277,7 @@ $(document).ready(function(e) {
 		    },
 		    series: series_value
 		});
-		//Generates Detailed information for each Node
-		detailedInfoGenerator();
 	}
-
 
 	$('#from-date').datepicker({
 		format: 'yyyy-mm-dd'
