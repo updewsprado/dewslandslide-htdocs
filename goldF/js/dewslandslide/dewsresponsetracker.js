@@ -680,9 +680,6 @@ $(document).ready(function(e) {
 							replies = 0;
 							reply_stats = 0;
 							tempDay = data[i].values[x].timestamp.substring(resolution[0],resolution[1]);
-							if (data_resolution[$('#data-resolution').val()-1] == 'ww') {
-								tempDay = parseInt(tempDay)+7;
-							}
 							if (data[i].values[x].user == "You") {
 								sent++;
 							} else {
@@ -692,7 +689,7 @@ $(document).ready(function(e) {
 					}
 				}
 
-				var name_hc = data[i].number;
+			var name_hc = data[i].number;
 
 			// Sort the dates Asc order
 			doSortDates(data_hc);
@@ -1061,60 +1058,54 @@ $(document).ready(function(e) {
 	//Adjusts the Data resolution
 	$('#data-resolution').change(function(){
 		resolution = [];
-		if (data_resolution[$('#data-resolution').val()-1] == "hh") {
+		series_value = [];
+		if (data_resolution[$('#data-resolution').val()-1] === "hh") {
 			resolution[0] = "11";
 			resolution[1] = "13";
-		} else if (data_resolution[$('#data-resolution').val()-1] == "dd"){
+		} else if (data_resolution[$('#data-resolution').val()-1] === "dd"){
 			resolution[0] = "8";
 			resolution[1] = "11";
-		} else if (data_resolution[$('#data-resolution').val()-1] == "ww") {
+		} else if (data_resolution[$('#data-resolution').val()-1] === "ww") {
 			resolution[0] = "8";
 			resolution[1] = "11";
-			if ($('#category-selection').val() == "allsites"){
-				weeklyDataResolution(sites,resolution);
-			} else if ($('#category-selection').val() == "site"){
-				weeklyDataResolution(persons,resolution);
-			} else if ($('#category-selection').val() == "person"){
-				weeklyDataResolution(sites,resolution);
-			} else {
-				console.log('Invalid Request');
-			}
-		} else if (data_resolution[$('#data-resolution').val()-1] == "mm"){
+		} else if (data_resolution[$('#data-resolution').val()-1] === "mm"){
 			resolution[0] = "5";
 			resolution[1] = "7";
 		} else {
 			console.log("Invalid Request");
 		}
-		series_value = [];
-		if (data_resolution[$('#data-resolution').val()-1] != "ww") {
-			if ($('#category-selection').val() == "allsites"){
-				analyticsChartAllSite(sites,resolution);
-			} else if ($('#category-selection').val() == "site"){
-				analyticsChartSite(persons,resolution);
-			} else if ($('#category-selection').val() == "person"){
-				analyticsChartPerson(sites,resolution);
-			} else {
-				console.log('Invalid Request');
-			}
+
+
+		if ($('#category-selection').val() == "allsites"){
+			analyticsChartAllSite(sites,resolution);
+		} else if ($('#category-selection').val() == "site"){
+			analyticsChartSite(persons,resolution);
+		} else if ($('#category-selection').val() == "person"){
+			analyticsChartPerson(sites,resolution);
+		} else {
+			console.log('Invalid Request');
 		}
+
 	});
 
 	function weeklyDataResolution(data,resolution){
-		console.log(resolution);
 		console.log(data);
 		var tempDay = "";
+		var data_hc = [];
 		var temp_month_holder = "";
+		var reply_stats_with_dates = "";
 		var flagger = false;
+		var reply_stats = 0;
 		var sent = 0;
 		var reply = 0;
-		debugger;
+
 		for (var x = 0; x < data.length; x++){
 			for (var i = 0; i < data[x].values.length ;i++){
 				if (tempDay == "" || tempDay == null){
 					tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
-					temp_month_holder = data[x].values[i].timestamp.substring(5,7);
-					if (tempDay > end_dates[data[x].values[i].timestamp.substring(5,7)]) {
-						tempDay = tempDay - end_dates[data[x].values[i].timestamp.substring(5,7)];
+					temp_month_holder = parseInt(data[x].values[i].timestamp.substring(5,7));
+					if (tempDay > end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))]) {
+						tempDay = tempDay - end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))];
 						flagger = true;
 					}
 					if (data[x].values[i].user == 'You') {
@@ -1127,20 +1118,64 @@ $(document).ready(function(e) {
 						if (data[x].values[i].timestamp.substring(5,7) != temp_month_holder) {
 							if (data[x].values[i].timestamp.substring(resolution[0],resolution[1]) > tempDay){
 								tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
-								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+								temp_month_holder = parseInt(data[x].values[i].timestamp.substring(5,7));
+									if (tempDay > end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))]) {
+										tempDay = tempDay - end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))];
+										flagger = true;
+									}
+								// console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+								if (data[x].values[i].user == 'You') {
+									sent++;
+								} else {
+									reply++;
+								}
 							} else {
-								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+								// console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+								if (data[x].values[i].user == 'You') {
+									sent++;
+								} else {
+									reply++;
+								}
 							}
 							temp_month_holder = data[x].values[i].timestamp.substring(5,7);
 							flagger = false;
 						} else {
-							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							// console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							if (data[x].values[i].user == 'You') {
+								sent++;
+							} else {
+								reply++;
+							}
 						}		
 					} else {
 						if (tempDay > data[x].values[i].timestamp.substring(resolution[0],resolution[1])){
-							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							// console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							if (data[x].values[i].user == 'You') {
+								sent++;
+							} else {
+								reply++;
+							}
 						} else {
+							if (reply > sent) {
+								// If the Replies are greater than the sent messages
+								// it is automatically 100%
+								reply_stats = 100;
+							} else {
+								reply_stats = (reply_stats + ((reply / sent)*100))/2;
+							}
+							if (i != 0) {
+								reply_stats_with_dates = [moment(data[x].values[i-1].timestamp).valueOf(),reply_stats];
+								// console.log("DATE:"+data[x].values[i-1].timestamp+" STATS: "+ reply_stats);
+							} else {
+								reply_stats_with_dates = [moment(data[x].values[i].timestamp).valueOf(),reply_stats];
+								// console.log("DATE:"+data[x].values[i].timestamp+" STATS: "+ reply_stats);
+							}
+							
+							data_hc.push(reply_stats_with_dates);
 							tempDay = parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))+7;
+							reply = 0;
+							sent = 0;
+							reply_stats = 0;
 							if (tempDay > end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))]) {
 								tempDay = tempDay - end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))];
 								flagger = true;
@@ -1150,17 +1185,35 @@ $(document).ready(function(e) {
 							} else {
 								reply++;
 							}
-							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
+							// console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 						}
 					}
 				}
-			}throw new Error("Something went badly wrong!");
+			}
+			var name_hc = data[x].number;
+
+			// // Sort the dates Asc order
+			doSortDates(data_hc);
+
+			series_stats = {
+				name: name_hc,
+				data: data_hc
+			};
+			data_hc = [];
+
+			series_value.push(series_stats);
 		}
 	}
 
 	function analyticsChartSite(data,resolution){
-		analyzeNumberOfReplies(data,resolution);
-		analyzeReplyGroupPerSite(data,resolution);
+		if (data_resolution[$('#data-resolution').val()-1] != "ww") {
+			analyzeNumberOfReplies(data,resolution);
+			analyzeReplyGroupPerSite(data,resolution);
+
+		} else {
+			weeklyDataResolution(data,resolution);
+		}
+
 		$('#reliability-chart-container').highcharts({
 			chart: {
 				zoomType: 'x'
@@ -1200,7 +1253,34 @@ $(document).ready(function(e) {
 	}
 
 	function analyticsChartAllSite(data,resolution){
-		analyzeNumberOfRepliesAllSites(data,resolution);
+		if (data_resolution[$('#data-resolution').val()-1] != "ww"){
+			analyzeNumberOfRepliesAllSites(data,resolution);
+			
+		} else {
+		// var timestamp_users = [];
+		// var reconstructed_data = [];
+		// for (var x = 0; x < data.length;x++){
+		// 	for (var i = 0; i < data[x].values.length;i++){
+		// 		for (var j =  0; j < data[x].values[i].length;j++) {
+		// 			timestamp_users.push({
+		// 				timestamp: data[x].values[i][j].timestamp,
+		// 				user: data[x].values[i][j].user
+		// 			});
+		// 		}
+		// 	}
+		// 	reconstructed_data.push({
+		// 		number: data[x].number,
+		// 		values: timestamp_users
+		// 	});
+		// timestamp_users = [];
+		// }
+		// sortForAllSite(reconstructed_data);
+		// // data = reconstructed_data;
+		// console.log(reconstructed_data);
+		// debugger;
+
+			weeklyDataResolution(data,resolution);
+		}
 		$('#reliability-chart-container').highcharts({
 			chart: {
 				zoomType: 'x'
@@ -1236,11 +1316,15 @@ $(document).ready(function(e) {
 		        	borderWidth: 0
 		        },
 		        series: series_value
-		    });
+	    });
 	}
 
 	function analyticsChartPerson(data,resolution){
-		analyzeNumberOfReplies(data,resolution);
+		if (data_resolution[$('#data-resolution').val()-1] != "ww"){
+			analyzeNumberOfReplies(data,resolution);
+		} else {
+			weeklyDataResolution(data,resolution);
+		}
 		$('#reliability-chart-container').highcharts({
 			chart: {
 				zoomType: 'x'
