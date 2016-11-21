@@ -206,11 +206,33 @@ $(document).ready(function(e) {
 					number: Object.keys(obj)[i],
 					values: chatStamps
 				})
-							// console.log(obj[Object.keys(obj)[i]]);
-						}
+			}
 
 						series_data = analyzeNumberOfRepliesAllSites(sites);
-						averagedelay_data = analyzeAverageDelayReply(sites);
+						
+
+					var timestamp_users = [];
+					var reconstructed_data = [];
+					for (var x = 0; x < sites.length;x++){
+						for (var i = 0; i < sites[x].values.length;i++){
+							for (var j =  0; j < sites[x].values[i].length;j++) {
+								timestamp_users.push({
+									timestamp: sites[x].values[i][j].timestamp,
+									user: sites[x].values[i][j].user
+								});
+							}
+						}
+						reconstructed_data.push({
+							number: sites[x].number,
+							values: timestamp_users
+						});
+						timestamp_users = [];
+					}
+					sortForAllSite(reconstructed_data);
+					averagedelay_data = analyzeAverageDelayReply(reconstructed_data);
+
+
+
 						titleAndCategoryConstructors();
 
 						Highcharts.setOptions({
@@ -475,13 +497,6 @@ $(document).ready(function(e) {
 	}
 
 	function resetVariables(){
-		// var dataresolution = document.getElementById('div-data-resolution');
-		// while (dataresolution.hasChildNodes()) {
-		// 	dataresolution.removeChild(dataresolution.lastChild);
-		// }
-
-		// var data_reso = $('<label for="data-resolution">Data Resolution</label> <input id="data-resolution" type="text" data-provide="slider" data-slider-ticks="[1, 2, 3, 4]" data-slider-ticks-labels="["Hourly", "Daily", "Weekly","Monthly"]" data-slider-min="1" data-slider-max="4" data-slider-step="1" data-slider-value="2" data-slider-tooltip="hide"/>');
-		// $('#div-data-resolution').append(data_reso);
 
 		persons = [];
 		chatStamps = [];
@@ -821,72 +836,42 @@ $(document).ready(function(e) {
 	}
 
 	function analyzeAverageDelayReply(data){
+		console.log(data);
 		if (groupedSiteFlagger == false){
 			column_value = [];
 		}
+		
 		for (var i=0;i<data.length;i++){
 			var chatterbox_date = "";
 			var sender_date = "";
 			var date_arr = [];
 			var average_delay = "";
 			for (var x = 0;x<data[i].values.length;x++){
-				//If the filterkey is empty, the category is ALL SITES
-				if ($('#filter-key').val() == "") {
-					for (var o = 0; o < data[i].values[x].length;o++){
-						if (chatterbox_date == "" || sender_date == "") {
-							if (data[i].values[x][o].user == "You") {
-								chatterbox_date = data[i].values[x][o].timestamp;
-							} else {
-								sender_date = data[i].values[x][o].timestamp;
-							}
-						}
 
-						//Computes the delay and push it to an array.
-						if (chatterbox_date != "" && sender_date != ""){
-							if (moment(chatterbox_date) > moment(sender_date)) {
-								var date1 = moment(chatterbox_date);
-								var date2 = moment(sender_date);
-								var diff = date1.diff(date2,'minutes');
-								date_arr.push(diff);
-								chatterbox_date = "";
-								sender_date = "";
-							} else {
-								var date1 = moment(chatterbox_date);
-								var date2 = moment(sender_date);
-								var diff = date2.diff(date1,'minutes');
-								date_arr.push(diff);
-								chatterbox_date = "";
-								sender_date = "";
-							}
-						}
+				if (chatterbox_date == "" || sender_date == "") {
+					if (data[i].values[x].user == "You") {
+						chatterbox_date = data[i].values[x].timestamp;
+					} else {
+						sender_date = data[i].values[x].timestamp;
 					}
-				} else {
+				}
 
-					if (chatterbox_date == "" || sender_date == "") {
-						if (data[i].values[x].user == "You") {
-							chatterbox_date = data[i].values[x].timestamp;
-						} else {
-							sender_date = data[i].values[x].timestamp;
-						}
-					}
-
-					//Computes the delay and push it to an array.
-					if (chatterbox_date != "" && sender_date != ""){
-						if (moment(chatterbox_date) > moment(sender_date)) {
-							var date1 = moment(chatterbox_date);
-							var date2 = moment(sender_date);
-							var diff = date1.diff(date2,'minutes');
-							date_arr.push(diff);
-							chatterbox_date = "";
-							sender_date = "";
-						} else {
-							var date1 = moment(chatterbox_date);
-							var date2 = moment(sender_date);
-							var diff = date2.diff(date1,'minutes');
-							date_arr.push(diff);
-							chatterbox_date = "";
-							sender_date = "";
-						}
+				//Computes the delay and push it to an array.
+				if (chatterbox_date != "" && sender_date != ""){
+					if (moment(chatterbox_date) > moment(sender_date)) {
+						var date1 = moment(chatterbox_date);
+						var date2 = moment(sender_date);
+						var diff = date1.diff(date2,'minutes');
+						date_arr.push(diff);
+						chatterbox_date = "";
+						sender_date = "";
+					} else {
+						var date1 = moment(chatterbox_date);
+						var date2 = moment(sender_date);
+						var diff = date2.diff(date1,'minutes');
+						date_arr.push(diff);
+						chatterbox_date = "";
+						sender_date = "";
 					}
 				}
 			}
