@@ -76,7 +76,7 @@ $(document).ready(function(e) {
 		}
 	});
 
-	// Analytics Section
+
 	function getAnalyticsPerson(data){
 		$.post( "../responsetracker/analyticsPerson", {person: JSON.stringify(data)})
 		.done(function(response) {
@@ -208,239 +208,239 @@ $(document).ready(function(e) {
 				})
 			}
 
-						series_data = analyzeNumberOfRepliesAllSites(sites);
-						
+			series_data = analyzeNumberOfRepliesAllSites(sites);
+				
 
-					var timestamp_users = [];
-					var reconstructed_data = [];
-					for (var x = 0; x < sites.length;x++){
-						for (var i = 0; i < sites[x].values.length;i++){
-							for (var j =  0; j < sites[x].values[i].length;j++) {
-								timestamp_users.push({
-									timestamp: sites[x].values[i][j].timestamp,
-									user: sites[x].values[i][j].user
-								});
-							}
-						}
-						reconstructed_data.push({
-							number: sites[x].number,
-							values: timestamp_users
+			var timestamp_users = [];
+			var reconstructed_data = [];
+			for (var x = 0; x < sites.length;x++){
+				for (var i = 0; i < sites[x].values.length;i++){
+					for (var j =  0; j < sites[x].values[i].length;j++) {
+						timestamp_users.push({
+							timestamp: sites[x].values[i][j].timestamp,
+							user: sites[x].values[i][j].user
 						});
-						timestamp_users = [];
 					}
-					sortForAllSite(reconstructed_data);
-					averagedelay_data = analyzeAverageDelayReply(reconstructed_data);
+				}
+				reconstructed_data.push({
+					number: sites[x].number,
+					values: timestamp_users
+				});
+				timestamp_users = [];
+			}
+			sortForAllSite(reconstructed_data);
+			averagedelay_data = analyzeAverageDelayReply(reconstructed_data);
 
 
 
-						titleAndCategoryConstructors();
+			titleAndCategoryConstructors();
 
-						Highcharts.setOptions({
-							global: {
-								useUTC: false
-							}
-						});
-				    	//Generates Detailed information for each Node
-				    	detailedInfoGenerator();
-				    	changePanelResolution();
-				    	$('#reliability-chart-container').highcharts({
-				    		chart: {
-				    			zoomType: 'x'
-				    		},
-				    		title: {
-				    			text: 'Percent of Reply for All Sites',
-					            x: -20 //center
-					        },
-					        subtitle: {
-					        	text: period_range['percentReply'],
-					        	x: -20
-					        },
-					        xAxis: {
-					        	type: 'datetime'
-					        },
-					        yAxis: {
-					        	title: {
-					        		text: '% of Replies'
-					        	},
-					        	plotLines: [{
-					        		value: 0,
-					        		width: 1,
-					        		color: '#808080'
-					        	}]
-					        },
-					        tooltip: {
-					        	valueSuffix: '%'
-					        },
-					        legend: {
-					        	layout: 'vertical',
-					        	align: 'right',
-					        	verticalAlign: 'middle',
-					        	borderWidth: 0
-					        },
-					        series: series_value
-					    });
+			Highcharts.setOptions({
+				global: {
+					useUTC: false
+				}
+			});
+	    	//Generates Detailed information for each Node
+	    	detailedInfoGenerator();
+	    	changePanelResolution();
+	    	$('#reliability-chart-container').highcharts({
+	    		chart: {
+	    			zoomType: 'x'
+	    		},
+	    		title: {
+	    			text: 'Percent of Reply for All Sites',
+		            x: -20 //center
+		        },
+		        subtitle: {
+		        	text: period_range['percentReply'],
+		        	x: -20
+		        },
+		        xAxis: {
+		        	type: 'datetime'
+		        },
+		        yAxis: {
+		        	title: {
+		        		text: '% of Replies'
+		        	},
+		        	plotLines: [{
+		        		value: 0,
+		        		width: 1,
+		        		color: '#808080'
+		        	}]
+		        },
+		        tooltip: {
+		        	valueSuffix: '%'
+		        },
+		        legend: {
+		        	layout: 'vertical',
+		        	align: 'right',
+		        	verticalAlign: 'middle',
+		        	borderWidth: 0
+		        },
+		        series: series_value
+		    });
 
-				    	$('#average-delay-container').highcharts({
-				    		chart: {
-				    			type: 'column'
-				    		},
-				    		title: {
-				    			text: 'Average delay of Reply'
-				    		},
-				    		subtitle: {
-				    			text: period_range['percentReply']
-				    		},
-				    		xAxis: {
-				    			type: 'category'
-				    		},
-				    		yAxis: {
-				    			title: {
-				    				text: 'Total time delay'
-				    			}
-				    		},
-				    		legend: {
-				    			enabled: false
-				    		},
-				    		plotOptions: {
-				    			series: {
-				    				borderWidth: 0,
-				    				dataLabels: {
-				    					enabled: true,
-				    					format: '{point.y:.0f} Minutes'
-				    				}
-				    			}
-				    		},
+	    	$('#average-delay-container').highcharts({
+	    		chart: {
+	    			type: 'column'
+	    		},
+	    		title: {
+	    			text: 'Average delay of Reply'
+	    		},
+	    		subtitle: {
+	    			text: period_range['percentReply']
+	    		},
+	    		xAxis: {
+	    			type: 'category'
+	    		},
+	    		yAxis: {
+	    			title: {
+	    				text: 'Total time delay'
+	    			}
+	    		},
+	    		legend: {
+	    			enabled: false
+	    		},
+	    		plotOptions: {
+	    			series: {
+	    				borderWidth: 0,
+	    				dataLabels: {
+	    					enabled: true,
+	    					format: '{point.y:.0f} Minutes'
+	    				}
+	    			}
+	    		},
 
-				    		tooltip: {
-				    			headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-				    			pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
-				    		},
+	    		tooltip: {
+	    			headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+	    			pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+	    		},
 
-				    		series: [{
-				    			name: 'Time',
-				    			colorByPoint: true,
-				    			data: column_value
-				    		}]
+	    		series: [{
+	    			name: 'Time',
+	    			colorByPoint: true,
+	    			data: column_value
+	    		}]
 
-				    	});
-				    });
+	    	});
+	    });
 	}
 
 	function getAnalyticsSite(data){
 		$.post( "../responsetracker/analyticsSite", {site: JSON.stringify(data)})
 		.done(function(response) {
 			var data = JSON.parse(response);
-						// Converts object to Array
-						persons = [];
-						for (var i = 0; i < Object.keys(data).length;i++){
-							chatStamps = [];
-							for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
-								chatStamps.push(data[Object.keys(data)[i]][x]);
-							}
+			// Converts object to Array
+			persons = [];
+			for (var i = 0; i < Object.keys(data).length;i++){
+				chatStamps = [];
+				for (var x = 0;x < data[Object.keys(data)[i]].length;x++) {
+					chatStamps.push(data[Object.keys(data)[i]][x]);
+				}
 
 
-							persons.push({
-								number: Object.keys(data)[i],
-								values: chatStamps
-							});
-						}
+				persons.push({
+					number: Object.keys(data)[i],
+					values: chatStamps
+				});
+			}
 
-						series_data = analyzeNumberOfReplies(persons);
-						averagedelay_data = analyzeAverageDelayReply(persons)
-						var replyAsgroup = analyzeReplyGroupPerSite(persons);
-						
+			series_data = analyzeNumberOfReplies(persons);
+			averagedelay_data = analyzeAverageDelayReply(persons)
+			var replyAsgroup = analyzeReplyGroupPerSite(persons);
+			
 
-						titleAndCategoryConstructors();
+			titleAndCategoryConstructors();
 
-						Highcharts.setOptions({
-							global: {
-								useUTC: false
-							}
-						});
+			Highcharts.setOptions({
+				global: {
+					useUTC: false
+				}
+			});
 
-						changePanelResolution();
-						$('#reliability-chart-container').highcharts({
-							chart: {
-								zoomType: 'x'
-							},
-							title: {
-								text: 'Percent of Reply for '+$('#filter-key').val(),
-					            x: -20 //center
-					        },
-					        subtitle: {
-					        	text: period_range['percentReply'],
-					        	x: -20
-					        },
-					        xAxis: {
-					        	type: 'datetime'
-					        },
-					        yAxis: {
-					        	title: {
-					        		text: '% of Replies'
-					        	},
-					        	plotLines: [{
-					        		value: 0,
-					        		width: 1,
-					        		color: '#808080'
-					        	}]
-					        },
-					        tooltip: {
-					        	valueSuffix: '%'
-					        },
-					        legend: {
-					        	layout: 'vertical',
-					        	align: 'right',
-					        	verticalAlign: 'middle',
-					        	borderWidth: 0
-					        },
-					        series: series_value
-					    });
-
-						$('#average-delay-container').highcharts({
-							chart: {
-								type: 'column'
-							},
-							title: {
-								text: 'Average delay of Reply'
-							},
-							subtitle: {
-								text: period_range['percentReply']
-							},
-							xAxis: {
-								type: 'category'
-							},
-							yAxis: {
-								title: {
-									text: 'Total time delay'
-								}
-							},
-							legend: {
-								enabled: false
-							},
-							plotOptions: {
-								series: {
-									borderWidth: 0,
-									dataLabels: {
-										enabled: true,
-										format: '{point.y:.0f} Minutes'
-									}
-								}
-							},
-
-							tooltip: {
-								headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-								pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
-							},
-
-							series: [{
-								name: 'Time',
-								colorByPoint: true,
-								data: column_value
-							}]
-						});
-		    	//Generates Detailed information for each Node
-		    	detailedInfoGenerator();
+			changePanelResolution();
+			$('#reliability-chart-container').highcharts({
+				chart: {
+					zoomType: 'x'
+				},
+				title: {
+					text: 'Percent of Reply for '+$('#filter-key').val(),
+		            x: -20 //center
+		        },
+		        subtitle: {
+		        	text: period_range['percentReply'],
+		        	x: -20
+		        },
+		        xAxis: {
+		        	type: 'datetime'
+		        },
+		        yAxis: {
+		        	title: {
+		        		text: '% of Replies'
+		        	},
+		        	plotLines: [{
+		        		value: 0,
+		        		width: 1,
+		        		color: '#808080'
+		        	}]
+		        },
+		        tooltip: {
+		        	valueSuffix: '%'
+		        },
+		        legend: {
+		        	layout: 'vertical',
+		        	align: 'right',
+		        	verticalAlign: 'middle',
+		        	borderWidth: 0
+		        },
+		        series: series_value
 		    });
+
+			$('#average-delay-container').highcharts({
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: 'Average delay of Reply'
+				},
+				subtitle: {
+					text: period_range['percentReply']
+				},
+				xAxis: {
+					type: 'category'
+				},
+				yAxis: {
+					title: {
+						text: 'Total time delay'
+					}
+				},
+				legend: {
+					enabled: false
+				},
+				plotOptions: {
+					series: {
+						borderWidth: 0,
+						dataLabels: {
+							enabled: true,
+							format: '{point.y:.0f} Minutes'
+						}
+					}
+				},
+
+				tooltip: {
+					headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+					pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+				},
+
+				series: [{
+					name: 'Time',
+					colorByPoint: true,
+					data: column_value
+				}]
+			});
+			//Generates Detailed information for each Node
+			detailedInfoGenerator();
+		});
 	}
 
 	$('#category-selection').on('change',function(){
@@ -497,7 +497,6 @@ $(document).ready(function(e) {
 	}
 
 	function resetVariables(){
-
 		persons = [];
 		chatStamps = [];
 		series_value = [];
@@ -511,7 +510,7 @@ $(document).ready(function(e) {
 	}
 
 	function changePanelResolution(){
-		if ($('#filter-key').val() == ""){
+		if ($('#category-selection').val() == "allsites"){
 			$("#reliability-pane").attr('class', 'col-md-12');
 			$("#adp-pane").attr('class', 'col-md-12');
 			$("#detailed-pane").attr('class', 'col-md-12');
@@ -831,16 +830,14 @@ $(document).ready(function(e) {
 		}
 
 		total_message_and_response.push(mes_res);
-
 		groupedSiteFlagger = false;
 	}
 
 	function analyzeAverageDelayReply(data){
-		console.log(data);
 		if (groupedSiteFlagger == false){
 			column_value = [];
 		}
-		
+
 		for (var i=0;i<data.length;i++){
 			var chatterbox_date = "";
 			var sender_date = "";
@@ -986,9 +983,7 @@ $(document).ready(function(e) {
 		period_range['averageDelay'] = "Average Delay of Reply from "+date_start+" "+data['period'].substring(8,11)+" "+data['period'].substring(0,4) +
 		" to "+date_end+" "+data['current_date'].substring(8,11)+" "+data['current_date'].substring(0,4);
 	}
-	// End of Analytics Section
 
-	//Detailed Info Section
 	function detailedInfoGenerator(){
 		$('#ntc-data-resolution').css("display", "block");
 		$('#div-data-resolution').css("opacity", "1");
@@ -1048,7 +1043,6 @@ $(document).ready(function(e) {
 		}
 	}
 
-	//Adjusts the Data resolution
 	$('#data-resolution').change(function(){
 		resolution = [];
 		series_value = [];
@@ -1263,8 +1257,6 @@ $(document).ready(function(e) {
 				}
 			}
 			var name_hc = data[x].number;
-
-			// // Sort the dates Asc order
 			doSortDates(data_hc);
 
 			series_stats = {
@@ -1272,7 +1264,6 @@ $(document).ready(function(e) {
 				data: data_hc
 			};
 			data_hc = [];
-
 			series_value.push(series_stats);
 		}
 	}
