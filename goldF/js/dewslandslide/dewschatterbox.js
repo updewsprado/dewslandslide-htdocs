@@ -2151,7 +2151,7 @@
 
 		$('#btn-gbl-search').attr("class","btn btn-link btn-sm");
 		$('#btn-gbl-search').attr("data-original-title","Search Message");
-		$('#btn-gbl-search').css("color","none");
+		$('#btn-gbl-search').css("color","");
 	}
 
 	//Load the office and site names from wSS

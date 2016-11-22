@@ -29,7 +29,7 @@ body {
   width: 18%;
 }
 
-#go-chat.disabled,#go-load-groups.disabled,#send-msg.disabled {
+#go-chat.disabled,#go-load-groups.disabled,#send-msg.disabled,#btn-gbl-search.disabled {
     pointer-events: auto;
 }
 
