@@ -208,6 +208,7 @@ $(document).ready(function(e) {
 				})
 			}
 
+			// console.log(sites);
 			series_data = analyzeNumberOfRepliesAllSites(sites);
 				
 
@@ -541,68 +542,56 @@ $(document).ready(function(e) {
 			resolution[0] = '8';
 			resolution[1] = '11';
 		}
-
-		for (var x = 0; x < data.length;x++){
-			for (var i = 0; i < data[x].values.length;i++){
-				for (var j =  0; j < data[x].values[i].length;j++) {
-					timestamp_users.push({
-						timestamp: data[x].values[i][j].timestamp,
-						user: data[x].values[i][j].user
-					});
-				}
-			}
-			reconstructed_data.push({
-				number: data[x].number,
-				values: timestamp_users
-			});
-			timestamp_users = [];
-		}
-		sortForAllSite(reconstructed_data);
-		for (var x = 0; x < reconstructed_data.length; x++){
-			for (var i = 0; i < reconstructed_data[x].values.length; i++){
+		for (var x = 0; x < data.length; x++){
+			for (var i = 0; i < data[x].values[0].length; i++){
 				if (temp_date == "" || temp_date == null) {
-					temp_date = reconstructed_data[x].values[i].timestamp.substring(resolution[0],resolution[1]);
-					if (reconstructed_data[x].values[i].user == 'You') {
+					temp_date = data[x].values[0][i].timestamp.substring(resolution[0],resolution[1]);
+					if (data[x].values[0][i].user == 'You') {
 						sent++;
 					} else {
 						reply++;
 					}
 				} else {
-					if (temp_date == reconstructed_data[x].values[i].timestamp.substring(resolution[0],resolution[1])){
-						if (reconstructed_data[x].values[i].user == 'You'){
-							sent++;
+					try {
+						if (temp_date == data[x].values[0][i].timestamp.substring(resolution[0],resolution[1])){
+							if (data[x].values[0][i].user == 'You'){
+								sent++;
+							} else {
+								reply++;
+							}
 						} else {
-							reply++;
-						}
-					} else {
 
-						var stats;
-						if (reply > sent || sent == 0){
-							stats = 100;
-						} else {
-							stats = (reply/sent)*100;
+							var stats;
+							if (reply > sent || sent == 0){
+								stats = 100;
+							} else {
+								stats = (reply/sent)*100;
+							}
+							if (i != 0) {
+								var store_dates = [moment(data[x].values[0][i-1].timestamp).valueOf(),Math.round(stats)];
+							} else {
+								var store_dates = [moment(data[x].values[0][i].timestamp).valueOf(),Math.round(stats)];
+							}
+							total_sent_message = total_sent_message + sent;
+							total_response_message = total_response_message + reply;
+							data_hc.push(store_dates);
+							sent = 0;
+							reply = 0;
+							temp_date = data[x].values[0][i].timestamp.substring(resolution[0],resolution[1]);
+							if (data[x].values[0][i].user == 'You') {
+								sent++;
+							} else {
+								reply++;
+							}
 						}
-						if (i != 0) {
-							var store_dates = [moment(reconstructed_data[x].values[i-1].timestamp).valueOf(),Math.round(stats)];
-						} else {
-							var store_dates = [moment(reconstructed_data[x].values[i].timestamp).valueOf(),Math.round(stats)];
-						}
-						total_sent_message = total_sent_message + sent;
-						total_response_message = total_response_message + reply;
-						data_hc.push(store_dates);
-						sent = 0;
-						reply = 0;
-						temp_date = reconstructed_data[x].values[i].timestamp.substring(resolution[0],resolution[1]);
-						if (reconstructed_data[x].values[i].user == 'You') {
-							sent++;
-						} else {
-							reply++;
-						}
+					} catch(err) {
+						console.log("NULL ENTRIES FOR TIMESTAMP CATCHED");
 					}
+					
 				}
 			}
 			series_value.push({
-				name: reconstructed_data[x].number,
+				name: data[x].number,
 				data: data_hc
 			});
 			data_hc = [];
@@ -747,6 +736,7 @@ $(document).ready(function(e) {
 	}
 
 	function analyzeReplyGroupPerSite(data,resolution){
+
 		var test_reconstructed_data = [];
 		var data_hc = [];
 		var sent = 0;
@@ -769,52 +759,56 @@ $(document).ready(function(e) {
 			}
 		}
 
-		DoSortDateForGroupSite(test_reconstructed_data);
 		groupedSiteFlagger = true;
+		DoSortDateForGroupSite(test_reconstructed_data);
 		analyzeAverageDelayReply([{
 			number: $('#filter-key').val(),
 			values: test_reconstructed_data
 		}]);
-		for (var x = 0; x < test_reconstructed_data.length;x++){
 
+		for (var x = 0; x < test_reconstructed_data.length;x++){
+			console.log(test_reconstructed_data[x].timestamp);
 			if (temp_date == "" || temp_date == null) {
 				temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
-				// debugger;
 				if ( test_reconstructed_data[x].user == 'You'){
 					sent++;
 				} else {
 					reply++;
 				}
 			} else {
-				if (temp_date == test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1])) {
-					if ( test_reconstructed_data[x].user == 'You'){
-						sent++;
+				try {
+					if (temp_date == test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1])) {
+						if ( test_reconstructed_data[x].user == 'You'){
+							sent++;
+						} else {
+							reply++;
+						}
 					} else {
-						reply++;
+						var stats;
+						if (reply > sent || sent == 0){
+							stats = 100;
+						} else {
+							stats = (reply/sent)*100;
+						}
+						if (x != 0) {
+							var store_dates = [moment(test_reconstructed_data[x-1].timestamp).valueOf(),Math.round(stats)];
+						} else {
+							var store_dates = [moment(test_reconstructed_data[x].timestamp).valueOf(),Math.round(stats)];
+						}
+						data_hc.push(store_dates);
+						total_sent_message = total_sent_message + sent;
+						total_response_message = total_response_message + reply;
+						sent = 0;
+						reply = 0;
+						temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
+						if ( test_reconstructed_data[x].user == 'You'){
+							sent++;
+						} else {
+							reply++;
+						}
 					}
-				} else {
-					var stats;
-					if (reply > sent || sent == 0){
-						stats = 100;
-					} else {
-						stats = (reply/sent)*100;
-					}
-					if (x != 0) {
-						var store_dates = [moment(test_reconstructed_data[x-1].timestamp).valueOf(),Math.round(stats)];
-					} else {
-						var store_dates = [moment(test_reconstructed_data[x].timestamp).valueOf(),Math.round(stats)];
-					}
-					data_hc.push(store_dates);
-					total_sent_message = total_sent_message + sent;
-					total_response_message = total_response_message + reply;
-					sent = 0;
-					reply = 0;
-					temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
-					if ( test_reconstructed_data[x].user == 'You'){
-						sent++;
-					} else {
-						reply++;
-					}
+				} catch(err) {
+					console.log("NULL ENTRIES FOR TIMESTAMP CATCHED");
 				}
 			}
 		}
@@ -1155,14 +1149,12 @@ $(document).ready(function(e) {
 										tempDay = tempDay - end_dates[parseInt(data[x].values[i].timestamp.substring(5,7))];
 										flagger = true;
 									}
-								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 								if (data[x].values[i].user == 'You') {
 									sent++;
 								} else {
 									reply++;
 								}
 							} else {
-								console.log('NEXT MONTH: Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 								if (data[x].values[i].user == 'You') {
 									sent++;
 								} else {
@@ -1172,7 +1164,6 @@ $(document).ready(function(e) {
 							temp_month_holder = data[x].values[i].timestamp.substring(5,7);
 							flagger = false;
 						} else {
-							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 							if (data[x].values[i].user == 'You') {
 								sent++;
 							} else {
@@ -1190,10 +1181,8 @@ $(document).ready(function(e) {
 							}
 							if (i != 0) {
 								reply_stats_with_dates = [moment(data[x].values[i-1].timestamp).valueOf(),reply_stats];
-								console.log("DATE:"+data[x].values[i-1].timestamp+" STATS: "+ reply_stats);
 							} else {
 								reply_stats_with_dates = [moment(data[x].values[i].timestamp).valueOf(),reply_stats];
-								console.log("DATE:"+data[x].values[i].timestamp+" STATS: "+ reply_stats);
 							}
 							
 							data_hc.push(reply_stats_with_dates);
@@ -1211,10 +1200,8 @@ $(document).ready(function(e) {
 							} else {
 								reply++;
 							}
-							console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 						} else {
 							if (tempDay > parseInt(data[x].values[i].timestamp.substring(resolution[0],resolution[1]))){
-								console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 								if (data[x].values[i].user == 'You') {
 									sent++;
 								} else {
@@ -1230,10 +1217,8 @@ $(document).ready(function(e) {
 								}
 								if (i != 0) {
 									reply_stats_with_dates = [moment(data[x].values[i-1].timestamp).valueOf(),reply_stats];
-									console.log("DATE:"+data[x].values[i-1].timestamp+" STATS: "+ reply_stats);
 								} else {
 									reply_stats_with_dates = [moment(data[x].values[i].timestamp).valueOf(),reply_stats];
-									console.log("DATE:"+data[x].values[i].timestamp+" STATS: "+ reply_stats);
 								}
 								
 								data_hc.push(reply_stats_with_dates);
@@ -1250,7 +1235,6 @@ $(document).ready(function(e) {
 								} else {
 									reply++;
 								}
-								console.log('Temp Day: '+tempDay+' Current Day: '+data[x].values[i].timestamp.substring(resolution[0],resolution[1]));
 							}
 						}
 					}
