@@ -26,6 +26,7 @@
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var convoFlagger = false;
+	var connection_status = true; // True means Connected.
 	var conn = connectWS();
 	var delayReconn = 10000;	//10 Seconds
 
@@ -627,10 +628,14 @@
 		console.log("trying to connect to web socket server");
 		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
 		var tempConn = new WebSocket('ws://54.166.60.233:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
-			$("#connectionStatusModal").modal("hide");
+			enableCommands(); // Enable commands for chatterbox
+
+		 	connection_status = true;
+			// $("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
@@ -781,7 +786,12 @@
 	            reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
-	        	$("#connectionStatusModal").modal("show");
+	        	// $("#connectionStatusModal").modal("show");
+
+	        	//Disables the commands for chatterbox if the connection lost.
+		 		disableCommands();
+
+        	 	connection_status = false;
 				//Enable the functionality of "send button"
 				$("#send-msg").addClass("disabled");
 
@@ -1480,83 +1490,82 @@
 
 	// Chat with selected recipients
 	$('#go-chat').click(function() {
-		startChat();
+		if (connection_status == false){
+			console.log("NO CONNECTION");
+		} else {
+			startChat();
+		}
+		
 	});
 
 	var testMsg;
 	// Send a message to the selected recipients
 	$('#send-msg').click(function() {
-		messages = [];
-		counters = 0;
-		ewi_filter = "";
-		//For group type communication
-		if (contactInfo == "groups") {
-			var text = $('#msg').val();
-
-			var tagOffices = [];
-			$('input[name="offices"]:checked').each(function() {
-			   tagOffices.push(this.value);
-			});
-
-			var tagSitenames = [];
-			$('input[name="sitenames"]:checked').each(function() {
-			   tagSitenames.push(this.value);
-			});
-
-			var msg = {
-				'type': 'smssendgroup',
-				'user': user,
-				'offices': tagOffices,
-				'sitenames': tagSitenames,
-				'msg': text + footer,
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-				'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
-			};
-
-			conn.send(JSON.stringify(msg));
-
-			// //Create msg.name before updating the message
-			// msg.name = "";
-			// for (i in tagOffices) {
-			// 	msg.name = msg.name + " " + tagOffices[i];
-			// }
-
-			// for (i in tagSitenames) {
-			// 	msg.name = msg.name + " " + tagSitenames[i];
-			// }
-
-			msgType = "smssendgroup";
-			testMsg = msg;
-			counters = 0;
+		if (connection_status == false){
+			console.log("NO CONNECTION");
+		} else {
 			messages = [];
-			updateMessages(msg);
+			counters = 0;
+			ewi_filter = "";
+			//For group type communication
+			if (contactInfo == "groups") {
+				var text = $('#msg').val();
 
-			$('#msg').val('');
-		} 
-		//For non group tags communication
-		else {
-			var text = $('#msg').val();
+				var tagOffices = [];
+				$('input[name="offices"]:checked').each(function() {
+				   tagOffices.push(this.value);
+				});
 
-			var normalized = [];
-			for (i in contactnumTrimmed) {
-			   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+				var tagSitenames = [];
+				$('input[name="sitenames"]:checked').each(function() {
+				   tagSitenames.push(this.value);
+				});
+
+				var msg = {
+					'type': 'smssendgroup',
+					'user': user,
+					'offices': tagOffices,
+					'sitenames': tagSitenames,
+					'msg': text + footer,
+					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
+				};
+
+				conn.send(JSON.stringify(msg));
+
+				msgType = "smssendgroup";
+				testMsg = msg;
+				counters = 0;
+				messages = [];
+				updateMessages(msg);
+
+				$('#msg').val('');
+			} 
+			//For non group tags communication
+			else {
+				var text = $('#msg').val();
+
+				var normalized = [];
+				for (i in contactnumTrimmed) {
+				   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+				}
+
+				user = "You";
+				var msg = {
+					'type': 'smssend',
+					'user': user,
+					'numbers': normalized,
+					'msg': text + footer,
+					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+				};
+				updateMessages(msg);
+				conn.send(JSON.stringify(msg));
+
+				$('#msg').val('');
 			}
 
-			user = "You";
-			var msg = {
-				'type': 'smssend',
-				'user': user,
-				'numbers': normalized,
-				'msg': text + footer,
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
-			};
-			updateMessages(msg);
-			conn.send(JSON.stringify(msg));
-
-			$('#msg').val('');
+			updateRemainingCharacters();
 		}
-
-		updateRemainingCharacters();
 	});
 
 	// Send a message to the selected recipients
@@ -1605,7 +1614,11 @@
 	}
 
 	$('#go-load-groups').click(function() {
-		loadGroups();
+		if (connection_status == false){
+			console.log("NO CONNECTION");
+		} else {
+			loadGroups();
+		}
 	});
 
 	$(document).ready(function() {
@@ -2081,12 +2094,16 @@
 	});
 
 	$('#btn-gbl-search').click(function(){
-		$('#search-global-message-modal').modal("toggle");
-		searchResults = [];
-		counter = 0;
-		var myNode = document.getElementById("search-global-result");
-		myNode.innerHTML = '';
-		$('#search-global-keyword').val('');
+		if (connection_status == false){
+			console.log("NO CONNECTION");
+		} else {
+			$('#search-global-message-modal').modal("toggle");
+			searchResults = [];
+			counter = 0;
+			var myNode = document.getElementById("search-global-result");
+			myNode.innerHTML = '';
+			$('#search-global-keyword').val('');
+		}
 	});
 
 	// Update the "remaining characters" information below the text area
@@ -2095,6 +2112,47 @@
 	});
 
 	var isFirstAdvancedSearchActivation = false;
+
+
+	function disableCommands(){
+		$('#go-chat').attr("class","btn btn-xs btn-danger disabled");
+		$('#go-chat').attr("data-toggle","tooltip");
+		$('#go-chat').css("text-decoration","line-through");
+		$('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+
+		$('#go-load-groups').attr("class","btn btn-danger disabled");
+		$('#go-load-groups').css("text-decoration","line-through");
+		$('#load-groups-wrapper').attr("data-toggle","tooltip");
+		$('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+		
+		$('#send-msg').attr("class","btn btn-danger no-rounded disabled");
+		$('#send-msg').css("text-decoration","line-through");
+		$('#sms-msg-wrapper').attr("data-toggle","tooltip");
+		$('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+
+		$('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
+		$('#btn-gbl-search').attr("data-toggle","tooltip");
+		$('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+		$('#btn-gbl-search').css("color","coral");
+	}
+
+	function enableCommands(){
+		$('#go-chat').attr("class","btn btn-xs btn-primary");
+		$('#go-chat').css("text-decoration","none");
+		$('#go-chat').attr("data-original-title","");
+
+		$('#go-load-groups').attr("class","btn btn-success");
+		$('#go-load-groups').css("text-decoration","none");
+		$('#load-groups-wrapper').attr("data-original-title","");
+
+		$('#send-msg').attr("class","btn btn-success no-rounded");
+		$('#send-msg').css("text-decoration","none");
+		$('#sms-msg-wrapper').attr("data-original-title","");
+
+		$('#btn-gbl-search').attr("class","btn btn-link btn-sm");
+		$('#btn-gbl-search').attr("data-original-title","Search Message");
+		$('#btn-gbl-search').css("color","none");
+	}
 
 	//Load the office and site names from wSS
 	function getOfficesAndSitenames () {

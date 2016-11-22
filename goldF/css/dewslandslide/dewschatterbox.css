@@ -29,6 +29,10 @@ body {
   width: 18%;
 }
 
+#go-chat.disabled,#go-load-groups.disabled,#send-msg.disabled {
+    pointer-events: auto;
+}
+
 #search-lbl {
   display: none;
   float: right;
