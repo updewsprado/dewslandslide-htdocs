@@ -40,7 +40,7 @@
 	margin: 10px 0px 10px 0px;
 	float: right;
 	width: 100%;
-}
+}	
 
 #date-selector-rtracker {
 	margin-bottom: 10px;
@@ -49,3 +49,10 @@
 #div-data-resolution label,#data-resolution {
     margin-right: 25px;
 }
+
+.ui-autocomplete {
+	max-height: 150px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 20px;
+} 

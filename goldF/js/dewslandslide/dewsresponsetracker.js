@@ -15,6 +15,7 @@ $(document).ready(function(e) {
 	var total_message_and_response = [];
 	var groupedSiteFlagger = false;
 	var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
+	var regions = ["NCR","I","CAR","II","III","IVA","IVB","V","VI","VII","VIII","IX","X","XI","XII","CARAGA","ARMM","NIR"];
 
 	$(document).ajaxStart(function () {
 		$('#loading').modal('toggle');
@@ -244,42 +245,7 @@ $(document).ready(function(e) {
 	    	//Generates Detailed information for each Node
 	    	detailedInfoGenerator();
 	    	changePanelResolution();
-	    	$('#reliability-chart-container').highcharts({
-	    		chart: {
-	    			zoomType: 'x'
-	    		},
-	    		title: {
-	    			text: 'Percent of Reply for All Sites',
-		            x: -20 //center
-		        },
-		        subtitle: {
-		        	text: period_range['percentReply'],
-		        	x: -20
-		        },
-		        xAxis: {
-		        	type: 'datetime'
-		        },
-		        yAxis: {
-		        	title: {
-		        		text: '% of Replies'
-		        	},
-		        	plotLines: [{
-		        		value: 0,
-		        		width: 1,
-		        		color: '#808080'
-		        	}]
-		        },
-		        tooltip: {
-		        	valueSuffix: '%'
-		        },
-		        legend: {
-		        	layout: 'vertical',
-		        	align: 'right',
-		        	verticalAlign: 'middle',
-		        	borderWidth: 0
-		        },
-		        series: series_value
-		    });
+	    	getRegion();
 
 	    	$('#average-delay-container').highcharts({
 	    		chart: {
@@ -465,36 +431,27 @@ $(document).ready(function(e) {
 			}
 	});
 
+
 	function datalistPredictionPerson(data) {
-		var datalist = document.getElementById('filterlist');
-		while (datalist.hasChildNodes()) {
-			datalist.removeChild(datalist.lastChild);
-		}
+		var recon_data = [];
 		$('#filter-key').val("");
 		for (var counter=0;counter < data.length;counter++){
-			var opt = document.createElement('option');
-
 			var constructedFullname = data[counter].lastname+','+ data[counter].firstname
 			+','+ data[counter].number;
-
-			opt.value = constructedFullname;
-			opt.innerHTML = constructedFullname;
-			datalist.appendChild(opt);
+			recon_data.push(constructedFullname);
 		}
+
+		$("#filter-key").autocomplete({
+	    	source: recon_data
+	    });
+
 	}
 
 	function datalistPredictionSite(data) {
-		var datalist = document.getElementById('filterlist');
-		while (datalist.hasChildNodes()) {
-			datalist.removeChild(datalist.lastChild);
-		}
 		$('#filter-key').val("");
-		for (var counter=0;counter < data.length;counter++){
-			var opt = document.createElement('option');
-			opt.value = data[counter];
-			opt.innerHTML = data[counter];
-			datalist.appendChild(opt);
-		}
+		$("#filter-key").autocomplete({
+	    	source: data
+	    });
 	}
 
 	function resetVariables(){
@@ -1306,42 +1263,8 @@ $(document).ready(function(e) {
 		} else {
 			weeklyDataResolution(data,resolution);
 		}
-		$('#reliability-chart-container').highcharts({
-			chart: {
-				zoomType: 'x'
-			},
-			title: {
-				text: 'Percent of Reply for All Sites',
-		            x: -20 //center
-		        },
-		        subtitle: {
-		        	text: period_range['percentReply'],
-		        	x: -20
-		        },
-		        xAxis: {
-		        	type: 'datetime'
-		        },
-		        yAxis: {
-		        	title: {
-		        		text: '% of Replies'
-		        	},
-		        	plotLines: [{
-		        		value: 0,
-		        		width: 1,
-		        		color: '#808080'
-		        	}]
-		        },
-		        tooltip: {
-		        	valueSuffix: '%'
-		        },
-		        legend: {
-		        	layout: 'vertical',
-		        	align: 'right',
-		        	verticalAlign: 'middle',
-		        	borderWidth: 0
-		        },
-		        series: series_value
-	    });
+
+		getRegion();
 	}
 
 	function analyticsChartPerson(data,resolution){
@@ -1396,11 +1319,116 @@ $(document).ready(function(e) {
 		format: 'yyyy-mm-dd'
 	});
 
+	function getRegion(){
+		$.get( "../responsetracker/getRegions", function( data ) {
+			var dataFetched = [];
+			var list_regions = [];
+			dataFetched = JSON.parse(data);
+			for (var x = 0; x < series_value.length;x++){
+				for (var i = 0; i < dataFetched.length;i++){
+
+					if (series_value[x].name.length > 3){
+						var site1 = series_value[x].name.substring(0,3);
+						var site2 = series_value[x].name.substring(4,7);
+						if (site1 == dataFetched[i].name || site2 == dataFetched[i].name) {
+							series_value[x].region = dataFetched[i].region;
+						}
+					} else {
+						if (series_value[x].name == dataFetched[i].name) {
+							series_value[x].region = dataFetched[i].region;
+						}
+					}
+				}
+			}
+	    	generateReliabilityForAllSites();
+		});
+	}
+
+	function generateReliabilityForAllSites(){
+
+		var myNode = document.getElementById("reliability-chart-container");
+		while (myNode.firstChild) {
+			myNode.removeChild(myNode.firstChild);
+		}
+
+		for (var x = 0; x < regions.length;x++){
+			var series_value_per_region = [];
+			var reliability_chart_container = document.getElementById('reliability-chart-container');
+			var panel_group = document.createElement('div');
+			panel_group.className = 'panel panel-default';
+			panel_group.id = 'panel-'+regions[x];
+
+			var panel_head = document.createElement('div');
+			panel_head.className = 'panel-heading';
+			panel_head.id = 'heading-'+regions[x];
+			panel_head.innerHTML = "Region: "+regions[x];
+
+			var panel_body = document.createElement('div');
+			panel_body.className = 'panel-body';
+			panel_body.id = 'body-'+regions[x];
+
+
+			for (var i = 0; i < series_value.length; i++){
+				if (series_value[i].region == regions[x]) {
+					series_value_per_region.push(series_value[i]);
+				}
+			}
+			panel_group.appendChild(panel_head);
+			panel_group.appendChild(panel_body);
+			reliability_chart_container.appendChild(panel_group);
+
+			if (series_value_per_region == null || series_value_per_region.length == 0){
+				panel_body.innerHTML = "<h2><center>NO DATA</center></h2>";
+			} else {
+		    	$("#panel-"+regions[x]+" #body-"+regions[x]).highcharts({
+		    		chart: {
+		    			zoomType: 'x'
+		    		},
+		    		title: {
+		    			text: 'Percent of Reply for All Sites',
+			            x: -20 //center
+			        },
+			        subtitle: {
+			        	text: period_range['percentReply'],
+			        	x: -20
+			        },
+			        xAxis: {
+			        	type: 'datetime'
+			        },
+			        yAxis: {
+			        	title: {
+			        		text: '% of Replies'
+			        	},
+			        	plotLines: [{
+			        		value: 0,
+			        		width: 1,
+			        		color: '#808080'
+			        	}]
+			        },
+			        tooltip: {
+			        	valueSuffix: '%'
+			        },
+			        legend: {
+			        	layout: 'vertical',
+			        	align: 'right',
+			        	verticalAlign: 'middle',
+			        	borderWidth: 0
+			        },
+			        series: series_value_per_region
+			    });
+			}
+		}
+	}
+
 	// Resets the Period selector to default if the from-to function is used
 	$('#from-date').on('change',function(){
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
+		$('#period-selection').css("border-color", "none");
+		$('#period-selection').css("background-color", "none");
+		$('#from-date').css("border-color", "#3c763d");
+		$('#from-date').css("background-color", "#dff0d8");
 	});
 
 	// Resets the Period selector to default if the from-to function is used
@@ -1408,11 +1436,25 @@ $(document).ready(function(e) {
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
+		$('#period-selection').css("border-color", "none");
+		$('#period-selection').css("background-color", "none");
+		$('#to-date').css("border-color", "#3c763d");
+		$('#to-date').css("background-color", "#dff0d8");
 	});
 
 	$('#period-selection').on('change',function(){
 		$('#to-date').val('');
 		$('#from-date').val('');
+
+		$('#to-date').css("border-color", "none");
+		$('#to-date').css("background-color", "none");
+
+
+		$('#from-date').css("border-color", "none");
+		$('#from-date').css("background-color", "none");
+
+		$('#period-selection').css("border-color", "#3c763d");
+		$('#period-selection').css("background-color", "#dff0d8");
 	});
 
 });
