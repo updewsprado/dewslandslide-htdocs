@@ -25,7 +25,6 @@ $(document).ready(function(e) {
 		$('#loading').modal('toggle');
 	});
 
-
 	$('#confirm-filter-btn').click(function(){
 
 		resetVariables();
@@ -76,7 +75,6 @@ $(document).ready(function(e) {
 			alert('Invalid Request, Please recheck inputs');
 		}
 	});
-
 
 	function getAnalyticsPerson(data){
 		$.post( "../responsetracker/analyticsPerson", {person: JSON.stringify(data)})
@@ -431,7 +429,6 @@ $(document).ready(function(e) {
 			}
 	});
 
-
 	function datalistPredictionPerson(data) {
 		var recon_data = [];
 		$('#filter-key').val("");
@@ -444,7 +441,6 @@ $(document).ready(function(e) {
 		$("#filter-key").autocomplete({
 	    	source: recon_data
 	    });
-
 	}
 
 	function datalistPredictionSite(data) {
@@ -937,6 +933,7 @@ $(document).ready(function(e) {
 
 	function detailedInfoGenerator(){
 		$('#ntc-data-resolution').css("display", "block");
+		$('#div-data-validator').css("display", "block");
 		$('#div-data-resolution').css("opacity", "1");
 		var myNode = document.getElementById("detailed-info-container");
 		while (myNode.firstChild) {
@@ -1023,6 +1020,8 @@ $(document).ready(function(e) {
 		} else {
 			console.log('Invalid Request');
 		}
+
+		$('html, body').scrollTop(0);
 	});
 
 	function weeklyDataResolutionPerSite(data,resolution){
@@ -1385,7 +1384,7 @@ $(document).ready(function(e) {
 		    			zoomType: 'x'
 		    		},
 		    		title: {
-		    			text: 'Percent of Reply for All Sites',
+		    			text: 'Percent of Reply for Region : '+regions[x],
 			            x: -20 //center
 			        },
 			        subtitle: {
@@ -1425,8 +1424,10 @@ $(document).ready(function(e) {
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
-		$('#period-selection').css("border-color", "none");
-		$('#period-selection').css("background-color", "none");
+
+		$('#period-selection').css("border-color", "#d6d6d6");
+		$('#period-selection').css("background-color", "inherit");
+
 		$('#from-date').css("border-color", "#3c763d");
 		$('#from-date').css("background-color", "#dff0d8");
 	});
@@ -1436,8 +1437,9 @@ $(document).ready(function(e) {
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
-		$('#period-selection').css("border-color", "none");
-		$('#period-selection').css("background-color", "none");
+		$('#period-selection').css("border-color", "#d6d6d6");
+		$('#period-selection').css("background-color", "inherit");
+
 		$('#to-date').css("border-color", "#3c763d");
 		$('#to-date').css("background-color", "#dff0d8");
 	});
@@ -1446,15 +1448,26 @@ $(document).ready(function(e) {
 		$('#to-date').val('');
 		$('#from-date').val('');
 
-		$('#to-date').css("border-color", "none");
-		$('#to-date').css("background-color", "none");
+		$('#to-date').css("border-color", "#d6d6d6");
+		$('#to-date').css("background-color", "inherit");
 
 
-		$('#from-date').css("border-color", "none");
-		$('#from-date').css("background-color", "none");
+		$('#from-date').css("border-color", "#d6d6d6");
+		$('#from-date').css("background-color", "inherit");
 
 		$('#period-selection').css("border-color", "#3c763d");
 		$('#period-selection').css("background-color", "#dff0d8");
+	});
+
+	$('#data-validator').on('change',function(){
+		console.log($('#data-validator').val());
+		if ($('#data-validator').val() == "on") {
+
+			$('#data-validator').val('off'); // Turns Off the toggle switch
+		} else {
+
+			$('#data-validator').val('on'); // Turns On the toggle switch
+		}
 	});
 
 });
