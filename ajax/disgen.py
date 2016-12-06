@@ -3,9 +3,14 @@ import sys
 import time
 from datetime import datetime
 import pandas as pd
-import vcdgen as vcd
-import querySenslopeDb as qs
 
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../updews-pycodes/Analysis/'))
+if not path in sys.path:
+   sys.path.insert(1, path)
+del path
+
+import vcdgen as vcd
+# import querySenslopeDb as qs
     
 def getDF():
 
