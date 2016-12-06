@@ -13,6 +13,8 @@ $(document).ready(function(e) {
 	var data = {};
 	var data_resolution = ['hh','dd','ww','mm'];
 	var total_message_and_response = [];
+	var test_reconstructed_data = []; // for improvement
+	var reconstructed_data = []; // for improvement
 	var groupedSiteFlagger = false;
 	var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
 	var regions = ["NCR","I","CAR","II","III","IVA","IVB","V","VI","VII","VIII","IX","X","XI","XII","CARAGA","ARMM","NIR"];
@@ -207,12 +209,10 @@ $(document).ready(function(e) {
 				})
 			}
 
-			// console.log(sites);
 			series_data = analyzeNumberOfRepliesAllSites(sites);
 				
-
 			var timestamp_users = [];
-			var reconstructed_data = [];
+			reconstructed_data = [];
 			for (var x = 0; x < sites.length;x++){
 				for (var i = 0; i < sites[x].values.length;i++){
 					for (var j =  0; j < sites[x].values[i].length;j++) {
@@ -310,9 +310,9 @@ $(document).ready(function(e) {
 				});
 			}
 
-			series_data = analyzeNumberOfReplies(persons);
-			averagedelay_data = analyzeAverageDelayReply(persons)
-			var replyAsgroup = analyzeReplyGroupPerSite(persons);
+			analyzeNumberOfReplies(persons);
+			analyzeAverageDelayReply(persons);
+			analyzeReplyGroupPerSite(persons);
 			
 
 			titleAndCategoryConstructors();
@@ -471,7 +471,6 @@ $(document).ready(function(e) {
 			$(".panel-group").attr('class', 'panel-group col-md-4');
 
 		} else {
-			var chart = $('#reliability-chart-container').highcharts();
 			$("#reliability-pane").attr('class', 'col-md-8');
 			$("#adp-pane").attr('class', 'col-md-6');
 			$("#detailed-pane").attr('class', 'col-md-6');
@@ -480,8 +479,6 @@ $(document).ready(function(e) {
 	}
 
 	function analyzeNumberOfRepliesAllSites(data,resolution){
-		var timestamp_users = [];
-		var reconstructed_data = [];
 		var temp_date = "";
 		var sent = 0;
 		var reply = 0;
@@ -591,11 +588,6 @@ $(document).ready(function(e) {
 		var reply_stats = 0;
 		var tempDay = "";
 		var data_hc = [];
-		var luser = "";
-		var lmessage = "";
-		var lmtimestamp = "";
-		var lreply = "";
-		var lrtimestamp = "";
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
@@ -690,7 +682,7 @@ $(document).ready(function(e) {
 
 	function analyzeReplyGroupPerSite(data,resolution){
 
-		var test_reconstructed_data = [];
+		test_reconstructed_data = [];
 		var data_hc = [];
 		var sent = 0;
 		var reply = 0;
@@ -720,7 +712,6 @@ $(document).ready(function(e) {
 		}]);
 
 		for (var x = 0; x < test_reconstructed_data.length;x++){
-			console.log(test_reconstructed_data[x].timestamp);
 			if (temp_date == "" || temp_date == null) {
 				temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
 				if ( test_reconstructed_data[x].user == 'You'){
@@ -780,11 +771,10 @@ $(document).ready(function(e) {
 		groupedSiteFlagger = false;
 	}
 
-	function analyzeAverageDelayReply(data){
+	function analyzeAverageDelayReply(data){;
 		if (groupedSiteFlagger == false){
 			column_value = [];
 		}
-
 		for (var i=0;i<data.length;i++){
 			var chatterbox_date = "";
 			var sender_date = "";
@@ -792,30 +782,69 @@ $(document).ready(function(e) {
 			var average_delay = "";
 			for (var x = 0;x<data[i].values.length;x++){
 
-				if (chatterbox_date == "" || sender_date == "") {
-					if (data[i].values[x].user == "You") {
-						chatterbox_date = data[i].values[x].timestamp;
-					} else {
-						sender_date = data[i].values[x].timestamp;
-					}
-				}
+				if ($('#data-validator').val() == "on") { // Lagay validation kung 4 hours ang validity
+					console.log('Naka ON');
+					if (chatterbox_date == "" || sender_date == "") {
+						if (data[i].values[x].user == "You") {
+							chatterbox_date = data[i].values[x].timestamp;
+						} else {
+							if (chatterbox_date != "") {
+								sender_date = data[i].values[x].timestamp;
+							}
+						}
+					}  else {
 
-				//Computes the delay and push it to an array.
-				if (chatterbox_date != "" && sender_date != ""){
-					if (moment(chatterbox_date) > moment(sender_date)) {
-						var date1 = moment(chatterbox_date);
-						var date2 = moment(sender_date);
-						var diff = date1.diff(date2,'minutes');
-						date_arr.push(diff);
-						chatterbox_date = "";
-						sender_date = "";
+						if (moment(chatterbox_date).add(4, 'hours').valueOf() <= moment(sender_date).valueOf()) {
+							sender_date = ""; // Sets the sender_date to empty/Invalid
+							chatterbox_date = ""; // Sets the chatterbox_date ('YOU') to empty/Invalid
+						}
+
+							//Computes the delay and push it to an array.
+							if (chatterbox_date != "" && sender_date != ""){
+								if (moment(chatterbox_date) > moment(sender_date)) {
+									var date1 = moment(chatterbox_date);
+									var date2 = moment(sender_date);
+									var diff = date1.diff(date2,'minutes');
+									date_arr.push(diff);
+									chatterbox_date = "";
+									sender_date = "";
+								} else {
+									var date1 = moment(chatterbox_date);
+									var date2 = moment(sender_date);
+									var diff = date2.diff(date1,'minutes');
+									date_arr.push(diff);
+									chatterbox_date = "";
+									sender_date = "";
+								}
+							}
+						}
+				} else {
+					console.log('Naka OFF');
+					if (chatterbox_date == "" || sender_date == "") {
+						if (data[i].values[x].user == "You") {
+							chatterbox_date = data[i].values[x].timestamp;
+						} else {
+							sender_date = data[i].values[x].timestamp;
+						}
 					} else {
-						var date1 = moment(chatterbox_date);
-						var date2 = moment(sender_date);
-						var diff = date2.diff(date1,'minutes');
-						date_arr.push(diff);
-						chatterbox_date = "";
-						sender_date = "";
+						//Computes the delay and push it to an array.
+						if (chatterbox_date != "" && sender_date != ""){
+							if (moment(chatterbox_date) > moment(sender_date)) {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date1.diff(date2,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							} else {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date2.diff(date1,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							}
+						}
 					}
 				}
 			}
@@ -1419,6 +1448,51 @@ $(document).ready(function(e) {
 		}
 	}
 
+	function generateAverageDelayChart(){
+		$('#average-delay-container').highcharts({
+			chart: {
+				type: 'column'
+			},
+			title: {
+				text: 'Average delay of Reply'
+			},
+			subtitle: {
+				text: period_range['percentReply']
+			},
+			xAxis: {
+				type: 'category'
+			},
+			yAxis: {
+				title: {
+					text: 'Total time delay'
+				}
+			},
+			legend: {
+				enabled: false
+			},
+			plotOptions: {
+				series: {
+					borderWidth: 0,
+					dataLabels: {
+						enabled: true,
+						format: '{point.y:.0f} Minutes'
+					}
+				}
+			},
+
+			tooltip: {
+				headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+				pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+			},
+
+			series: [{
+				name: 'Time',
+				colorByPoint: true,
+				data: column_value
+			}]
+		});
+	}
+
 	// Resets the Period selector to default if the from-to function is used
 	$('#from-date').on('change',function(){
 		$('#period-selection option').prop('selected', function() {
@@ -1462,11 +1536,67 @@ $(document).ready(function(e) {
 	$('#data-validator').on('change',function(){
 		console.log($('#data-validator').val());
 		if ($('#data-validator').val() == "on") {
-
 			$('#data-validator').val('off'); // Turns Off the toggle switch
+			if ($('#category-selection').val() == 'allsites') {
+				detailedInformation = [];
+				column_value = [];
+				sortForAllSite(reconstructed_data);
+				analyzeAverageDelayReply(reconstructed_data);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+		    	changePanelResolution();
+			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				groupedSiteFlagger = true;
+				analyzeAverageDelayReply(persons);
+				analyzeAverageDelayReply([{
+					number: $('#filter-key').val(),
+					values: test_reconstructed_data
+				}]);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+				groupedSiteFlagger = false;
+			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				analyzeAverageDelayReply(sites);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+			} else {
+				alert('Invalid Request, Please recheck inputs');
+			}
 		} else {
-
 			$('#data-validator').val('on'); // Turns On the toggle switch
+			if ($('#category-selection').val() == 'allsites') {
+				detailedInformation = [];
+				column_value = [];
+				sortForAllSite(reconstructed_data);
+				analyzeAverageDelayReply(reconstructed_data);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+		    	changePanelResolution();
+			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				groupedSiteFlagger = true;
+				analyzeAverageDelayReply(persons);
+				analyzeAverageDelayReply([{
+					number: $('#filter-key').val(),
+					values: test_reconstructed_data
+				}]);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+				groupedSiteFlagger = false;
+			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				analyzeAverageDelayReply(sites);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+			} else {
+				alert('Invalid Request, Please recheck inputs');
+			}
 		}
 	});
 
