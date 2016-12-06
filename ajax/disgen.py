@@ -9,9 +9,10 @@ import querySenslopeDb as qs
     
 def getDF():
 
-        site = 'agbsb'
-        tdate = "2016-06-09 15:00:00"
-        df= vcd.displacement(site, endTS=tdate)
+        site = sys.argv[1]
+        fdate = sys.argv[2]
+        tdate = sys.argv[3]
+        df= vcd.displacement(site, endTS=tdate , startTS=fdate)
         print df
     
 getDF();

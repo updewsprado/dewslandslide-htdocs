@@ -1,21 +1,29 @@
+
 import os
 import sys
 import time
 from datetime import datetime
 import pandas as pd
-import vcdgen as vcd
+#include the path of "Data Analysis" folder for the python scripts searching
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if not path in sys.path:
+    sys.path.insert(1,path)
+del path    
+
+#import Data Analysis/querySenslopeDb
 import querySenslopeDb as qs
+
+#import Velocity, Column Position and Displacement Generator Library
+import vcdgen as vcd
+start = datetime.now()
 
     
 def getDF():
 
-        site = 'agbsb'
-        fdate = "2016-05-01 00:00:00"
-        tdate = "2016-06-09 15:00:00"
+        site = sys.argv[1]
+        fdate = sys.argv[2]
+        tdate = sys.argv[3]
         df= vcd.velocity(site, tdate, fdate)
-#        df = pd.DataFrame(df,columns=['raw'])
-#        dfajson = df.reset_index().to_json(orient="records",date_format='iso')
-#        dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
-        print df
-    
+        print df           
+        print "runtime =", datetime.now() - start   
 getDF();

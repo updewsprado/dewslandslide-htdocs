@@ -9,13 +9,10 @@ import querySenslopeDb as qs
     
 def getDF():
 
-        site = 'agbsb'
-        fdate = "2016-05-01 00:00:00"
-        tdate = "2016-06-09 15:00:00"
-        df= vcd.colpos(colname=site, endTS=tdate, startTS='', day_interval=1, fixpoint='bottom')
-#        df = pd.DataFrame(df,columns=['raw'])
-#        dfajson = df.reset_index().to_json(orient="records",date_format='iso')
-#        dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
+        site = sys.argv[1]
+        fdate = sys.argv[2]
+        tdate = sys.argv[3]
+        df= vcd.colpos(colname=site, endTS=tdate, startTS=fdate, day_interval=1, fixpoint='bottom')
         print df
     
 getDF();

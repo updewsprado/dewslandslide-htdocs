@@ -2,9 +2,11 @@
     if(isset($_GET['site'])) {
         $site = $_GET['site'];
     }
-    else {
-         echo "Error";
-        return -1;
+    if(isset($_GET['fdate'])) {
+        $fdate = $_GET['fdate'];
+    }
+    if(isset($_GET['tdate'])) {
+        $tdate = $_GET['tdate'];
     }
 
 
@@ -26,10 +28,11 @@
     //For Linux (Remember to set one for windows as well)
     
     $fileName = 'velocitygen.py';
-    $command = $pythonPath.' '.$fileName.' '.$site;
+    $command = $pythonPath.' '.$fileName.' '.$site.' '.$fdate.' '.$tdate;
 
     // echo "$command";
     exec($command, $output, $return);
     echo($output[1]);
+    
     
 ?>
