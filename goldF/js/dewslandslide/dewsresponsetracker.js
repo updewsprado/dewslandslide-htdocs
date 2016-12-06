@@ -15,10 +15,15 @@ $(document).ready(function(e) {
 	var total_message_and_response = [];
 	var test_reconstructed_data = []; // for improvement
 	var reconstructed_data = []; // for improvement
+	var data_validator_replies = 0; // for improvement
+	var data_validator_dyna_msg = 0;
 	var groupedSiteFlagger = false;
 	var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
 	var regions = ["NCR","I","CAR","II","III","IVA","IVB","V","VI","VII","VIII","IX","X","XI","XII","CARAGA","ARMM","NIR"];
 
+	// TO MUCH COMMENTS.
+	// CLEAN CODE: ADD IT OR DELETE IT. NO COMMENT OUT CODES
+	
 	$(document).ajaxStart(function () {
 		$('#loading').modal('toggle');
 	});
@@ -522,8 +527,8 @@ $(document).ready(function(e) {
 							} else {
 								var store_dates = [moment(data[x].values[0][i].timestamp).valueOf(),Math.round(stats)];
 							}
-							total_sent_message = total_sent_message + sent;
-							total_response_message = total_response_message + reply;
+							// total_sent_message = total_sent_message + sent;
+							// total_response_message = total_response_message + reply;
 							data_hc.push(store_dates);
 							sent = 0;
 							reply = 0;
@@ -545,13 +550,13 @@ $(document).ready(function(e) {
 				data: data_hc
 			});
 			data_hc = [];
-			mes_res = {
-				total_response: total_response_message,
-				total_message: total_sent_message
-			}
-			total_message_and_response.push(mes_res);
-			total_response_message = 0;
-			total_sent_message = 0;
+			// mes_res = {
+			// 	total_response: total_response_message,
+			// 	total_message: total_sent_message
+			// }
+			// total_message_and_response.push(mes_res);
+			// total_response_message = 0;
+			// total_sent_message = 0;
 		}
 	}
 
@@ -580,7 +585,6 @@ $(document).ready(function(e) {
 			resolution[0] = '8';
 			resolution[1] = '11';
 		}
-
 		var sent = 0;
 		var total_sent_message = 0;
 		var total_response_message = 0;
@@ -629,8 +633,8 @@ $(document).ready(function(e) {
 						}
 
 							reply_stats_with_dates = [moment(data[i].values[x-1].timestamp).valueOf(),reply_stats];
-							total_sent_message = total_sent_message+sent;
-							total_response_message = total_response_message+replies;
+							// total_sent_message = total_sent_message+sent;
+							// total_response_message = total_response_message+replies;
 							data_hc.push(reply_stats_with_dates);
 							sent = 0;
 							replies = 0;
@@ -655,12 +659,12 @@ $(document).ready(function(e) {
 				data: data_hc
 			};
 
-			mes_res = {
-				total_response: total_response_message,
-				total_message: total_sent_message
-			}
+			// mes_res = {
+			// 	total_response: total_response_message,
+			// 	total_message: total_sent_message
+			// }
 
-			total_message_and_response.push(mes_res);
+			// total_message_and_response.push(mes_res);
 			series_value.push(series_stats);
 		}
 	}
@@ -740,8 +744,8 @@ $(document).ready(function(e) {
 							var store_dates = [moment(test_reconstructed_data[x].timestamp).valueOf(),Math.round(stats)];
 						}
 						data_hc.push(store_dates);
-						total_sent_message = total_sent_message + sent;
-						total_response_message = total_response_message + reply;
+						// total_sent_message = total_sent_message + sent;
+						// total_response_message = total_response_message + reply;
 						sent = 0;
 						reply = 0;
 						temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
@@ -762,12 +766,12 @@ $(document).ready(function(e) {
 			data: data_hc
 		});
 
-		mes_res = {
-			total_response: total_response_message,
-			total_message: total_sent_message
-		}
+		// mes_res = {
+		// 	total_response: total_response_message,
+		// 	total_message: total_sent_message
+		// }
 
-		total_message_and_response.push(mes_res);
+		// total_message_and_response.push(mes_res);
 		groupedSiteFlagger = false;
 	}
 
@@ -780,16 +784,19 @@ $(document).ready(function(e) {
 			var sender_date = "";
 			var date_arr = [];
 			var average_delay = "";
+			data_validator_replies = 0;
+			data_validator_dyna_msg = 0;
 			for (var x = 0;x<data[i].values.length;x++){
 
 				if ($('#data-validator').val() == "on") { // Lagay validation kung 4 hours ang validity
-					console.log('Naka ON');
 					if (chatterbox_date == "" || sender_date == "") {
 						if (data[i].values[x].user == "You") {
+							data_validator_dyna_msg++;
 							chatterbox_date = data[i].values[x].timestamp;
 						} else {
 							if (chatterbox_date != "") {
 								sender_date = data[i].values[x].timestamp;
+								data_validator_replies++;
 							}
 						}
 					}  else {
@@ -797,8 +804,7 @@ $(document).ready(function(e) {
 						if (moment(chatterbox_date).add(4, 'hours').valueOf() <= moment(sender_date).valueOf()) {
 							sender_date = ""; // Sets the sender_date to empty/Invalid
 							chatterbox_date = ""; // Sets the chatterbox_date ('YOU') to empty/Invalid
-						}
-
+						} else {
 							//Computes the delay and push it to an array.
 							if (chatterbox_date != "" && sender_date != ""){
 								if (moment(chatterbox_date) > moment(sender_date)) {
@@ -818,13 +824,15 @@ $(document).ready(function(e) {
 								}
 							}
 						}
+					}
 				} else {
-					console.log('Naka OFF');
 					if (chatterbox_date == "" || sender_date == "") {
 						if (data[i].values[x].user == "You") {
 							chatterbox_date = data[i].values[x].timestamp;
+							data_validator_dyna_msg++;
 						} else {
 							sender_date = data[i].values[x].timestamp;
+							data_validator_replies++;
 						}
 					} else {
 						//Computes the delay and push it to an array.
@@ -906,11 +914,19 @@ $(document).ready(function(e) {
 				max: maximum,
 				deviation: standard_deviation
 			});
-
+			console.log(data_validator_replies);
 			tot = 0;
 			date_arr = [];
 			chatterbox_date = "";
 			sender_date = "";
+
+			mes_res = {
+				total_response: data_validator_replies,
+				total_message: data_validator_dyna_msg
+			}
+
+			total_message_and_response.push(mes_res);
+
 		}
 	}
 
@@ -1534,12 +1550,12 @@ $(document).ready(function(e) {
 	});
 
 	$('#data-validator').on('change',function(){
-		console.log($('#data-validator').val());
 		if ($('#data-validator').val() == "on") {
 			$('#data-validator').val('off'); // Turns Off the toggle switch
 			if ($('#category-selection').val() == 'allsites') {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				sortForAllSite(reconstructed_data);
 				analyzeAverageDelayReply(reconstructed_data);
 				generateAverageDelayChart();
@@ -1548,6 +1564,7 @@ $(document).ready(function(e) {
 			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				groupedSiteFlagger = true;
 				analyzeAverageDelayReply(persons);
 				analyzeAverageDelayReply([{
@@ -1560,6 +1577,7 @@ $(document).ready(function(e) {
 			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				analyzeAverageDelayReply(sites);
 				generateAverageDelayChart();
 				detailedInfoGenerator();
@@ -1571,6 +1589,7 @@ $(document).ready(function(e) {
 			if ($('#category-selection').val() == 'allsites') {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				sortForAllSite(reconstructed_data);
 				analyzeAverageDelayReply(reconstructed_data);
 				generateAverageDelayChart();
@@ -1579,6 +1598,7 @@ $(document).ready(function(e) {
 			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				groupedSiteFlagger = true;
 				analyzeAverageDelayReply(persons);
 				analyzeAverageDelayReply([{
@@ -1591,6 +1611,7 @@ $(document).ready(function(e) {
 			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
+				total_message_and_response = [];
 				analyzeAverageDelayReply(sites);
 				generateAverageDelayChart();
 				detailedInfoGenerator();
