@@ -627,8 +627,8 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		var tempConn = new WebSocket('ws://54.166.60.233:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050');
+		// var tempConn = new WebSocket('ws://54.166.60.233:5050');
+		var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -2020,10 +2020,25 @@
 				var formatSbmp = ewiLocation.replace("null","");
 				if (formatSbmp.charAt(0) == ",") {
 					formatSbmp = formatSbmp.substr(1);
-				}	
-				var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				}
+
+
+				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(day+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
 				$('#site-abbr').val(data["name"]);
-				$('#constructed-ewi-amd').val(finalEWI);
+				$('#constructed-ewi-amd').val(formGroundTime);
 			}
 		});
 		$('#ewi-asap-modal').modal('toggle');
