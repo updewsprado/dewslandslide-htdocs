@@ -1941,11 +1941,11 @@
 				var d = new Date();
 				var currentPanahon = d.getHours();
 				if (currentPanahon >= 12 && currentPanahon <= 18) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Hapon");
 				} else if (currentPanahon > 18 && currentPanahon <=23) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Gabi");
 				} else {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
 				}
 
 				//Changes the Date
@@ -1990,7 +1990,15 @@
 			url: "../chatterbox/getewi",             	
 			dataType: "json",	
 			success: function(response){
-				var preConstructedEWI = response[data["internal_alert_level"]];
+				if (data["internal_alert_level"].toUpperCase().length > 4) {
+					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
+						var preConstructedEWI = response["A2"];
+					} else {
+						var preConstructedEWI = response["A3"];
+					}
+				} else {
+					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+				}
 				var constructedEWIDate = "";
 				var finalEWI = ""
 				var d = new Date();
@@ -2020,8 +2028,41 @@
 				var formatSbmp = ewiLocation.replace("null","");
 				if (formatSbmp.charAt(0) == ",") {
 					formatSbmp = formatSbmp.substr(1);
-				}	
-				var finalEWI = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				}
+
+
+				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 00:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+				
 				$('#site-abbr').val(data["name"]);
 				$('#constructed-ewi-amd').val(finalEWI);
 			}
@@ -2032,6 +2073,7 @@
 	function templateSendViaAMD(){
 		ewiFlagger = true;
 		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+
 		var text = $('#constructed-ewi-amd').val();
 		try {
 
