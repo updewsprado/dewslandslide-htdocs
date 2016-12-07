@@ -627,8 +627,8 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://54.166.60.233:5050');
-		var tempConn = new WebSocket('ws://localhost:5050');
+		var tempConn = new WebSocket('ws://54.166.60.233:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -1941,11 +1941,11 @@
 				var d = new Date();
 				var currentPanahon = d.getHours();
 				if (currentPanahon >= 12 && currentPanahon <= 18) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Hapon");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Hapon");
 				} else if (currentPanahon > 18 && currentPanahon <=23) {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Gabi");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Gabi");
 				} else {
-					constructedEWI = response[$('#alert-lvl').val()].replace("%%PANAHON%%","Umaga");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
 				}
 
 				//Changes the Date
@@ -1990,7 +1990,7 @@
 			url: "../chatterbox/getewi",             	
 			dataType: "json",	
 			success: function(response){
-				var preConstructedEWI = response[data["internal_alert_level"]];
+				var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
 				var constructedEWIDate = "";
 				var finalEWI = ""
 				var d = new Date();
@@ -2032,13 +2032,31 @@
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(day+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
 				} else {
 					alert("Error Occured: Please contact Administrator");
 				}
 
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 00:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+				
 				$('#site-abbr').val(data["name"]);
-				$('#constructed-ewi-amd').val(formGroundTime);
+				$('#constructed-ewi-amd').val(finalEWI);
 			}
 		});
 		$('#ewi-asap-modal').modal('toggle');
@@ -2047,6 +2065,7 @@
 	function templateSendViaAMD(){
 		ewiFlagger = true;
 		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+
 		var text = $('#constructed-ewi-amd').val();
 		try {
 
