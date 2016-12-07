@@ -13,9 +13,17 @@ $(document).ready(function(e) {
 	var data = {};
 	var data_resolution = ['hh','dd','ww','mm'];
 	var total_message_and_response = [];
+	var test_reconstructed_data = []; // for improvement
+	var reconstructed_data = []; // for improvement
+	var data_validator_replies = 0; // for improvement
+	var data_validator_dyna_msg = 0;
 	var groupedSiteFlagger = false;
 	var end_dates = [31,28,31,31,31,30,31,31,30,31,30,31];
+	var regions = ["NCR","I","CAR","II","III","IVA","IVB","V","VI","VII","VIII","IX","X","XI","XII","CARAGA","ARMM","NIR"];
 
+	// TO MUCH COMMENTS.
+	// CLEAN CODE: ADD IT OR DELETE IT. NO COMMENT OUT CODES
+	
 	$(document).ajaxStart(function () {
 		$('#loading').modal('toggle');
 	});
@@ -23,7 +31,6 @@ $(document).ready(function(e) {
 	$(document).ajaxStop(function () {
 		$('#loading').modal('toggle');
 	});
-
 
 	$('#confirm-filter-btn').click(function(){
 
@@ -75,7 +82,6 @@ $(document).ready(function(e) {
 			alert('Invalid Request, Please recheck inputs');
 		}
 	});
-
 
 	function getAnalyticsPerson(data){
 		$.post( "../responsetracker/analyticsPerson", {person: JSON.stringify(data)})
@@ -208,12 +214,10 @@ $(document).ready(function(e) {
 				})
 			}
 
-			// console.log(sites);
 			series_data = analyzeNumberOfRepliesAllSites(sites);
 				
-
 			var timestamp_users = [];
-			var reconstructed_data = [];
+			reconstructed_data = [];
 			for (var x = 0; x < sites.length;x++){
 				for (var i = 0; i < sites[x].values.length;i++){
 					for (var j =  0; j < sites[x].values[i].length;j++) {
@@ -244,42 +248,7 @@ $(document).ready(function(e) {
 	    	//Generates Detailed information for each Node
 	    	detailedInfoGenerator();
 	    	changePanelResolution();
-	    	$('#reliability-chart-container').highcharts({
-	    		chart: {
-	    			zoomType: 'x'
-	    		},
-	    		title: {
-	    			text: 'Percent of Reply for All Sites',
-		            x: -20 //center
-		        },
-		        subtitle: {
-		        	text: period_range['percentReply'],
-		        	x: -20
-		        },
-		        xAxis: {
-		        	type: 'datetime'
-		        },
-		        yAxis: {
-		        	title: {
-		        		text: '% of Replies'
-		        	},
-		        	plotLines: [{
-		        		value: 0,
-		        		width: 1,
-		        		color: '#808080'
-		        	}]
-		        },
-		        tooltip: {
-		        	valueSuffix: '%'
-		        },
-		        legend: {
-		        	layout: 'vertical',
-		        	align: 'right',
-		        	verticalAlign: 'middle',
-		        	borderWidth: 0
-		        },
-		        series: series_value
-		    });
+	    	getRegion();
 
 	    	$('#average-delay-container').highcharts({
 	    		chart: {
@@ -346,9 +315,9 @@ $(document).ready(function(e) {
 				});
 			}
 
-			series_data = analyzeNumberOfReplies(persons);
-			averagedelay_data = analyzeAverageDelayReply(persons)
-			var replyAsgroup = analyzeReplyGroupPerSite(persons);
+			analyzeNumberOfReplies(persons);
+			analyzeAverageDelayReply(persons);
+			analyzeReplyGroupPerSite(persons);
 			
 
 			titleAndCategoryConstructors();
@@ -466,35 +435,24 @@ $(document).ready(function(e) {
 	});
 
 	function datalistPredictionPerson(data) {
-		var datalist = document.getElementById('filterlist');
-		while (datalist.hasChildNodes()) {
-			datalist.removeChild(datalist.lastChild);
-		}
+		var recon_data = [];
 		$('#filter-key').val("");
 		for (var counter=0;counter < data.length;counter++){
-			var opt = document.createElement('option');
-
 			var constructedFullname = data[counter].lastname+','+ data[counter].firstname
 			+','+ data[counter].number;
-
-			opt.value = constructedFullname;
-			opt.innerHTML = constructedFullname;
-			datalist.appendChild(opt);
+			recon_data.push(constructedFullname);
 		}
+
+		$("#filter-key").autocomplete({
+	    	source: recon_data
+	    });
 	}
 
 	function datalistPredictionSite(data) {
-		var datalist = document.getElementById('filterlist');
-		while (datalist.hasChildNodes()) {
-			datalist.removeChild(datalist.lastChild);
-		}
 		$('#filter-key').val("");
-		for (var counter=0;counter < data.length;counter++){
-			var opt = document.createElement('option');
-			opt.value = data[counter];
-			opt.innerHTML = data[counter];
-			datalist.appendChild(opt);
-		}
+		$("#filter-key").autocomplete({
+	    	source: data
+	    });
 	}
 
 	function resetVariables(){
@@ -518,7 +476,6 @@ $(document).ready(function(e) {
 			$(".panel-group").attr('class', 'panel-group col-md-4');
 
 		} else {
-			var chart = $('#reliability-chart-container').highcharts();
 			$("#reliability-pane").attr('class', 'col-md-8');
 			$("#adp-pane").attr('class', 'col-md-6');
 			$("#detailed-pane").attr('class', 'col-md-6');
@@ -527,8 +484,6 @@ $(document).ready(function(e) {
 	}
 
 	function analyzeNumberOfRepliesAllSites(data,resolution){
-		var timestamp_users = [];
-		var reconstructed_data = [];
 		var temp_date = "";
 		var sent = 0;
 		var reply = 0;
@@ -572,8 +527,8 @@ $(document).ready(function(e) {
 							} else {
 								var store_dates = [moment(data[x].values[0][i].timestamp).valueOf(),Math.round(stats)];
 							}
-							total_sent_message = total_sent_message + sent;
-							total_response_message = total_response_message + reply;
+							// total_sent_message = total_sent_message + sent;
+							// total_response_message = total_response_message + reply;
 							data_hc.push(store_dates);
 							sent = 0;
 							reply = 0;
@@ -595,13 +550,13 @@ $(document).ready(function(e) {
 				data: data_hc
 			});
 			data_hc = [];
-			mes_res = {
-				total_response: total_response_message,
-				total_message: total_sent_message
-			}
-			total_message_and_response.push(mes_res);
-			total_response_message = 0;
-			total_sent_message = 0;
+			// mes_res = {
+			// 	total_response: total_response_message,
+			// 	total_message: total_sent_message
+			// }
+			// total_message_and_response.push(mes_res);
+			// total_response_message = 0;
+			// total_sent_message = 0;
 		}
 	}
 
@@ -630,7 +585,6 @@ $(document).ready(function(e) {
 			resolution[0] = '8';
 			resolution[1] = '11';
 		}
-
 		var sent = 0;
 		var total_sent_message = 0;
 		var total_response_message = 0;
@@ -638,11 +592,6 @@ $(document).ready(function(e) {
 		var reply_stats = 0;
 		var tempDay = "";
 		var data_hc = [];
-		var luser = "";
-		var lmessage = "";
-		var lmtimestamp = "";
-		var lreply = "";
-		var lrtimestamp = "";
 
 		for (var i=0;i<data.length;i++){
 			// Resets the statistics
@@ -684,8 +633,8 @@ $(document).ready(function(e) {
 						}
 
 							reply_stats_with_dates = [moment(data[i].values[x-1].timestamp).valueOf(),reply_stats];
-							total_sent_message = total_sent_message+sent;
-							total_response_message = total_response_message+replies;
+							// total_sent_message = total_sent_message+sent;
+							// total_response_message = total_response_message+replies;
 							data_hc.push(reply_stats_with_dates);
 							sent = 0;
 							replies = 0;
@@ -710,12 +659,12 @@ $(document).ready(function(e) {
 				data: data_hc
 			};
 
-			mes_res = {
-				total_response: total_response_message,
-				total_message: total_sent_message
-			}
+			// mes_res = {
+			// 	total_response: total_response_message,
+			// 	total_message: total_sent_message
+			// }
 
-			total_message_and_response.push(mes_res);
+			// total_message_and_response.push(mes_res);
 			series_value.push(series_stats);
 		}
 	}
@@ -737,7 +686,7 @@ $(document).ready(function(e) {
 
 	function analyzeReplyGroupPerSite(data,resolution){
 
-		var test_reconstructed_data = [];
+		test_reconstructed_data = [];
 		var data_hc = [];
 		var sent = 0;
 		var reply = 0;
@@ -767,7 +716,6 @@ $(document).ready(function(e) {
 		}]);
 
 		for (var x = 0; x < test_reconstructed_data.length;x++){
-			console.log(test_reconstructed_data[x].timestamp);
 			if (temp_date == "" || temp_date == null) {
 				temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
 				if ( test_reconstructed_data[x].user == 'You'){
@@ -796,8 +744,8 @@ $(document).ready(function(e) {
 							var store_dates = [moment(test_reconstructed_data[x].timestamp).valueOf(),Math.round(stats)];
 						}
 						data_hc.push(store_dates);
-						total_sent_message = total_sent_message + sent;
-						total_response_message = total_response_message + reply;
+						// total_sent_message = total_sent_message + sent;
+						// total_response_message = total_response_message + reply;
 						sent = 0;
 						reply = 0;
 						temp_date = test_reconstructed_data[x].timestamp.substring(resolution[0],resolution[1]);
@@ -818,51 +766,93 @@ $(document).ready(function(e) {
 			data: data_hc
 		});
 
-		mes_res = {
-			total_response: total_response_message,
-			total_message: total_sent_message
-		}
+		// mes_res = {
+		// 	total_response: total_response_message,
+		// 	total_message: total_sent_message
+		// }
 
-		total_message_and_response.push(mes_res);
+		// total_message_and_response.push(mes_res);
 		groupedSiteFlagger = false;
 	}
 
-	function analyzeAverageDelayReply(data){
+	function analyzeAverageDelayReply(data){;
 		if (groupedSiteFlagger == false){
 			column_value = [];
 		}
-
 		for (var i=0;i<data.length;i++){
 			var chatterbox_date = "";
 			var sender_date = "";
 			var date_arr = [];
 			var average_delay = "";
+			data_validator_replies = 0;
+			data_validator_dyna_msg = 0;
 			for (var x = 0;x<data[i].values.length;x++){
 
-				if (chatterbox_date == "" || sender_date == "") {
-					if (data[i].values[x].user == "You") {
-						chatterbox_date = data[i].values[x].timestamp;
-					} else {
-						sender_date = data[i].values[x].timestamp;
-					}
-				}
+				if ($('#data-validator').val() == "on") { // Lagay validation kung 4 hours ang validity
+					if (chatterbox_date == "" || sender_date == "") {
+						if (data[i].values[x].user == "You") {
+							data_validator_dyna_msg++;
+							chatterbox_date = data[i].values[x].timestamp;
+						} else {
+							if (chatterbox_date != "") {
+								sender_date = data[i].values[x].timestamp;
+								data_validator_replies++;
+							}
+						}
+					}  else {
 
-				//Computes the delay and push it to an array.
-				if (chatterbox_date != "" && sender_date != ""){
-					if (moment(chatterbox_date) > moment(sender_date)) {
-						var date1 = moment(chatterbox_date);
-						var date2 = moment(sender_date);
-						var diff = date1.diff(date2,'minutes');
-						date_arr.push(diff);
-						chatterbox_date = "";
-						sender_date = "";
+						if (moment(chatterbox_date).add(4, 'hours').valueOf() <= moment(sender_date).valueOf()) {
+							sender_date = ""; // Sets the sender_date to empty/Invalid
+							chatterbox_date = ""; // Sets the chatterbox_date ('YOU') to empty/Invalid
+						} else {
+							//Computes the delay and push it to an array.
+							if (chatterbox_date != "" && sender_date != ""){
+								if (moment(chatterbox_date) > moment(sender_date)) {
+									var date1 = moment(chatterbox_date);
+									var date2 = moment(sender_date);
+									var diff = date1.diff(date2,'minutes');
+									date_arr.push(diff);
+									chatterbox_date = "";
+									sender_date = "";
+								} else {
+									var date1 = moment(chatterbox_date);
+									var date2 = moment(sender_date);
+									var diff = date2.diff(date1,'minutes');
+									date_arr.push(diff);
+									chatterbox_date = "";
+									sender_date = "";
+								}
+							}
+						}
+					}
+				} else {
+					if (chatterbox_date == "" || sender_date == "") {
+						if (data[i].values[x].user == "You") {
+							chatterbox_date = data[i].values[x].timestamp;
+							data_validator_dyna_msg++;
+						} else {
+							sender_date = data[i].values[x].timestamp;
+							data_validator_replies++;
+						}
 					} else {
-						var date1 = moment(chatterbox_date);
-						var date2 = moment(sender_date);
-						var diff = date2.diff(date1,'minutes');
-						date_arr.push(diff);
-						chatterbox_date = "";
-						sender_date = "";
+						//Computes the delay and push it to an array.
+						if (chatterbox_date != "" && sender_date != ""){
+							if (moment(chatterbox_date) > moment(sender_date)) {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date1.diff(date2,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							} else {
+								var date1 = moment(chatterbox_date);
+								var date2 = moment(sender_date);
+								var diff = date2.diff(date1,'minutes');
+								date_arr.push(diff);
+								chatterbox_date = "";
+								sender_date = "";
+							}
+						}
 					}
 				}
 			}
@@ -924,11 +914,19 @@ $(document).ready(function(e) {
 				max: maximum,
 				deviation: standard_deviation
 			});
-
+			console.log(data_validator_replies);
 			tot = 0;
 			date_arr = [];
 			chatterbox_date = "";
 			sender_date = "";
+
+			mes_res = {
+				total_response: data_validator_replies,
+				total_message: data_validator_dyna_msg
+			}
+
+			total_message_and_response.push(mes_res);
+
 		}
 	}
 
@@ -980,6 +978,7 @@ $(document).ready(function(e) {
 
 	function detailedInfoGenerator(){
 		$('#ntc-data-resolution').css("display", "block");
+		$('#div-data-validator').css("display", "block");
 		$('#div-data-resolution').css("opacity", "1");
 		var myNode = document.getElementById("detailed-info-container");
 		while (myNode.firstChild) {
@@ -1066,6 +1065,8 @@ $(document).ready(function(e) {
 		} else {
 			console.log('Invalid Request');
 		}
+
+		$('html, body').scrollTop(0);
 	});
 
 	function weeklyDataResolutionPerSite(data,resolution){
@@ -1306,42 +1307,8 @@ $(document).ready(function(e) {
 		} else {
 			weeklyDataResolution(data,resolution);
 		}
-		$('#reliability-chart-container').highcharts({
-			chart: {
-				zoomType: 'x'
-			},
-			title: {
-				text: 'Percent of Reply for All Sites',
-		            x: -20 //center
-		        },
-		        subtitle: {
-		        	text: period_range['percentReply'],
-		        	x: -20
-		        },
-		        xAxis: {
-		        	type: 'datetime'
-		        },
-		        yAxis: {
-		        	title: {
-		        		text: '% of Replies'
-		        	},
-		        	plotLines: [{
-		        		value: 0,
-		        		width: 1,
-		        		color: '#808080'
-		        	}]
-		        },
-		        tooltip: {
-		        	valueSuffix: '%'
-		        },
-		        legend: {
-		        	layout: 'vertical',
-		        	align: 'right',
-		        	verticalAlign: 'middle',
-		        	borderWidth: 0
-		        },
-		        series: series_value
-	    });
+
+		getRegion();
 	}
 
 	function analyticsChartPerson(data,resolution){
@@ -1396,11 +1363,163 @@ $(document).ready(function(e) {
 		format: 'yyyy-mm-dd'
 	});
 
+	function getRegion(){
+		$.get( "../responsetracker/getRegions", function( data ) {
+			var dataFetched = [];
+			var list_regions = [];
+			dataFetched = JSON.parse(data);
+			for (var x = 0; x < series_value.length;x++){
+				for (var i = 0; i < dataFetched.length;i++){
+
+					if (series_value[x].name.length > 3){
+						var site1 = series_value[x].name.substring(0,3);
+						var site2 = series_value[x].name.substring(4,7);
+						if (site1 == dataFetched[i].name || site2 == dataFetched[i].name) {
+							series_value[x].region = dataFetched[i].region;
+						}
+					} else {
+						if (series_value[x].name == dataFetched[i].name) {
+							series_value[x].region = dataFetched[i].region;
+						}
+					}
+				}
+			}
+	    	generateReliabilityForAllSites();
+		});
+	}
+
+	function generateReliabilityForAllSites(){
+
+		var myNode = document.getElementById("reliability-chart-container");
+		while (myNode.firstChild) {
+			myNode.removeChild(myNode.firstChild);
+		}
+
+		for (var x = 0; x < regions.length;x++){
+			var series_value_per_region = [];
+			var reliability_chart_container = document.getElementById('reliability-chart-container');
+			var panel_group = document.createElement('div');
+			panel_group.className = 'panel panel-default';
+			panel_group.id = 'panel-'+regions[x];
+
+			var panel_head = document.createElement('div');
+			panel_head.className = 'panel-heading';
+			panel_head.id = 'heading-'+regions[x];
+			panel_head.innerHTML = "Region: "+regions[x];
+
+			var panel_body = document.createElement('div');
+			panel_body.className = 'panel-body';
+			panel_body.id = 'body-'+regions[x];
+
+
+			for (var i = 0; i < series_value.length; i++){
+				if (series_value[i].region == regions[x]) {
+					series_value_per_region.push(series_value[i]);
+				}
+			}
+			panel_group.appendChild(panel_head);
+			panel_group.appendChild(panel_body);
+			reliability_chart_container.appendChild(panel_group);
+
+			if (series_value_per_region == null || series_value_per_region.length == 0){
+				panel_body.innerHTML = "<h2><center>NO DATA</center></h2>";
+			} else {
+		    	$("#panel-"+regions[x]+" #body-"+regions[x]).highcharts({
+		    		chart: {
+		    			zoomType: 'x'
+		    		},
+		    		title: {
+		    			text: 'Percent of Reply for Region : '+regions[x],
+			            x: -20 //center
+			        },
+			        subtitle: {
+			        	text: period_range['percentReply'],
+			        	x: -20
+			        },
+			        xAxis: {
+			        	type: 'datetime'
+			        },
+			        yAxis: {
+			        	title: {
+			        		text: '% of Replies'
+			        	},
+			        	plotLines: [{
+			        		value: 0,
+			        		width: 1,
+			        		color: '#808080'
+			        	}]
+			        },
+			        tooltip: {
+			        	valueSuffix: '%'
+			        },
+			        legend: {
+			        	layout: 'vertical',
+			        	align: 'right',
+			        	verticalAlign: 'middle',
+			        	borderWidth: 0
+			        },
+			        series: series_value_per_region
+			    });
+			}
+		}
+	}
+
+	function generateAverageDelayChart(){
+		$('#average-delay-container').highcharts({
+			chart: {
+				type: 'column'
+			},
+			title: {
+				text: 'Average delay of Reply'
+			},
+			subtitle: {
+				text: period_range['percentReply']
+			},
+			xAxis: {
+				type: 'category'
+			},
+			yAxis: {
+				title: {
+					text: 'Total time delay'
+				}
+			},
+			legend: {
+				enabled: false
+			},
+			plotOptions: {
+				series: {
+					borderWidth: 0,
+					dataLabels: {
+						enabled: true,
+						format: '{point.y:.0f} Minutes'
+					}
+				}
+			},
+
+			tooltip: {
+				headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+				pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+			},
+
+			series: [{
+				name: 'Time',
+				colorByPoint: true,
+				data: column_value
+			}]
+		});
+	}
+
 	// Resets the Period selector to default if the from-to function is used
 	$('#from-date').on('change',function(){
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
+
+		$('#period-selection').css("border-color", "#d6d6d6");
+		$('#period-selection').css("background-color", "inherit");
+
+		$('#from-date').css("border-color", "#3c763d");
+		$('#from-date').css("background-color", "#dff0d8");
 	});
 
 	// Resets the Period selector to default if the from-to function is used
@@ -1408,11 +1527,98 @@ $(document).ready(function(e) {
 		$('#period-selection option').prop('selected', function() {
 			return this.defaultSelected;
 		});
+		$('#period-selection').css("border-color", "#d6d6d6");
+		$('#period-selection').css("background-color", "inherit");
+
+		$('#to-date').css("border-color", "#3c763d");
+		$('#to-date').css("background-color", "#dff0d8");
 	});
 
 	$('#period-selection').on('change',function(){
 		$('#to-date').val('');
 		$('#from-date').val('');
+
+		$('#to-date').css("border-color", "#d6d6d6");
+		$('#to-date').css("background-color", "inherit");
+
+
+		$('#from-date').css("border-color", "#d6d6d6");
+		$('#from-date').css("background-color", "inherit");
+
+		$('#period-selection').css("border-color", "#3c763d");
+		$('#period-selection').css("background-color", "#dff0d8");
+	});
+
+	$('#data-validator').on('change',function(){
+		if ($('#data-validator').val() == "on") {
+			$('#data-validator').val('off'); // Turns Off the toggle switch
+			if ($('#category-selection').val() == 'allsites') {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				sortForAllSite(reconstructed_data);
+				analyzeAverageDelayReply(reconstructed_data);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+		    	changePanelResolution();
+			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				groupedSiteFlagger = true;
+				analyzeAverageDelayReply(persons);
+				analyzeAverageDelayReply([{
+					number: $('#filter-key').val(),
+					values: test_reconstructed_data
+				}]);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+				groupedSiteFlagger = false;
+			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				analyzeAverageDelayReply(sites);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+			} else {
+				alert('Invalid Request, Please recheck inputs');
+			}
+		} else {
+			$('#data-validator').val('on'); // Turns On the toggle switch
+			if ($('#category-selection').val() == 'allsites') {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				sortForAllSite(reconstructed_data);
+				analyzeAverageDelayReply(reconstructed_data);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+		    	changePanelResolution();
+			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				groupedSiteFlagger = true;
+				analyzeAverageDelayReply(persons);
+				analyzeAverageDelayReply([{
+					number: $('#filter-key').val(),
+					values: test_reconstructed_data
+				}]);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+				groupedSiteFlagger = false;
+			} else if ($('#category-selection').val() == 'person' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
+				detailedInformation = [];
+				column_value = [];
+				total_message_and_response = [];
+				analyzeAverageDelayReply(sites);
+				generateAverageDelayChart();
+				detailedInfoGenerator();
+			} else {
+				alert('Invalid Request, Please recheck inputs');
+			}
+		}
 	});
 
 });
