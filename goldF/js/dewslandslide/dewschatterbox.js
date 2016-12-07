@@ -1990,7 +1990,15 @@
 			url: "../chatterbox/getewi",             	
 			dataType: "json",	
 			success: function(response){
-				var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+				if (data["internal_alert_level"].toUpperCase().length > 4) {
+					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
+						var preConstructedEWI = response["A2"];
+					} else {
+						var preConstructedEWI = response["A3"];
+					}
+				} else {
+					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+				}
 				var constructedEWIDate = "";
 				var finalEWI = ""
 				var d = new Date();
