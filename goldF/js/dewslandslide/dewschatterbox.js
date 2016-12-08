@@ -14,6 +14,7 @@
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 	var officesAndSites;
+	var employeeTags = [];
 	var groupTags = [];
 	var testName;
 	var testNumbers;
@@ -28,10 +29,11 @@
 	var convoFlagger = false;
 	var connection_status = true; // True means Connected.
 	var conn = connectWS();
+	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
-	//	in case you want to edit it.	
+	//	in case you want to edit it.
 	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
 	// Get remaining characters count
@@ -160,6 +162,7 @@
 			}
 		} else {
 			if (contactInfo == "groups") {
+				debugger;
 				//only push the message if it belongs to the groupTags
 				//Don't include message if "msg.name" is "unknown"
 				if (msg.name == "unknown") {
@@ -230,7 +233,6 @@
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 		 	!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-
 			try{
 				if (messages[counters]['user'] == 'You'){
 					if (lastMessageTimeStampYou == "") {
@@ -509,7 +511,6 @@
 	});
 
 	function getOldMessage(){
-
 		if (lastMessageTimeStampYou == "") {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
@@ -627,8 +628,8 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		var tempConn = new WebSocket('ws://54.166.60.233:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050');
+		// var tempConn = new WebSocket('ws://54.166.60.233:5050');
+		var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -673,7 +674,8 @@
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
-			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
+			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
+				console.log(msg);
 				initLoadMessageHistory(msg);
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
@@ -1303,8 +1305,6 @@
 		counters = 0;
 	}
 
-
-
 	function updateGlobalMessage(msg){
 		if (msg.user == "You") {
 			msg.isyou = 1;
@@ -1346,6 +1346,26 @@
 		document.title = tempText;
 		$('#search-lbl').css('display', 'block')
 		$('#search-lbl h5').show();
+	}
+
+	function displayGroupTagsForDynaThread(tags) {
+		var tempText = "[Teams: ";
+		var titleSites = "";
+		var tempCountTag = tags.length;
+		for (i in tags) {
+			if (i == tempCountTag - 1) {
+				tempText = tempText + tags[i];
+			} else {
+				tempText = tempText + tags[i] + ", ";
+			}
+		}
+
+		tempText = tempText + "]";
+		$("#current-contacts h4").text(tempText);
+		document.title = tempText;
+		$('#search-lbl').css('display', 'block')
+		$('#search-lbl h5').show();
+
 	}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
@@ -1570,6 +1590,20 @@
 
 	// Send a message to the selected recipients
 	function loadGroups(){
+		if (quickGroupSelectionFlag == true) {
+			$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
+			$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
+			loadGroupsEmployee();
+		} else  if (quickGroupSelectionFlag == false) {
+			$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+			loadGroupsCommunity();
+		} else {
+			alert('Something went wrong, Please contact the Administrator');
+		}
+
+	}
+
+	function loadGroupsCommunity(){
 		// Reset the timeStamp flaggers
 		tempTimestampYou = "";
 		tempTimestampGroup = "";
@@ -1611,6 +1645,33 @@
 		conn.send(JSON.stringify(groupTags));
 
 		$('#main-container').removeClass('hidden');
+	}
+
+	function loadGroupsEmployee(){
+		var requestTag = [];
+
+		var dynaTags = [];
+		$('input[name="tag"]:checked').each(function() {
+		   dynaTags.push(this.value);
+		});
+
+		//Display Group Tags for the thread being loaded
+		displayGroupTagsForDynaThread(dynaTags);
+
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
+		contactInfo = "groups";
+
+		requestTag = {
+			'type':'smsloadrequesttag',
+			'teams': dynaTags
+		}
+		//Request for message exchanges from the groups selected
+		conn.send(JSON.stringify(requestTag));
+
+		$('#main-container').removeClass('hidden');
+
 	}
 
 	$('#go-load-groups').click(function() {
@@ -1656,7 +1717,7 @@
 	});
 
 	String.prototype.capitalize = function() {
-	return this.charAt(0).toUpperCase() + this.slice(1);
+		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
 	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
@@ -1723,7 +1784,6 @@
 		}
 		$('#edit-contact').modal('show');
 	});
-
 
 	// GETS the Office and site options
 	$('#btn-contact-settings').click(function() {
@@ -1927,7 +1987,6 @@
 				$('#msg').val(nssEWITemplate);
 			}
 		});
-
 	});
 
 	function getEWI(handledTemplate){
@@ -2125,6 +2184,16 @@
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
 	});
 
+	//CHECK ALL tags in the advanced search
+	$('#checkAllTags').click(function() {
+		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', true);
+	});
+
+	//UNcheck ALL tags in the advanced search
+	$('#uncheckAllTags').click(function() {
+		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+	});
+
 	//CHECK ALL Site Names in the advanced search
 	$('#checkAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', true);
@@ -2154,7 +2223,6 @@
 	});
 
 	var isFirstAdvancedSearchActivation = false;
-
 
 	function disableCommands(){
 		$('#go-chat').attr("class","btn btn-xs btn-danger disabled");
@@ -2210,6 +2278,52 @@
 			'type': 'smsloadquickinboxrequest'
 		};
 		conn.send(JSON.stringify(msg));
+	}
+
+	$('a[href="#emp-group"]').on('click',function(){
+		employeeTags = [];
+		$.get( "../chatterbox/getEmployeeTags", function( data ) {
+			var dataFetched = JSON.parse(data);
+			for (var x = 0;x< dataFetched.length;x++){
+				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
+				if (employeeTags.length <= 0) {
+					for (var y = 0; y < parts.length; y++){
+						employeeTags.push(parts[y]);
+					}
+				} else {
+					for (var y = 0;y < parts.length;y++){
+						if (!(employeeTags.indexOf(parts[y]) > -1)) {
+						    employeeTags.push(parts[y]);
+						}
+					}
+				}
+			}
+			loadEmployeeTags(employeeTags);
+		});
+	});
+
+	$('#emp-grp-flag').on('click',function(){
+		quickGroupSelectionFlag = true;
+	});
+
+	$('#comm-grp-flag').on('click',function(){
+		quickGroupSelectionFlag = false;
+	});
+
+
+	function loadEmployeeTags(tags) {
+		for (var x = 0;x < 6;x++) {
+			var myNode = document.getElementById("tag-"+x);
+			while (myNode.firstChild) {
+				myNode.removeChild(myNode.firstChild);
+			}
+		}
+
+		for (var i = 0; i < tags.length; i++) {
+			var modIndex = i % 4;
+			var tag = tags[i];
+			$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+		}
 	}
 
 	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
