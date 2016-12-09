@@ -55,37 +55,6 @@
 		return t;
 	}
 
-	function modalDisconnectActivation(modalAction="show", hour, minute) {
-		var timeTarget = setTargetTime(hour, minute)
-		var timeNow = new Date().getTime();
-		var offsetmilliseconds = timeTarget - timeNow;
-
-		//Current time is already greater than the target time
-		if (offsetmilliseconds < 0) {
-			return;
-		}
-
-		if (modalAction == "show") {
-			setTimeout(
-				function() {
-					//Hide the advanced search when disconnected
-					$("#advanced-search").modal("hide");
-					//Hide the modal backdrop
-					$('.modal-backdrop').remove();
-					$('#connectionStatusModal').modal();
-					conn.close();
-				}, 
-				offsetmilliseconds);
-		} 
-		else if (modalAction == "hide") {
-			setTimeout(
-				function() {
-					conn = connectWS();
-				}, 
-				offsetmilliseconds);
-		}
-	}
-
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
 		$("#remaining_chars").text(remChars);
@@ -2222,15 +2191,5 @@
 		};
 		conn.send(JSON.stringify(msg));
 	}
-
-	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
-	modalDisconnectActivation("show", 4, 59);
-	modalDisconnectActivation("show", 11, 59);
-	modalDisconnectActivation("show", 18, 59);
-
-	//Attempt to reconnect at 5:05, 12:05 and 19:05
-	modalDisconnectActivation("hide", 5, 5);
-	modalDisconnectActivation("hide", 12, 5);
-	modalDisconnectActivation("hide", 19, 5);
 
 // })();
