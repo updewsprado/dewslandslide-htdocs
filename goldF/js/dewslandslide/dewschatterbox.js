@@ -108,7 +108,6 @@
 	}
 
 	function updateMessages(msg) {
-
 		// Hides the Search 
 		$('#search-key').hide();
 
@@ -124,26 +123,29 @@
 			//recipients are exactly the offices and sitenames you've selected
 
 			if (contactInfo == "groups") {
-				console.log("type is group/tags")
-
-				if (msgType == "smsloadrequestgroup") {
-					console.log("type smsloadrequestgroup")
+				console.log("type is group/tags");
+				if (msg.type == "loadEmployeeTag") {
 					messages.push(msg);
 				} else {
-					searchResults.push(msg);
-				}
-
-				// //only push the message if it belongs to the groupTags
-				// messages.push(msg);
-				if(arraysEqual(msg.offices, groupTags.offices)) {
-					if (msgType == "searchMessageGroup") {
-						searchResults.push(msg);
+					if (msgType == "smsloadrequestgroup") {
+						console.log("type smsloadrequestgroup")
+						messages.push(msg);
 					} else {
-						if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-							console.log("type found match for group send receive")
-							console.log("the message before it gets pushed:");
-							console.log(msg);
-							messages.push(msg);
+						searchResults.push(msg);
+					}
+
+					// //only push the message if it belongs to the groupTags
+					// messages.push(msg);
+					if(arraysEqual(msg.offices, groupTags.offices)) {
+						if (msgType == "searchMessageGroup") {
+							searchResults.push(msg);
+						} else {
+							if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+								console.log("type found match for group send receive")
+								console.log("the message before it gets pushed:");
+								console.log(msg);
+								messages.push(msg);
+							}
 						}
 					}
 				}
@@ -162,54 +164,55 @@
 			}
 		} else {
 			if (contactInfo == "groups") {
-				debugger;
-				//only push the message if it belongs to the groupTags
-				//Don't include message if "msg.name" is "unknown"
-				if (msg.name == "unknown") {
-					return;
-				}
-				//Use "sitenames" as the primary filter
-				var isTargetSite = false;
-				for (i in groupTags.sitenames) {
-					if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
-						isTargetSite = true;
-						continue;
-					}
-				}
 
-				if (isTargetSite == false) {
-					return;
-				}
-
-				//Use "offices" as the secondary filter
-				var isOffices = false;
-				for (i in groupTags.offices) {
-					if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
-						isOffices = true;
-						continue;
-					}
-				}
-
-				if (isOffices == false) {
-					return;
-				}
-
-				if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+				if (msg.type == "loadEmployeeTag") {
 					msg.isyou = 0;
-					msg.user = msg.name;
-					searchResults.push(msg);
-				} else {
-					msg.isyou = 0;
-					msg.user = msg.name;
 					messages.push(msg);	
+				} else {
+					//only push the message if it belongs to the groupTags
+					//Don't include message if "msg.name" is "unknown"
+					if (msg.name == "unknown") {
+						return;
+					}
+					//Use "sitenames" as the primary filter
+					var isTargetSite = false;
+					for (i in groupTags.sitenames) {
+						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+							isTargetSite = true;
+							continue;
+						}
+					}
+
+					if (isTargetSite == false) {
+						return;
+					}
+
+					//Use "offices" as the secondary filter
+					var isOffices = false;
+					for (i in groupTags.offices) {
+						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+							isOffices = true;
+							continue;
+						}
+					}
+
+					if (isOffices == false) {
+						return;
+					}
+
+					if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+						msg.isyou = 0;
+						msg.user = msg.name;
+						searchResults.push(msg);
+					} else {
+						msg.isyou = 0;
+						msg.user = msg.name;
+						messages.push(msg);	
+					}
 				}
-				
 			} else {
 				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
-					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
-					// console.log(contactInfo);
-
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
 						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched"){
 
@@ -675,7 +678,6 @@
 			tempMsg = msg;
 			msgType = msg.type;
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
-				console.log(msg);
 				initLoadMessageHistory(msg);
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
