@@ -631,8 +631,8 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://54.166.60.233:5050');
-		var tempConn = new WebSocket('ws://localhost:5050');
+		var tempConn = new WebSocket('ws://54.166.60.233:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050');
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
