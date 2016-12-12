@@ -252,7 +252,7 @@
 						lastMessageTimeStampIndi = messages[counters]['timestamp'];
 					}
 				}
-				if (msg.type == "smssend" || msg.type == "smssendgroup") {
+				if (msg.type == "smssend" || msg.type == "smssendgroup" || msg.type == "smssendgroupemployee") {
 					var messages_html = messages_template_both({'messages': messages});
 					var htmlString = $('#messages').html();
 					$('#messages').html(htmlString+messages_html);
@@ -1351,7 +1351,7 @@
 	}
 
 	function displayGroupTagsForDynaThread(tags) {
-		var tempText = "[Teams: ";
+		var tempText = "[Team Tags: ";
 		var titleSites = "";
 		var tempCountTag = tags.length;
 		for (i in tags) {
@@ -1532,36 +1532,62 @@
 			//For group type communication
 			if (contactInfo == "groups") {
 				var text = $('#msg').val();
+				user = "You";
 
-				var tagOffices = [];
-				$('input[name="offices"]:checked').each(function() {
-				   tagOffices.push(this.value);
-				});
+				if (quickGroupSelectionFlag == true) { // True means the group selection is set to EMPLOYEE
+					var emp_tag = [];
+					$('input[name="tag"]:checked').each(function() {
+					   emp_tag.push(this.value);
+					});
 
-				var tagSitenames = [];
-				$('input[name="sitenames"]:checked').each(function() {
-				   tagSitenames.push(this.value);
-				});
+					var msg = {
+						'type': 'smssend',
+						'user': user,
+						'tag': emp_tag,
+						'msg': text + footer,
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+					};
 
-				var msg = {
-					'type': 'smssendgroup',
-					'user': user,
-					'offices': tagOffices,
-					'sitenames': tagSitenames,
-					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
-				};
+					conn.send(JSON.stringify(msg));
 
-				conn.send(JSON.stringify(msg));
+					msgType = "smssendgroup";
+					testMsg = msg;
+					counters = 0;
+					messages = [];
+					updateMessages(msg);
 
-				msgType = "smssendgroup";
-				testMsg = msg;
-				counters = 0;
-				messages = [];
-				updateMessages(msg);
+					$('#msg').val('');	
+				} else {
+					var tagOffices = [];
+					$('input[name="offices"]:checked').each(function() {
+					   tagOffices.push(this.value);
+					});
 
-				$('#msg').val('');
+					var tagSitenames = [];
+					$('input[name="sitenames"]:checked').each(function() {
+					   tagSitenames.push(this.value);
+					});
+
+					var msg = {
+						'type': 'smssendgroup',
+						'user': user,
+						'offices': tagOffices,
+						'sitenames': tagSitenames,
+						'msg': text + footer,
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+						'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
+					};
+
+					conn.send(JSON.stringify(msg));
+
+					msgType = "smssendgroup";
+					testMsg = msg;
+					counters = 0;
+					messages = [];
+					updateMessages(msg);
+
+					$('#msg').val('');	
+				}
 			} 
 			//For non group tags communication
 			else {
@@ -1673,7 +1699,6 @@
 		conn.send(JSON.stringify(requestTag));
 
 		$('#main-container').removeClass('hidden');
-
 	}
 
 	$('#go-load-groups').click(function() {
