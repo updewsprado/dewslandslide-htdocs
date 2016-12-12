@@ -57,37 +57,6 @@
 		return t;
 	}
 
-	function modalDisconnectActivation(modalAction="show", hour, minute) {
-		var timeTarget = setTargetTime(hour, minute)
-		var timeNow = new Date().getTime();
-		var offsetmilliseconds = timeTarget - timeNow;
-
-		//Current time is already greater than the target time
-		if (offsetmilliseconds < 0) {
-			return;
-		}
-
-		if (modalAction == "show") {
-			setTimeout(
-				function() {
-					//Hide the advanced search when disconnected
-					$("#advanced-search").modal("hide");
-					//Hide the modal backdrop
-					$('.modal-backdrop').remove();
-					$('#connectionStatusModal').modal();
-					conn.close();
-				}, 
-				offsetmilliseconds);
-		} 
-		else if (modalAction == "hide") {
-			setTimeout(
-				function() {
-					conn = connectWS();
-				}, 
-				offsetmilliseconds);
-		}
-	}
-
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
 		$("#remaining_chars").text(remChars);
@@ -2123,27 +2092,38 @@
 
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
 				} else {
 					alert("Error Occured: Please contact Administrator");
 				}
 
-
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 00:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
 				} else {
 					alert("Error Occured: Please contact Administrator");
 				}
@@ -2352,15 +2332,5 @@
 			$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
 		}
 	}
-
-	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
-	modalDisconnectActivation("show", 4, 59);
-	modalDisconnectActivation("show", 11, 59);
-	modalDisconnectActivation("show", 18, 59);
-
-	//Attempt to reconnect at 5:05, 12:05 and 19:05
-	modalDisconnectActivation("hide", 5, 5);
-	modalDisconnectActivation("hide", 12, 5);
-	modalDisconnectActivation("hide", 19, 5);
 
 // })();
