@@ -14,6 +14,7 @@
 	var WSS_CONNECTION_STATUS = -1;
 	var isFirstSuccessfulConnect = true;
 	var officesAndSites;
+	var employeeTags = [];
 	var groupTags = [];
 	var testName;
 	var testNumbers;
@@ -28,10 +29,11 @@
 	var convoFlagger = false;
 	var connection_status = true; // True means Connected.
 	var conn = connectWS();
+	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
-	//	in case you want to edit it.	
+	//	in case you want to edit it.
 	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
 	// Get remaining characters count
@@ -55,37 +57,6 @@
 		return t;
 	}
 
-	function modalDisconnectActivation(modalAction="show", hour, minute) {
-		var timeTarget = setTargetTime(hour, minute)
-		var timeNow = new Date().getTime();
-		var offsetmilliseconds = timeTarget - timeNow;
-
-		//Current time is already greater than the target time
-		if (offsetmilliseconds < 0) {
-			return;
-		}
-
-		if (modalAction == "show") {
-			setTimeout(
-				function() {
-					//Hide the advanced search when disconnected
-					$("#advanced-search").modal("hide");
-					//Hide the modal backdrop
-					$('.modal-backdrop').remove();
-					$('#connectionStatusModal').modal();
-					conn.close();
-				}, 
-				offsetmilliseconds);
-		} 
-		else if (modalAction == "hide") {
-			setTimeout(
-				function() {
-					conn = connectWS();
-				}, 
-				offsetmilliseconds);
-		}
-	}
-
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
 		$("#remaining_chars").text(remChars);
@@ -106,7 +77,6 @@
 	}
 
 	function updateMessages(msg) {
-
 		// Hides the Search 
 		$('#search-key').hide();
 
@@ -122,26 +92,29 @@
 			//recipients are exactly the offices and sitenames you've selected
 
 			if (contactInfo == "groups") {
-				console.log("type is group/tags")
-
-				if (msgType == "smsloadrequestgroup") {
-					console.log("type smsloadrequestgroup")
+				console.log("type is group/tags");
+				if (msg.type == "loadEmployeeTag") {
 					messages.push(msg);
 				} else {
-					searchResults.push(msg);
-				}
-
-				// //only push the message if it belongs to the groupTags
-				// messages.push(msg);
-				if(arraysEqual(msg.offices, groupTags.offices)) {
-					if (msgType == "searchMessageGroup") {
-						searchResults.push(msg);
+					if (msgType == "smsloadrequestgroup") {
+						console.log("type smsloadrequestgroup")
+						messages.push(msg);
 					} else {
-						if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-							console.log("type found match for group send receive")
-							console.log("the message before it gets pushed:");
-							console.log(msg);
-							messages.push(msg);
+						searchResults.push(msg);
+					}
+
+					// //only push the message if it belongs to the groupTags
+					// messages.push(msg);
+					if(arraysEqual(msg.offices, groupTags.offices)) {
+						if (msgType == "searchMessageGroup") {
+							searchResults.push(msg);
+						} else {
+							if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+								console.log("type found match for group send receive")
+								console.log("the message before it gets pushed:");
+								console.log(msg);
+								messages.push(msg);
+							}
 						}
 					}
 				}
@@ -160,53 +133,55 @@
 			}
 		} else {
 			if (contactInfo == "groups") {
-				//only push the message if it belongs to the groupTags
-				//Don't include message if "msg.name" is "unknown"
-				if (msg.name == "unknown") {
-					return;
-				}
-				//Use "sitenames" as the primary filter
-				var isTargetSite = false;
-				for (i in groupTags.sitenames) {
-					if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
-						isTargetSite = true;
-						continue;
-					}
-				}
 
-				if (isTargetSite == false) {
-					return;
-				}
-
-				//Use "offices" as the secondary filter
-				var isOffices = false;
-				for (i in groupTags.offices) {
-					if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
-						isOffices = true;
-						continue;
-					}
-				}
-
-				if (isOffices == false) {
-					return;
-				}
-
-				if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+				if (msg.type == "loadEmployeeTag") {
 					msg.isyou = 0;
-					msg.user = msg.name;
-					searchResults.push(msg);
-				} else {
-					msg.isyou = 0;
-					msg.user = msg.name;
 					messages.push(msg);	
+				} else {
+					//only push the message if it belongs to the groupTags
+					//Don't include message if "msg.name" is "unknown"
+					if (msg.name == "unknown") {
+						return;
+					}
+					//Use "sitenames" as the primary filter
+					var isTargetSite = false;
+					for (i in groupTags.sitenames) {
+						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+							isTargetSite = true;
+							continue;
+						}
+					}
+
+					if (isTargetSite == false) {
+						return;
+					}
+
+					//Use "offices" as the secondary filter
+					var isOffices = false;
+					for (i in groupTags.offices) {
+						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+							isOffices = true;
+							continue;
+						}
+					}
+
+					if (isOffices == false) {
+						return;
+					}
+
+					if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+						msg.isyou = 0;
+						msg.user = msg.name;
+						searchResults.push(msg);
+					} else {
+						msg.isyou = 0;
+						msg.user = msg.name;
+						messages.push(msg);	
+					}
 				}
-				
 			} else {
 				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
-					// console.log(contactInfo[i].fullname + ' ' + contactInfo[i].numbers);
-					// console.log(contactInfo);
-
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
 						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched"){
 
@@ -230,7 +205,6 @@
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 		 	!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-
 			try{
 				if (messages[counters]['user'] == 'You'){
 					if (lastMessageTimeStampYou == "") {
@@ -247,7 +221,7 @@
 						lastMessageTimeStampIndi = messages[counters]['timestamp'];
 					}
 				}
-				if (msg.type == "smssend" || msg.type == "smssendgroup") {
+				if (msg.type == "smssend" || msg.type == "smssendgroup" || msg.type == "smssendgroupemployee") {
 					var messages_html = messages_template_both({'messages': messages});
 					var htmlString = $('#messages').html();
 					$('#messages').html(htmlString+messages_html);
@@ -509,7 +483,6 @@
 	});
 
 	function getOldMessage(){
-
 		if (lastMessageTimeStampYou == "") {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
@@ -673,7 +646,7 @@
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
-			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
+			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
 				initLoadMessageHistory(msg);
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
@@ -1303,8 +1276,6 @@
 		counters = 0;
 	}
 
-
-
 	function updateGlobalMessage(msg){
 		if (msg.user == "You") {
 			msg.isyou = 1;
@@ -1346,6 +1317,26 @@
 		document.title = tempText;
 		$('#search-lbl').css('display', 'block')
 		$('#search-lbl h5').show();
+	}
+
+	function displayGroupTagsForDynaThread(tags) {
+		var tempText = "[Team Tags: ";
+		var titleSites = "";
+		var tempCountTag = tags.length;
+		for (i in tags) {
+			if (i == tempCountTag - 1) {
+				tempText = tempText + tags[i];
+			} else {
+				tempText = tempText + tags[i] + ", ";
+			}
+		}
+
+		tempText = tempText + "]";
+		$("#current-contacts h4").text(tempText);
+		document.title = tempText;
+		$('#search-lbl').css('display', 'block')
+		$('#search-lbl h5').show();
+
 	}
 
 	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
@@ -1510,36 +1501,62 @@
 			//For group type communication
 			if (contactInfo == "groups") {
 				var text = $('#msg').val();
+				user = "You";
 
-				var tagOffices = [];
-				$('input[name="offices"]:checked').each(function() {
-				   tagOffices.push(this.value);
-				});
+				if (quickGroupSelectionFlag == true) { // True means the group selection is set to EMPLOYEE
+					var emp_tag = [];
+					$('input[name="tag"]:checked').each(function() {
+					   emp_tag.push(this.value);
+					});
 
-				var tagSitenames = [];
-				$('input[name="sitenames"]:checked').each(function() {
-				   tagSitenames.push(this.value);
-				});
+					var msg = {
+						'type': 'smssend',
+						'user': user,
+						'tag': emp_tag,
+						'msg': text + footer,
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+					};
 
-				var msg = {
-					'type': 'smssendgroup',
-					'user': user,
-					'offices': tagOffices,
-					'sitenames': tagSitenames,
-					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
-				};
+					conn.send(JSON.stringify(msg));
 
-				conn.send(JSON.stringify(msg));
+					msgType = "smssendgroup";
+					testMsg = msg;
+					counters = 0;
+					messages = [];
+					updateMessages(msg);
 
-				msgType = "smssendgroup";
-				testMsg = msg;
-				counters = 0;
-				messages = [];
-				updateMessages(msg);
+					$('#msg').val('');	
+				} else {
+					var tagOffices = [];
+					$('input[name="offices"]:checked').each(function() {
+					   tagOffices.push(this.value);
+					});
 
-				$('#msg').val('');
+					var tagSitenames = [];
+					$('input[name="sitenames"]:checked').each(function() {
+					   tagSitenames.push(this.value);
+					});
+
+					var msg = {
+						'type': 'smssendgroup',
+						'user': user,
+						'offices': tagOffices,
+						'sitenames': tagSitenames,
+						'msg': text + footer,
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+						'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
+					};
+
+					conn.send(JSON.stringify(msg));
+
+					msgType = "smssendgroup";
+					testMsg = msg;
+					counters = 0;
+					messages = [];
+					updateMessages(msg);
+
+					$('#msg').val('');	
+				}
 			} 
 			//For non group tags communication
 			else {
@@ -1570,6 +1587,20 @@
 
 	// Send a message to the selected recipients
 	function loadGroups(){
+		if (quickGroupSelectionFlag == true) {
+			$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
+			$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
+			loadGroupsEmployee();
+		} else  if (quickGroupSelectionFlag == false) {
+			$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+			loadGroupsCommunity();
+		} else {
+			alert('Something went wrong, Please contact the Administrator');
+		}
+
+	}
+
+	function loadGroupsCommunity(){
 		// Reset the timeStamp flaggers
 		tempTimestampYou = "";
 		tempTimestampGroup = "";
@@ -1609,6 +1640,32 @@
 
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(groupTags));
+
+		$('#main-container').removeClass('hidden');
+	}
+
+	function loadGroupsEmployee(){
+		var requestTag = [];
+
+		var dynaTags = [];
+		$('input[name="tag"]:checked').each(function() {
+		   dynaTags.push(this.value);
+		});
+
+		//Display Group Tags for the thread being loaded
+		displayGroupTagsForDynaThread(dynaTags);
+
+		$('#user').val('You');
+		$('#messages').html('');
+		messages = [];
+		contactInfo = "groups";
+
+		requestTag = {
+			'type':'smsloadrequesttag',
+			'teams': dynaTags
+		}
+		//Request for message exchanges from the groups selected
+		conn.send(JSON.stringify(requestTag));
 
 		$('#main-container').removeClass('hidden');
 	}
@@ -1656,7 +1713,7 @@
 	});
 
 	String.prototype.capitalize = function() {
-	return this.charAt(0).toUpperCase() + this.slice(1);
+		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
 	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
@@ -1723,7 +1780,6 @@
 		}
 		$('#edit-contact').modal('show');
 	});
-
 
 	// GETS the Office and site options
 	$('#btn-contact-settings').click(function() {
@@ -1927,7 +1983,6 @@
 				$('#msg').val(nssEWITemplate);
 			}
 		});
-
 	});
 
 	function getEWI(handledTemplate){
@@ -2037,27 +2092,38 @@
 
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
 				} else {
 					alert("Error Occured: Please contact Administrator");
 				}
 
-
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 00:00").valueOf()) {
 					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
 				} else {
 					alert("Error Occured: Please contact Administrator");
 				}
@@ -2125,6 +2191,16 @@
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
 	});
 
+	//CHECK ALL tags in the advanced search
+	$('#checkAllTags').click(function() {
+		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', true);
+	});
+
+	//UNcheck ALL tags in the advanced search
+	$('#uncheckAllTags').click(function() {
+		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+	});
+
 	//CHECK ALL Site Names in the advanced search
 	$('#checkAllSitenames').click(function() {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', true);
@@ -2154,7 +2230,6 @@
 	});
 
 	var isFirstAdvancedSearchActivation = false;
-
 
 	function disableCommands(){
 		$('#go-chat').attr("class","btn btn-xs btn-danger disabled");
@@ -2212,14 +2287,50 @@
 		conn.send(JSON.stringify(msg));
 	}
 
-	//Activate "Disconnect Notice" at 4:59, 11:59 and 19:00
-	modalDisconnectActivation("show", 4, 59);
-	modalDisconnectActivation("show", 11, 59);
-	modalDisconnectActivation("show", 18, 59);
+	$('a[href="#emp-group"]').on('click',function(){
+		employeeTags = [];
+		$.get( "../chatterbox/getEmployeeTags", function( data ) {
+			var dataFetched = JSON.parse(data);
+			for (var x = 0;x< dataFetched.length;x++){
+				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
+				if (employeeTags.length <= 0) {
+					for (var y = 0; y < parts.length; y++){
+						employeeTags.push(parts[y]);
+					}
+				} else {
+					for (var y = 0;y < parts.length;y++){
+						if (!(employeeTags.indexOf(parts[y]) > -1)) {
+						    employeeTags.push(parts[y]);
+						}
+					}
+				}
+			}
+			loadEmployeeTags(employeeTags);
+		});
+	});
 
-	//Attempt to reconnect at 5:05, 12:05 and 19:05
-	modalDisconnectActivation("hide", 5, 5);
-	modalDisconnectActivation("hide", 12, 5);
-	modalDisconnectActivation("hide", 19, 5);
+	$('#emp-grp-flag').on('click',function(){
+		quickGroupSelectionFlag = true;
+	});
+
+	$('#comm-grp-flag').on('click',function(){
+		quickGroupSelectionFlag = false;
+	});
+
+
+	function loadEmployeeTags(tags) {
+		for (var x = 0;x < 6;x++) {
+			var myNode = document.getElementById("tag-"+x);
+			while (myNode.firstChild) {
+				myNode.removeChild(myNode.firstChild);
+			}
+		}
+
+		for (var i = 0; i < tags.length; i++) {
+			var modIndex = i % 4;
+			var tag = tags[i];
+			$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+		}
+	}
 
 // })();
