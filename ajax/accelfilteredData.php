@@ -5,15 +5,15 @@
     if(isset($_GET['fdate'])) {
         $fdate = $_GET['fdate'];
     }
-     if(isset($_GET['tdate'])) {
+    if(isset($_GET['tdate'])) {
         $tdate = $_GET['tdate'];
-    }
-    if(isset($_GET['nid'])) {
-        $nid = $_GET['nid'];
-    }
-    if(isset($_GET['mode'])) {
-        $mode = $_GET['mode'];
-    }
+    } 
+    if(isset($_GET['nodeid'])) {
+        $nodeid = $_GET['nodeid'];
+    }    
+    if(isset($_GET['mid'])) {
+        $mid = $_GET['mid'];
+    }    
 
 
 
@@ -33,10 +33,10 @@
 
     //For Linux (Remember to set one for windows as well)
     
-    $fileName = 'somsFilter.py';
-    $command = $pythonPath.' '.$fileName.' '.$site.' '.$fdate.' '.$tdate.' '.$nid.' '.$mode;
+    $fileName = 'accelfilteredData.py';
+    $command = $pythonPath.' '.$fileName.' '.$site.' '.$fdate.' '.$tdate.' '.$mid.' '.$nodeid;
 
-    echo "$command";
+    // echo "$command";
     exec($command, $output, $return);
     echo($output[0]);
     
