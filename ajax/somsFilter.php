@@ -36,7 +36,7 @@
     $fileName = 'somsFilter.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$fdate.' '.$tdate.' '.$nid.' '.$mode;
 
-    echo "$command";
+    // echo "$command";
     exec($command, $output, $return);
     echo($output[0]);
     
