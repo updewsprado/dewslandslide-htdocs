@@ -15,16 +15,16 @@ del path
 import SomsRangeFilter 
 import ConvertSomsRaw as CSR
     
-#site = sys.argv[1]
-#fdate = sys.argv[2]
-#tdate = sys.argv[3]
-#nid = sys.argv[4]
-#mode = sys.argv[5]
-site = 'gaasb'
-nid = 2
-mode = int('1')
-fdate = '2016-04-01'
-tdate = '2016-04-05'
+site = sys.argv[1]
+fdate = sys.argv[2]
+tdate = sys.argv[3]
+nid = sys.argv[4]
+mode = int(sys.argv[5])
+#site = 'gaasb'
+#nid = 2
+#mode = int('1')
+#fdate = '2016-04-01'
+#tdate = '2016-04-05'
 if mode == 0:
    df = CSR.getsomsrawdata(site,int(nid),fdate,tdate)
 else:
