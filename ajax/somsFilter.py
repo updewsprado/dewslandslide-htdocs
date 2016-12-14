@@ -26,9 +26,9 @@ mode = sys.argv[5]
 #fdate = '2016-04-01'
 #tdate = '2016-04-05'
 if mode == 0:
-   df = CSR.getsomsrawdata(site + 'm',int(nid),fdate,tdate)
+   df = CSR.getsomsrawdata(site ,int(nid),fdate,tdate)
 else:
-   df = CSR.getsomscaldata(site + 'm',int(nid),fdate,tdate)
+   df = CSR.getsomscaldata(site ,int(nid),fdate,tdate)
 
 df_filt = SomsRangeFilter.f_outlier(df,site,int(nid),int(mode))
 dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
