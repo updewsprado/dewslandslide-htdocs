@@ -22,7 +22,7 @@ import ConvertSomsRaw as CSR
 #mode = sys.argv[5]
 site = 'gaasb'
 nid = 2
-mode = 1
+mode = int('1')
 fdate = '2016-04-01'
 tdate = '2016-04-05'
 if mode == 0:
@@ -30,7 +30,7 @@ if mode == 0:
 else:
    df = CSR.getsomscaldata(site,int(nid),fdate,tdate)
 
-df_filt = SomsRangeFilter.f_outlier(df,site,int(nid),int(mode))
+df_filt = SomsRangeFilter.f_outlier(df,site,int(nid),mode)
 dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
 dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
 print dfajson
