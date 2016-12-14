@@ -16,10 +16,10 @@ import SomsRangeFilter
 import ConvertSomsRaw as CSR
     
 site = sys.argv[1]
-fdate = sys.argv[2]
-tdate = sys.argv[3]
-nid = sys.argv[4]
-mode = int(sys.argv[5])
+fdate = sys.argv[4]
+tdate = sys.argv[5]
+nid = sys.argv[2]
+mode = int(sys.argv[3])
 #site = 'gaasb'
 #nid = 2
 #mode = int('1')
