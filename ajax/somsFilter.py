@@ -30,8 +30,8 @@ if mode == 0:
 else:
    df = CSR.getsomscaldata(site + 'm',int(nid),fdate,tdate)
 
-df_filt = SomsRangeFilter.f_outlier(df,site,int(nid),int(mode))
-dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
+# df_filt = SomsRangeFilter.f_outlier(df,site,int(nid),int(mode))
+dfajson = df.reset_index().to_json(orient='records',date_format='iso')
 dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
 print dfajson
 #print  type(fdate)
