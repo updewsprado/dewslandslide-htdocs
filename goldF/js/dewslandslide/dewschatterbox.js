@@ -401,8 +401,6 @@
 	var tempTimestampGroup;
 
 	function loadOldMessages(msg){
-
-		var oldMsg;
 		counters = 0;
 		lastMessageTimeStampYou = "";
 		lastMessageTimeStampIndi = "";
@@ -410,6 +408,7 @@
 
 		if (msg.type == "oldMessage") {
 			var oldMessagesIndi = msg.data;
+			var oldMsg;
 			messages = [];
 
 			if (msg.data != null){
@@ -444,6 +443,7 @@
 
 		} else if (msg.type == "oldMessageGroup" || msg.type == "oldMessageGroupEmployee") {
 			var oldMessagesGroup = msg.data;
+			var oldMsg;
 			messages = [];
 
 			if (msg.data != null) {
