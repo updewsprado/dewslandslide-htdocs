@@ -64,7 +64,7 @@
 
 	function arraysEqual(a, b) {
 		if (a === b) return true;
-		if (a == null || b == null) return false;
+		if (a === null || b === null) return false;
 		if (a.length != b.length) return false;
 
 		// If you don't care about the order of the elements inside
@@ -96,7 +96,7 @@
 					messages.push(msg);
 				} else {
 					if (msgType == "smsloadrequestgroup") {
-						console.log("type smsloadrequestgroup")
+						console.log("type smsloadrequestgroup");
 						messages.push(msg);
 					} else {
 						searchResults.push(msg);
@@ -110,7 +110,7 @@
 							searchResults.push(msg);
 						} else {
 							if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-								console.log("type found match for group send receive")
+								console.log("type found match for group send receive");
 								console.log("the message before it gets pushed:");
 								console.log(msg);
 								messages.push(msg);
@@ -402,17 +402,17 @@
 
 	function loadOldMessages(msg){
 
+		var oldMessagesIndi = msg.data;
+		var oldMsg;
 		counters = 0;
 		lastMessageTimeStampYou = "";
 		lastMessageTimeStampIndi = "";
 		lastMessageTimeStampGroup = "";
 
+
 		console.log("Loading Old Messages");
 		// console.log(msg);
 		if (msg.type == "oldMessage") {
-
-			var oldMessagesIndi = msg.data;
-			var oldMsg;
 			messages = [];
 
 			if (msg.data != null){
@@ -434,7 +434,6 @@
 					counters++;
 				}
 
-				console.log(messages);
 				var htmlStringMessage = $('#messages').html();
 				lastMessageTimeStamp = messages[0]['timestamp'];
 				var messages_html = messages_template_both({'messages': messages});
@@ -447,8 +446,6 @@
 			}
 
 		} else if (msg.type == "oldMessageGroup" || msg.type == "oldMessageGroupEmployee") {
-			var oldMessagesGroup = msg.data;
-			var oldMsg;
 			messages = [];
 
 			if (msg.data != null) {
@@ -473,8 +470,6 @@
 					}
 					counters++;
 				}
-				console.log(lastMessageTimeStampGroup);
-				console.log(lastMessageTimeStampYou);
 				var htmlStringMessage = $('#messages').html();
 				var messages_html = messages_template_both({'messages': messages});
 				$('#messages').html(messages_html+htmlStringMessage);
