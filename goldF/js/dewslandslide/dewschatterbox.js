@@ -402,17 +402,14 @@
 
 	function loadOldMessages(msg){
 
-		var oldMessagesIndi = msg.data;
 		var oldMsg;
 		counters = 0;
 		lastMessageTimeStampYou = "";
 		lastMessageTimeStampIndi = "";
 		lastMessageTimeStampGroup = "";
 
-
-		console.log("Loading Old Messages");
-		// console.log(msg);
 		if (msg.type == "oldMessage") {
+			var oldMessagesIndi = msg.data;
 			messages = [];
 
 			if (msg.data != null){
@@ -446,6 +443,7 @@
 			}
 
 		} else if (msg.type == "oldMessageGroup" || msg.type == "oldMessageGroupEmployee") {
+			var oldMessagesGroup = msg.data;
 			messages = [];
 
 			if (msg.data != null) {
