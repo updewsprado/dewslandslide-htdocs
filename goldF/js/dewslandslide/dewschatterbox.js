@@ -2052,7 +2052,48 @@ function searchMessageIndividual(){
 
 				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
 				dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
-				handledTemplate(dateReplaced);
+
+				var formCurrentTime = dateReplaced.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+				handledTemplate(finalEWI);
 			}
 		});
 		}
