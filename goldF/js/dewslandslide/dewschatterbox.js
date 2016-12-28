@@ -34,18 +34,23 @@
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.
-	var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
-	// Get remaining characters count
-	var remChars = 800 - $("#msg").val().length - footer.length;
-	$("#remaining_chars").text(remChars);
+	try {
+		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 
-	// Set the maximum length of text possible for the user
-	$("#msg").attr("maxlength", remChars);
+		// Get remaining characters count
+		var remChars = 800 - $("#msg").val().length - footer.length;
+		$("#remaining_chars").text(remChars);
+		// Set the maximum length of text possible for the user
+		$("#msg").attr("maxlength", remChars);
 
-	var messages_template_both = Handlebars.compile($('#messages-template-both').html());
-	var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
-	var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
+		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+
+	} catch (err) {
+		console.log("Chatterbox : monitoring dashboard mode");
+	}
 
 	function setTargetTime(hour, minute) {
 		var t = new Date();
@@ -484,7 +489,6 @@
 		var scroll = $(window).scrollTop();
 		if ($(document).height() > $(window).height()) {
 			if (scroll == 0 && convoFlagger == false){
-				console.log(msgType);
 				if (msgType == "smsload") {
 					getOldMessage();
 				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
@@ -734,7 +738,6 @@
 			}
 			else {
 				var numbers = /^[0-9]+$/;  
-				console.log(msg);
 
 				if (contactInfo == "groups") {
 					updateMessages(msg);
@@ -1015,7 +1018,6 @@ function searchMessage(){
 	} else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup"){
 		searchMessageGroup();
 	} else {
-		console.log(msgType);
 		console.log("Invalid Request");
 	}
 }
@@ -1156,24 +1158,30 @@ function searchMessageIndividual(){
 		}
 	}
 
-	//HandleBars Helper
-	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
-		if(v1 === v2 || v1 == v3 || v1 == v4) {
-			return options.fn(this)
-		} else {
-			return options.inverse(this);	
-		}
-	});
 
-	Handlebars.registerHelper('breaklines', function(text) {
-		text = Handlebars.Utils.escapeExpression(text);
-		text = text.replace(/(\r\n|\n|\r)/gm, ' ');
-		return new Handlebars.SafeString(text);
-	});
+	try {
+		//HandleBars Helper
+		Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
+			if(v1 === v2 || v1 == v3 || v1 == v4) {
+				return options.fn(this)
+			} else {
+				return options.inverse(this);	
+			}
+		});
 
-	Handlebars.registerHelper('escape', function(variable) {
-		return variable.replace(/(['"-])/g, '\\$1');
-	});
+		Handlebars.registerHelper('breaklines', function(text) {
+			text = Handlebars.Utils.escapeExpression(text);
+			text = text.replace(/(\r\n|\n|\r)/gm, ' ');
+			return new Handlebars.SafeString(text);
+		});
+
+		Handlebars.registerHelper('escape', function(variable) {
+			return variable.replace(/(['"-])/g, '\\$1');
+		});
+	} catch(err) {
+		console.log("Chatterbox : monitoring dashboard mode");
+	}
+
 
 	function loadSearchedMessage(msg){
 		counters = 0;
@@ -1375,75 +1383,80 @@ function searchMessageIndividual(){
 
 	}
 
-	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-		filter: function(text, input) {
-			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-		},
+	try {
+		var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+				filter: function(text, input) {
+					return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+				},
 
-		replace: function(text) {
-			var before = this.input.value.match(/^.+;\s*|/)[0];
-			this.input.value = before + text + "; ";
-		},
-		minChars: 3
-	});
-	comboplete.list = [];
+				replace: function(text) {
+					var before = this.input.value.match(/^.+;\s*|/)[0];
+					this.input.value = before + text + "; ";
+				},
+				minChars: 3
+			});
 
-	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-		var nameQuery = $('.dropdown-input').val();
+			comboplete.list = [];
 
-		if (nameQuery.length >= 3) {
-			if (comboplete.ul.childNodes.length === 0) {
-				//comboplete.minChars = 3;
-				comboplete.evaluate();
-			} 
-			else if (comboplete.ul.hasAttribute('hidden')) {
-				comboplete.open();
-			}
-			else {
-				comboplete.close();
-			}
-		}
-	});
+			Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+				var nameQuery = $('.dropdown-input').val();
 
-	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-	    // get keycode of current keypress event
-	    var code = (e.keyCode || e.which);
+				if (nameQuery.length >= 3) {
+					if (comboplete.ul.childNodes.length === 0) {
+						//comboplete.minChars = 3;
+						comboplete.evaluate();
+					} 
+					else if (comboplete.ul.hasAttribute('hidden')) {
+						comboplete.open();
+					}
+					else {
+						comboplete.close();
+					}
+				}
+			});
 
-	    // do nothing if it's an arrow key
-	    if(code == 37 || code == 38 || code == 39 || code == 40) {
-	    	return;
-	    }
+			Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+			    // get keycode of current keypress event
+			    var code = (e.keyCode || e.which);
 
-	    var allNameQueries = $('.dropdown-input').val();
-	    var nameQuery = getFollowingNameQuery(allNameQueries);
+			    // do nothing if it's an arrow key
+			    if(code == 37 || code == 38 || code == 39 || code == 40) {
+			    	return;
+			    }
 
-	    if (allNameQueries.length < 3) {
-			//Reset the contacts list
-			multiContactsList = [];
-			contactnumTrimmed = [];
-		}
+			    var allNameQueries = $('.dropdown-input').val();
+			    var nameQuery = getFollowingNameQuery(allNameQueries);
 
-		if (nameQuery.length >= 3) {
-			//Get autocomplete data from the WSS
-			getNameSuggestions(nameQuery);
+			    if (allNameQueries.length < 3) {
+					//Reset the contacts list
+					multiContactsList = [];
+					contactnumTrimmed = [];
+				}
 
-		}
-		else {
-			comboplete.close();
-		}
-		
-	}, false);
+				if (nameQuery.length >= 3) {
+					//Get autocomplete data from the WSS
+					getNameSuggestions(nameQuery);
 
-	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
-		// User made a selection from dropdown. 
-		// This is fired after the selection is applied
-		var allText = $('.dropdown-input').val();
-		var size = allText.length;
-		var allNameQueries = allText.slice(0, size-2);
-		var nameQuery = getFollowingNameQuery(allNameQueries);
+				}
+				else {
+					comboplete.close();
+				}
+				
+			}, false);
 
-		parseContactInfo(nameQuery);
-	}, false);
+			Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+				// User made a selection from dropdown. 
+				// This is fired after the selection is applied
+				var allText = $('.dropdown-input').val();
+				var size = allText.length;
+				var allNameQueries = allText.slice(0, size-2);
+				var nameQuery = getFollowingNameQuery(allNameQueries);
+
+				parseContactInfo(nameQuery);
+			}, false);
+	} catch(err) {
+		console.log("Chatterbox : monitoring dashboard mode");
+	}
 
 	var qiFullContact = null;
 	function quickInboxStartChat(fullContact=null) {
@@ -1813,7 +1826,7 @@ function searchMessageIndividual(){
 				container.appendChild(input);
 				container.appendChild(document.createElement("br"));
 			}
-			console.log(data[i]);
+
 		}
 		$('#edit-contact').modal('show');
 	});
@@ -2118,6 +2131,7 @@ function searchMessageIndividual(){
 		}
 
 		function sendViaAlertMonitor(data){
+
 			$.ajax({
 				type: "GET",
 				url: "../chatterbox/getewi",             	
