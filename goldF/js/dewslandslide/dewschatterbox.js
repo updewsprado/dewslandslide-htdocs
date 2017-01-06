@@ -27,7 +27,7 @@
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var convoFlagger = false;
-	var connection_status = true; // True means Connected.
+	var connection_status = true;
 	var conn = connectWS();
 	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
@@ -37,11 +37,9 @@
 
 	try {
 		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
-
-		// Get remaining characters count
 		var remChars = 800 - $("#msg").val().length - footer.length;
+
 		$("#remaining_chars").text(remChars);
-		// Set the maximum length of text possible for the user
 		$("#msg").attr("maxlength", remChars);
 
 		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -72,9 +70,6 @@
 		if (a === null || b === null) return false;
 		if (a.length != b.length) return false;
 
-		// If you don't care about the order of the elements inside
-		// the array, you should sort both arrays here.
-
 		for (var i = 0; i < a.length; ++i) {
 			if (a[i] !== b[i]) return false;
 		}
@@ -82,19 +77,10 @@
 	}
 
 	function updateMessages(msg) {
-		// Hides the Search 
 		$('#search-key').hide();
-
-		// console.log("User is: " + msg.user);
-		// console.log("Message: " + msg.msg);
 		if (msg.user == "You") {
-			//TODO: must include logic for filtering the messages the current 
-			//	user is supposed to receive for either "groups/tags" mode or
-			//	normal usage
 			msg.isyou = 1;
 
-			//If in "groups/tags" mode, accept message from "You" only if the
-			//recipients are exactly the offices and sitenames you've selected
 			if (contactInfo == "groups") {
 				console.log("type is group/tags");
 				if (msg.type == "loadEmployeeTag") {
@@ -106,9 +92,6 @@
 					} else {
 						searchResults.push(msg);
 					}
-
-					// //only push the message if it belongs to the groupTags
-					// messages.push(msg);
 
 					if(arraysEqual(msg.offices, groupTags.offices)) {
 						if (msgType == "searchMessageGroup") {
@@ -143,12 +126,11 @@
 					msg.isyou = 0;
 					messages.push(msg);	
 				} else {
-					//only push the message if it belongs to the groupTags
-					//Don't include message if "msg.name" is "unknown"
+
 					if (msg.name == "unknown") {
 						return;
 					}
-					//Use "sitenames" as the primary filter
+
 					var isTargetSite = false;
 					for (i in groupTags.sitenames) {
 						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
@@ -161,7 +143,6 @@
 						return;
 					}
 
-					//Use "offices" as the secondary filter
 					var isOffices = false;
 					for (i in groupTags.offices) {
 						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
@@ -185,7 +166,7 @@
 					}
 				}
 			} else {
-				//substitute number for name of registered user from contactInfo
+
 				for (i in contactInfo) {
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
 						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched"){
@@ -277,14 +258,11 @@
 			}
 
 			$(targetInbox).html(quick_inbox_html);
-
-			//Scroll to the top of the quick inbox
 			$(targetInbox).scrollTop(0);
 		}
 	}
 
 	function loadMessageHistory(msg) {
-		//TODO: load the historical message here
 		alert("loadMessageHistory!");
 	}
 
@@ -306,8 +284,6 @@
 			}
 
 			console.log("initLoadMessageHistory");
-			//Loop through the JSON msg and
-			//	use updateMessages multiple times
 			var history = msgHistory.data;
 			ewirecipients = msgHistory;
 			temp = msgHistory.data;
@@ -381,7 +357,7 @@
 				}
 			}
 		} else {
-			//substitute number for name of registered user from contactInfo
+
 			for (i in contactInfo) {	
 				if (oldMessages.user == 'You') {
 					oldMessages.isyou = 1;
@@ -638,10 +614,9 @@
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
-			enableCommands(); // Enable commands for chatterbox
+			enableCommands();
 
 			connection_status = true;
-			// $("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
@@ -694,7 +669,7 @@
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroupEmployee") {
-				loadOldMessages(msg); // JSON.parse instead of msg variable because the "User" is undefined if msg is used.
+				loadOldMessages(msg);
 				msgType = "smsload"
 			}else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
@@ -911,12 +886,6 @@
 	};
 
 	function parseContactInfo (multipleContactInfo) {
-		// var n = multipleContactInfo.search(' - ');
-		// var size = multipleContactInfo.length;
-		// contactname = multipleContactInfo.slice(0,n);
-		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
-		// contactnumTrimmed = [];
-
 		parseSingleContactInfo(multipleContactInfo);
 	}
 
@@ -976,73 +945,71 @@
 				else
 					tempText = tempText + uniqueName[i] + ", ";
 			}
-		}
-		else if (source == "quickInbox") {
+		} else if (source == "quickInbox") {
 			if (qiFullContact.search("unknown") >= 0) {
-			//Number is Unknown
-			tempText = qiFullContact;
-			document.title = tempText;
-		} 
-		else {
-			//Number is known
-			var posDash = qiFullContact.search(" - ");
-			tempText = qiFullContact.slice(0, posDash);
-		}
-	}
-	$("#current-contacts h4").text(tempText);
-	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
-}
-
-$('#btn-standard-search').click(function(){
-	if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
-		searchMessage();
-	} else if ($('#search-key').is(":visible") == true && $('#search-key').val() == ""){
-		$('#search-key').hide();
-	} else {
-		$('#search-key').show();
-		$('#search-key').val("");	
-	}
-});
-
-$('#btn-search-global').click(function(){
-	searchMessageGlobal($('#search-global-keyword').val());
-});
-
-function searchMessage(){
-	messages = [];
-	searchResults = [];
-	if (msgType == "smsload" || msgType == "searchMessage") {
-		searchMessageIndividual();
-	} else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup"){
-		searchMessageGroup();
-	} else {
-		console.log("Invalid Request");
-	}
-}
-
-function searchMessageIndividual(){
-	for (var numLen = 0; numLen < contactnumTrimmed.length; numLen++){
-		if (contactnumTrimmed[numLen].length == 12){
-			contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(2);
-		} else if (contactnumTrimmed[numLen].length == 11){
-			contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(1);
-		} else {
-				// Do nothing
+				//Number is Unknown
+				tempText = qiFullContact;
+				document.title = tempText;
+			} else {
+				//Number is known
+				var posDash = qiFullContact.search(" - ");
+				tempText = qiFullContact.slice(0, posDash);
 			}
 		}
-		var request = {
-			'type': 'searchMessageIndividual',
-			'number': contactnumTrimmed,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-			'searchKey': $('#search-key').val()
-		};
-
-		conn.send(JSON.stringify(request));
+		$("#current-contacts h4").text(tempText);
+		document.title = tempText;
+		$('#search-lbl').css('display', 'block')
+		$('#search-lbl h5').show();
 	}
 
-	function searchMessageGroup(){
+	$('#btn-standard-search').click(function(){
+		if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
+			searchMessage();
+		} else if ($('#search-key').is(":visible") == true && $('#search-key').val() == ""){
+			$('#search-key').hide();
+		} else {
+			$('#search-key').show();
+			$('#search-key').val("");	
+		}
+	});
+
+	$('#btn-search-global').click(function(){
+		searchMessageGlobal($('#search-global-keyword').val());
+	});
+
+	function searchMessage(){
+		messages = [];
+		searchResults = [];
+		if (msgType == "smsload" || msgType == "searchMessage") {
+			searchMessageIndividual();
+		} else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup"){
+			searchMessageGroup();
+		} else {
+			console.log("Invalid Request");
+		}
+	}
+
+	function searchMessageIndividual(){
+		for (var numLen = 0; numLen < contactnumTrimmed.length; numLen++){
+			if (contactnumTrimmed[numLen].length == 12){
+				contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(2);
+			} else if (contactnumTrimmed[numLen].length == 11){
+				contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(1);
+			} else {
+					// Do nothing
+				}
+			}
+			var request = {
+				'type': 'searchMessageIndividual',
+				'number': contactnumTrimmed,
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+				'searchKey': $('#search-key').val()
+			};
+
+			conn.send(JSON.stringify(request));
+		}
+
+		function searchMessageGroup(){
 		//Reset the group tags
 		groupTags = [];
 
@@ -1134,9 +1101,7 @@ function searchMessageIndividual(){
 
 		} else if (type == "searchMessageGlobal"){
 
-			// console.log(msg);
 			contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
-
 			$("#current-contacts h4").text(user);
 			document.title = user;
 			$('#search-lbl').css('display', 'block')
@@ -1204,85 +1169,83 @@ function searchMessageIndividual(){
 			$('#search-result').html(messages_html);
 			$('#search-result-modal').modal('toggle');
 
-		if (msg.type == "searchMessage") { // DISABLED FOR NOW: ISSUE: Does not fetch the old message via scroll feature
-			msgType = "smsload";
-		} else {
-			msgType = "smsloadrequestgroup";
-		}
-		counters = 0;
-
-	} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
-		messages = [];
-		var searchedResult = msg.data;
-		var res;
-		try {
-			for (var i = searchedResult.length - 1; i >= 0; i--) {
-				res = searchedResult[i];
-				updateMessages(res);
-				if (contact_header == ""){
-					if (res.user != "You"){
-						contact_header = res.user;
-					}
-				}
-				counters++;
+			if (msg.type == "searchMessage") {
+				msgType = "smsload";
+			} else {
+				msgType = "smsloadrequestgroup";
 			}
-		} catch(err) {
-			console.log(err);
-			console.log("No Result/Invalid Request");
-		}
+			counters = 0;
 
-		var messages_html = messages_template_both({'messages': searchResults});
-		$('#messages').html(messages_html);
-		messages = [];
-
-		if (msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
-			msgType = "smsload";
-		} else if (msg.type == "smsLoadGroupSearched") {
-			msgType = "smsloadrequestgroup";
-		}
-		counters = 0;
-
-		var targetLi = document.getElementById(coloredTimestamp);
-		targetLi.style.borderColor = "#dff0d8";
-		targetLi.style.borderRadius = "3px";
-		targetLi.style.borderWidth = "5px";
-		$('html, body').scrollTop(targetLi.offsetTop - 300);
-
-	} else if (msg.type == "smsloadGlobalSearched"){
-		messages = [];
-		var searchedResult = msg.data;
-		var res;
-		var contact_header = "";
-
-		try {
-			for (var i = searchedResult.length - 1; i >= 0; i--) {
-				res = searchedResult[i];
-				updateGlobalMessage(res);
-				if (contact_header == ""){
-					if (res.user != "You"){
-						contact_header = res.user;
+		} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
+			messages = [];
+			var searchedResult = msg.data;
+			var res;
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateMessages(res);
+					if (contact_header == ""){
+						if (res.user != "You"){
+							contact_header = res.user;
+						}
 					}
+					counters++;
 				}
-				counters++;
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
 			}
-		} catch(err) {
-			console.log(err);
-			console.log("No Result/Invalid Request");
-		}
-		msgType = "smsload";
-		var messages_html = messages_template_both({'messages': searchResults});
-		$('#messages').html(messages_html);
-		counters = 0;
 
-		$("#current-contacts h4").text(contact_header);
-		document.title = contact_header;
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#messages').html(messages_html);
+			messages = [];
 
-		$('#main-container').removeClass('hidden');
-		$('#search-global-message-modal').modal('hide');
-		$('body').removeClass('modal-open');
-		$('.modal-backdrop').remove();
+			if (msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
+				msgType = "smsload";
+			} else if (msg.type == "smsLoadGroupSearched") {
+				msgType = "smsloadrequestgroup";
+			}
+			counters = 0;
 
-			// Colors the div of the searched key message
+			var targetLi = document.getElementById(coloredTimestamp);
+			targetLi.style.borderColor = "#dff0d8";
+			targetLi.style.borderRadius = "3px";
+			targetLi.style.borderWidth = "5px";
+			$('html, body').scrollTop(targetLi.offsetTop - 300);
+
+		} else if (msg.type == "smsloadGlobalSearched"){
+			messages = [];
+			var searchedResult = msg.data;
+			var res;
+			var contact_header = "";
+
+			try {
+				for (var i = searchedResult.length - 1; i >= 0; i--) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					if (contact_header == ""){
+						if (res.user != "You"){
+							contact_header = res.user;
+						}
+					}
+					counters++;
+				}
+			} catch(err) {
+				console.log(err);
+				console.log("No Result/Invalid Request");
+			}
+			msgType = "smsload";
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#messages').html(messages_html);
+			counters = 0;
+
+			$("#current-contacts h4").text(contact_header);
+			document.title = contact_header;
+
+			$('#main-container').removeClass('hidden');
+			$('#search-global-message-modal').modal('hide');
+			$('body').removeClass('modal-open');
+			$('.modal-backdrop').remove();
 
 			var targetLi = document.getElementById(coloredTimestamp);
 			targetLi.style.borderColor = "#dff0d8";
@@ -1385,24 +1348,24 @@ function searchMessageIndividual(){
 
 	try {
 		var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-				filter: function(text, input) {
-					return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-				},
+			filter: function(text, input) {
+				return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+			},
 
-				replace: function(text) {
-					var before = this.input.value.match(/^.+;\s*|/)[0];
-					this.input.value = before + text + "; ";
-				},
-				minChars: 3
-			});
+			replace: function(text) {
+				var before = this.input.value.match(/^.+;\s*|/)[0];
+				this.input.value = before + text + "; ";
+			},
+			minChars: 3
+		});
 
-			comboplete.list = [];
+		comboplete.list = [];
 
-			Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-				var nameQuery = $('.dropdown-input').val();
+		Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+			var nameQuery = $('.dropdown-input').val();
 
-				if (nameQuery.length >= 3) {
-					if (comboplete.ul.childNodes.length === 0) {
+			if (nameQuery.length >= 3) {
+				if (comboplete.ul.childNodes.length === 0) {
 						//comboplete.minChars = 3;
 						comboplete.evaluate();
 					} 
@@ -1415,7 +1378,7 @@ function searchMessageIndividual(){
 				}
 			});
 
-			Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+		Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
 			    // get keycode of current keypress event
 			    var code = (e.keyCode || e.which);
 
@@ -1444,7 +1407,7 @@ function searchMessageIndividual(){
 				
 			}, false);
 
-			Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+		Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
 				// User made a selection from dropdown. 
 				// This is fired after the selection is applied
 				var allText = $('.dropdown-input').val();
@@ -1728,72 +1691,23 @@ function searchMessageIndividual(){
 		}
 	});
 
-	$(document).ready(function() {
-		var table = $('#response-contact-container').DataTable();
-	});
-
-	$('input[type="radio"]').on('change', function(e) {
-		if ($("input[name='category']:checked").val() == "employee_contacts_radio") {
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/get_employee_contacts",             
-				dataType: "html",              
-				success: function(response){
-					$("#response-contact-container").DataTable().clear();
-					$("#response-contact-container").DataTable().destroy();
-					$('#response-contact-container').show();
-					$("#response-contact-container").html(response);
-					$("#response-contact-container").DataTable();
-				}
-			});
-		} else {
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/get_community_contacts",             
-				dataType: "html",              
-				success: function(response){
-					$("#response-contact-container").DataTable().clear();
-					$("#response-contact-container").DataTable().destroy();
-					$('#response-contact-container').show();
-					$("#response-contact-container").html(response); 
-					$("#response-contact-container").DataTable();
-				}
-			});
-		}
-	});
-
 	String.prototype.capitalize = function() {
 		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
-	$('#btn-close-edit-settings,#btn-cancel-update').on('click',function(){
-		$('#edit-contact-settings').modal('show');
-		$('#edit-contact').modal('hide');
-	});
-
 	$('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var table = $('#response-contact-container').DataTable();
 		var data = table.row(this).data();
-		$('#edit-contact-settings').modal('hide');
-		$('.modal-backdrop').remove();
 
 		var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel','ewirecipient'];
 		var employee_contacts = ['eid','firstname','lastname','nickname','birthdate','email','numbers','grouptags'];
-		var container = document.getElementById("contact-settings-wrapper");
+		var container = document.getElementById("update-contact-container");
 
 		while (container.hasChildNodes()) {
 			container.removeChild(container.lastChild);
 		}
 
-		var category = document.createElement("input");
-
-		category.type = "text";
-		category.name = "category"
-		category.value = data[0];
-		category.setAttribute("hidden", true);
-		container.appendChild(category);
-
-		for(var i=1; i< data.length; i++) {
+		for(var i=0; i< data.length; i++) {
 
 			var label = document.createElement("label");
 			var input = document.createElement("input");
@@ -1802,20 +1716,31 @@ function searchMessageIndividual(){
 				var t = document.createTextNode(community_contacts[i].capitalize());
 				label.appendChild(t);
 				container.appendChild(label);
-				input.id = community_contacts[i];
+				input.id = community_contacts[i]+"_ucc";
 				input.name = community_contacts[i];
 				input.className = "form-control";
 				input.value = data[i];
 				input.setAttribute("required","true");
+				if (community_contacts[i] == "number") {
+					input.type = "number";
+				} else {
+					input.type = "text";
+				}
+				if (i == 0) {
+					input.setAttribute('hidden',true);
+					label.setAttribute('hidden',true);
+				}
 				container.appendChild(input);
 				container.appendChild(document.createElement("br"));
 			} else {
 				var t = document.createTextNode(employee_contacts[i].capitalize());
 				label.appendChild(t);
 				container.appendChild(label);
-				input.id = employee_contacts[i];
+				input.id = employee_contacts[i]+"_uec";
 				if (employee_contacts[i] == "birthdate"){
 					input.type = "date";
+				} else if (employee_contacts[i] == "numbers") {
+					input.type = "number";
 				} else {
 					input.type = "text";
 				}
@@ -1823,25 +1748,140 @@ function searchMessageIndividual(){
 				input.className = "form-control";
 				input.value = data[i];
 				input.setAttribute("required","true");
+				if (i == 0) {
+					input.setAttribute('hidden',true);
+					label.setAttribute('hidden',true);
+				}
 				container.appendChild(input);
 				container.appendChild(document.createElement("br"));
 			}
-
 		}
-		$('#edit-contact').modal('show');
+
+		$('#response-contact-container_wrapper').prop('hidden',true);
+		$('#employee-contact-wrapper').prop('hidden', true);
+		$('#community-contact-wrapper').prop('hidden', true);
+		$('#update-contact-container').prop('hidden',false);
+		$("#update-contact-container").append('<div id="udt-contact-container"><button type="submit" value="submit" class="btn btn-primary" id="bt-update-contact-info">Save</button><button type="button" class="btn btn-danger" id="btn-cancel-update">Cancel</button></div>'); // data-dismiss="modal"
+
+	});
+
+	$('#update-contact-container').on('click','#btn-cancel-update', function(){
+		if (confirm('The Changes you made may not be saved. \n Do you want to proceed?')) {
+			$('#update-contact-container').prop('hidden',true);
+			if ($('#contact-category').val()=="econtacts") {
+				getEmpContact();
+			} else {
+				getComContact();
+			}
+			$('#response-contact-container_wrapper').prop('hidden',false);
+		}
+	});
+
+	$('#update-contact-container').on('click','#bt-update-contact-info', function(){
+		var empty_fields = 0;
+		$('#update-contact-container input').each(function(){
+			if ($(this).val() == "" || $(this).val() == null) {
+				empty_fields++;
+			}
+		});
+
+		if (empty_fields > 0) {
+			$('#contact-result').remove();
+			var container = document.getElementById('update-contact-container');
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
+				if ($('#contact-category').val() == "econtacts") {
+					data = {
+						'id': $('#eid_uec').val(), 
+						'firstname': $('#firstname_uec').val(),
+						'lastname': $('#lastname_uec').val(),
+						'nickname': $('#nickname_uec').val(),
+						'birthdate': $('#birthdate_uec').val(),
+						'email': $('#email_uec').val(),
+						'numbers': $('#numbers_uec').val(),
+						'grouptags': $('#grouptags_uec').val()
+					};
+				} else if ($('#contact-category').val() == "ccontacts") {
+					data = {
+						'id': $('#c_id_ucc').val(),
+						'firstname': $('#firstname_ucc').val(),
+						'lastname': $('#lastname_ucc').val(),
+						'prefix': $('#prefix_ucc').val(),
+						'office': $('#office_ucc').val(),
+						'sitename': $('#sitename_ucc').val(),
+						'number': $('#number_ucc').val(),
+						'rel': $('#rel_ucc').val(),
+						'ewirecipient': $('#ewirecipient_ucc').val()
+					};
+				} else {
+					console.log('Invalid Request');
+				}
+				$.post( "../chatterbox/updatecontacts", {contact: JSON.stringify(data)})
+				.done(function(response) {
+					console.log(response);
+					if (response == "true") {
+						$('#contact-result').remove();
+						var container = document.getElementById('update-contact-container');
+						var resContainer = document.createElement('div');
+						resContainer.id = "contact-result";
+						resContainer.className = "alert alert-success";
+						resContainer.innerHTML = "<strong>Success!</strong> Existing contact updated.";
+						container.insertBefore(resContainer,container.childNodes[0]);
+					} else {
+						$('#contact-result').remove();
+						var container = document.getElementById('update-contact-container');
+						var resContainer = document.createElement('div');
+						resContainer.id = "contact-result";
+						resContainer.className = "alert alert-danger";
+						resContainer.innerHTML = "<strong>Failed!</strong> Invalid input data";
+						container.insertBefore(resContainer,container.childNodes[0]);
+					}
+				});
+			}
+		}
+		
 	});
 
 	// GETS the Office and site options
 	$('#btn-contact-settings').click(function() {
-		$('#sitename').empty();
-		$('#office').empty();
+
+		$('#employee-contact-wrapper').prop('hidden', true);
+		$('#community-contact-wrapper').prop('hidden', true);
+		$('#response-contact-container_wrapper').prop('hidden',true);
+		$('#update-contact-container').prop('hidden',true);
+
+		$('#contact-category option').prop('selected', function() {
+			$('#contact-category').css("border-color", "#d6d6d6");
+			$('#contact-category').css("background-color", "inherit");
+			return this.defaultSelected;
+		});
+
+		$('#settings-cmd option').prop('selected', function() {
+			$('#settings-cmd').prop('disabled',true);
+			$('#settings-cmd').css("border-color", "#d6d6d6");
+			$('#settings-cmd').css("background-color", "inherit");
+			return this.defaultSelected;
+		});
+
+		$('#contact-result').remove();
+		fetchSiteAndOffice();
+	});
+
+	function fetchSiteAndOffice(){
+		$('#sitename_cc').empty();
+		$('#office_cc').empty();
 		$.ajax({
 			type: "GET",
 			url: "../chatterbox/getdistinctsitename",             
 			dataType: "json",              
 			success: function(response){
 				var counter = 0;
-				select = document.getElementById('sitename');
+				select = document.getElementById('sitename_cc');
 				for (counter=0;counter < response.length;counter++){
 					var opt = document.createElement('option');
 					opt.value = response[counter].sitename;
@@ -1862,7 +1902,7 @@ function searchMessageIndividual(){
 			dataType: "json",              
 			success: function(response){
 				var counter = 0;
-				select = document.getElementById('office');
+				select = document.getElementById('office_cc');
 				for (counter=0;counter < response.length;counter++){
 					var opt = document.createElement('option');
 					opt.value = response[counter].office;
@@ -1879,11 +1919,11 @@ function searchMessageIndividual(){
 				select.appendChild(opt);
 			}
 		});
-	});
+	}
 
 	//Get Disticnt Offices.
-	$('#office').on('change',function() {
-		if ($("#office").val() == "OTHERS") {
+	$('#office_cc').on('change',function() {
+		if ($("#office_cc").val() == "OTHERS") {
 			$("#other-officename").show();
 		} else {
 			$("#other-officename").hide();
@@ -1891,8 +1931,8 @@ function searchMessageIndividual(){
 	});
 
 	//Get Disticnt Offices.
-	$('#sitename').on('change',function() {
-		if ($("#sitename").val() == "OTHERS") {
+	$('#sitename_cc').on('change',function() {
+		if ($("#sitename_cc").val() == "OTHERS") {
 			$("#other-sitename").show();
 		} else {
 			$("#other-sitename").hide();
@@ -1901,330 +1941,343 @@ function searchMessageIndividual(){
 
 	//Clear Field inputs for Employee Contact
 	$('#btn-clear-ec').on('click',function(){
-		$('#firstname').val('');
-		$('#lastname').val('');
-		$('#grouptags').val('');
-		$('#nickname').val('');
-		$('#email').val('');
-		$('#numbers').val('');
-		$('#grouptags').val('');
+		reset_ec(); // Resets the field for employee contact
 	});
+
+	function reset_ec() {
+		$('#firstname_ec').val('');
+		$('#lastname_ec').val('');
+		$('#grouptags_ec').val('');
+		$('#nickname_ec').val('');
+		$('#email_ec').val('');
+		$('#numbers_ec').val('');
+		$('#grouptags_ec').val('');
+	}
 
 	// Clear Field inputs for Community Contact
 	$('#btn-clear-cc').on('click',function(){
-		$('#firstname').val('');
-		$('#lastname').val('');
-		$('#prefix').val('');
-		$('#sitename').val('');
-		$('#office').val('');
-		$('#rel').val('');
+		reset_cc(); // Resets the field for community contact
 	});
 
-		// Fetched the Alert and Sites EWI
+	function reset_cc() {
+		$('#firstname_cc').val('');
+		$('#lastname_cc').val('');
+		$('#prefix_cc').val('');
+		$('#rel_cc').val('');
+		$('#numbers_cc').val('');
+		$('#other-officename').val('');
+		$('#other-sitename').val('');
 
-		$('#btn-ewi').on('click',function(){
-			$('#alert-lvl').empty();
-			$('#sites').empty();
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",
-				success: function(response){
-					var alertList = Object.keys(response).length;
-					var counter = 0;
-					select = document.getElementById('alert-lvl');
-					for (counter=0;counter<alertList;counter++){
-						var opt = document.createElement('option');
-						opt.value = Object.keys(response)[counter];
-						opt.innerHTML = Object.keys(response)[counter];
-						select.className = "form-control";
-						select.setAttribute("required","true");
-						select.appendChild(opt);
-					}
-				}
-			});
+		$('#other-officename').hide();
+		$('#other-sitename').hide();
+	}
 
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getdistinctsitename",             
-				dataType: "json",              
-				success: function(response){
-					var counter = 0;
-					select = document.getElementById('sites');
-					for (counter=0;counter < response.length;counter++){
-						var opt = document.createElement('option');
-						opt.value = response[counter].sitename;
-						opt.innerHTML = response[counter].sitename;
-						select.className = "form-control";
-						select.setAttribute("required","true");
-						select.appendChild(opt);
-					}
-					opt.value = "NSS";
-					opt.innerHTML = "NO SITE SELECTED";
+	// Fetched the Alert and Sites EWI
+
+	$('#btn-ewi').on('click',function(){
+		$('#alert-lvl').empty();
+		$('#sites').empty();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",
+			success: function(response){
+				var alertList = Object.keys(response).length;
+				var counter = 0;
+				select = document.getElementById('alert-lvl');
+				for (counter=0;counter<alertList;counter++){
+					var opt = document.createElement('option');
+					opt.value = Object.keys(response)[counter];
+					opt.innerHTML = Object.keys(response)[counter];
 					select.className = "form-control";
 					select.setAttribute("required","true");
 					select.appendChild(opt);
-
-					var counter = 0;
-					$('input[name="sitenames"]:checked').each(function() {
-						counter++;
-					});
-
-					if (counter == 1){
-						$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-					} else {
-						$('select option[value="NSS"]').attr("selected",true);
-					}
 				}
-			});
+			}
 		});
 
-		$('#confirm-ewi').click(function(){
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getdistinctsitename",             
+			dataType: "json",              
+			success: function(response){
+				var counter = 0;
+				select = document.getElementById('sites');
+				for (counter=0;counter < response.length;counter++){
+					var opt = document.createElement('option');
+					opt.value = response[counter].sitename;
+					opt.innerHTML = response[counter].sitename;
+					select.className = "form-control";
+					select.setAttribute("required","true");
+					select.appendChild(opt);
+				}
+				opt.value = "NSS";
+				opt.innerHTML = "NO SITE SELECTED";
+				select.className = "form-control";
+				select.setAttribute("required","true");
+				select.appendChild(opt);
 
-			groupTags = [];
-			user = "You";
-			var tagOffices = [];
-			var tagSitenames = [];
-
-			var tagOffices = [];
-			$('input[name="offices"]:checked').each(function() {
-				tagOffices.push(this.value);
-			});
-
-			var counter = 0;
-			$('input[name="sitenames"]:checked').each(function() {
-				counter++;
-			});
-
-			if (counter == 1){
-				tagSitenames.push($('#sites').val());
-				$('input[name="sitenames"]').prop('checked', false);
-
-				$('input[name="sitenames"]').each(function() {
-					if ($('#sites').val() == this.value) {
-						$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
-					}
-				});
-			} else if (counter > 1){
-				var tagSitenames = [];
+				var counter = 0;
 				$('input[name="sitenames"]:checked').each(function() {
-					tagSitenames.push(this.value);
+					counter++;
 				});
-			} else {
-				tagSitenames.push($('#sites').val());
-				$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
+
+				if (counter == 1){
+					$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
+				} else {
+					$('select option[value="NSS"]').attr("selected",true);
+				}
 			}
+		});
+	});
 
+	$('#confirm-ewi').click(function(){
 
-			tagSitenames.sort();
-			groupTags = {
-				'type': 'smsloadrequestgroup',
-				'offices': tagOffices,
-				'sitenames': tagSitenames
-			};
+		groupTags = [];
+		user = "You";
+		var tagOffices = [];
+		var tagSitenames = [];
 
-			$('#main-container').removeClass('hidden');
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
 
-			getEWI(function(output){
-				if (counter == 1 || counter == 0){
-					var template = setEWILocation(output);
-				}else {
-					var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-					$('#msg').val(nssEWITemplate);
+		var counter = 0;
+		$('input[name="sitenames"]:checked').each(function() {
+			counter++;
+		});
+
+		if (counter == 1){
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"]').prop('checked', false);
+
+			$('input[name="sitenames"]').each(function() {
+				if ($('#sites').val() == this.value) {
+					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
 				}
 			});
-		});
-
-		function getEWI(handledTemplate){
-			var constructedEWI = "";
-			var dateReplaced = "";
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",	
-				success: function(response){
-					var d = new Date();
-					var currentPanahon = d.getHours();
-					if (currentPanahon >= 12 && currentPanahon <= 18) {
-						constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Hapon");
-					} else if (currentPanahon > 18 && currentPanahon <=23) {
-						constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Gabi");
-					} else {
-						constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
-					}
-
-				//Changes the Date
-				var year = $('#ewi-date-picker').val().substring(0, 4);
-				var month = $('#ewi-date-picker').val().substring(5, 7);
-				var day = $('#ewi-date-picker').val().substring(8, 10);
-
-				var months = {1: "January",2: "February",3: "March",
-				4: "April",5: "May",6: "June",
-				7: "July",8: "August", 9: "September",
-				10: "October", 11: "November", 12: "December"};
-
-				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
-				dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
-
-				var formCurrentTime = dateReplaced.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
-				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
-
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-				handledTemplate(finalEWI);
-			}
-		});
+		} else if (counter > 1){
+			var tagSitenames = [];
+			$('input[name="sitenames"]:checked').each(function() {
+				tagSitenames.push(this.value);
+			});
+		} else {
+			tagSitenames.push($('#sites').val());
+			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
 		}
 
-		function setEWILocation(consEWI){
-			var finalEWI = "";
-			if (consEWI != "") {
-				$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
-				.done(function(response) {
-					var location = JSON.parse(response);
-					var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
-					var formatSbmp = sbmp.replace("null","");
-					if (formatSbmp.charAt(0) == ",") {
-						formatSbmp = formatSbmp.substr(1);
-					}
-					finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
-					$('#msg').val(finalEWI);
-				});
+
+		tagSitenames.sort();
+		groupTags = {
+			'type': 'smsloadrequestgroup',
+			'offices': tagOffices,
+			'sitenames': tagSitenames
+		};
+
+		$('#main-container').removeClass('hidden');
+
+		getEWI(function(output){
+			if (counter == 1 || counter == 0){
+				var template = setEWILocation(output);
+			}else {
+				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
+				$('#msg').val(nssEWITemplate);
+			}
+		});
+	});
+
+	function getEWI(handledTemplate){
+		var constructedEWI = "";
+		var dateReplaced = "";
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				var d = new Date();
+				var currentPanahon = d.getHours();
+				if (currentPanahon >= 12 && currentPanahon <= 18) {
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Hapon");
+				} else if (currentPanahon > 18 && currentPanahon <=23) {
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Gabi");
+				} else {
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
+				}
+
+			//Changes the Date
+			var year = $('#ewi-date-picker').val().substring(0, 4);
+			var month = $('#ewi-date-picker').val().substring(5, 7);
+			var day = $('#ewi-date-picker').val().substring(8, 10);
+
+			var months = {1: "January",2: "February",3: "March",
+			4: "April",5: "May",6: "June",
+			7: "July",8: "August", 9: "September",
+			10: "October", 11: "November", 12: "December"};
+
+			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+			dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
+
+			var formCurrentTime = dateReplaced.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
 			} else {
-				$('#msg').val("Site is not available");
+				alert("Error Occured: Please contact Administrator");
 			}
+
+			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
+			} else {
+				alert("Error Occured: Please contact Administrator");
+			}
+			handledTemplate(finalEWI);
 		}
+	});
+}
 
-		function sendViaAlertMonitor(data){
-
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/getewi",             	
-				dataType: "json",	
-				success: function(response){
-					if (data["internal_alert_level"].toUpperCase().length > 4) {
-						if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
-							var preConstructedEWI = response["A2"];
-						} else {
-							var preConstructedEWI = response["A3"];
-						}
-					} else {
-						var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
-					}
-					var constructedEWIDate = "";
-					var finalEWI = ""
-					var d = new Date();
-					var currentPanahon = d.getHours();
-					if (currentPanahon >= 12 && currentPanahon <= 18) {
-						constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-					} else if (currentPanahon > 18 && currentPanahon <=23) {
-						constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-					} else {
-						constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-					}
-
-				//Changes the Date
-				var year = data["data_timestamp"].slice(0, -9).substring(0, 4);
-				var month = data["data_timestamp"].slice(0, -9).substring(5, 7);
-				var day = data["data_timestamp"].slice(0, -9).substring(8, 10);
-
-				var months = {1: "January",2: "February",3: "March",
-				4: "April",5: "May",6: "June",
-				7: "July",8: "August", 9: "September",
-				10: "October", 11: "November", 12: "December"};
-
-				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
-
-				constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
-				var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-				var formatSbmp = ewiLocation.replace("null","");
-				if (formatSbmp.charAt(0) == ",") {
-					formatSbmp = formatSbmp.substr(1);
-				}
-
-
-				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
-				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
-
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-
-				
-				$('#site-abbr').val(data["name"]);
-				$('#constructed-ewi-amd').val(finalEWI);
+function setEWILocation(consEWI){
+	var finalEWI = "";
+	if (consEWI != "") {
+		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+		.done(function(response) {
+			var location = JSON.parse(response);
+			var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+			var formatSbmp = sbmp.replace("null","");
+			if (formatSbmp.charAt(0) == ",") {
+				formatSbmp = formatSbmp.substr(1);
 			}
+			finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
+			$('#msg').val(finalEWI);
 		});
+	} else {
+		$('#msg').val("Site is not available");
+	}
+}
+
+function sendViaAlertMonitor(data){
+
+	$.ajax({
+		type: "GET",
+		url: "../chatterbox/getewi",             	
+		dataType: "json",	
+		success: function(response){
+			if (data["internal_alert_level"].toUpperCase().length > 4) {
+				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
+					var preConstructedEWI = response["A2"];
+				} else {
+					var preConstructedEWI = response["A3"];
+				}
+			} else {
+				var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+			}
+			var constructedEWIDate = "";
+			var finalEWI = ""
+			var d = new Date();
+			var currentPanahon = d.getHours();
+			if (currentPanahon >= 12 && currentPanahon <= 18) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+			} else if (currentPanahon > 18 && currentPanahon <=23) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+			} else {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
+			}
+
+			//Changes the Date
+			var year = data["data_timestamp"].slice(0, -9).substring(0, 4);
+			var month = data["data_timestamp"].slice(0, -9).substring(5, 7);
+			var day = data["data_timestamp"].slice(0, -9).substring(8, 10);
+
+			var months = {1: "January",2: "February",3: "March",
+			4: "April",5: "May",6: "June",
+			7: "July",8: "August", 9: "September",
+			10: "October", 11: "November", 12: "December"};
+
+			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+
+			constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
+			var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+			var formatSbmp = ewiLocation.replace("null","");
+			if (formatSbmp.charAt(0) == ",") {
+				formatSbmp = formatSbmp.substr(1);
+			}
+
+
+			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+			var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+			} else {
+				alert("Error Occured: Please contact Administrator");
+			}
+
+			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
+				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
+			} else {
+				alert("Error Occured: Please contact Administrator");
+			}
+
+			
+			$('#site-abbr').val(data["name"]);
+			$('#constructed-ewi-amd').val(finalEWI);
+		}
+	});
+
 $('#ewi-asap-modal').modal('toggle');
 }
 
@@ -2235,43 +2288,39 @@ function templateSendViaAMD(){
 	var text = $('#constructed-ewi-amd').val();
 	try {
 
-		// Assume All 4 offices will be included in the EWI
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+			// Assume All 4 offices will be included in the EWI
+			var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
 
-		$('input[name="offices"]').prop('checked', false);
-		$('input[name="sitenames"]').prop('checked', false);
+			$('input[name="offices"]').prop('checked', false);
+			$('input[name="sitenames"]').prop('checked', false);
 
-		var tagSitenames = [];
-		tagSitenames.push($('#site-abbr').val().toUpperCase());
+			var tagSitenames = [];
+			tagSitenames.push($('#site-abbr').val().toUpperCase());
 
-		var msg = {
-			'type': 'smssendgroup',
-			'user': 'You',
-			'offices': tagOffices,
-			'sitenames': tagSitenames,
-			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
-		};
-		
-		conn.send(JSON.stringify(msg));
-		msgType = "smssendgroup";
-		updateMessages(msg);
-		
-		$('#constructed-ewi-amd').val('');
-		$('#result-ewi-message').text('Success!, Message sent.');
-		$('#success-ewi-modal').modal('toggle');
-		$('#ewi-asap-modal').modal('toggle');
-	} catch(err) {
-		$('#result-ewi-message').text('Failed!, Please check the template.');
-		alert(err.stack);
-		$('#success-ewi-modal').modal('toggle');
-		$('#ewi-asap-modal').modal('toggle');
+			var msg = {
+				'type': 'smssendgroup',
+				'user': 'You',
+				'offices': tagOffices,
+				'sitenames': tagSitenames,
+				'msg': text+footer,
+				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+			};
+			
+			conn.send(JSON.stringify(msg));
+			msgType = "smssendgroup";
+			updateMessages(msg);
+			
+			$('#constructed-ewi-amd').val('');
+			$('#result-ewi-message').text('Success!, Message sent.');
+			$('#success-ewi-modal').modal('toggle');
+			$('#ewi-asap-modal').modal('toggle');
+		} catch(err) {
+			$('#result-ewi-message').text('Failed!, Please check the template.');
+			alert(err.stack);
+			$('#success-ewi-modal').modal('toggle');
+			$('#ewi-asap-modal').modal('toggle');
+		}
 	}
-}
-
-$('#sbt-update-contact-info').click(function(){
-	$('#edit-contact').modal('toggle');
-});
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
@@ -2425,4 +2474,218 @@ $('#sbt-update-contact-info').click(function(){
 		}
 	}
 
+	$('#contact-category').on('change',function(){
+		$('#contact-result').remove();
+		if ($('#contact-category').val() != 'default') {
+			$('#contact-category').css("border-color", "#3c763d");
+			$('#contact-category').css("background-color", "#dff0d8");
+		}
+		$('#settings-cmd').prop('disabled', false);
+		$('#settings-cmd option').prop('selected', function() {
+			$('#settings-cmd').css("border-color", "#d6d6d6");
+			$('#settings-cmd').css("background-color", "inherit");
+			return this.defaultSelected;
+		});
+
+		reset_cc(); // Reset the fields for Employee/Community Contacts
+		reset_ec();
+		
+		$('#update-contact-container').prop('hidden',true);
+		$('#response-contact-container_wrapper').prop('hidden',true);
+		$('#employee-contact-wrapper').prop('hidden', true);
+		$('#community-contact-wrapper').prop('hidden', true);
+	});
+
+	$('#settings-cmd').on('change',function(){
+		if ($('#settings-cmd').val() != 'default') {
+			$('#settings-cmd').css("border-color", "#3c763d");
+			$('#settings-cmd').css("background-color", "#dff0d8");
+		}
+
+		if ($('#contact-category').val() == "econtacts") {
+			if ($('#settings-cmd').val() == "addcontact") {
+				$('#response-contact-container_wrapper').prop('hidden',true);
+				$('#community-contact-wrapper').prop('hidden', true);
+				$('#employee-contact-wrapper').prop('hidden', false);
+			} else if ($('#settings-cmd').val() == "updatecontact") {
+				$('#employee-contact-wrapper').prop('hidden', true);
+				$('#community-contact-wrapper').prop('hidden', true);
+				reset_cc();
+				reset_ec();
+				getEmpContact();
+			} else {
+				console.log('Invalid Request');
+			}
+		} else if ($('#contact-category').val() == "ccontacts") {
+			if ($('#settings-cmd').val() == "addcontact") {
+				$('#response-contact-container_wrapper').prop('hidden',true);
+				$('#employee-contact-wrapper').prop('hidden', true);
+				$('#community-contact-wrapper').prop('hidden', false);
+			} else if ($('#settings-cmd').val() == "updatecontact") {	
+				reset_cc();
+				reset_ec();
+				$('#employee-contact-wrapper').prop('hidden', true);
+				$('#community-contact-wrapper').prop('hidden', true);
+				getComContact();
+			} else {
+				console.log('Invalid Request');
+			}
+		} else {
+			console.log('Invalid Request');
+		}
+	});
+
+	function getComContact(){
+		var table = $('#response-contact-container').DataTable();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/get_community_contacts",             
+			dataType: "html",              
+			success: function(response){
+				$("#response-contact-container").DataTable().clear();
+				$("#response-contact-container").DataTable().destroy();
+				$('#response-contact-container').show();
+				$("#response-contact-container").html(response); 
+				$("#response-contact-container").DataTable();
+			}
+		});
+	}
+
+	function getEmpContact(){
+		var table = $('#response-contact-container').DataTable();
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/get_employee_contacts",             
+			dataType: "html",              
+			success: function(response){
+				$("#response-contact-container").DataTable().clear();
+				$("#response-contact-container").DataTable().destroy();
+				$('#response-contact-container').show();
+				$("#response-contact-container").html(response);
+				$("#response-contact-container").DataTable();
+			}
+		});
+	}
+
+	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
+		debugger;
+		var empty_fields = 0;
+		$('#community-contact-wrapper input').each(function(){
+			if ($(this).val() == "" || $(this).val() == null) {
+				empty_fields++;
+			}
+		});
+
+		if (empty_fields > 2) { // Empty field filter 2 is for the hidden text field for OTHER sitename/office
+			$('#contact-result').remove();
+			var container = document.getElementById('community-contact-wrapper');
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			if ($('#sitename_cc').val() == "OTHERS") {
+				$site = $('#other-sitename').val();
+			} else {
+				$site = $('#sitename_cc').val();
+			}
+
+			if ($('#office_cc').val() == "OTHERS") {
+				$office = $('#other-officename').val();
+			} else {
+				$office = $('#office_cc').val();
+			}
+
+			data = {
+				'category': 'communitycontacts',
+				'c_id': '',
+				'lastname': $('#lastname_cc').val(),
+				'firstname': $('#firstname_cc').val(),
+				'prefix': $('#prefix_cc').val(),
+				'office': $office,
+				'sitename': $site,
+				'number': $('#numbers_cc').val(),
+				'rel': $('#rel').val(),
+				'ewirecipient': ($('#ewirecipient').val() == "Y" ? true : false)
+			};
+
+			$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
+			.done(function(response) {
+				if (response == true) {
+					$('#contact-result').remove();
+					var container = document.getElementById('community-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-success";
+					resContainer.innerHTML = "<strong>Success!</strong> New Community contact added.";
+					container.insertBefore(resContainer,container.childNodes[0]);
+					$("#employee-contact-wrapper input").val('');
+				} else {
+					$('#contact-result').remove();
+					var container = document.getElementById('community-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-danger";
+					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
+					container.insertBefore(resContainer,container.childNodes[0]);
+				}
+				reset_cc();
+				fetchSiteAndOffice();
+			});
+		}
+	});
+
+	$('#emp-settings-cmd button[type="submit"]').on('click',function(){
+		var empty_fields = 0;
+		$('#employee-contact-wrapper input').each(function(){
+			if ($(this).val() == "" || $(this).val() == null) {
+				empty_fields++;
+			}
+		});
+
+		if (empty_fields > 0) {
+			$('#contact-result').remove();
+			var container = document.getElementById('employee-contact-wrapper');
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			data = {
+				'category': 'dewslcontacts',
+				'eid': '',
+				'lastname': $('#lastname_ec').val(),
+				'firstname': $('#firstname_ec').val(),
+				'nickname': $('#nickname_ec').val(),
+				'birthday': $('#birthdate_ec').val(),
+				'email': $('#email_ec').val(),
+				'numbers': $('#numbers_ec').val(),
+				'grouptags': $('#grouptags_ec').val()
+			};
+			$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
+			.done(function(response) {
+				if (response == true) {
+					$('#contact-result').remove();
+					var container = document.getElementById('employee-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-success";
+					resContainer.innerHTML = "<strong>Success!</strong> New Employee contact added.";
+					container.insertBefore(resContainer,container.childNodes[0]);
+					$("#employee-contact-wrapper input").val('');
+				} else {
+					$('#contact-result').remove();
+					var container = document.getElementById('employee-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-danger";
+					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
+					container.insertBefore(resContainer,container.childNodes[0]);
+				}
+				reset_ec();
+			});
+		}
+	});
 // })();

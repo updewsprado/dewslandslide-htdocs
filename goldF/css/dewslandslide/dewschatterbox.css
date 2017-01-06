@@ -30,7 +30,7 @@ body {
 }
 
 #go-chat.disabled,#go-load-groups.disabled,#send-msg.disabled,#btn-gbl-search.disabled {
-    pointer-events: auto;
+  pointer-events: auto;
 }
 
 #search-lbl {
@@ -95,7 +95,23 @@ body {
 }
 
 .contact-settings-container {
-  display: flex;
+  display: block; 
+}
+
+.contact-settings-container .row{
+  margin: 0;
+}
+
+.contact-settings-container label{
+  padding-right: 10px;
+}
+
+#employee-contact-wrapper .row {
+  padding-top: 10px;
+}
+
+#community-contact-wrapper .row {
+  padding-top: 10px;
 }
 
 .contact-settings-wrapper {
@@ -104,6 +120,18 @@ body {
   border-radius: 10px;
   padding: 10px 10px;
   margin: 10px 10px;
+}
+
+#comm-settings-cmd,#emp-settings-cmd {
+  padding: 0 15px 0 15px;
+}
+
+#emp-settings-cmd button {
+  margin-right: 10px;
+}
+
+#other-officename,#other-sitename {
+  margin-top: 10px;
 }
 
 #confirm-ewi-recipients{
@@ -142,6 +170,14 @@ body {
 
 #update-contact-content {
   width: 92%;
+}
+
+#update-contact-container {
+  text-transform: capitalize;
+}
+
+#udt-contact-container > *{
+  margin: 5px;
 }
 
 #search-global-result{
