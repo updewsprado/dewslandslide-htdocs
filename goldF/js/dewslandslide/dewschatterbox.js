@@ -700,8 +700,9 @@
 				comboplete.list = suggestionsArray;
 			}
 			else {
-				var numbers = /^[0-9]+$/; 
 
+				var numbers = /^[0-9]+$/; 
+				console.log(msg);
 				if (msg.type == "ackgsm") {
 					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
@@ -2551,7 +2552,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	}
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
-
+		
 		var empty_fields = 0;
 		$('#community-contact-wrapper input').each(function(){
 			if ($(this).val() == "" || $(this).val() == null) {
