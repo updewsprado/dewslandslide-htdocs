@@ -27,14 +27,14 @@
 	var lastMessageTimeStampGroup="";
 	var ewiFlagger = false;
 	var convoFlagger = false;
-	var connection_status = true;
+	var connection_status = true; // True means Connected.
 	var conn = connectWS();
 	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
+	var gsmTimestampIndicator = "";
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.
-
 	try {
 		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 		var remChars = 800 - $("#msg").val().length - footer.length;
@@ -67,8 +67,11 @@
 
 	function arraysEqual(a, b) {
 		if (a === b) return true;
-		if (a === null || b === null) return false;
+		if (a == null || b == null) return false;
 		if (a.length != b.length) return false;
+
+		// If you don't care about the order of the elements inside
+		// the array, you should sort both arrays here.
 
 		for (var i = 0; i < a.length; ++i) {
 			if (a[i] !== b[i]) return false;
@@ -77,9 +80,19 @@
 	}
 
 	function updateMessages(msg) {
+		// Hides the Search 
 		$('#search-key').hide();
+
+		// console.log("User is: " + msg.user);
+		// console.log("Message: " + msg.msg);
 		if (msg.user == "You") {
+			//TODO: must include logic for filtering the messages the current 
+			//	user is supposed to receive for either "groups/tags" mode or
+			//	normal usage
 			msg.isyou = 1;
+
+			//If in "groups/tags" mode, accept message from "You" only if the
+			//recipients are exactly the offices and sitenames you've selected
 
 			if (contactInfo == "groups") {
 				console.log("type is group/tags");
@@ -87,18 +100,20 @@
 					messages.push(msg);
 				} else {
 					if (msgType == "smsloadrequestgroup") {
-						console.log("type smsloadrequestgroup");
+						console.log("type smsloadrequestgroup")
 						messages.push(msg);
 					} else {
 						searchResults.push(msg);
 					}
 
+					// //only push the message if it belongs to the groupTags
+					// messages.push(msg);
 					if(arraysEqual(msg.offices, groupTags.offices)) {
 						if (msgType == "searchMessageGroup") {
 							searchResults.push(msg);
 						} else {
 							if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
-								console.log("type found match for group send receive");
+								console.log("type found match for group send receive")
 								console.log("the message before it gets pushed:");
 								console.log(msg);
 								messages.push(msg);
@@ -126,11 +141,12 @@
 					msg.isyou = 0;
 					messages.push(msg);	
 				} else {
-
+					//only push the message if it belongs to the groupTags
+					//Don't include message if "msg.name" is "unknown"
 					if (msg.name == "unknown") {
 						return;
 					}
-
+					//Use "sitenames" as the primary filter
 					var isTargetSite = false;
 					for (i in groupTags.sitenames) {
 						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
@@ -143,6 +159,7 @@
 						return;
 					}
 
+					//Use "offices" as the secondary filter
 					var isOffices = false;
 					for (i in groupTags.offices) {
 						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
@@ -166,7 +183,7 @@
 					}
 				}
 			} else {
-
+				//substitute number for name of registered user from contactInfo
 				for (i in contactInfo) {
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
 						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched"){
@@ -190,7 +207,7 @@
 		}
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
-			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
+		 	!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
 			try{
 				if (messages[counters]['user'] == 'You'){
 					if (lastMessageTimeStampYou == "") {
@@ -215,7 +232,7 @@
 					$('html, body').scrollTop(maxScroll);
 					// Clears the messages container if already displayed.
 					messages = [];
-
+			
 				} else {
 					var messages_html = messages_template_both({'messages': messages});
 					$('#messages').html(messages_html);
@@ -258,11 +275,14 @@
 			}
 
 			$(targetInbox).html(quick_inbox_html);
+
+			//Scroll to the top of the quick inbox
 			$(targetInbox).scrollTop(0);
 		}
 	}
 
 	function loadMessageHistory(msg) {
+		//TODO: load the historical message here
 		alert("loadMessageHistory!");
 	}
 
@@ -272,9 +292,9 @@
 		if (msgHistory['hasNull'] == true) {
 			for (var i = 0; i < msgHistory['data'].length; i++){
 				console.log(msgHistory['data'][i]);
-				$('.list-ewi-recipient').append("<li class='list-group-item'><div class='checkbox'><label><input type='checkbox' name='ewi_recipients' value='"+JSON.stringify(msgHistory['data'][i])+"'>"+
-					msgHistory['data'][i].office+" "+msgHistory['data'][i].sitename+" "+msgHistory['data'][i].lastname+", "+msgHistory['data'][i].firstname+
-					" - "+msgHistory['data'][i].number+"</label></div></li>");
+			    $('.list-ewi-recipient').append("<li class='list-group-item'><div class='checkbox'><label><input type='checkbox' name='ewi_recipients' value='"+JSON.stringify(msgHistory['data'][i])+"'>"+
+			    	msgHistory['data'][i].office+" "+msgHistory['data'][i].sitename+" "+msgHistory['data'][i].lastname+", "+msgHistory['data'][i].firstname+
+			    	" - "+msgHistory['data'][i].number+"</label></div></li>");
 			}
 			$('#ewi-recipient-update-modal').modal('toggle');
 		} else {
@@ -284,11 +304,12 @@
 			}
 
 			console.log("initLoadMessageHistory");
+			//Loop through the JSON msg and
+			//	use updateMessages multiple times
 			var history = msgHistory.data;
 			ewirecipients = msgHistory;
 			temp = msgHistory.data;
 			var msg;
-
 			for (var i = history.length - 1; i >= 0; i--) {
 				msg = history[i];
 				updateMessages(msg);
@@ -305,59 +326,47 @@
 		});
 
 		request = {'type': "updateEwiRecipients",
-		'data': recipientsUpdate
-	}
+					'data': recipientsUpdate
+				}
 
-	console.log(recipientsUpdate);
-	conn.send(JSON.stringify(request));
-});
+		console.log(recipientsUpdate);
+		conn.send(JSON.stringify(request));
+	});
 
 	function updateOldMessages(oldMessages){
 
 		if (contactInfo == "groups") {
-
-			if (oldMessages.type == "oldMessageGroupEmployee") {
-				if (oldMessages.user == "You"){
-					oldMessages.isyou = 1;
-					messages.push(oldMessages);
-				} else {
-					oldMessages.isyou = 0;
-					oldMessages.user = oldMessages.user;
-					messages.push(oldMessages);
-				}
+			if (oldMessages.user == "You"){
+				oldMessages.isyou = 1;
+				messages.push(oldMessages);
 			} else {
-				if (oldMessages.user == "You"){
-					oldMessages.isyou = 1;
-					messages.push(oldMessages);
-				} else {
-					oldMessages.isyou = 0;
-					var isTargetSite = false;
-					for (i in groupTags.sitenames) {
-						if ((oldMessages.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
-							isTargetSite = true;
-							continue;
-						}
+				oldMessages.isyou = 0;
+				var isTargetSite = false;
+				for (i in groupTags.sitenames) {
+					if ((oldMessages.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						isTargetSite = true;
+						continue;
 					}
-					if (isTargetSite == false) {
-						return;
-					}
-					var isOffices = false;
-					for (i in groupTags.offices) {
-						if ((oldMessages.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
-							isOffices = true;
-							continue;
-						}
-					}
-
-					if (isOffices == false) {
-						return;
-					}
-					oldMessages.user = oldMessages.name;
-					messages.push(oldMessages);
 				}
+				if (isTargetSite == false) {
+					return;
+				}
+				var isOffices = false;
+				for (i in groupTags.offices) {
+					if ((oldMessages.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						isOffices = true;
+						continue;
+					}
+				}
+
+				if (isOffices == false) {
+					return;
+				}
+				oldMessages.user = oldMessages.name;
+				messages.push(oldMessages);
 			}
 		} else {
-
+			//substitute number for name of registered user from contactInfo
 			for (i in contactInfo) {	
 				if (oldMessages.user == 'You') {
 					oldMessages.isyou = 1;
@@ -387,7 +396,10 @@
 		lastMessageTimeStampIndi = "";
 		lastMessageTimeStampGroup = "";
 
+		console.log("Loading Old Messages");
+		// console.log(msg);
 		if (msg.type == "oldMessage") {
+
 			var oldMessagesIndi = msg.data;
 			var oldMsg;
 			messages = [];
@@ -422,7 +434,7 @@
 				console.log("Invalid Request/End of the Conversation");
 			}
 
-		} else if (msg.type == "oldMessageGroup" || msg.type == "oldMessageGroupEmployee") {
+		} else if (msg.type == "oldMessageGroup") {
 			var oldMessagesGroup = msg.data;
 			var oldMsg;
 			messages = [];
@@ -430,11 +442,7 @@
 			if (msg.data != null) {
 				for (var i = oldMessagesGroup.length - 1; i >= 0; i--) {
 					oldMsg = oldMessagesGroup[i];
-					if (msg.type == "oldMessageGroupEmployee") {
-						oldMsg["type"] = "oldMessageGroupEmployee";
-					} else {
-						oldMsg["type"] = "oldMessagesGroup";
-					}
+					oldMsg["type"] = "oldMessagesGroup";
 					updateOldMessages(oldMsg);
 					if (messages[counters].user == 'You'){
 						if (lastMessageTimeStampYou == "") {
@@ -465,6 +473,7 @@
 		var scroll = $(window).scrollTop();
 		if ($(document).height() > $(window).height()) {
 			if (scroll == 0 && convoFlagger == false){
+				console.log(msgType);
 				if (msgType == "smsload") {
 					getOldMessage();
 				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
@@ -484,28 +493,13 @@
 		if (lastMessageTimeStampIndi == "") {
 			lastMessageTimeStampIndi = tempTimestampIndi;
 		}
-		if (quickGroupSelectionFlag == true) {
-			var tags = [];
-			$('input[name="tag"]:checked').each(function() {
-				tags.push(this.value);
-			});
-
-			var request = {
-				'type': 'oldMessageGroupEmployee',
-				'tags': tags,
-				'timestampYou': lastMessageTimeStampYou,
-				'timestampGroup': lastMessageTimeStampGroup
-			}
-
-		} else {
-			var request = {
-				'type': 'oldMessage',
-				'number': contactnumTrimmed,
-				'timestampYou': lastMessageTimeStampYou,
-				'timestampIndi': lastMessageTimeStampIndi
-			};
-		}
-
+		
+		var request = {
+			'type': 'oldMessage',
+			'number': contactnumTrimmed,
+			'timestampYou': lastMessageTimeStampYou,
+			'timestampIndi': lastMessageTimeStampIndi
+		};
 
 		tempTimestampYou  = lastMessageTimeStampYou;
 		tempTimestampIndi = lastMessageTimeStampIndi;
@@ -614,9 +608,10 @@
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
-			enableCommands();
+			enableCommands(); // Enable commands for chatterbox
 
-			connection_status = true;
+		 	connection_status = true;
+			// $("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
@@ -654,13 +649,9 @@
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
-			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup")){
+			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
 				initLoadMessageHistory(msg);
-			}  else if (msg.type == "loadEmployeeTag") {
-				initLoadMessageHistory(msg);
-				msg.type = "loadEmployeeTag";
-				msgType = "smsload";
-			} else if (msg.type == "hasNullEWIRecipient"){
+			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
 			} else if (msg.type == "resumeLoading") {
 				$('#ewi-recipient-update-modal').modal('toggle');
@@ -668,10 +659,7 @@
 			} else if (msg.type == "oldMessage"){
 				loadOldMessages(msg);
 				msgType = "smsload"
-			} else if (msg.type == "oldMessageGroupEmployee") {
-				loadOldMessages(msg);
-				msgType = "smsload"
-			}else if (msg.type == "oldMessageGroup"){
+			} else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
@@ -704,15 +692,21 @@
 
 				var suggestionsArray = [];
 				for (var i in msg.data) {
-					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-					" - " + msg.data[i].numbers;
-					suggestionsArray.push(suggestion);
+				    var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
+				    					" - " + msg.data[i].numbers;
+				    suggestionsArray.push(suggestion);
 				}
 
 				comboplete.list = suggestionsArray;
 			}
 			else {
-				var numbers = /^[0-9]+$/;  
+				var numbers = /^[0-9]+$/; 
+
+				if (msg.type == "ackgsm") {
+					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
+						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+					}
+				}
 
 				if (contactInfo == "groups") {
 					updateMessages(msg);
@@ -756,76 +750,76 @@
 		tempConn.onclose = function(e) {
 			WSS_CONNECTION_STATUS = -1;
 
-			var reason;
+	        var reason;
 	        //alert(event.code);
 	        // See http://tools.ietf.org/html/rfc6455#section-7.4.1
 	        if (event.code == 1000)
-	        	reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
+	            reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
 	        else if(event.code == 1001)
-	        	reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
+	            reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
 	        else if(event.code == 1002)
-	        	reason = "An endpoint is terminating the connection due to a protocol error";
+	            reason = "An endpoint is terminating the connection due to a protocol error";
 	        else if(event.code == 1003)
-	        	reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
+	            reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
 	        else if(event.code == 1004)
-	        	reason = "Reserved. The specific meaning might be defined in the future.";
+	            reason = "Reserved. The specific meaning might be defined in the future.";
 	        else if(event.code == 1005)
-	        	reason = "No status code was actually present.";
+	            reason = "No status code was actually present.";
 	        else if(event.code == 1006) {
 	        	reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 	        	// $("#connectionStatusModal").modal("show");
 
 	        	//Disables the commands for chatterbox if the connection lost.
-	        	disableCommands();
+		 		disableCommands();
 
-	        	connection_status = false;
+        	 	connection_status = false;
 				//Enable the functionality of "send button"
 				$("#send-msg").addClass("disabled");
 
 	       		// reconnect to the WSS
 	       		waitForSocketConnection();
 	       	}
-	       	else if(event.code == 1007)
-	       		reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
-	       	else if(event.code == 1008)
-	       		reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
-	       	else if(event.code == 1009)
-	       		reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
+	        else if(event.code == 1007)
+	            reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
+	        else if(event.code == 1008)
+	            reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
+	        else if(event.code == 1009)
+	           reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
 	        else if(event.code == 1010) // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
-	        	reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
+	            reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
 	        else if(event.code == 1011)
-	        	reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
+	            reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
 	        else if(event.code == 1015)
-	        	reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
+	            reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
 	        else
-	        	reason = "Unknown reason";
+	            reason = "Unknown reason";
 
 	        console.log(reason);
-	    }
+		}
 
-	    return tempConn;
+		return tempConn;
 	}
 
 	// Make the function wait until the connection is made...
 	function waitForSocketConnection() {
 		if (!window.timerID) {
 			window.timerID = setInterval(
-				function () {
-					if (conn.readyState === 1) {
-						console.log("Connection is made");
-						return;
+		        function () {
+		            if (conn.readyState === 1) {
+		                console.log("Connection is made");
+		                return;
 
-					} else {
-						console.log("wait for connection... " + delayReconn);
-						conn = connectWS();
-						waitForSocketConnection();
+		            } else {
+		                console.log("wait for connection... " + delayReconn);
+		                conn = connectWS();
+		                waitForSocketConnection();
 
 						// Add 1 second for everytime the reconnection is triggered
 						//	will reset once connected
 						if (delayReconn < 20000) {
 							delayReconn += 1000;
 						}
-					}
+		            }
 
 		        }, delayReconn); // wait delayReconn seconds for the connection...
 		}
@@ -886,6 +880,12 @@
 	};
 
 	function parseContactInfo (multipleContactInfo) {
+		// var n = multipleContactInfo.search(' - ');
+		// var size = multipleContactInfo.length;
+		// contactname = multipleContactInfo.slice(0,n);
+		// contactnum = multipleContactInfo.slice(n + 3, multipleContactInfo.length);
+		// contactnumTrimmed = [];
+
 		parseSingleContactInfo(multipleContactInfo);
 	}
 
@@ -945,15 +945,17 @@
 				else
 					tempText = tempText + uniqueName[i] + ", ";
 			}
-		} else if (source == "quickInbox") {
+		}
+		else if (source == "quickInbox") {
 			if (qiFullContact.search("unknown") >= 0) {
-				//Number is Unknown
-				tempText = qiFullContact;
-				document.title = tempText;
-			} else {
-				//Number is known
-				var posDash = qiFullContact.search(" - ");
-				tempText = qiFullContact.slice(0, posDash);
+			//Number is Unknown
+			tempText = qiFullContact;
+			document.title = tempText;
+			} 
+			else {
+			//Number is known
+			var posDash = qiFullContact.search(" - ");
+			tempText = qiFullContact.slice(0, posDash);
 			}
 		}
 		$("#current-contacts h4").text(tempText);
@@ -985,6 +987,7 @@
 		} else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup"){
 			searchMessageGroup();
 		} else {
+			console.log(msgType);
 			console.log("Invalid Request");
 		}
 	}
@@ -996,20 +999,20 @@
 			} else if (contactnumTrimmed[numLen].length == 11){
 				contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(1);
 			} else {
-					// Do nothing
-				}
+				// Do nothing
 			}
-			var request = {
-				'type': 'searchMessageIndividual',
-				'number': contactnumTrimmed,
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-				'searchKey': $('#search-key').val()
-			};
-
-			conn.send(JSON.stringify(request));
 		}
+		var request = {
+			'type': 'searchMessageIndividual',
+			'number': contactnumTrimmed,
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+			'searchKey': $('#search-key').val()
+		};
 
-		function searchMessageGroup(){
+		conn.send(JSON.stringify(request));
+	}
+
+	function searchMessageGroup(){
 		//Reset the group tags
 		groupTags = [];
 
@@ -1017,12 +1020,12 @@
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
+		   tagOffices.push(this.value);
 		});
 
 		var tagSitenames = [];
 		$('input[name="sitenames"]:checked').each(function() {
-			tagSitenames.push(this.value);
+		   tagSitenames.push(this.value);
 		});
 
 		//sort the sitename values in the array alphabetically
@@ -1063,9 +1066,9 @@
 		coloredTimestamp = "id_"+timestamp;
 		if (type == "searchMessage") {
 			var request = {
-				'type': 'smsLoadSearched',
-				'number': contactnumTrimmed,
-				'timestamp': timestamp
+			'type': 'smsLoadSearched',
+			'number': contactnumTrimmed,
+			'timestamp': timestamp
 			};
 
 			conn.send(JSON.stringify(request));
@@ -1075,12 +1078,12 @@
 
 			var tagOffices = [];
 			$('input[name="offices"]:checked').each(function() {
-				tagOffices.push(this.value);
+			   tagOffices.push(this.value);
 			});
 
 			var tagSitenames = [];
 			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
+			   tagSitenames.push(this.value);
 			});
 
 			if (user == 'You') {
@@ -1101,7 +1104,9 @@
 
 		} else if (type == "searchMessageGlobal"){
 
+			// console.log(msg);
 			contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
+
 			$("#current-contacts h4").text(user);
 			document.title = user;
 			$('#search-lbl').css('display', 'block')
@@ -1123,30 +1128,24 @@
 		}
 	}
 
+	//HandleBars Helper
+	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
+	  if(v1 === v2 || v1 == v3 || v1 == v4) {
+	    return options.fn(this)
+	  } else {
+	  	return options.inverse(this);	
+	  }
+	});
 
-	try {
-		//HandleBars Helper
-		Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
-			if(v1 === v2 || v1 == v3 || v1 == v4) {
-				return options.fn(this)
-			} else {
-				return options.inverse(this);	
-			}
-		});
+	Handlebars.registerHelper('breaklines', function(text) {
+	    text = Handlebars.Utils.escapeExpression(text);
+	    text = text.replace(/(\r\n|\n|\r)/gm, ' ');
+	    return new Handlebars.SafeString(text);
+	});
 
-		Handlebars.registerHelper('breaklines', function(text) {
-			text = Handlebars.Utils.escapeExpression(text);
-			text = text.replace(/(\r\n|\n|\r)/gm, ' ');
-			return new Handlebars.SafeString(text);
-		});
-
-		Handlebars.registerHelper('escape', function(variable) {
-			return variable.replace(/(['"-])/g, '\\$1');
-		});
-	} catch(err) {
-		console.log("Chatterbox : monitoring dashboard mode");
-	}
-
+	Handlebars.registerHelper('escape', function(variable) {
+	  return variable.replace(/(['"-])/g, '\\$1');
+	});
 
 	function loadSearchedMessage(msg){
 		counters = 0;
@@ -1169,12 +1168,12 @@
 			$('#search-result').html(messages_html);
 			$('#search-result-modal').modal('toggle');
 
-			if (msg.type == "searchMessage") {
-				msgType = "smsload";
-			} else {
-				msgType = "smsloadrequestgroup";
-			}
-			counters = 0;
+		if (msg.type == "searchMessage") { // DISABLED FOR NOW: ISSUE: Does not fetch the old message via scroll feature
+			msgType = "smsload";
+		} else {
+			msgType = "smsloadrequestgroup";
+		}
+		counters = 0;
 
 		} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
 			messages = [];
@@ -1207,11 +1206,11 @@
 			}
 			counters = 0;
 
-			var targetLi = document.getElementById(coloredTimestamp);
-			targetLi.style.borderColor = "#dff0d8";
-			targetLi.style.borderRadius = "3px";
-			targetLi.style.borderWidth = "5px";
-			$('html, body').scrollTop(targetLi.offsetTop - 300);
+	        var targetLi = document.getElementById(coloredTimestamp);
+	        targetLi.style.borderColor = "#dff0d8";
+	        targetLi.style.borderRadius = "3px";
+	        targetLi.style.borderWidth = "5px";
+	        $('html, body').scrollTop(targetLi.offsetTop - 300);
 
 		} else if (msg.type == "smsloadGlobalSearched"){
 			messages = [];
@@ -1247,11 +1246,13 @@
 			$('body').removeClass('modal-open');
 			$('.modal-backdrop').remove();
 
-			var targetLi = document.getElementById(coloredTimestamp);
-			targetLi.style.borderColor = "#dff0d8";
-			targetLi.style.borderRadius = "3px";
-			targetLi.style.borderWidth = "5px";
-			$('html, body').scrollTop(targetLi.offsetTop - 300);
+			// Colors the div of the searched key message
+
+	        var targetLi = document.getElementById(coloredTimestamp);
+	        targetLi.style.borderColor = "#dff0d8";
+	        targetLi.style.borderRadius = "3px";
+	        targetLi.style.borderWidth = "5px";
+	        $('html, body').scrollTop(targetLi.offsetTop - 300);
 
 		} else if (msg.type == "searchMessageGlobal"){
 			messages = [];
@@ -1341,85 +1342,80 @@
 		tempText = tempText + "]";
 		$("#current-contacts h4").text(tempText);
 		document.title = tempText;
-		$('#search-lbl').css('display', 'block');
-		$('#btn-standard-search').css('display', 'none');
+		$('#search-lbl').css('display', 'block')
+		$('#search-lbl h5').show();
 
 	}
 
-	try {
-		var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-			filter: function(text, input) {
-				return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-			},
+	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+		filter: function(text, input) {
+			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+		},
 
-			replace: function(text) {
-				var before = this.input.value.match(/^.+;\s*|/)[0];
-				this.input.value = before + text + "; ";
-			},
-			minChars: 3
-		});
+		replace: function(text) {
+			var before = this.input.value.match(/^.+;\s*|/)[0];
+			this.input.value = before + text + "; ";
+		},
+		minChars: 3
+	});
+	comboplete.list = [];
 
-		comboplete.list = [];
+	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+		var nameQuery = $('.dropdown-input').val();
 
-		Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-			var nameQuery = $('.dropdown-input').val();
+		if (nameQuery.length >= 3) {
+			if (comboplete.ul.childNodes.length === 0) {
+				//comboplete.minChars = 3;
+				comboplete.evaluate();
+			} 
+			else if (comboplete.ul.hasAttribute('hidden')) {
+				comboplete.open();
+			}
+			else {
+				comboplete.close();
+			}
+		}
+	});
 
-			if (nameQuery.length >= 3) {
-				if (comboplete.ul.childNodes.length === 0) {
-						//comboplete.minChars = 3;
-						comboplete.evaluate();
-					} 
-					else if (comboplete.ul.hasAttribute('hidden')) {
-						comboplete.open();
-					}
-					else {
-						comboplete.close();
-					}
-				}
-			});
+	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+	    // get keycode of current keypress event
+	    var code = (e.keyCode || e.which);
 
-		Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-			    // get keycode of current keypress event
-			    var code = (e.keyCode || e.which);
+	    // do nothing if it's an arrow key
+	    if(code == 37 || code == 38 || code == 39 || code == 40) {
+	        return;
+	    }
 
-			    // do nothing if it's an arrow key
-			    if(code == 37 || code == 38 || code == 39 || code == 40) {
-			    	return;
-			    }
+		var allNameQueries = $('.dropdown-input').val();
+		var nameQuery = getFollowingNameQuery(allNameQueries);
 
-			    var allNameQueries = $('.dropdown-input').val();
-			    var nameQuery = getFollowingNameQuery(allNameQueries);
+		if (allNameQueries.length < 3) {
+			//Reset the contacts list
+			multiContactsList = [];
+			contactnumTrimmed = [];
+		}
 
-			    if (allNameQueries.length < 3) {
-					//Reset the contacts list
-					multiContactsList = [];
-					contactnumTrimmed = [];
-				}
+		if (nameQuery.length >= 3) {
+			//Get autocomplete data from the WSS
+			getNameSuggestions(nameQuery);
 
-				if (nameQuery.length >= 3) {
-					//Get autocomplete data from the WSS
-					getNameSuggestions(nameQuery);
+		}
+		else {
+			comboplete.close();
+		}
+		
+	}, false);
 
-				}
-				else {
-					comboplete.close();
-				}
-				
-			}, false);
+	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+		// User made a selection from dropdown. 
+		// This is fired after the selection is applied
+		var allText = $('.dropdown-input').val();
+		var size = allText.length;
+		var allNameQueries = allText.slice(0, size-2);
+		var nameQuery = getFollowingNameQuery(allNameQueries);
 
-		Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
-				// User made a selection from dropdown. 
-				// This is fired after the selection is applied
-				var allText = $('.dropdown-input').val();
-				var size = allText.length;
-				var allNameQueries = allText.slice(0, size-2);
-				var nameQuery = getFollowingNameQuery(allNameQueries);
-
-				parseContactInfo(nameQuery);
-			}, false);
-	} catch(err) {
-		console.log("Chatterbox : monitoring dashboard mode");
-	}
+		parseContactInfo(nameQuery);
+	}, false);
 
 	var qiFullContact = null;
 	function quickInboxStartChat(fullContact=null) {
@@ -1518,15 +1514,16 @@
 				if (quickGroupSelectionFlag == true) { // True means the group selection is set to EMPLOYEE
 					var emp_tag = [];
 					$('input[name="tag"]:checked').each(function() {
-						emp_tag.push(this.value);
+					   emp_tag.push(this.value);
 					});
 
+					gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
 					var msg = {
 						'type': 'smssend',
 						'user': user,
 						'tag': emp_tag,
 						'msg': text + footer,
-						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+						'timestamp': gsmTimestampIndicator
 					};
 
 					conn.send(JSON.stringify(msg));
@@ -1541,12 +1538,12 @@
 				} else {
 					var tagOffices = [];
 					$('input[name="offices"]:checked').each(function() {
-						tagOffices.push(this.value);
+					   tagOffices.push(this.value);
 					});
 
 					var tagSitenames = [];
 					$('input[name="sitenames"]:checked').each(function() {
-						tagSitenames.push(this.value);
+					   tagSitenames.push(this.value);
 					});
 
 					var msg = {
@@ -1576,16 +1573,17 @@
 
 				var normalized = [];
 				for (i in contactnumTrimmed) {
-					normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+				   normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
 				}
 
 				user = "You";
+				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
 				var msg = {
 					'type': 'smssend',
 					'user': user,
 					'numbers': normalized,
 					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+					'timestamp': gsmTimestampIndicator
 				};
 				updateMessages(msg);
 				conn.send(JSON.stringify(msg));
@@ -1625,12 +1623,12 @@
 
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
+		   tagOffices.push(this.value);
 		});
 
 		var tagSitenames = [];
 		$('input[name="sitenames"]:checked').each(function() {
-			tagSitenames.push(this.value);
+		   tagSitenames.push(this.value);
 		});
 
 		//sort the sitename values in the array alphabetically
@@ -1658,11 +1656,10 @@
 
 	function loadGroupsEmployee(){
 		var requestTag = [];
-		groupTags = [];
 
 		var dynaTags = [];
 		$('input[name="tag"]:checked').each(function() {
-			dynaTags.push(this.value);
+		   dynaTags.push(this.value);
 		});
 
 		//Display Group Tags for the thread being loaded
@@ -1691,11 +1688,45 @@
 		}
 	});
 
+	$(document).ready(function() {
+		var table = $('#response-contact-container').DataTable();
+	});
+
+	$('input[type="radio"]').on('change', function(e) {
+		if ($("input[name='category']:checked").val() == "employee_contacts_radio") {
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/get_employee_contacts",             
+				dataType: "html",              
+				success: function(response){
+					$("#response-contact-container").DataTable().clear();
+					$("#response-contact-container").DataTable().destroy();
+					$('#response-contact-container').show();
+					$("#response-contact-container").html(response);
+					$("#response-contact-container").DataTable();
+				}
+			});
+		} else {
+			$.ajax({
+				type: "GET",
+				url: "../chatterbox/get_community_contacts",             
+				dataType: "html",              
+				success: function(response){
+					$("#response-contact-container").DataTable().clear();
+					$("#response-contact-container").DataTable().destroy();
+					$('#response-contact-container').show();
+					$("#response-contact-container").html(response); 
+					$("#response-contact-container").DataTable();
+				}
+			});
+		}
+	});
+
 	String.prototype.capitalize = function() {
 		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
 
-	$('#response-contact-container').on('click', 'tr:has(td)', function(){
+$('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var table = $('#response-contact-container').DataTable();
 		var data = table.row(this).data();
 
@@ -1847,7 +1878,7 @@
 		
 	});
 
-	// GETS the Office and site options
+// GETS the Office and site options
 	$('#btn-contact-settings').click(function() {
 
 		$('#employee-contact-wrapper').prop('hidden', true);
@@ -1922,15 +1953,6 @@
 	}
 
 	//Get Disticnt Offices.
-	$('#office_cc').on('change',function() {
-		if ($("#office_cc").val() == "OTHERS") {
-			$("#other-officename").show();
-		} else {
-			$("#other-officename").hide();
-		}
-	});
-
-	//Get Disticnt Offices.
 	$('#sitename_cc').on('change',function() {
 		if ($("#sitename_cc").val() == "OTHERS") {
 			$("#other-sitename").show();
@@ -1972,7 +1994,7 @@
 		$('#other-sitename').hide();
 	}
 
-	// Fetched the Alert and Sites EWI
+		// Fetched the Alert and Sites EWI
 
 	$('#btn-ewi').on('click',function(){
 		$('#alert-lvl').empty();
@@ -2105,215 +2127,172 @@
 					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
 				}
 
-			//Changes the Date
-			var year = $('#ewi-date-picker').val().substring(0, 4);
-			var month = $('#ewi-date-picker').val().substring(5, 7);
-			var day = $('#ewi-date-picker').val().substring(8, 10);
+				//Changes the Date
+				var year = $('#ewi-date-picker').val().substring(0, 4);
+				var month = $('#ewi-date-picker').val().substring(5, 7);
+				var day = $('#ewi-date-picker').val().substring(8, 10);
 
-			var months = {1: "January",2: "February",3: "March",
-			4: "April",5: "May",6: "June",
-			7: "July",8: "August", 9: "September",
-			10: "October", 11: "November", 12: "December"};
+				var months = {1: "January",2: "February",3: "March",
+				4: "April",5: "May",6: "June",
+				7: "July",8: "August", 9: "September",
+				10: "October", 11: "November", 12: "December"};
 
-			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
-			dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
-
-			var formCurrentTime = dateReplaced.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
-			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
-
-			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-			} else {
-				alert("Error Occured: Please contact Administrator");
+				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+				dateReplaced = constructedEWI.replace("%%DATE%%",reconstructedDate);
+				handledTemplate(dateReplaced);
 			}
-
-			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
-			} else {
-				alert("Error Occured: Please contact Administrator");
-			}
-			handledTemplate(finalEWI);
-		}
-	});
-}
-
-function setEWILocation(consEWI){
-	var finalEWI = "";
-	if (consEWI != "") {
-		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
-		.done(function(response) {
-			var location = JSON.parse(response);
-			var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
-			var formatSbmp = sbmp.replace("null","");
-			if (formatSbmp.charAt(0) == ",") {
-				formatSbmp = formatSbmp.substr(1);
-			}
-			finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
-			$('#msg').val(finalEWI);
 		});
-	} else {
-		$('#msg').val("Site is not available");
 	}
-}
 
-function sendViaAlertMonitor(data){
-
-	$.ajax({
-		type: "GET",
-		url: "../chatterbox/getewi",             	
-		dataType: "json",	
-		success: function(response){
-			if (data["internal_alert_level"].toUpperCase().length > 4) {
-				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
-					var preConstructedEWI = response["A2"];
-				} else {
-					var preConstructedEWI = response["A3"];
+	function setEWILocation(consEWI){
+		var finalEWI = "";
+		if (consEWI != "") {
+			$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+			.done(function(response) {
+				var location = JSON.parse(response);
+				var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+				var formatSbmp = sbmp.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
 				}
-			} else {
-				var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
-			}
-			var constructedEWIDate = "";
-			var finalEWI = ""
-			var d = new Date();
-			var currentPanahon = d.getHours();
-			if (currentPanahon >= 12 && currentPanahon <= 18) {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-			} else if (currentPanahon > 18 && currentPanahon <=23) {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-			} else {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-			}
-
-			//Changes the Date
-			var year = data["data_timestamp"].slice(0, -9).substring(0, 4);
-			var month = data["data_timestamp"].slice(0, -9).substring(5, 7);
-			var day = data["data_timestamp"].slice(0, -9).substring(8, 10);
-
-			var months = {1: "January",2: "February",3: "March",
-			4: "April",5: "May",6: "June",
-			7: "July",8: "August", 9: "September",
-			10: "October", 11: "November", 12: "December"};
-
-			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
-
-			constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
-			var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-			var formatSbmp = ewiLocation.replace("null","");
-			if (formatSbmp.charAt(0) == ",") {
-				formatSbmp = formatSbmp.substr(1);
-			}
-
-
-			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-			var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
-			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
-
-			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
-				var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-			} else {
-				alert("Error Occured: Please contact Administrator");
-			}
-
-			if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 03:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 07:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-			} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 23:30").valueOf()) {
-				var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
-				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
-			} else {
-				alert("Error Occured: Please contact Administrator");
-			}
-
-			
-			$('#site-abbr').val(data["name"]);
-			$('#constructed-ewi-amd').val(finalEWI);
+				finalEWI = consEWI.replace("%%SBMP%%",formatSbmp);
+				$('#msg').val(finalEWI);
+			});
+		} else {
+			$('#msg').val("Site is not available");
 		}
-	});
+	}
 
-$('#ewi-asap-modal').modal('toggle');
-}
+	function sendViaAlertMonitor(data){
+		$.ajax({
+			type: "GET",
+			url: "../chatterbox/getewi",             	
+			dataType: "json",	
+			success: function(response){
+				if (data["internal_alert_level"].toUpperCase().length > 4) {
+					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
+						var preConstructedEWI = response["A2"];
+					} else {
+						var preConstructedEWI = response["A3"];
+					}
+				} else {
+					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+				}
+				var constructedEWIDate = "";
+				var finalEWI = ""
+				var d = new Date();
+				var currentPanahon = d.getHours();
+				if (currentPanahon >= 12 && currentPanahon <= 18) {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+				} else if (currentPanahon > 18 && currentPanahon <=23) {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+				} else {
+					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
+				}
 
-function templateSendViaAMD(){
-	ewiFlagger = true;
-	var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+				//Changes the Date
+				var year = data["data_timestamp"].slice(0, -9).substring(0, 4);
+				var month = data["data_timestamp"].slice(0, -9).substring(5, 7);
+				var day = data["data_timestamp"].slice(0, -9).substring(8, 10);
 
-	var text = $('#constructed-ewi-amd').val();
-	try {
+				var months = {1: "January",2: "February",3: "March",
+				4: "April",5: "May",6: "June",
+				7: "July",8: "August", 9: "September",
+				10: "October", 11: "November", 12: "December"};
 
-			// Assume All 4 offices will be included in the EWI
-			var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
 
-			$('input[name="offices"]').prop('checked', false);
-			$('input[name="sitenames"]').prop('checked', false);
+				constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
+				var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+				var formatSbmp = ewiLocation.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
 
-			var tagSitenames = [];
-			tagSitenames.push($('#site-abbr').val().toUpperCase());
 
-			var msg = {
-				'type': 'smssendgroup',
-				'user': 'You',
-				'offices': tagOffices,
-				'sitenames': tagSitenames,
-				'msg': text+footer,
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
-			};
-			
-			conn.send(JSON.stringify(msg));
-			msgType = "smssendgroup";
-			updateMessages(msg);
-			
-			$('#constructed-ewi-amd').val('');
-			$('#result-ewi-message').text('Success!, Message sent.');
-			$('#success-ewi-modal').modal('toggle');
-			$('#ewi-asap-modal').modal('toggle');
+				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 7:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 11:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 15:30").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()) {
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 19:30").valueOf()){
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+				} else if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(1, 'days').format("YYYY-MM-DD")+" 00:00").valueOf()) {
+					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
+				} else {
+					alert("Error Occured: Please contact Administrator");
+				}
+
+				
+				$('#site-abbr').val(data["name"]);
+				$('#constructed-ewi-amd').val(finalEWI);
+			}
+		});
+		$('#ewi-asap-modal').modal('toggle');
+	}
+
+	function templateSendViaAMD(){
+		ewiFlagger = true;
+		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
+
+		var text = $('#constructed-ewi-amd').val();
+		try {
+
+		// Assume All 4 offices will be included in the EWI
+		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+
+		$('input[name="offices"]').prop('checked', false);
+		$('input[name="sitenames"]').prop('checked', false);
+
+		var tagSitenames = [];
+		tagSitenames.push($('#site-abbr').val().toUpperCase());
+
+		var msg = {
+			'type': 'smssendgroup',
+			'user': 'You',
+			'offices': tagOffices,
+			'sitenames': tagSitenames,
+			'msg': text+footer,
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+		};
+		
+		conn.send(JSON.stringify(msg));
+		msgType = "smssendgroup";
+		updateMessages(msg);
+		
+		$('#constructed-ewi-amd').val('');
+		$('#result-ewi-message').text('Success!, Message sent.');
+		$('#success-ewi-modal').modal('toggle');
+		$('#ewi-asap-modal').modal('toggle');
 		} catch(err) {
 			$('#result-ewi-message').text('Failed!, Please check the template.');
 			alert(err.stack);
@@ -2321,6 +2300,10 @@ function templateSendViaAMD(){
 			$('#ewi-asap-modal').modal('toggle');
 		}
 	}
+
+	$('#sbt-update-contact-info').click(function(){
+		$('#edit-contact').modal('toggle');
+	});
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
@@ -2441,7 +2424,7 @@ function templateSendViaAMD(){
 				} else {
 					for (var y = 0;y < parts.length;y++){
 						if (!(employeeTags.indexOf(parts[y]) > -1)) {
-							employeeTags.push(parts[y]);
+						    employeeTags.push(parts[y]);
 						}
 					}
 				}
@@ -2568,7 +2551,7 @@ function templateSendViaAMD(){
 	}
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
-		debugger;
+
 		var empty_fields = 0;
 		$('#community-contact-wrapper input').each(function(){
 			if ($(this).val() == "" || $(this).val() == null) {
@@ -2688,4 +2671,5 @@ function templateSendViaAMD(){
 			});
 		}
 	});
+
 // })();

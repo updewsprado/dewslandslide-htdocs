@@ -191,6 +191,10 @@ body {
   max-height: 473px;
 }
 
+#timestamp-sent {
+  color: blue;
+}
+
 .save-reset-container {
   padding-top: 10px;
 }
