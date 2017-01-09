@@ -258,12 +258,16 @@
 			var quick_inbox_html;
 
 			if (msg.name == "unknown") {
-				msg.isunknown = 1;
-				targetInbox = "#quick-inbox-unknown-display";
+				try {
+					msg.isunknown = 1;
+					targetInbox = "#quick-inbox-unknown-display";
 
-				//Message Pushing using unshift (push at the start of the array)
-				quick_inbox_unknown.unshift(msg);
-				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+					//Message Pushing using unshift (push at the start of the array)
+					quick_inbox_unknown.unshift(msg);
+					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+				} catch(err) {
+					// Do nothing. Chatterbox: Monitoring Dashboard mode.
+				}
 			}
 			else {
 				try {
