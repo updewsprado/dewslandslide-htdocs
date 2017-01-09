@@ -31,6 +31,7 @@
 	var conn = connectWS();
 	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
+	var gsmTimestampIndicator = "";
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.
@@ -699,8 +700,14 @@
 				comboplete.list = suggestionsArray;
 			}
 			else {
-				var numbers = /^[0-9]+$/;  
+
+				var numbers = /^[0-9]+$/; 
 				console.log(msg);
+				if (msg.type == "ackgsm") {
+					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
+						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+					}
+				}
 
 				if (contactInfo == "groups") {
 					updateMessages(msg);
@@ -1511,12 +1518,13 @@
 					   emp_tag.push(this.value);
 					});
 
+					gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
 					var msg = {
 						'type': 'smssend',
 						'user': user,
 						'tag': emp_tag,
 						'msg': text + footer,
-						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+						'timestamp': gsmTimestampIndicator
 					};
 
 					conn.send(JSON.stringify(msg));
@@ -1570,12 +1578,13 @@
 				}
 
 				user = "You";
+				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
 				var msg = {
 					'type': 'smssend',
 					'user': user,
 					'numbers': normalized,
 					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+					'timestamp': gsmTimestampIndicator
 				};
 				updateMessages(msg);
 				conn.send(JSON.stringify(msg));
@@ -2543,6 +2552,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	}
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
+		
 		var empty_fields = 0;
 		$('#community-contact-wrapper input').each(function(){
 			if ($(this).val() == "" || $(this).val() == null) {
