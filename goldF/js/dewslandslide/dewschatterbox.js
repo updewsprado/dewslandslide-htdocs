@@ -266,12 +266,16 @@
 				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
 			}
 			else {
-				msg.isunknown = 0;
-				targetInbox = "#quick-inbox-display";
+				try {
+					msg.isunknown = 0;
+					targetInbox = "#quick-inbox-display";
 
-				//Message Pushing using unshift (push at the start of the array)
-				quick_inbox_registered.unshift(msg);
-				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+					//Message Pushing using unshift (push at the start of the array)
+					quick_inbox_registered.unshift(msg);
+					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+				} catch(err) {
+					// Do nothing. Chatterbox: Monitoring Dashboard mode.
+				}
 			}
 
 			$(targetInbox).html(quick_inbox_html);
@@ -1130,23 +1134,27 @@
 	}
 
 	//HandleBars Helper
-	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
-	  if(v1 === v2 || v1 == v3 || v1 == v4) {
-	    return options.fn(this)
-	  } else {
-	  	return options.inverse(this);	
-	  }
-	});
+	try {
+		Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
+		  if(v1 === v2 || v1 == v3 || v1 == v4) {
+		    return options.fn(this)
+		  } else {
+		  	return options.inverse(this);	
+		  }
+		});
 
-	Handlebars.registerHelper('breaklines', function(text) {
-	    text = Handlebars.Utils.escapeExpression(text);
-	    text = text.replace(/(\r\n|\n|\r)/gm, ' ');
-	    return new Handlebars.SafeString(text);
-	});
+		Handlebars.registerHelper('breaklines', function(text) {
+		    text = Handlebars.Utils.escapeExpression(text);
+		    text = text.replace(/(\r\n|\n|\r)/gm, ' ');
+		    return new Handlebars.SafeString(text);
+		});
 
-	Handlebars.registerHelper('escape', function(variable) {
-	  return variable.replace(/(['"-])/g, '\\$1');
-	});
+		Handlebars.registerHelper('escape', function(variable) {
+		  return variable.replace(/(['"-])/g, '\\$1');
+		});
+	} catch (err) {
+		// Do nothing. Chatterbox: Monitoring dashboard mode
+	}
 
 	function loadSearchedMessage(msg){
 		counters = 0;
@@ -1348,75 +1356,79 @@
 
 	}
 
-	var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
-		filter: function(text, input) {
-			return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
-		},
+	try {
+		var comboplete = new Awesomplete('input.dropdown-input[data-multiple]', {
+			filter: function(text, input) {
+				return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+			},
 
-		replace: function(text) {
-			var before = this.input.value.match(/^.+;\s*|/)[0];
-			this.input.value = before + text + "; ";
-		},
-		minChars: 3
-	});
-	comboplete.list = [];
+			replace: function(text) {
+				var before = this.input.value.match(/^.+;\s*|/)[0];
+				this.input.value = before + text + "; ";
+			},
+			minChars: 3
+		});
+		comboplete.list = [];
 
-	Awesomplete.$('.dropdown-input').addEventListener("click", function() {
-		var nameQuery = $('.dropdown-input').val();
+		Awesomplete.$('.dropdown-input').addEventListener("click", function() {
+			var nameQuery = $('.dropdown-input').val();
 
-		if (nameQuery.length >= 3) {
-			if (comboplete.ul.childNodes.length === 0) {
-				//comboplete.minChars = 3;
-				comboplete.evaluate();
-			} 
-			else if (comboplete.ul.hasAttribute('hidden')) {
-				comboplete.open();
+			if (nameQuery.length >= 3) {
+				if (comboplete.ul.childNodes.length === 0) {
+					//comboplete.minChars = 3;
+					comboplete.evaluate();
+				} 
+				else if (comboplete.ul.hasAttribute('hidden')) {
+					comboplete.open();
+				}
+				else {
+					comboplete.close();
+				}
+			}
+		});
+
+		Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
+		    // get keycode of current keypress event
+		    var code = (e.keyCode || e.which);
+
+		    // do nothing if it's an arrow key
+		    if(code == 37 || code == 38 || code == 39 || code == 40) {
+		        return;
+		    }
+
+			var allNameQueries = $('.dropdown-input').val();
+			var nameQuery = getFollowingNameQuery(allNameQueries);
+
+			if (allNameQueries.length < 3) {
+				//Reset the contacts list
+				multiContactsList = [];
+				contactnumTrimmed = [];
+			}
+
+			if (nameQuery.length >= 3) {
+				//Get autocomplete data from the WSS
+				getNameSuggestions(nameQuery);
+
 			}
 			else {
 				comboplete.close();
 			}
-		}
-	});
+			
+		}, false);
 
-	Awesomplete.$('.dropdown-input').addEventListener("keyup", function(e){
-	    // get keycode of current keypress event
-	    var code = (e.keyCode || e.which);
+		Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
+			// User made a selection from dropdown. 
+			// This is fired after the selection is applied
+			var allText = $('.dropdown-input').val();
+			var size = allText.length;
+			var allNameQueries = allText.slice(0, size-2);
+			var nameQuery = getFollowingNameQuery(allNameQueries);
 
-	    // do nothing if it's an arrow key
-	    if(code == 37 || code == 38 || code == 39 || code == 40) {
-	        return;
-	    }
-
-		var allNameQueries = $('.dropdown-input').val();
-		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		if (allNameQueries.length < 3) {
-			//Reset the contacts list
-			multiContactsList = [];
-			contactnumTrimmed = [];
-		}
-
-		if (nameQuery.length >= 3) {
-			//Get autocomplete data from the WSS
-			getNameSuggestions(nameQuery);
-
-		}
-		else {
-			comboplete.close();
-		}
-		
-	}, false);
-
-	Awesomplete.$('.dropdown-input').addEventListener("awesomplete-selectcomplete", function(e){
-		// User made a selection from dropdown. 
-		// This is fired after the selection is applied
-		var allText = $('.dropdown-input').val();
-		var size = allText.length;
-		var allNameQueries = allText.slice(0, size-2);
-		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		parseContactInfo(nameQuery);
-	}, false);
+			parseContactInfo(nameQuery);
+		}, false);
+	} catch(err) {
+		//Do nothing. Chatterbox: Monitoring dashboard mode
+	}
 
 	var qiFullContact = null;
 	function quickInboxStartChat(fullContact=null) {
@@ -2398,10 +2410,14 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 
 	//Load the office and site names from wSS
 	function getOfficesAndSitenames () {
-		var msg = {
-			'type': 'loadofficeandsitesrequest'
-		};
-		conn.send(JSON.stringify(msg));
+		try {
+			var msg = {
+				'type': 'loadofficeandsitesrequest'
+			};
+			conn.send(JSON.stringify(msg));
+		} catch(err) {
+			// Do nothing. Chatterbox: Monitoring dashboard mode
+		}
 	}
 
 	//Load the office and site names from wSS
