@@ -13,6 +13,7 @@ def getDF():
         fdate = sys.argv[2]
         tdate = sys.argv[3]
         mid = sys.argv[4]
+        print mid
         nodeid = sys.argv[5]
         df= GetRawAccelData(siteid = site, fromTime = fdate, toTime = tdate,  maxnode = 40, msgid = int(mid), targetnode =  int(nodeid) , batt=1, returndb=True)
         df_filt = filterSensorData.applyFilters(df, orthof=True, rangef=True, outlierf=True)
