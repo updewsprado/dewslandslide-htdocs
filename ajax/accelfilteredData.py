@@ -19,7 +19,7 @@ def getDF():
         df_filt = df_filt.set_index(['ts'])
         dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
         dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
-     
         print dfajson
+        print df
         
 getDF();
