@@ -24,7 +24,12 @@ def getDF():
         df_filt = df.set_index(['ts'])
         dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
         dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
-        print dfajson
-#        print df
+#        print dfajson
+        print site
+        print fdate
+        print tdate
+        print mid
+        print nodeid
+        print df
         
 getDF();
