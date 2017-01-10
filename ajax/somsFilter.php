@@ -38,6 +38,6 @@
 
     // echo "$command";
     exec($command, $output, $return);
-    echo($output[1]);
+    echo($output[0]);
     
 ?>

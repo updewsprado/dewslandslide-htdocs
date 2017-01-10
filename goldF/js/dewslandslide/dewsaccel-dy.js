@@ -1351,15 +1351,7 @@ function showAccel(frm) {
 
 console.timeEnd('showAccel');
 
-function data0(dfrom,dto,selectedSite,frm,mode){
-			var start = new Date().getTime();
-			return $.ajax({ 
-			   dataType: "json",
-			  url: "/ajax/somsfilter.php?site="+selectedSite+"&fdate="+dfrom + "&tdate=" + dto + "&nid=" + frm.node.value + "&mode=1",  success: function(result) {
-			  		var end = new Date().getTime();
-			  }
-			});	
-}
+
 
 
 function data1(dfrom,dto,selectedSite,frm){
@@ -1440,16 +1432,18 @@ function showSoms(frm) {
 	var newVersion = version.substr(8, version.length-25);
 	var m ="m";
 	
-	if (newVersion == 2){
+	if (V2V == 2){
 		var msgid1 = "111";
 	 var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
-	 var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid1 + "&nid=" + frm.node.value +"&mode=0" ;
-	 console.log("/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&nid=" + frm.node.value +"&mode=0")
-	}else if( newVersion == 3 )  {
+	 var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&nid=" + frm.node.value +"&mode=0" ;
+	 console.log(URL)
+	 console.log(URL2)
+	}else if( V2V == 3 )  {
 		var msgid1 = "110";
 		var m ="m";
 	var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
 	var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto   + "&nid=" + frm.node.value +"&mode=0" ;
+	console.log(URL)
 	console.log(URL2)
 	}
 
@@ -1647,17 +1641,21 @@ function showSoms(frm) {
 		})
 	if (newVersion == 2){
 		var msgid2 = "112";
-		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
-		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid2  + "&nid=" + frm.node.value +"&mode=1" ;
+		var URL21 = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
+		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value +"&mode=1" ;
+		console.log(URL21)
+		console.log(URL22)
 	} else if(newVersion == 3)  {
 		var msgid2 = "113";
-		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
-		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&ms1=" +msgid2  + "&nid=" + frm.node.value +"&mode=1" ;
+		var URL21 = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
+		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value +"&mode=1" ;
+		console.log(URL21)
+		console.log(URL22)
 	} 
 	
 
  $.ajax({
-	  	url: URL,
+	  	url: URL21,
 		dataType: "text",
 	   	success: function(data)
 	        {
