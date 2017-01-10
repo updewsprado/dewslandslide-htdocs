@@ -36,7 +36,7 @@
     $fileName = 'accelfilteredData.py';
     $command = $pythonPath.' '.$fileName.' '.$site.' '.$fdate.' '.$tdate.' '.$mid.' '.$nodeid;
 
-    // echo "$command";
+    echo "$command";
     exec($command, $output, $return);
     echo($output[0]);
     
