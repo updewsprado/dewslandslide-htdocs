@@ -2181,6 +2181,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	}
 
 	function sendViaAlertMonitor(data){
+		console.log(data);
 		$.ajax({
 			type: "GET",
 			url: "../chatterbox/getewi",             	
@@ -2193,7 +2194,12 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 						var preConstructedEWI = response["A3"];
 					}
 				} else {
-					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND") {
+						var preConstructedEWI = response["A1-"+data["internal_alert_level"].toUpperCase().substring(3)];
+					} else {
+						var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+					}
+					
 				}
 				var constructedEWIDate = "";
 				var finalEWI = ""
@@ -2292,6 +2298,12 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 
 		var tagSitenames = [];
 		tagSitenames.push($('#site-abbr').val().toUpperCase());
+
+		if (tagSitenames[0] == "MNG" || tagSitenames[0] == "MAN") {
+			tagSitenames[0] = "MAN/MNG";
+		} else if (tagSitenames[0] == "JOR" || tagSitenames[0] == "POB") {
+			tagSitenames[0] = "JOR/POB";
+		}
 
 		var msg = {
 			'type': 'smssendgroup',
