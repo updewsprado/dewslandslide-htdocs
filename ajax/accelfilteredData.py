@@ -19,7 +19,7 @@ def getDF():
 #    tdate = '2016-11-10'
 #    mid = '33'
 #    nodeid = '1'
-    df= GetRawAccelData(siteid = site, fromTime = fdate, toTime = tdate,  maxnode = 40, msgid = mid, targetnode =  int(nodeid) , batt=1, returndb=True)
+    df= GetRawAccelData(siteid = site, fromTime = fdate, toTime = tdate,  maxnode = 40, msgid = int(mid), targetnode =  int(nodeid) , batt=1, returndb=True)
     df_filt = filterSensorData.applyFilters(df, orthof=True, rangef=True, outlierf=True)
     df_filt = df_filt.set_index(['ts'])
     dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
