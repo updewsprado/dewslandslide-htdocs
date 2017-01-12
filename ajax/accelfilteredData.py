@@ -12,12 +12,12 @@ def getDF():
     site = sys.argv[1]
     fdate = sys.argv[2]
     tdate = sys.argv[3]
-    # mid = sys.argv[4]
+    mid = sys.argv[4]
     nodeid = sys.argv[5]
 #    site = 'agbsb'
 #    fdate = '2015-04-10'
 #    tdate = '2016-11-10'
-    mid = 33
+#    mid = '33'
 #    nodeid = '1'
     df= GetRawAccelData(siteid = site, fromTime = fdate, toTime = tdate,  maxnode = 40, msgid = mid, targetnode =  int(nodeid) , batt=1, returndb=True)
     df_filt = filterSensorData.applyFilters(df, orthof=True, rangef=True, outlierf=True)
