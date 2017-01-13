@@ -195,6 +195,14 @@ body {
   color: blue;
 }
 
+.cmd-ewi-chatterbox {
+  padding-top: 22px;
+}
+
+.cmd-ewi-chatterbox > * {
+  margin-right: 10px;
+}
+
 .save-reset-container {
   padding-top: 10px;
 }

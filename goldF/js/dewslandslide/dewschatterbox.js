@@ -714,6 +714,7 @@
 				if (msg.type == "ackgsm") {
 					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+						$("#send-msg").attr("disabled", false); 
 					}
 				}
 
@@ -1516,7 +1517,7 @@
 
 	var testMsg;
 	// Send a message to the selected recipients
-	$('#send-msg').click(function() {
+	$('#send-msg').on('click',function(){
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
@@ -1583,6 +1584,8 @@
 
 					$('#msg').val('');	
 				}
+
+				$("#send-msg").attr("disabled", true); 
 			} 
 			//For non group tags communication
 			else {
@@ -2072,58 +2075,62 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 
 	$('#confirm-ewi').click(function(){
 
-		groupTags = [];
-		user = "You";
-		var tagOffices = [];
-		var tagSitenames = [];
+		if ($('#ewi-date-picker').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
+			alert('Invalid input, All fields must be filled');
+		} else {
+			groupTags = [];
+			user = "You";
+			var tagOffices = [];
+			var tagSitenames = [];
 
-		var tagOffices = [];
-		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
-		});
+			var tagOffices = [];
+			$('input[name="offices"]:checked').each(function() {
+				tagOffices.push(this.value);
+			});
 
-		var counter = 0;
-		$('input[name="sitenames"]:checked').each(function() {
-			counter++;
-		});
+			var counter = 0;
+			$('input[name="sitenames"]:checked').each(function() {
+				counter++;
+			});
 
-		if (counter == 1){
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"]').prop('checked', false);
+			if (counter == 1){
+				tagSitenames.push($('#sites').val());
+				$('input[name="sitenames"]').prop('checked', false);
 
-			$('input[name="sitenames"]').each(function() {
-				if ($('#sites').val() == this.value) {
-					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+				$('input[name="sitenames"]').each(function() {
+					if ($('#sites').val() == this.value) {
+						$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
+					}
+				});
+			} else if (counter > 1){
+				var tagSitenames = [];
+				$('input[name="sitenames"]:checked').each(function() {
+					tagSitenames.push(this.value);
+				});
+			} else {
+				tagSitenames.push($('#sites').val());
+				$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
+			}
+
+
+			tagSitenames.sort();
+			groupTags = {
+				'type': 'smsloadrequestgroup',
+				'offices': tagOffices,
+				'sitenames': tagSitenames
+			};
+
+			$('#main-container').removeClass('hidden');
+
+			getEWI(function(output){
+				if (counter == 1 || counter == 0){
+					var template = setEWILocation(output);
+				}else {
+					var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
+					$('#msg').val(nssEWITemplate);
 				}
 			});
-		} else if (counter > 1){
-			var tagSitenames = [];
-			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
-			});
-		} else {
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
 		}
-
-
-		tagSitenames.sort();
-		groupTags = {
-			'type': 'smsloadrequestgroup',
-			'offices': tagOffices,
-			'sitenames': tagSitenames
-		};
-
-		$('#main-container').removeClass('hidden');
-
-		getEWI(function(output){
-			if (counter == 1 || counter == 0){
-				var template = setEWILocation(output);
-			}else {
-				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-				$('#msg').val(nssEWITemplate);
-			}
-		});
 	});
 
 	function getEWI(handledTemplate){
@@ -2319,7 +2326,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		updateMessages(msg);
 		
 		$('#constructed-ewi-amd').val('');
-		$('#result-ewi-message').text('Success!, Message sent.');
+		$('#result-ewi-message').text('Early Warning Information sent successfully!');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
 		} catch(err) {
