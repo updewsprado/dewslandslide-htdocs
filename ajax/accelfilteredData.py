@@ -27,7 +27,7 @@ def getDF():
 #    tdate = '2016-11-10'
 #    mid = '32'
 #    nodeid = '1'
-    engine = create_engine('mysql+mysqldb://updews:october50sites@127.0.0.1/senslopedb')
+    engine = create_engine('mysql+pymysql://updews:october50sites@127.0.0.1/senslopedb')
     query = "SELECT timestamp,id,msgid,xvalue,yvalue,zvalue,batt FROM senslopedb.%s where id = '%s'and msgid ='%s' and timestamp between '%s ' and '%s'" % (site,nodeid,mid,fdate,tdate)
     df = pd.io.sql.read_sql(query,engine)
 #    df.columns = ['ts','rain']
