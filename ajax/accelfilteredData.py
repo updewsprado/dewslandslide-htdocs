@@ -13,8 +13,7 @@ from datetime import datetime as dt
 import sqlalchemy
 from sqlalchemy import create_engine
 import sys
-import requests
-# import querySenslopeDb as qs
+import requests 
     
 def getDF():
     site = sys.argv[1]
@@ -30,14 +29,11 @@ def getDF():
     engine = create_engine('mysql+pymysql://updews:october50sites@127.0.0.1/senslopedb')
     query = "SELECT timestamp,id,msgid,xvalue,yvalue,zvalue,batt FROM senslopedb.%s where id = '%s'and msgid ='%s' and timestamp between '%s ' and '%s'" % (site,nodeid,mid,fdate,tdate)
     df = pd.io.sql.read_sql(query,engine)
-#    df.columns = ['ts','rain']
-    df = df.set_index(['timestamp'])
-    df= GetRawAccelData(siteid = site, fromTime = fdate, toTime = tdate,  maxnode = 40, msgid = int(mid), targetnode =  int(nodeid) , batt=1, returndb=True)
+    df.columns = ['ts','id','msgid','x','y','z','v']
+    df['name'] = site
     df_filt = filterSensorData.applyFilters(df, orthof=True, rangef=True, outlierf=True)
-    df_filt = df.set_index(['ts'])
     dfajson = df_filt.reset_index().to_json(orient='records',date_format='iso')
     dfajson = dfajson.replace("T"," ").replace("Z","").replace(".000","")
     print dfajson
-#    print df
         
 getDF();
