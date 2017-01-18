@@ -1783,8 +1783,6 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				input.id = employee_contacts[i]+"_uec";
 				if (employee_contacts[i] == "birthdate"){
 					input.type = "date";
-				} else if (employee_contacts[i] == "numbers") {
-					input.type = "number";
 				} else {
 					input.type = "text";
 				}
