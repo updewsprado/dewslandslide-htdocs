@@ -85,6 +85,7 @@
 
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
+
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
@@ -112,7 +113,7 @@
 						if (msgType == "searchMessageGroup") {
 							searchResults.push(msg);
 						} else {
-							if (arraysEqual(msg.sitenames, groupTags.sitenames)) {
+							if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
 								console.log("type found match for group send receive")
 								console.log("the message before it gets pushed:");
 								console.log(msg);
@@ -208,7 +209,7 @@
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 		 	!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-			try{
+			try {
 				if (messages[counters]['user'] == 'You'){
 					if (lastMessageTimeStampYou == "") {
 						lastMessageTimeStampYou = messages[counters]['timestamp'];
@@ -1520,6 +1521,7 @@
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
+
 			messages = [];
 			counters = 0;
 			ewi_filter = "";
@@ -1577,6 +1579,7 @@
 
 					msgType = "smssendgroup";
 					testMsg = msg;
+					console.log(msg);
 					counters = 0;
 					messages = [];
 					updateMessages(msg);
