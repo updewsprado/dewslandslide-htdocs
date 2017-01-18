@@ -611,8 +611,8 @@
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://54.166.60.233:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050');
+		// var tempConn = new WebSocket('ws://54.166.60.233:5050'); // Other server
+		// var tempConn = new WebSocket('ws://localhost:5050'); // For local server
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -714,7 +714,6 @@
 				if (msg.type == "ackgsm") {
 					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
-						$("#send-msg").attr("disabled", false); 
 					}
 				}
 
@@ -1552,7 +1551,7 @@
 					messages = [];
 					updateMessages(msg);
 
-					$('#msg').val('');	
+					$('#msg').val('');
 				} else {
 					var tagOffices = [];
 					$('input[name="offices"]:checked').each(function() {
@@ -1584,8 +1583,6 @@
 
 					$('#msg').val('');	
 				}
-
-				$("#send-msg").attr("disabled", true); 
 			} 
 			//For non group tags communication
 			else {
@@ -1772,11 +1769,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				input.className = "form-control";
 				input.value = data[i];
 				input.setAttribute("required","true");
-				if (community_contacts[i] == "number") {
-					input.type = "number";
-				} else {
-					input.type = "text";
-				}
+				input.type = "text";
 				if (i == 0) {
 					input.setAttribute('hidden',true);
 					label.setAttribute('hidden',true);
@@ -1790,8 +1783,6 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				input.id = employee_contacts[i]+"_uec";
 				if (employee_contacts[i] == "birthdate"){
 					input.type = "date";
-				} else if (employee_contacts[i] == "numbers") {
-					input.type = "number";
 				} else {
 					input.type = "text";
 				}
