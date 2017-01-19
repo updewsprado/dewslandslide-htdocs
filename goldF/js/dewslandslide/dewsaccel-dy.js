@@ -1418,7 +1418,6 @@ function showSoms(frm) {
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	var m ="m";
-	console.log( selectedSite)
 	if (V2V == 2){
 		if (selectedSite == "nagsa"){
 			var msgid2 = "21";
@@ -1427,7 +1426,6 @@ function showSoms(frm) {
 		}	
 		var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
 		var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&nid=" + frm.node.value +"&mode=0" ;
-		console.log(URL)
 	} else if( V2V == 3 )  {
 		var msgid1 = "110";
 		var m ="m";
