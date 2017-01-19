@@ -82,6 +82,7 @@
 	function updateMessages(msg) {
 		// Hides the Search 
 		$('#search-key').hide();
+		// debugger;
 
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
@@ -94,7 +95,6 @@
 
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
-
 			if (contactInfo == "groups") {
 				console.log("type is group/tags");
 				if (msg.type == "loadEmployeeTag") {
@@ -113,10 +113,15 @@
 						if (msgType == "searchMessageGroup") {
 							searchResults.push(msg);
 						} else {
-							if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
+							if (msg.sitenames != undefined|| groupTags.sitenames != undefined){
+								if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
 								console.log("type found match for group send receive")
 								console.log("the message before it gets pushed:");
 								console.log(msg);
+								messages.push(msg);
+								}
+							}
+							 else {
 								messages.push(msg);
 							}
 						}
