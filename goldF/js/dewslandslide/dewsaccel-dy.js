@@ -1,22 +1,3 @@
-	var opts = {
-		lines: 11, // The number of lines to draw
-		length: 6, // The length of each line
-		width: 3, // The line thickness
-		radius: 8, // The radius of the inner circle
-		corners: 1, // Corner roundness (0..1)
-		rotate: 0, // The rotation offset
-		direction: 1, // 1: clockwise, -1: counterclockwise
-		color: '#000', // #rgb or #rrggbb or array of colors
-		speed: 1.1, // Rounds per second
-		trail: 58, // Afterglow percentage
-		shadow: false, // Whether to render a shadow
-		hwaccel: false, // Whether to use hardware acceleration
-		className: 'spinner', // The CSS class to assign to the spinner
-		zIndex: 2e9, // The z-index (defaults to 2000000000)
-		top: '50%', // Top position relative to parent
-		left: '50%' // Left position relative to parent
-	};
-	
 
 function showAccel(frm) {
 	var rsiteid = '';
@@ -118,12 +99,10 @@ function showAccel(frm) {
 							            },
 							            spline: {
 							                marker: {
-							                    // fillColor: '#FFFFFF',
 							                    lineWidth: 0,
 							                    lineColor: null // inherit from series
 							                }
 							            }
-
 							        },
 							        legend: {
 							            layout: 'vertical',
@@ -348,7 +327,6 @@ function showAccel(frm) {
 							        },
 							   
 							        tooltip: {
-							            // pointFormat: '<b>{series.name}</b>: {point.y:.2f}<br>',
 							           shared: true,
 							           crosshairs: true
 							        },
@@ -495,8 +473,6 @@ function showAccel(frm) {
 							                point: {
 							                    events: {
 							                        click: function () {
-							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -515,7 +491,6 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -523,7 +498,6 @@ function showAccel(frm) {
 							            },
 							            spline: {
 							                marker: {
-							                    // fillColor: '#FFFFFF',
 							                    lineWidth: 0,
 							                    lineColor: null // inherit from series
 							                }
@@ -590,7 +564,6 @@ function showAccel(frm) {
 		var d3_data = data3(dfrom,dto,selectedSite,frm);
 		var d4_data = data4(dfrom,dto,selectedSite,frm);
 		var datName = ["1","2","3","v"];
-			// console.log("/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value);
 		$.when(d1_data , d2_data ,d3_data, d4_data ).done(function(data , data2 , data3 ,data4 ) {
 			var jsonRespo = data[0];
 			var jsonRespo2 = data2[0];
@@ -676,8 +649,6 @@ function showAccel(frm) {
 							                point: {
 							                    events: {
 							                        click: function () {
-							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -696,7 +667,6 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -704,7 +674,6 @@ function showAccel(frm) {
 							            },
 							            spline: {
 							                marker: {
-							                    // fillColor: '#FFFFFF',
 							                    lineWidth: 0,
 							                    lineColor: null // inherit from series
 							                }
@@ -821,8 +790,6 @@ function showAccel(frm) {
 	                                        timezoneOffset: -8 * 60
 	                                    }
 	                                });
-		           
-
 		             $("#accel-2").highcharts({
 							        chart: {
 							           type: 'spline',
@@ -857,9 +824,7 @@ function showAccel(frm) {
 							                text: 'Date'
 							            }
 							        },
-							   
 							        tooltip: {
-							            // pointFormat: '<b>{series.name}</b>: {point.y:.2f}<br>',
 							           shared: true,
 							           crosshairs: true
 							        },
@@ -871,8 +836,6 @@ function showAccel(frm) {
 							                point: {
 							                    events: {
 							                        click: function () {
-							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -885,13 +848,11 @@ function showAccel(frm) {
 							                        	}else if(this.series.name =="Maintenace"){
 							                        	
 							                        		 $("#anModal").modal("show");
-							                        		 $("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-							                        		
+							                        		 $("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 	
 							                        	}
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -899,7 +860,6 @@ function showAccel(frm) {
 							            },
 							            spline: {
 							                marker: {
-							                    // fillColor: '#FFFFFF',
 							                    lineWidth: 0,
 							                    lineColor: null // inherit from series
 							                }
@@ -978,7 +938,6 @@ function showAccel(frm) {
 				             chart.series[6].hide();
 			           		}
 		 });
-
 		$.when(d1_data , d2_data ,d3_data, d4_data ).done(function(data , data2 , data3 ,data4 ) {
 			var jsonRespo = data[0];
 			var jsonRespo2 = data2[0];
@@ -1087,7 +1046,6 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -1095,7 +1053,6 @@ function showAccel(frm) {
 							            },
 							            spline: {
 							                marker: {
-							                    // fillColor: '#FFFFFF',
 							                    lineWidth: 0,
 							                    lineColor: null // inherit from series
 							                }
@@ -1249,8 +1206,6 @@ function showAccel(frm) {
 							                point: {
 							                    events: {
 							                        click: function () {
-							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -1269,7 +1224,6 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -1381,7 +1335,6 @@ function data3(dfrom,dto,selectedSite,frm){
 			   dataType: "json",
 			  url: "/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value   ,success: function(result) {
 			  	var end = new Date().getTime();
-			  // console.log(url);
 			  }
 			});
 		
@@ -1400,7 +1353,6 @@ var version =document.getElementById("header-site").innerHTML;
 			   dataType: "json",
 			  url: "/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value   ,success: function(result) {
 			  	var end = new Date().getTime();
-			  		// console.log(url);
 			  }
 			});
 		
@@ -1446,7 +1398,6 @@ function showSoms(frm) {
 				        {
 		            var jsonRespo = JSON.parse(data);
 		            var jsonRespo2 = JSON.parse(data2);
-		            // console.log(jsonRespo2)
 		            var rDataSeries=[] , rfDataSeries=[] ;
 		           if (newVersion == 2){
 			            for (i = 0; i < jsonRespo.length; i++) {
@@ -1516,7 +1467,6 @@ function showSoms(frm) {
 									        },
 									   
 									        tooltip: {
-									            // pointFormat: '<b>{series.name}</b>: {point.y:.2f}<br>',
 									           shared: true,
 									           crosshairs: true
 									        },
@@ -1528,8 +1478,6 @@ function showSoms(frm) {
 									                point: {
 									                    events: {
 									                        click: function () {
-									                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-									                        	// console.log(this.text);
 									                        	if(this.series.name =="Comment"){
 									                        		
 									                        		 $("#anModal").modal("show");
