@@ -91,7 +91,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -110,7 +110,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -226,7 +226,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -245,7 +245,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -361,7 +361,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -380,7 +380,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -496,7 +496,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -515,7 +515,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -677,7 +677,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -696,7 +696,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -872,7 +872,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -891,7 +891,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -1068,7 +1068,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -1087,7 +1087,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -1250,7 +1250,7 @@ function showAccel(frm) {
 							                    events: {
 							                        click: function () {
 							                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-							                        	console.log(this.text);
+							                        	// console.log(this.text);
 							                        	if(this.series.name =="Comment"){
 							                        		
 							                        		 $("#anModal").modal("show");
@@ -1269,7 +1269,7 @@ function showAccel(frm) {
 							                        	else {
 							                            $("#annModal").modal("show");
 							                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							                             console.log(this.series.name);
+							                             // console.log(this.series.name);
 							                         }
 							                        }
 							                    }
@@ -1348,19 +1348,11 @@ function showAccel(frm) {
 	}
 }
 
-
-console.timeEnd('showAccel');
-
-
-
-
 function data1(dfrom,dto,selectedSite,frm){
 			var start = new Date().getTime();
 			return $.ajax({ 
 			   dataType: "json",
 			  url: "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb",  success: function(result) {
-			  		var end = new Date().getTime();
-			  		console.log(end);
 			  }
 			});	
 }
@@ -1371,21 +1363,17 @@ function data2(dfrom,dto,selectedSite,frm){
 		return	$.ajax({ 
 			   dataType: "json",
 			  url: "/ajax/getSenslopeData.php?accel3&from=" + dfrom + "&to=" + dto + "&nid=" + frm.node.value + "&site=" + selectedSite + "&db=senslopedb" + "&dataset=2" ,success: function(result) {
-			  	var end = new Date().getTime();
-			  		console.log(end);
 			  }
 			});
 		
 }
-
-
 function data3(dfrom,dto,selectedSite,frm){
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	var version ="";
-	if(newVersion == 2){
+	if(V2V == 2){
 		var version = 32;
-	}else if ( newVersion == 3){
+	}else if ( V2V == 3){
 		var version = 11;
 	}
 	var start = new Date().getTime();
@@ -1393,19 +1381,18 @@ function data3(dfrom,dto,selectedSite,frm){
 			   dataType: "json",
 			  url: "/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value   ,success: function(result) {
 			  	var end = new Date().getTime();
-			  		console.log("/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value);
+			  // console.log(url);
 			  }
 			});
 		
 }
-
 function data4(dfrom,dto,selectedSite,frm){
 var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	var version ="";
-	if(newVersion == 2){
+	if(V2V == 2){
 		var version = 33;
-	}else if ( newVersion == 3){
+	}else if ( V2V == 3){
 		var version = 12;
 	}
 	var start = new Date().getTime();
@@ -1413,7 +1400,7 @@ var version =document.getElementById("header-site").innerHTML;
 			   dataType: "json",
 			  url: "/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value   ,success: function(result) {
 			  	var end = new Date().getTime();
-			  		console.log("/ajax/accelfilteredData.php?site="+selectedSite+"&fdate="+dfrom+"&tdate="+dto+"&mid="+version+"&nodeid="+ frm.node.value);
+			  		// console.log(url);
 			  }
 			});
 		
@@ -1431,20 +1418,21 @@ function showSoms(frm) {
 	var version =document.getElementById("header-site").innerHTML;
 	var newVersion = version.substr(8, version.length-25);
 	var m ="m";
-	
+	console.log( selectedSite)
 	if (V2V == 2){
-		var msgid1 = "111";
-	 var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
-	 var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&nid=" + frm.node.value +"&mode=0" ;
-	 console.log(URL)
-	 console.log(URL2)
-	}else if( V2V == 3 )  {
+		if (selectedSite == "nagsa"){
+			var msgid2 = "21";
+		}else{
+			var msgid1 = "111";
+		}	
+		var URL = "/ajax/somsV2.php?site="+selectedSite+"&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value ;
+		var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto + "&nid=" + frm.node.value +"&mode=0" ;
+		console.log(URL)
+	} else if( V2V == 3 )  {
 		var msgid1 = "110";
 		var m ="m";
-	var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
-	var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto   + "&nid=" + frm.node.value +"&mode=0" ;
-	console.log(URL)
-	console.log(URL2)
+		var URL = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid1 + "&nid=" + frm.node.value;
+		var URL2 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto   + "&nid=" + frm.node.value +"&mode=0" ;
 	}
 
 
@@ -1460,7 +1448,7 @@ function showSoms(frm) {
 				        {
 		            var jsonRespo = JSON.parse(data);
 		            var jsonRespo2 = JSON.parse(data2);
-		            console.log(jsonRespo2)
+		            // console.log(jsonRespo2)
 		            var rDataSeries=[] , rfDataSeries=[] ;
 		           if (newVersion == 2){
 			            for (i = 0; i < jsonRespo.length; i++) {
@@ -1543,7 +1531,7 @@ function showSoms(frm) {
 									                    events: {
 									                        click: function () {
 									                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-									                        	console.log(this.text);
+									                        	// console.log(this.text);
 									                        	if(this.series.name =="Comment"){
 									                        		
 									                        		 $("#anModal").modal("show");
@@ -1562,7 +1550,7 @@ function showSoms(frm) {
 									                        	else {
 									                            $("#annModal").modal("show");
 									                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-									                             console.log(this.series.name);
+									                             // console.log(this.series.name);
 									                         }
 									                        }
 									                    }
@@ -1640,17 +1628,17 @@ function showSoms(frm) {
 	        }
 		})
 	if (newVersion == 2){
-		var msgid2 = "112";
+		if (selectedSite == "nagsa"){
+			var msgid2 = "26";
+		}else{
+			var msgid2 = "112";
+		}
 		var URL21 = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
 		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value +"&mode=1" ;
-		console.log(URL21)
-		console.log(URL22)
 	} else if(newVersion == 3)  {
 		var msgid2 = "113";
 		var URL21 = "/ajax/soms.php?site="+selectedSite+m+"&fdate=" + dfrom  +"&tdate=" + dto  + "&ms1=" +msgid2 + "&nid=" + frm.node.value;
 		var URL22 ="/ajax/somsFilter.php?site="+ selectedSite + "&fdate=" + dfrom  +"&tdate=" + dto  + "&nid=" + frm.node.value +"&mode=1" ;
-		console.log(URL21)
-		console.log(URL22)
 	} 
 	
 
@@ -1740,7 +1728,7 @@ function showSoms(frm) {
 						                    events: {
 						                        click: function () {
 						                        	// console.log(this.series.tooltipOptions.pointFormat[point]);
-						                        	console.log(this.text);
+						                        	// console.log(this.text);
 						                        	if(this.series.name =="Comment"){
 						                        		
 						                        		 $("#anModal").modal("show");
@@ -1759,7 +1747,7 @@ function showSoms(frm) {
 						                        	else {
 						                            $("#annModal").modal("show");
 						                             $("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-						                             console.log(this.series.name);
+						                             // console.log(this.series.name);
 						                         }
 						                        }
 						                    }
