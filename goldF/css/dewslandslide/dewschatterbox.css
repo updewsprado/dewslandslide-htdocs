@@ -433,3 +433,8 @@ a:hover, a:active, a:focus {
   text-decoration: none;
   outline: 0;
 }
+
+.bootstrap-tagsinput {
+  min-width: 100%;
+  font-size: 16px;
+}

@@ -1993,6 +1993,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		$('#email_ec').val('');
 		$('#numbers_ec').val('');
 		$('#grouptags_ec').val('');
+		$('.bootstrap-tagsinput input').val('');
 	}
 
 	// Clear Field inputs for Community Contact
@@ -2662,9 +2663,18 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	});
 
 	$('#emp-settings-cmd button[type="submit"]').on('click',function(){
+
+		console.log($('#lastname_ec').val());
+		console.log($('#firstname_ec').val());
+		console.log($('#nickname_ec').val());
+		console.log($('#birthdate_ec').val());
+		console.log($('#email_ec').val());
+		console.log($('#numbers_ec').val());
+		console.log($('#grouptags_ec').val());
+
 		var empty_fields = 0;
 		$('#employee-contact-wrapper input').each(function(){
-			if ($(this).val() == "" || $(this).val() == null) {
+			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
 				empty_fields++;
 			}
 		});
