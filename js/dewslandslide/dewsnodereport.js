@@ -1,8 +1,76 @@
 
+
 var nodeAlertJSON = 0;
 var nodeStatusJSON = 0;
 var maxNodesJSON = 0;
 var alert_legend_active = 0;
+	
+function JSON2CSV(objArray) {
+	var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+
+	var str = '';
+	var line = '';
+
+	if ($("#labels").is(':checked')) {
+		var head = array[0];
+		if ($("#quote").is(':checked')) {
+			for (var index in array[0]) {
+				var value = index + "";
+				line += '"' + value.replace(/"/g, '""') + '",';
+			}
+		} else {
+			for (var index in array[0]) {
+				line += index + ',';
+			}
+		}
+
+		line = line.slice(0, -1);
+		str += line + '\r\n';
+	}
+
+	for (var i = 0; i < array.length; i++) {
+		var line = '';
+
+		if ($("#quote").is(':checked')) {
+			for (var index in array[i]) {
+				var value = array[i][index] + "";
+				line += '"' + value.replace(/"/g, '""') + '",';
+			}
+		} else {
+			for (var index in array[i]) {
+				line += array[i][index] + ',';
+			}
+		}
+
+		line = line.slice(0, -1);
+		str += line + '\r\n';
+	}
+	return str;
+}
+
+var gReportData = 0;
+gReportData.site = 0;
+gReportData.node = 0;
+
+function callModal() {
+	$('#exampleModal').modal('show'); 
+}
+
+$(function () { $('#exampleModal').on('show.bs.modal', function () {
+		var modal = $(this);
+		
+		modal.find('.modal-title').text('Node Status Report for ' + gReportData.site + ' ' + gReportData.node);
+	    modal.find('#site-column-name').val(gReportData.site);
+	    modal.find('#node-id').val(gReportData.node);
+	    //modal.find('#date-discovered').val(gReportData.node);  
+	    modal.find('.input-group.date').datepicker({
+	    	clearBtn: true,
+		    autoclose: true,
+		    todayHighlight: true
+		});  
+	    modal.find('#comment-text').val('Testing this wonderful function called modals');
+	});
+});
 
 // Set the dimensions of the canvas / graph
 var cWidth = 0;
@@ -13,6 +81,9 @@ var margin = 0,
     height = 0;
 
 var graphDim = 0;
+	
+var labelHeight = 16;
+var labelWidth = 130;
 	
 var graphCount = 0;
 	
@@ -32,9 +103,9 @@ var tip = d3.tip()
 	var alert,status,id_ts,comment;
 	
 	if((parseFloat(d.xalert) > 0) || (parseFloat(d.yalert) > 0) || (parseFloat(d.zalert) > 0)) {
-		alert = "<strong>Alerts:</strong> <span style='color:red'>" + 
-		Number((d.xalert).toFixed(3)) + ", " + Number((d.yalert).toFixed(3)) + 
-		", " + Number((d.zalert).toFixed(3)) +"</span><Br/>";
+		alert = "<strong>Alerts:</strong> <span style='color:red'>" + Number((d.xalert).toFixed(3)) 
+				+ ", " + Number((d.yalert).toFixed(3)) 
+				+ ", " + Number((d.zalert).toFixed(3)) +"</span><Br/>";
 	}
 	else {
 		alert = "";
@@ -61,31 +132,33 @@ var tip = d3.tip()
 		comment = "<strong>Comment:</strong> <span style='color:red'>" + d.comment + "</span>";
 	}  
   
-    return id_ts +
-		"<strong>Site:</strong> <span style='color:#33cc33'>" + d.site + "</span><Br/>" +
-		"<strong>Node ID:</strong> <span style='color:#ff9933'>" + d.node + "</span><Br/>" +
-		alert + status + 
-		"<strong>Flagger:</strong> <span style='color:red'>" + d.flagger + "</span><Br/>" +
-		comment;
+    return id_ts 
+		+ "<strong>Site:</strong> <span style='color:red'>" + d.site + "</span><Br/>"
+		+ "<strong>Node ID:</strong> <span style='color:red'>" + d.node + "</span><Br/>"
+		+ alert + status + 
+		"<strong>Flagger:</strong> <span style='color:red'>" + d.flagger + "</span><Br/>"
+		+ comment;
   });
+
+
 
 //initialize dimensions
 function init_dims() {
-	cWidth = document.getElementById('alert-canvas').clientWidth - 10 ;
-	cHeight = document.getElementById('alert-canvas').offsetHeight -20;
+	cWidth = document.getElementById('alert-canvas').clientWidth;
+	cHeight = document.getElementById('alert-canvas').clientHeight;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
-	margin = {top: cHeight * 0.001, right: cWidth * 0.01, bottom: cHeight* 0.50- cWidth , left: cWidth * 0.07};
-	width = cWidth - margin.left - margin.right;
-	height = cHeight - margin.top - margin.bottom;
 	
-	graphDim = {gWidth: width , gHeight: cHeight};		
+	margin = {top: cHeight * 0.01 - 5, right: cWidth * 0, bottom: cHeight * 0.01 - 10, left: cWidth * 0.065};
+	width = cWidth - margin.left - margin.right - 500;
+	height = cHeight - margin.top - margin.bottom + 650;
 	
+	graphDim = {gWidth: width * 0.95, gHeight: height* 0.85};	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
 	y = d3.scale.linear().range([graphDim.gHeight, 0]);
 	yOrd = d3.scale.ordinal()
-					.rangeRoundBands([graphDim.gHeight, 0], 0.1);
+					.rangeRoundBands([graphDim.gHeight, 0], .1);
 					
 	// Define the line
 	yvalline = d3.svg.line()	
@@ -96,38 +169,16 @@ function init_dims() {
 	// Adds the svg canvas
 	svg = d3.select("#alert-canvas").append("svg")
 			.attr("id", "svg-alert")
-	        .attr("width", cWidth + 10)
-	        .attr("height",  margin.left +margin.right +height+margin.bottom+5 )
+	        .attr("width", width + margin.left + margin.right)
+	        .attr("height", height + margin.top + margin.bottom)
 			.append("g")
 	        .attr("transform", 
-	              "translate(" +  margin.left+ "," + margin.top + ")");
+	              "translate(" + margin.left + "," + margin.top + ")");
 				  
 	svg.call(tip);	
+
  
 }
-
-// Define the axes
-/*
-function make_x_axis() {        
-    return d3.svg.axis()
-        .scale(x)
-        .orient("bottom")
-        .ticks(40);
-}
-
-function make_x_axis2(tick) {        
-    return d3.svg.axis()
-        .scale(x)
-        .orient("bottom")
-        .ticks(tick);
-}
-
-function make_y_axis() {        
-    return d3.svg.axis()
-        .scale(y)
-        .orient("left")
-        .ticks(5);
-}*/
 
 function make_yOrd_axis() {        
     return d3.svg.axis()
@@ -142,7 +193,7 @@ function clearData() {
 	svg.selectAll(".dot1").remove();
 	svg.selectAll(".dot2").remove();
 	svg.selectAll(".line").remove();
-	svg2.selectAll(".legend").remove(); 
+/*	svg2.selectAll(".legend").remove(); */
 	svg.selectAll(".tick").remove();
 	svg.selectAll(".axislabel").remove();
 }
@@ -158,7 +209,7 @@ function getSiteMaxNodes(xOffset) {
 	siteMaxNodes = data;
 	
 	//add node links to nodes with normal status
-	var urlBase = "http://" + window.location.hostname + "/";
+	var urlBase = "http://www.dewslandslide.com/";
 	var urlNodeExt = "gold/node/";	
 	
 	maxNode = d3.max(siteMaxNodes, function(d) { return parseFloat(d.nodes); });
@@ -170,9 +221,9 @@ function getSiteMaxNodes(xOffset) {
 	var cellw = (graphDim.gWidth / maxNode) * 0.9;
 	var cellh = yOrd.rangeBand(); //9;
 	
-	for (var i = 0; i < siteMaxNodes.length; i++) {
+	for (i = 0; i < siteMaxNodes.length; i++) {
 		
-		for (var j = 1; j <= siteMaxNodes[i].nodes; j++) {
+		for (j = 1; j <= siteMaxNodes[i].nodes; j++) {
 			tester.push(
 				{site: siteMaxNodes[i].site, node: j }
 			);
@@ -194,8 +245,12 @@ function getSiteMaxNodes(xOffset) {
 		.style("cursor", "pointer")
 		.on('mouseover', tip.show)
 		.on('mouseout', tip.hide)
+
+
 		.on("click", function(d){
-	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+	        //document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+	        gReportData = d;
+	        callModal();
 	    });	
 	
 }
@@ -286,7 +341,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			};
 	
 			// Add hyperlinks to Y Axis ticks
-			var urlBase = "http://" + window.location.hostname + "/";
+			var urlBase = "http://www.dewslandslide.com/";
 			var urlExt = "gold/site/";	
 			var urlNodeExt = "gold/node/";		
 			
@@ -313,7 +368,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 						return yOrd(d.site);
 					})
 					.attr('fill', function(d){
-						var xdata, ydata, zdata, color;
+						var xdata, ydata, zdata;
 					
 						if((d.xalert > 0) || (d.yalert > 0) || (d.zalert > 0)) {
 							if(d.xalert > 0)
@@ -333,12 +388,10 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 						
 							var r = 85 * (xdata + ydata + zdata);
 							var b = 255 - (xdata + ydata + zdata) * 80;					
-							color = d3.rgb(r, 174, b);
-							return color;
+							return color = d3.rgb(r, 174, b);
 						}
 						else {
-							color = d3.rgb(3, 137, 156);
-							return color;
+							return color = d3.rgb(3, 137, 156);
 						}
 					})
 					.attr('width', cellw)
@@ -346,155 +399,17 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 					.style("cursor", "pointer")
 					.on('mouseover', tip.show)
 					.on('mouseout', tip.hide)
-					.on("click", function(d){
-				        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
-				    });	
-	
-			// Add the Legend
-/*			if(isLegends){
-				for (i = 0; i <= 3; i++) { 
-					var desc;
-					
-					if (i <= 1) {
-						desc = i + " axis alert";
-					}
-					else {
-						desc = i + " axes alerts";
-					}
-		
-					svg2.append("rect")
-						.attr("class", "cell")
-						.attr("x", i*(labelWidth))
-						.attr("y", graphDim.gHeight + cellh * 0.25)
-						.attr("transform", "translate(" + xOffset + ",0)")
-						.attr('width', cellw)
-						.attr('height', cellh)
-						.style("fill", function() { // Add the colours dynamically
-							if(i > 0) {
-								var r = 85 * i;
-								var b = 255 - i * 80;							
-								return color = d3.rgb(r, 174, b);
-							}
-							else {
-								return color = d3.rgb(3, 137, 156);
-							}
-						});
-		
-					svg2.append("text")
-						.attr("class", "legend")    // style the legend
-						.attr("x", i*(labelWidth) + cellw * 1.5)
-						.attr("y", graphDim.gHeight + cellh * 1.25)
-						.attr("transform", "translate(" + xOffset + ",0)")
-						.style("fill", function() { // Add the colours dynamically
-							if(i > 0) {
-								var r = 85 * i;
-								var b = 255 - i * 80;							
-								return color = d3.rgb(r, 174, b);
-							}
-							else {
-								return color = d3.rgb(3, 137, 156);
-							}
-						})
-						.text(desc); 
-				}
 				
-				//Status Triangles
-				var jctr = 0;
-				for (i = jctr; i <= jctr + 2; i++) { 
-					var desc, color;
-					
-					if (i == jctr) {
-						desc = "Use with Caution";	//Yellow
-						color = "#FFF500";
-					}
-					else if (i == jctr + 1) {
-						desc = "Not OK";	//Red
-						color = "#EA0037";
-					}
-					else if (i == jctr + 2) {
-						desc = "Special Case";	//Blue
-						color = "#0A64A4";
-					}
-					
-					svg2.append("polygon")
-						.attr("class", "triangle")
-						.style("stroke", "none")  // colour the line
-						.style("fill", color)
-						.attr("transform", "translate(" + xOffset + ",0)")
-						.attr("points", function() {
-							var xStart = i*(labelWidth)*1.5;
-							var yStart = graphDim.gHeight + cellh * 1.5;
-							var xWidth = xStart + cellw * 0.6;
-							var yHeight = yStart + cellh * 0.6;
-							var points = xStart + "," + yStart + "," +
-										xWidth + "," + yStart + "," +
-										xStart + "," + yHeight + "";
-							return points;
-						});
-						
-					svg2.append("text")
-						.attr("class", "legend")    // style the legend
-						.attr("x", i*(labelWidth)*1.5 + cellw * 1.5)  // space legend
-						.attr("y", graphDim.gHeight + cellh * 2.5)
-						.attr("transform", "translate(" + xOffset + ",0)")
-						.style("fill", color)
-						.text(desc); 					
-				}
-			}		*/		
+					.on("click", function(d){
+				        //document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+				        gReportData = d;
+				        callModal();
+				    });	
 	
 	//Draw the node status symbol
 	getNodeStatus(xOffset);	
 
 }
-/*
-	d3.select(window).on("resize", resize2);
-
-	function resize2() {
-		
-		cWidth = document.getElementById('alert-canvas').clientWidth;
-		cHeight = document.getElementById('alert-canvas').clientHeight;
-		
-		width = cWidth - margin.left - margin.right;
-		height = cHeight - margin.top - margin.bottom;
-		
-		graphDim = {gWidth: width * 0.95, gHeight: height};	
-		
-		// Set the ranges
-		x = d3.scale.linear().range([0, graphDim.gWidth]);
-		y = d3.scale.linear().range([graphDim.gHeight, 0]);
-		yOrd = d3.scale.ordinal()
-						.rangeRoundBands([graphDim.gHeight, 0], .1);
-						
-		d3.select("#alertcanvas")
-				.attr("width", width + margin.left + margin.right)
-				.attr("height", height + margin.top + margin.bottom);
-				
-		yvalline.x(function(d) { return x(d.xval); })
-				.y(function(d) { return y(d.yval); });	
-		
-		make_yOrd_axis();
-		
-		maxNode = d3.max(siteMaxNodes, function(d) { return parseFloat(d.nodes); });
-	
-		var cellw = (graphDim.gWidth / maxNode) * 0.9;
-		var cellh = yOrd.rangeBand(); //9;
-		
-		svg.selectAll("rect")
-			.attr('width', cellw)
-			.attr('height', cellh);
-			
-		svg.selectAll("polygon")
-			.attr("points", function(d){
-					var xStart = x(d.node);
-					var yStart = yOrd(d.site);
-					var xWidth = xStart + cellw * 0.6;
-					var yHeight = yStart + cellh * 0.6;
-					var points = xStart + "," + yStart + "," +
-								xWidth + "," + yStart + "," +
-								xStart + "," + yHeight + "";
-					return points;
-				});
-	}*/
 	
 function showData() {
 	//generateAlertPlot("../temp/getAlert.php", "Accelerometer Movement Alert Map", 0, true, 1);
@@ -509,10 +424,10 @@ function initAlertPlot() {
 
 function alertLegends(frm) {
 
-	var alert_target = document.getElementById('alertLegend');
-	var alert_target2 = document.getElementById('alertcanvaslegend');
+	alert_target = document.getElementById('alertLegend');
+	alert_target2 = document.getElementById('alertcanvaslegend');
 	
-	if(alert_legend_active === 0)
+	if(alert_legend_active == 0)
 	{
 		alert_legend_active = 1;
 		alert_target.value = "Hide Legends";
@@ -524,7 +439,7 @@ function alertLegends(frm) {
 		alert_target2.style.borderStyle = "solid";
 		alert_target2.style.borderWidth = "thin";
 		alert_target2.style.paddingLeft = "5px";
-		alert_target2.style.paddingTop = "5px";
+		alert_target2.style.paddingTop = "10px";
 		alert_target2.style.paddingRight = "5px";
 		alert_target2.style.left = (alert_target.offsetLeft - alert_target.scrollLeft + alert_target.clientLeft) + 'px';
 		alert_target2.style.top = (alert_target.offsetTop - alert_target.scrollTop + alert_target.clientTop - 110) + 'px';
@@ -536,15 +451,5 @@ function alertLegends(frm) {
 		alert_target2.style.display = "none";
 		alert_target2.style.visibility = "hidden";
 	}
-}
-
-//window.onload = initPosPlot();
-
-
-
-
-
-
-
-
+};
 

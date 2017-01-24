@@ -4,6 +4,11 @@
 
 var prevIntvl = -1;
 var prevSite = -1;
+var curSite = -1;
+var dayIntvl = 1;
+var pos_legend_active = 0;
+var pos_color = [];
+var pos_key = [];
 
 var positionPlot = new function() {
     this.cWidth = 0;
@@ -29,10 +34,10 @@ var positionPlot = new function() {
 	
 	this.init_dims = function() {
 		// Set the dimensions of the canvas / graph
-		this.cWidth = document.getElementById('position-canvas').offsetWidth;
-		this.cHeight = document.getElementById('position-canvas').offsetHeight;
+		this.cWidth = document.getElementById('position-canvas').clientWidth;
+		this.cHeight = document.getElementById('position-canvas').clientHeight;
 		
-		this.margin = {top: 70, right: 20, bottom: 70, left: 50},
+		this.margin = {top: this.cHeight * 0.1, right: this.cWidth * 0.05, bottom: this.cHeight * 0.25, left: this.cWidth * 0.1},
 		this.width = this.cWidth - this.margin.left - this.margin.right,
 		this.height = this.cHeight - this.margin.top - this.margin.bottom;
 		
@@ -50,14 +55,16 @@ var positionPlot = new function() {
 		    
 		// Adds the svg canvas
 		this.svg = d3.select("#position-canvas")
-		    .append("svg")
+			.append("svg")
+			.attr("id", "svg-position")
 		        .attr("width", this.width + this.margin.left + this.margin.right)
 		        .attr("height", this.height + this.margin.top + this.margin.bottom)
 		    .append("g")
 		        .attr("transform", 
 		              "translate(" + this.margin.left + "," + this.margin.top + ")");
-		
-		this.svg.call(this.tip);		
+					  
+		this.svg.call(this.tip);
+			
     };
     
     // Define the axes
@@ -99,50 +106,6 @@ var positionPlot = new function() {
 	
 	// Get the data
 	this.jsondata = [];
-	this.generatePlotData = function (url, title, xOffset, isLegends, graphNum) {		
-		d3.json(url, function(error, data) {
-			this.jsondata = data;
-		});
-	};	
-
-	this.showData = function (frm) {
-		// Clear the canvas area first
-		this.clearData();
-	
-		// Generate the XY Graph
-		//urlXY = "temp/getPosPlot.php?site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-		urlXY = "d3graph/getPosPlot.php?site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-		titleXY = frm.sites1.value + " XY Column Position";
-		this.generatePlotData(urlXY, titleXY, 0, true, 1);
-		
-		// Generate the XZ Graph
-		//urlXZ = "temp/getPosPlot.php?xz&site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-		urlXZ = "d3graph/getPosPlot.php?xz&site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-		titleXZ = frm.sites1.value + " XZ Column Position";
-		this.generatePlotData(urlXZ, titleXZ, this.width * 0.6, false, 2);
-	};
-	
-	this.options = ["blcb", "blct", "bolb", "gamb", "gamt",
-					"humb", "humt", "labb", "labt", "lipb",
-					"lipt", "mamb", "mamt", "oslb", "oslt",
-					"plab", "plat", "pugb", "pugt", "sinb",
-					"sinu"];
-	
-	this.popDropDown = function () {
-		var select = document.getElementById('selectPositionSite');
-		var i;
-		for (i = 0; i < this.options.length; i++) {
-			var opt = this.options[i];
-			var el = document.createElement("option");
-			el.textContent = opt;
-			el.value = opt;
-			select.appendChild(el);
-		}
-	};
-	
-	this.showAlert = function () {
-		alert("Hello! I am an alert box!!");
-	};
 	
 };
 
@@ -222,9 +185,14 @@ function generatePlotData (url, title, xOffset, isLegends, graphNum) {
 				.tickFormat("")
 			);		
 		
+		// Add hyperlinks to the Node Circles
+		var urlBase = "http://www.dewslandslide.com/";
+		var urlNodeExt = "gold/node/";	
+		
 		// Loop through each date / key
+		var x = 0;
 		dataNest.forEach(function(d,i) { 
-
+			
 			positionPlot.svg.selectAll(".dot" + graphNum + "")
 					.data(data)
 				.enter().append("circle")
@@ -233,8 +201,12 @@ function generatePlotData (url, title, xOffset, isLegends, graphNum) {
 					.attr("r", 5)
 					.attr("cx", function(d) { return positionPlot.x(d.xval) + xOffset; })
 					.attr("cy", function(d) { return positionPlot.y(d.yval); })
+					.style("cursor", "pointer")
 					.on('mouseover', positionPlot.tip.show)
-					.on('mouseout', positionPlot.tip.hide);
+					.on('mouseout', positionPlot.tip.hide)
+					.on("click", function(d){
+				        document.location.href = urlBase + urlNodeExt + curSite + '/' + d.node;
+				    });	
 		
 			positionPlot.svg.append("path")
 				.attr("class", "line")
@@ -243,70 +215,80 @@ function generatePlotData (url, title, xOffset, isLegends, graphNum) {
 					return d.color = color(d.key); })
 				.attr("id", 'tag'+d.key.replace(/\s+/g, '')) // assign ID
 				.attr("d", positionPlot.yvalline(d.values));
-				
-			// Add the Legend
-			if(isLegends){
-				positionPlot.svg.append("text")
-					.attr("x", positionPlot.graphDim.gWidth + positionPlot.margin.right)  // space legend
-					.attr("y", i*(positionPlot.labelHeight + 5))
-					.attr("transform", "translate(" + xOffset + ",0)")
-					.attr("class", "legend")    // style the legend
-					.style("fill", function() { // Add the colours dynamically
-						return d.color = color(d.key); })
-					.on("click", function(){
-						// Determine if current line is visible 
-						var active   = d.active ? false : true,
-						newOpacity = active ? 0 : 1; 
-						// Hide or show the elements based on the ID
-						d3.select("#tag"+d.key.replace(/\s+/g, ''))
-							.transition().duration(100) 
-							.style("opacity", newOpacity); 
-						// Upxval whether or not the elements are active
-						d.active = active;
-						})  
-					.text(d.key); 
-			}
+			
+			pos_color[x] = color(d.key);
+			pos_key[x] = d.key;
+			x++;
 		});
 	});
 };	
 
-function showPositionPlot(frm) {
-	// Clear the canvas area first
-	positionPlot.clearData();
-
-	// Generate the XY Graph
-	//urlXY = "temp/getPosPlot.php?site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-	urlXY = "d3graph/getPosPlot.php?site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-	titleXY = frm.sites1.value + " XY Column Position";
-	generatePlotData(urlXY, titleXY, 0, true, 1);
+function showPositionPlotGeneral() {
 	
-	// Generate the XZ Graph
-	//urlXZ = "temp/getPosPlot.php?xz&site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-	urlXZ = "d3graph/getPosPlot.php?xz&site=" + frm.sites1.value + "&interval=" + frm.interval.value;
-	titleXZ = frm.sites1.value + " XZ Column Position";
-	generatePlotData(urlXZ, titleXZ, positionPlot.width * 0.6, false, 2);
-};
-
-function showPositionPlotGeneral(frm) {
-	var dayIntvl = document.getElementById("formPosition").interval.value;
-
+	d3.select("#svg-position").remove();
+	pos_target = document.getElementById('posLegend');
+	pos_target2 = document.getElementById('position-legends');
+	pos_legend_active = 0;
+	pos_target.value = "Show Legends";
+	pos_target2.style.display = "none";
+	pos_target2.style.visibility = "hidden";
+	dayIntvl = document.getElementById("formPosition").interval.value;
+	
 	// Clear the canvas area first
 	positionPlot.clearData();
-
+	positionPlot.init_dims();
 	// Generate the XY Graph
 	//urlXY = "temp/getPosPlot.php?site=" + frm.sitegeneral.value + "&interval=6";
-	urlXY = "d3graph/getPosPlot.php?site=" + frm.sitegeneral.value + "&interval=" + dayIntvl;
-	titleXY = frm.sitegeneral.value + " XY Column Position";
+	//urlXY = "/d3graph/getPosPlot.php?site=" + frm.sitegeneral.value + "&interval=" + dayIntvl;
+	urlXY = "/test/position/" + curSite + "/" + dayIntvl;
+	titleXY = curSite + " XY Column Position";
 	generatePlotData(urlXY, titleXY, 0, true, 1);
 	
 	// Generate the XZ Graph
 	//urlXZ = "temp/getPosPlot.php?xz&site=" + frm.sitegeneral.value + "&interval=6";
-	urlXZ = "d3graph/getPosPlot.php?xz&site=" + frm.sitegeneral.value + "&interval=" + dayIntvl;
-	titleXZ = frm.sitegeneral.value + " XZ Column Position";
+	//urlXZ = "/d3graph/getPosPlot.php?xz&site=" + frm.sitegeneral.value + "&interval=" + dayIntvl;
+	urlXZ = "/test/position/" + curSite + "/" + dayIntvl + "/1";
+	titleXZ = curSite + " XZ Column Position";
 	generatePlotData(urlXZ, titleXZ, positionPlot.width * 0.6, false, 2);
+	
 };
 
+function posLegends(frm) {
 
+	pos_target = document.getElementById('posLegend');
+	pos_target2 = document.getElementById('position-legends');
+	pos_legends = "";
+	
+	if(pos_legend_active == 0)
+	{
+		pos_legend_active = 1;
+		pos_target.value = "Hide Legends";
+		pos_target2.style.display = "block";
+		pos_target2.style.visibility = "visible";
+		pos_target2.style.position = "absolute";
+		pos_target2.style.zIndex = 1;
+		pos_target2.style.backgroundColor = "black";
+		pos_target2.style.borderStyle = "solid";
+		pos_target2.style.borderWidth = "thin";
+		pos_target2.style.paddingLeft = "5px";
+		pos_target2.style.paddingTop = "5px";
+		pos_target2.style.paddingRight = "5px";
+		pos_target2.style.left = (pos_target.offsetLeft - pos_target.scrollLeft + pos_target.clientLeft + 120) + 'px';
+		pos_target2.style.top = (pos_target.offsetTop - pos_target.scrollTop + pos_target.clientTop - 80) + 'px';
+		for(z = 0; z < 5; z++)
+		{
+		pos_legends += "<strong><span style='color:" + pos_color[z] + ";'>" + pos_key[z] + "</span></strong><br/>";
+		}
+		pos_target2.innerHTML = pos_legends;
+	}
+	else
+	{
+		pos_legend_active = 0;
+		pos_target.value = "Show Legends";
+		pos_target2.style.display = "none";
+		pos_target2.style.visibility = "hidden";
+	}
+};
 
 
 

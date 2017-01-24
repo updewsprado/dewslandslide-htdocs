@@ -127,7 +127,7 @@ function showRainDataCors(frm) {
 	};
     
     //var url = "ajax/getRainfall2.php?rsite=" + frm.sitegeneral.value + "&fdate=" + frm.datepicker.value + "&tdate=" + frm.datepicker2.value;
-    var url = "ajax/getRainfall2.php?rsite=" + frm.sitegeneral.value + "&fdate=" + frm.datepicker.value;
+    var url = "/ajax/getSenslopeData.php?rainsenslope&start_date=" + frm.dateinput.value + "&end_date=" + frm.dateinput2.value  + "&site=" + frm.sites.value ,
     document.getElementById("txtHint").innerHTML = url;
 	//xmlhttp.open("GET","http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sitegeneral.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value,true);
 	xmlhttp.open("GET",url,true);
@@ -217,7 +217,7 @@ function downloadRainfallDataCors(frm) {
 	else
 		alert("The field contains the date from: " + frm.dateinput.value + ", date to: " + frm.dateinput2.value + " and site: " + frm.sitegeneral.value);
 
-	var url = "http://weather.asti.dost.gov.ph/home/index.php/api/data/" + frm.sitegeneral.value + "/from/" + frm.dateinput.value + "/to/" + frm.dateinput2.value;
+	// var url = "http://www.dewslandslide.com/ajax/getSenslopeData.php/?rainsenslope&site=" + frm.sitegeneral.value + "&start_date=" + frm.dateinput.value + "&end_date=" + frm.dateinput2.value;
 	var xmlhttp = createCORSRequest('GET', url);
 	if (!xmlhttp) {
 		alert('CORS not supported');
