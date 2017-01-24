@@ -1,0 +1,65 @@
+.content {
+	width: 100%;
+	height: 100%;
+}
+
+.page-wrapper {
+    width: 100%;
+    padding: 0;
+    background-color: white;
+}
+
+.container-fluid {
+	padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.input-group-btn:last-child > .form-control {
+  margin-left: -1px;
+  width: auto;
+}
+
+#slide_right {
+	display: none;
+}
+
+#tracker-filter-panel{
+	width: 100%;
+}
+
+#reliability-panel {
+	width: 100%;
+}
+
+#period-selection, #confirm-btn {
+	margin: 10px 0px 10px 0px;
+}
+#confirm-filter-btn {
+	margin: 10px 0px 10px 0px;
+	float: right;
+	width: 100%;
+}	
+
+#date-selector-rtracker {
+	margin-bottom: 10px;
+}
+
+#div-data-resolution label,#data-resolution {
+    margin-right: 25px;
+}
+
+.ui-autocomplete {
+	max-height: 150px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 20px;
+}
+
+#div-data-validator {
+    margin-bottom: 15px;
+    margin-left: 15px;
+}
+.toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20px; }
+.toggle.ios .toggle-handle { border-radius: 20px; }
