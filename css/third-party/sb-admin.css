@@ -71,7 +71,7 @@ footer .navbar { min-height: 40px; }
 
   /* line 38, sass/scss/base/_base.scss */
   #page-wrapper {
-    padding: 10px;
+    padding: 10px 10px 60px;
   }
 }
 
