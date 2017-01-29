@@ -1,4 +1,5 @@
-// (function() {
+$(document).ready(function() {
+
 	var user, contactnum;
 	var contactnumTrimmed = [];
 	var contactInfo;
@@ -34,7 +35,8 @@
 	var gsmTimestampIndicator = "";
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
-	//	in case you want to edit it.
+	//	in case you want to edit it.\
+
 	try {
 		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 		var remChars = 800 - $("#msg").val().length - footer.length;
@@ -82,6 +84,7 @@
 	function updateMessages(msg) {
 		// Hides the Search 
 		$('#search-key').hide();
+		// debugger;
 
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
@@ -94,7 +97,6 @@
 
 			//If in "groups/tags" mode, accept message from "You" only if the
 			//recipients are exactly the offices and sitenames you've selected
-
 			if (contactInfo == "groups") {
 				console.log("type is group/tags");
 				if (msg.type == "loadEmployeeTag") {
@@ -113,10 +115,15 @@
 						if (msgType == "searchMessageGroup") {
 							searchResults.push(msg);
 						} else {
-							if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
+							if (msg.sitenames != undefined|| groupTags.sitenames != undefined){
+								if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
 								console.log("type found match for group send receive")
 								console.log("the message before it gets pushed:");
 								console.log(msg);
+								messages.push(msg);
+								}
+							}
+							 else {
 								messages.push(msg);
 							}
 						}
@@ -517,6 +524,7 @@
 		messages = [];
 
 		conn.send(JSON.stringify(request));
+		$('#loading').modal('toggle');
 	}
 
 	function getOldMessageGroup(){
@@ -565,6 +573,7 @@
 
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(request));
+		$('#loading').modal('toggle');
 	}
 
 	function initLoadQuickInbox(quickInboxMsg) {
@@ -611,9 +620,9 @@
 	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
 		// var tempConn = new WebSocket('ws://54.166.60.233:5050'); // Other server
-		// var tempConn = new WebSocket('ws://localhost:5050'); // For local server
+		var tempConn = new WebSocket('ws://localhost:5050'); // For local server
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -655,6 +664,7 @@
 		};
 
 		tempConn.onmessage = function(e) {
+			$('#loading').modal('hide');
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
@@ -1020,6 +1030,7 @@
 		};
 
 		conn.send(JSON.stringify(request));
+		$('#loading').modal('toggle');
 	}
 
 	function searchMessageGroup(){
@@ -1060,6 +1071,7 @@
 
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(request));
+		$('#loading').modal('toggle');
 	}
 
 	function searchMessageGlobal(searchKey){
@@ -1068,6 +1080,7 @@
 			'searchKey': searchKey
 		}
 		conn.send(JSON.stringify(request));
+		$('#loading').modal('toggle');
 	}
 
 	var coloredTimestamp;
@@ -1436,7 +1449,13 @@
 	}
 
 	var qiFullContact = null;
+
+	$(document).on("click","#quick-inbox-display li",function(){
+		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
+	});
+
 	function quickInboxStartChat(fullContact=null) {
+		
 		if (fullContact == null) {
 			console.log("Error: User or Name is null");
 			return;
@@ -1444,7 +1463,6 @@
 		else {
 			console.log("User: " + fullContact);
 		}
-
 
 		qiFullContact = fullContact;
 		startChat(source="quickInbox");
@@ -1503,6 +1521,7 @@
 		tempRequest = msgHistory;
 		//request for message history of selected number
 		conn.send(JSON.stringify(msgHistory));
+		$('#loading').modal('toggle');
 	}
 
 	// Chat with selected recipients
@@ -1670,7 +1689,7 @@
 
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(groupTags));
-
+		$('#loading').modal('toggle');
 		$('#main-container').removeClass('hidden');
 	}
 
@@ -1696,7 +1715,7 @@
 		}
 		//Request for message exchanges from the groups selected
 		conn.send(JSON.stringify(requestTag));
-
+		$('#loading').modal('toggle');
 		$('#main-container').removeClass('hidden');
 	}
 
@@ -1866,7 +1885,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				} else {
 					console.log('Invalid Request');
 				}
-				$.post( "../chatterbox/updatecontacts", {contact: JSON.stringify(data)})
+				$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
 				.done(function(response) {
 					console.log(response);
 					if (response == "true") {
@@ -1966,12 +1985,19 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		});
 	}
 
-	//Get Disticnt Offices.
-	$('#sitename_cc').on('change',function() {
+	$('#sitename_cc').on('change',function() {   //Get Disticnt Sitename.
 		if ($("#sitename_cc").val() == "OTHERS") {
 			$("#other-sitename").show();
 		} else {
 			$("#other-sitename").hide();
+		}
+	});
+
+	$('#office_cc').on('change',function() {  //Get Disticnt Offices.
+		if ($("#office_cc").val() == "OTHERS") {
+			$("#other-officename").show();
+		} else {
+			$("#other-officename").hide();
 		}
 	});
 
@@ -1988,6 +2014,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		$('#email_ec').val('');
 		$('#numbers_ec').val('');
 		$('#grouptags_ec').val('');
+		$('.bootstrap-tagsinput input').val('');
 	}
 
 	// Clear Field inputs for Community Contact
@@ -2235,14 +2262,14 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 
 
 				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A")); // get current time
+				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh A"));
 				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
 
 				if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
 					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 7:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 PM");
+					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
 					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
 					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
@@ -2445,6 +2472,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var msg = {
 			'type': 'smsloadquickinboxrequest'
 		};
+		$('#loading').modal('toggle');
 		conn.send(JSON.stringify(msg));
 	}
 
@@ -2657,9 +2685,18 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	});
 
 	$('#emp-settings-cmd button[type="submit"]').on('click',function(){
+
+		console.log($('#lastname_ec').val());
+		console.log($('#firstname_ec').val());
+		console.log($('#nickname_ec').val());
+		console.log($('#birthdate_ec').val());
+		console.log($('#email_ec').val());
+		console.log($('#numbers_ec').val());
+		console.log($('#grouptags_ec').val());
+
 		var empty_fields = 0;
 		$('#employee-contact-wrapper input').each(function(){
-			if ($(this).val() == "" || $(this).val() == null) {
+			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
 				empty_fields++;
 			}
 		});
@@ -2708,5 +2745,4 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 			});
 		}
 	});
-
-// })();
+});
