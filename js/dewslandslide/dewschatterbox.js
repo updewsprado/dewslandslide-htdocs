@@ -1918,63 +1918,78 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var table = $('#response-contact-container').DataTable();
 		var data = table.row(this).data();
 
-		var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel','ewirecipient'];
-		var employee_contacts = ['eid','firstname','lastname','nickname','birthdate','email','numbers','grouptags'];
-		var container = document.getElementById("update-contact-container");
-
-		while (container.hasChildNodes()) {
-			container.removeChild(container.lastChild);
+		if (data[0].charAt(0) == "c") {
+			reset_cc();
+			$('#response-contact-container_wrapper').prop('hidden',true);
+			$('#community-contact-wrapper').prop('hidden', false);
+			$('#employee-contact-wrapper').prop('hidden', true);
+		} else {
+			reset_ec();
+			$('#response-contact-container_wrapper').prop('hidden',true);
+			$('#community-contact-wrapper').prop('hidden', true);
+			$('#employee-contact-wrapper').prop('hidden', false);
 		}
 
-		for(var i=0; i< data.length; i++) {
+		// var community_contacts = ['c_id','firstname','lastname','prefix','office','sitename','number','rel','ewirecipient'];
+		// var employee_contacts = ['eid','firstname','lastname','nickname','birthdate','email','numbers','grouptags'];
+		// var container = document.getElementById("update-contact-container");
 
-			var label = document.createElement("label");
-			var input = document.createElement("input");
+		// while (container.hasChildNodes()) {
+		// 	container.removeChild(container.lastChild);
+		// }
 
-			if (data[0].charAt(0)=="c") {
-				var t = document.createTextNode(community_contacts[i].capitalize());
-				label.appendChild(t);
-				container.appendChild(label);
-				input.id = community_contacts[i]+"_ucc";
-				input.name = community_contacts[i];
-				input.className = "form-control";
-				input.value = data[i];
-				input.setAttribute("required","true");
-				input.type = "text";
-				if (i == 0) {
-					input.setAttribute('hidden',true);
-					label.setAttribute('hidden',true);
-				}
-				container.appendChild(input);
-				container.appendChild(document.createElement("br"));
-			} else {
-				var t = document.createTextNode(employee_contacts[i].capitalize());
-				label.appendChild(t);
-				container.appendChild(label);
-				input.id = employee_contacts[i]+"_uec";
-				if (employee_contacts[i] == "birthdate"){
-					input.type = "date";
-				} else {
-					input.type = "text";
-				}
-				input.name = employee_contacts[i];
-				input.className = "form-control";
-				input.value = data[i];
-				input.setAttribute("required","true");
-				if (i == 0) {
-					input.setAttribute('hidden',true);
-					label.setAttribute('hidden',true);
-				}
-				container.appendChild(input);
-				container.appendChild(document.createElement("br"));
-			}
-		}
+		// for(var i=0; i< data.length; i++) {
 
-		$('#response-contact-container_wrapper').prop('hidden',true);
-		$('#employee-contact-wrapper').prop('hidden', true);
-		$('#community-contact-wrapper').prop('hidden', true);
-		$('#update-contact-container').prop('hidden',false);
-		$("#update-contact-container").append('<div id="udt-contact-container"><button type="submit" value="submit" class="btn btn-primary" id="bt-update-contact-info">Save</button><button type="button" class="btn btn-danger" id="btn-cancel-update">Cancel</button></div>'); // data-dismiss="modal"
+		// 	var label = document.createElement("label");
+		// 	var input = document.createElement("input");
+
+		// 	if (data[0].charAt(0)=="c") {
+		// 		var t = document.createTextNode(community_contacts[i].capitalize());
+		// 		label.appendChild(t);
+		// 		container.appendChild(label);
+		// 		input.id = community_contacts[i]+"_ucc";
+		// 		input.name = community_contacts[i];
+		// 		input.className = "form-control";
+		// 		input.value = data[i];
+		// 		input.setAttribute("required","true");
+		// 		input.type = "text";
+		// 		if (i == 0) {
+		// 			input.setAttribute('hidden',true);
+		// 			label.setAttribute('hidden',true);
+		// 		}
+		// 		container.appendChild(input);
+		// 		container.appendChild(document.createElement("br"));
+		// 	} else {
+		// 		var t = document.createTextNode(employee_contacts[i].capitalize());
+		// 		label.appendChild(t);
+		// 		container.appendChild(label);
+		// 		input.id = employee_contacts[i]+"_uec";
+		// 		if (employee_contacts[i] == "birthdate"){
+		// 			input.type = "date";
+		// 		} else {
+		// 			input.type = "text";
+		// 		}
+		// 		input.name = employee_contacts[i];
+		// 		input.className = "form-control";
+		// 		input.value = data[i];
+		// 		if (employee_contacts[i] == "numbers" || employee_contacts[i] == "grouptags") {
+		// 			$("#"+employee_contacts[i]+"_uec").tagsinput('add', { id: 'tag id', label: 'tag lable' });
+		// 		}
+		// 		input.setAttribute("required","true");
+		// 		if (i == 0) {
+		// 			input.setAttribute('hidden',true);
+		// 			label.setAttribute('hidden',true);
+		// 		}
+		// 		container.appendChild(input);
+		// 		container.appendChild(document.createElement("br"));
+		// 	}
+		// }
+
+		// $('#response-contact-container_wrapper').prop('hidden',true);
+		// $('#employee-contact-wrapper').prop('hidden', true);
+		// $('#community-contact-wrapper').prop('hidden', true);
+		// $('#update-contact-container').prop('hidden',false);
+		// $("#update-contact-container").append('<div id="udt-contact-container"><button type="submit" value="submit" class="btn btn-primary" id="bt-update-contact-info">Save</button><button type="button" class="btn btn-danger" id="btn-cancel-update">Cancel</button></div>'); // data-dismiss="modal"
 
 	});
 
@@ -2163,7 +2178,8 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		$('#email_ec').val('');
 		$('#numbers_ec').val('');
 		$('#grouptags_ec').val('');
-		$('.bootstrap-tagsinput input').val('');
+		$('#numbers_ec').tagsinput("removeAll");
+		$('#grouptags_ec').tagsinput("removeAll");
 	}
 
 	// Clear Field inputs for Community Contact
@@ -2630,6 +2646,14 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		}
 	});
 
+	function displayToBeUpdateEmployeeContact(){
+
+	}
+
+	function displayToBeUpdateCommunityContact(){
+		
+	}
+
 	function getComContact(){
 		var table = $('#response-contact-container').DataTable();
 		$.ajax({
@@ -2732,15 +2756,6 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	});
 
 	$('#emp-settings-cmd button[type="submit"]').on('click',function(){
-
-		console.log($('#lastname_ec').val());
-		console.log($('#firstname_ec').val());
-		console.log($('#nickname_ec').val());
-		console.log($('#birthdate_ec').val());
-		console.log($('#email_ec').val());
-		console.log($('#numbers_ec').val());
-		console.log($('#grouptags_ec').val());
-
 		var empty_fields = 0;
 		$('#employee-contact-wrapper input').each(function(){
 			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
