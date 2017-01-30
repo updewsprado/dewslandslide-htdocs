@@ -1,3 +1,152 @@
+function sendViaAlertMonitor(data){
+	console.log(data);
+	$.ajax({
+		type: "GET",
+		url: "../chatterbox/getewi",             	
+		dataType: "json",	
+		success: function(response){
+			var formGroundTime;
+			var formCurrentTime;
+			var months = {1: "January",2: "February",3: "March",
+			4: "April",5: "May",6: "June",
+			7: "July",8: "August", 9: "September",
+			10: "October", 11: "November", 12: "December"};
+
+			if (data["internal_alert_level"].toUpperCase().length > 4) {
+				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
+					var preConstructedEWI = response["A2"];
+				} else {
+					var preConstructedEWI = response["A3"];
+				}
+			} else {
+				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND") {
+					var preConstructedEWI = response["A1-"+data["internal_alert_level"].toUpperCase().substring(3)];
+				} else {
+					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+				}
+				
+			}
+
+			if (data['status'] == 'extended') {
+				switch(data['day']) {
+					case 0:
+						preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangalawang araw");
+						break;
+					case 1:
+						preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
+						break;
+				}
+				var ext_month = moment().add(1, 'days').format("MM");
+				var ext_day = moment().add(1, 'days').format("DD");
+				var ext_year = moment().add(1, 'days').format("YYYY");
+
+				preConstructedEWI = preConstructedEWI.replace("%%EXT_NEXT_DAY%%",ext_day+" "+months[parseInt(ext_month)]+" "+ext_year);
+			}
+
+			var constructedEWIDate = "";
+			var finalEWI = ""
+			var d = new Date();
+			var currentPanahon = d.getHours();
+			if (currentPanahon >= 12 && currentPanahon <= 18) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
+			} else if (currentPanahon > 18 && currentPanahon <=23) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
+			} else {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
+			}
+
+			//Changes the Date
+			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
+			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
+			var day = moment().locale('en').format("YYYY-MM-DD").substring(8, 10);
+
+			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
+
+			constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
+			var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+
+			var formatSbmp = ewiLocation.replace("null","");
+			if (formatSbmp.charAt(0) == ",") {
+				formatSbmp = formatSbmp.substr(1);
+			}
+
+			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
+			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+			// to be converted to swtich case.
+			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 07:55")).valueOf()) {
+						formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 AM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 7:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 11:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 NN");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 15:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","4:00 PM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 23:59")).valueOf()){
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 19:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 PM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).add(24,"hours").valueOf()){
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 23:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 MN");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
+			} else {
+				alert("Error Occured: Please contact Administrator");
+			}
+
+			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
+			} else {
+				alert("Error Occured: Please contact Administrator");
+			}
+
+			
+			$('#site-abbr').val(data["name"]);
+			$('#constructed-ewi-amd').val(finalEWI);
+		}
+	});
+	$('#ewi-asap-modal').modal('toggle');
+}
+
 $(document).ready(function() {
 
 	var user, contactnum;
@@ -88,7 +237,7 @@ $(document).ready(function() {
 
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
-
+		debugger;
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
@@ -248,7 +397,6 @@ $(document).ready(function() {
 					$('html, body').scrollTop(maxScroll);
 				}
 			} catch(err){
-				console.log(err);
 				console.log("Not a Scroll/Search related feature");
 			}
 		}
@@ -259,8 +407,8 @@ $(document).ready(function() {
 			//Don't do anything if the message came from Dynaslope
 		}
 		else {
-			console.log("Name and User is: " + msg.name + ", " + msg.user);
-			console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
+			// console.log("Name and User is: " + msg.name + ", " + msg.user); For logging purposes only.
+			// console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
 
 			var targetInbox;
 			var quick_inbox_html;
@@ -1594,11 +1742,12 @@ $(document).ready(function() {
 						'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val()
 					};
 
+					console.log(msg);
+
 					conn.send(JSON.stringify(msg));
 
 					msgType = "smssendgroup";
 					testMsg = msg;
-					console.log(msg);
 					counters = 0;
 					messages = [];
 					updateMessages(msg);
@@ -2165,11 +2314,11 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				var d = new Date();
 				var currentPanahon = d.getHours();
 				if (currentPanahon >= 12 && currentPanahon <= 18) {
-					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Hapon");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","hapon");
 				} else if (currentPanahon > 18 && currentPanahon <=23) {
-					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Gabi");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","gabi");
 				} else {
-					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","Umaga");
+					constructedEWI = response[$('#alert-lvl').val().toUpperCase()].replace("%%PANAHON%%","umaga");
 				}
 
 				//Changes the Date
@@ -2208,113 +2357,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		}
 	}
 
-	function sendViaAlertMonitor(data){
-		console.log(data);
-		$.ajax({
-			type: "GET",
-			url: "../chatterbox/getewi",             	
-			dataType: "json",	
-			success: function(response){
-				if (data["internal_alert_level"].toUpperCase().length > 4) {
-					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
-						var preConstructedEWI = response["A2"];
-					} else {
-						var preConstructedEWI = response["A3"];
-					}
-				} else {
-					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND") {
-						var preConstructedEWI = response["A1-"+data["internal_alert_level"].toUpperCase().substring(3)];
-					} else {
-						var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
-					}
-					
-				}
-				var constructedEWIDate = "";
-				var finalEWI = ""
-				var d = new Date();
-				var currentPanahon = d.getHours();
-				if (currentPanahon >= 12 && currentPanahon <= 18) {
-					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Hapon");
-				} else if (currentPanahon > 18 && currentPanahon <=23) {
-					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Gabi");
-				} else {
-					constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","Umaga");
-				}
-
-				//Changes the Date
-				var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
-				var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
-				var day = moment().locale('en').format("YYYY-MM-DD").substring(8, 10);
-
-				var months = {1: "January",2: "February",3: "March",
-				4: "April",5: "May",6: "June",
-				7: "July",8: "August", 9: "September",
-				10: "October", 11: "November", 12: "December"};
-
-				var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
-
-				constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
-				var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
-				var formatSbmp = ewiLocation.replace("null","");
-				if (formatSbmp.charAt(0) == ",") {
-					formatSbmp = formatSbmp.substr(1);
-				}
-
-
-				var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-				var formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh A"));
-				var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
-
-				if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 7:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 23:59")).valueOf()){
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).add(24,"hours").valueOf()){
-					var formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
-					formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-
-				if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 AM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 NN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 04:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 08:00 PM");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
-				} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
-					var finalEWI = formGroundTime.replace("%%NEXT_EWI%%"," 12:00 MN");
-					finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
-				} else {
-					alert("Error Occured: Please contact Administrator");
-				}
-
-				
-				$('#site-abbr').val(data["name"]);
-				$('#constructed-ewi-amd').val(finalEWI);
-			}
-		});
-		$('#ewi-asap-modal').modal('toggle');
-	}
-
-	function templateSendViaAMD(){
+	$('#send-btn-ewi-amd').click(function(){
 		ewiFlagger = true;
 		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
 
@@ -2342,11 +2385,15 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+			'ewi_filter': true
 		};
-		
+
+		console.log(msg);
+
 		conn.send(JSON.stringify(msg));
 		msgType = "smssendgroup";
+		messages = [];
 		updateMessages(msg);
 		
 		$('#constructed-ewi-amd').val('');
@@ -2359,7 +2406,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 			$('#success-ewi-modal').modal('toggle');
 			$('#ewi-asap-modal').modal('toggle');
 		}
-	}
+	});
 
 	$('#sbt-update-contact-info').click(function(){
 		$('#edit-contact').modal('toggle');
