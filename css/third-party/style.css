@@ -1,5 +1,12 @@
 body {
-	background: #B6B6B6;
+	background: #f0f0f0 url(../../images/dews-l-logo.png);
+	background-blend-mode: overlay;
+	background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center; 
+    background-size:contain;
+	/*background-size: 100%;*/
+	opacity: 1;
 	margin: 0;
 	padding: 0;
 	font-family: Arial;
@@ -7,9 +14,9 @@ body {
 
 #login_form, #contact_form {
 	width: 300px;
-	background: #f0f0f0 url(../images/blue_bg.png) repeat-x 0 0;
+	background: #17536e;
 	border: 1px solid white;
-	margin: 10% auto 0;
+	margin: 13% auto 0;
 	padding: 1em;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
