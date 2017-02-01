@@ -33,8 +33,10 @@ function sendViaAlertMonitor(data){
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangalawang araw");
 					break;
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangatlong araw");
 					break;
+					case 2:
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
 				}
 				var ext_month = moment().add(1, 'days').format("MM");
 				var ext_day = moment().add(1, 'days').format("DD");
@@ -237,7 +239,6 @@ $(document).ready(function() {
 
 		// console.log("User is: " + msg.user);
 		// console.log("Message: " + msg.msg);
-		debugger;
 		if (msg.user == "You") {
 			//TODO: must include logic for filtering the messages the current 
 			//	user is supposed to receive for either "groups/tags" mode or
