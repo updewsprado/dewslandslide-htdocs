@@ -2610,7 +2610,7 @@ function fetchSiteAndOffice(){
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
 		debugger;
-		if ($('#settings-cmd').val != "updatecontact") {
+		if ($('#settings-cmd').val() != "updatecontact") {
 			var empty_fields = 0;
 			$('#community-contact-wrapper input').each(function(){
 				if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
@@ -2718,7 +2718,8 @@ function fetchSiteAndOffice(){
 	});
 
 $('#emp-settings-cmd button[type="submit"]').on('click',function(){
-	if ($('#settings-cmd').val != "updatecontact") {
+	console.log()
+	if ($('#settings-cmd').val() != "updatecontact") {
 		var empty_fields = 0;
 		$('#employee-contact-wrapper input').each(function(){
 			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
