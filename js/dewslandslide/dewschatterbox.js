@@ -1233,6 +1233,19 @@ function searchMessageIndividual(){
 	}
 
 	var coloredTimestamp;
+
+	$(document).on("click","#search-result li",function(){
+		var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
+		console.log(($(this).closest('li')).find("input[id='msg_details']").val());
+		console.log(data);
+		loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
+	})
+
+	$(document).on("click","#search-search-global-result li",function(){
+		console.log(($(this).closest('li')).index());
+		console.log(($(this).closest('li')).find("input[id='msg_details']").val());
+	})
+
 	function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null){
 		$('#search-result-modal').modal('hide');
 		coloredTimestamp = "id_"+timestamp;
@@ -1341,6 +1354,7 @@ function searchMessageIndividual(){
 				console.log("No Result/Invalid Request");
 			}
 			var messages_html = messages_template_both({'messages': searchResults});
+			console.log(searchResults);
 			$('#search-result').html(messages_html);
 			$('#search-result-modal').modal('toggle');
 
@@ -1354,9 +1368,10 @@ function searchMessageIndividual(){
 	} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
 		messages = [];
 		var searchedResult = msg.data;
+		console.log(searchedResult);
 		var res;
 		try {
-			for (var i = searchedResult.length - 1; i >= 0; i--) {
+			for (var i = 0;i < searchedResult.length; i++) {
 				res = searchedResult[i];
 				updateMessages(res);
 				if (contact_header == ""){
@@ -1383,6 +1398,7 @@ function searchMessageIndividual(){
 		counters = 0;
 
 		var targetLi = document.getElementById(coloredTimestamp);
+    	targetLi.style.border = "solid";
 		targetLi.style.borderColor = "#dff0d8";
 		targetLi.style.borderRadius = "3px";
 		targetLi.style.borderWidth = "5px";
@@ -2560,14 +2576,6 @@ function fetchSiteAndOffice(){
 		}
 	});
 
-	function displayToBeUpdateEmployeeContact(){
-
-	}
-
-	function displayToBeUpdateCommunityContact(){
-		
-	}
-
 	function getComContact(){
 		var table = $('#response-contact-container').DataTable();
 		$.ajax({
@@ -2601,7 +2609,7 @@ function fetchSiteAndOffice(){
 	}
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
-			debugger;
+		debugger;
 		if ($('#settings-cmd').val != "updatecontact") {
 			var empty_fields = 0;
 			$('#community-contact-wrapper input').each(function(){
@@ -2709,114 +2717,114 @@ function fetchSiteAndOffice(){
 		}
 	});
 
-	$('#emp-settings-cmd button[type="submit"]').on('click',function(){
-		if ($('#settings-cmd').val != "updatecontact") {
-			var empty_fields = 0;
-			$('#employee-contact-wrapper input').each(function(){
-				if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-					empty_fields++;
-				}
-			});
+$('#emp-settings-cmd button[type="submit"]').on('click',function(){
+	if ($('#settings-cmd').val != "updatecontact") {
+		var empty_fields = 0;
+		$('#employee-contact-wrapper input').each(function(){
+			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
+				empty_fields++;
+			}
+		});
 
-			if (empty_fields > 0) {
-				$('#contact-result').remove();
-				var container = document.getElementById('employee-contact-wrapper');
-				var resContainer = document.createElement('div');
-				resContainer.id = "contact-result";
-				resContainer.className = "alert alert-danger";
-				resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-				container.insertBefore(resContainer,container.childNodes[0]);
-			} else {
+		if (empty_fields > 0) {
+			$('#contact-result').remove();
+			var container = document.getElementById('employee-contact-wrapper');
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			data = {
+				'category': 'dewslcontacts',
+				'eid': '',
+				'lastname': $('#lastname_ec').val(),
+				'firstname': $('#firstname_ec').val(),
+				'nickname': $('#nickname_ec').val(),
+				'birthday': $('#birthdate_ec').val(),
+				'email': $('#email_ec').val(),
+				'numbers': $('#numbers_ec').val(),
+				'grouptags': $('#grouptags_ec').val()
+			};
+			$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
+			.done(function(response) {
+				if (response == true) {
+					$('#contact-result').remove();
+					var container = document.getElementById('employee-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-success";
+					resContainer.innerHTML = "<strong>Success!</strong> New Employee contact added.";
+					container.insertBefore(resContainer,container.childNodes[0]);
+					$("#employee-contact-wrapper input").val('');
+				} else {
+					$('#contact-result').remove();
+					var container = document.getElementById('employee-contact-wrapper');
+					var resContainer = document.createElement('div');
+					resContainer.id = "contact-result";
+					resContainer.className = "alert alert-danger";
+					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
+					container.insertBefore(resContainer,container.childNodes[0]);
+				}
+				reset_ec();
+			});
+		}
+	} else {
+		var empty_fields = 0;
+		$('#employee-contact-wrapper input').each(function(){
+			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
+				empty_fields++;
+			}
+		});
+
+		if (empty_fields > 0) {
+			$('#contact-result').remove();
+			var container = document.getElementById('employee-contact-wrapper');
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
 				data = {
-					'category': 'dewslcontacts',
-					'eid': '',
-					'lastname': $('#lastname_ec').val(),
+					'id': $('#eid').val(), 
 					'firstname': $('#firstname_ec').val(),
+					'lastname': $('#lastname_ec').val(),
 					'nickname': $('#nickname_ec').val(),
-					'birthday': $('#birthdate_ec').val(),
+					'birthdate': $('#birthdate_ec').val(),
 					'email': $('#email_ec').val(),
 					'numbers': $('#numbers_ec').val(),
 					'grouptags': $('#grouptags_ec').val()
 				};
-				$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
-				.done(function(response) {
-					if (response == true) {
-						$('#contact-result').remove();
-						var container = document.getElementById('employee-contact-wrapper');
-						var resContainer = document.createElement('div');
-						resContainer.id = "contact-result";
-						resContainer.className = "alert alert-success";
-						resContainer.innerHTML = "<strong>Success!</strong> New Employee contact added.";
-						container.insertBefore(resContainer,container.childNodes[0]);
-						$("#employee-contact-wrapper input").val('');
-					} else {
-						$('#contact-result').remove();
-						var container = document.getElementById('employee-contact-wrapper');
-						var resContainer = document.createElement('div');
-						resContainer.id = "contact-result";
-						resContainer.className = "alert alert-danger";
-						resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
-						container.insertBefore(resContainer,container.childNodes[0]);
-					}
-					reset_ec();
-				});
-			}
-		} else {
-			var empty_fields = 0;
-			$('#employee-contact-wrapper input').each(function(){
-				if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-					empty_fields++;
-				}
-			});
-
-			if (empty_fields > 0) {
-				$('#contact-result').remove();
-				var container = document.getElementById('employee-contact-wrapper');
-				var resContainer = document.createElement('div');
-				resContainer.id = "contact-result";
-				resContainer.className = "alert alert-danger";
-				resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-				container.insertBefore(resContainer,container.childNodes[0]);
-			} else {
-				if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
-					data = {
-						'id': $('#eid').val(), 
-						'firstname': $('#firstname_ec').val(),
-						'lastname': $('#lastname_ec').val(),
-						'nickname': $('#nickname_ec').val(),
-						'birthdate': $('#birthdate_ec').val(),
-						'email': $('#email_ec').val(),
-						'numbers': $('#numbers_ec').val(),
-						'grouptags': $('#grouptags_ec').val()
-					};
-					console.log(data);
-					updateContactService(data,"employee-contact-wrapper");
-				}
+				console.log(data);
+				updateContactService(data,"employee-contact-wrapper");
 			}
 		}
-	});
+	}
+});
 
-	function updateContactService(data,wrapper){
-		$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
-		.done(function(response) {
-			console.log(response);
-			if (response == "true") {
-				$('#contact-result').remove();
-				var container = document.getElementById(wrapper);
-				var resContainer = document.createElement('div');
-				resContainer.id = "contact-result";
-				resContainer.className = "alert alert-success";
-				resContainer.innerHTML = "<strong>Success!</strong> Existing contact updated.";
-				container.insertBefore(resContainer,container.childNodes[0]);
-			} else {
-				$('#contact-result').remove();
-				var container = document.getElementById(wrapper);
-				var resContainer = document.createElement('div');
-				resContainer.id = "contact-result";
-				resContainer.className = "alert alert-danger";
-				resContainer.innerHTML = "<strong>Failed!</strong> Invalid input data";
-				container.insertBefore(resContainer,container.childNodes[0]);
-			}
-		});
+function updateContactService(data,wrapper){
+	$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
+	.done(function(response) {
+		console.log(response);
+		if (response == "true") {
+			$('#contact-result').remove();
+			var container = document.getElementById(wrapper);
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-success";
+			resContainer.innerHTML = "<strong>Success!</strong> Existing contact updated.";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		} else {
+			$('#contact-result').remove();
+			var container = document.getElementById(wrapper);
+			var resContainer = document.createElement('div');
+			resContainer.id = "contact-result";
+			resContainer.className = "alert alert-danger";
+			resContainer.innerHTML = "<strong>Failed!</strong> Invalid input data";
+			container.insertBefore(resContainer,container.childNodes[0]);
+		}
+	});
 }
 });
