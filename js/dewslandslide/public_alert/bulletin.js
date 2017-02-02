@@ -1,4 +1,12 @@
 
+/****
+ *
+ *  Created by Kevin Dhale dela Cruz
+ *  JS file for Bulletin Functions
+ *  used by [public_alert/monitoring_events_individual.php] and [public_alert/monitoring_dashboard.php]
+ *  
+****/
+
 function loadBulletin(id) {
     $.ajax({
         url: '../../bulletin/main/' + id + '/0', 
@@ -47,6 +55,8 @@ function sendMail(text, subject, filename) {
         subject: subject,
         filename: filename
     };
+
+    console.log("Sent", text, subject, filename);
 
     $.ajax({
         url: '../../bulletin/mail/', 

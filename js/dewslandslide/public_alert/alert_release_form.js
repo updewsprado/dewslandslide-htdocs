@@ -20,9 +20,6 @@ $(document).ready(function()
 
     $('#nd label').tooltip();
     $('.cbox_trigger_nd[value=R0]').parent("label").tooltip();
-    $('#formGeneral').hide();
-    $('#formDate').hide();
-    $('#button_right').hide();
 
     $('.datetime').datetimepicker({
         format: 'YYYY-MM-DD HH:mm:00',
@@ -31,7 +28,10 @@ $(document).ready(function()
             horizontal: 'right',
             vertical: 'bottom'
         }
-    });
+    })
+    .on('dp.show', function (e) {
+        $(this).data("DateTimePicker").maxDate(moment().second(0));
+    })
     
     $('.time').datetimepicker({
         format: 'HH:mm:00',
@@ -43,7 +43,7 @@ $(document).ready(function()
     });
 
     let status = 'new', active = [], routine_finish = [], validity_global = null;
-
+    let publicReleaseForm = null;
 
     /*******************************************
      * 
@@ -313,6 +313,11 @@ $(document).ready(function()
         // Clear all trigger timestamps area
         $(".trigger_time").val("");
 
+        // Clear all validation on form
+        $('#operational_area .form-group').removeClass('has-feedback').removeClass('has-error').removeClass('has-success');
+        $('#operational_area .glyphicon.form-control-feedback').remove();
+        //publicReleaseForm.resetForm();
+
         $.get( "../pubrelease/getLastSiteEvent/" + val, 
         function( event ) 
         {
@@ -380,7 +385,7 @@ $(document).ready(function()
                         let groupedTriggers = groupTriggersByType(event, triggers);
                         console.log(groupedTriggers);
 
-                        let lookup = { "R":"#rain_desc", "E":"#eq_desc", "g":"#ground_desc", "G":"#ground_desc", "s":"#sensor_desc", "S":"#sensor_desc", "d":"#od_desc" }
+                        let lookup = { "R":"#rain_desc", "E":"#eq_desc", "g":"#ground_desc", "G":"#ground_desc", "s":"#sensor_desc", "S":"#sensor_desc", "D":"#od_desc" }
                         groupedTriggers.forEach( function (arr) 
                         {
                             let desc = "Latest trigger occurred on " + moment(arr[0].timestamp).format("dddd, MMMM Do YYYY, HH:mm");
@@ -639,7 +644,7 @@ $(document).ready(function()
         }
     });
 
-    $("#publicReleaseForm").validate(
+    publicReleaseForm = $("#publicReleaseForm").validate(
     {
         rules: {
             public_alert_level: {
@@ -728,6 +733,7 @@ $(document).ready(function()
                     $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
                 if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
                 if(element.is("select") || element.is("textarea")) element.next("span").css({"top": "25px", "right": "25px"});
+                if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
                 if(element.is("input[type=number]")) element.next("span").css({"top": "18px", "right": "13px"});
             }
         },
@@ -761,7 +767,7 @@ $(document).ready(function()
             let temp = {};
             data.forEach(function (value) { temp[value.name] = value.value == "" ? null : value.value; })
             temp.status = status;
-            temp.reporter_1 = "<?php echo $user_id; ?>";
+            temp.reporter_1 = $("#reporter_1").attr("reporter_id");
             temp.trigger_list = $(".cbox_trigger:checked").map( function () { return this.value }).get();
             temp.trigger_list = temp.trigger_list.length == 0 ? null : temp.trigger_list;
 
@@ -825,24 +831,22 @@ $(document).ready(function()
 
             console.log(temp);
 
-           $('.js-loading-bar').modal({
+            $('.js-loading-bar').modal({
                 backdrop: 'static',
                 //show: false
+            });
+
+            $('.js-loading-bar').on('show.bs.modal', reposition);
+            $(window).on('resize', function() {
+                $('.js-loading-bar:visible').each(reposition);
             });
 
             $('.js-loading-bar').modal("show");
             let $modal = $('.js-loading-bar'),
             $bar = $modal.find('.progress-bar');
             $(".modal-header button").hide();
-            
-            // Reposition when a modal is shown
-            $('.js-loading-bar').on('show.bs.modal', reposition);
-            // Reposition when the window is resized
-            $(window).on('resize', function() {
-                $('.js-loading-bar:visible').each(reposition);
-            });
 
-           $.ajax({
+            $.ajax({
                 url: "../pubrelease/insert",
                 type: "POST",
                 data : temp,
@@ -853,8 +857,8 @@ $(document).ready(function()
                     setTimeout(function () 
                     {
                         if( result == "Routine")
-                             $("#view").attr("href", "../public_alert/monitoring_events").text("View All Releases");
-                        else $("#view").attr("href", "../public_alert/monitoring_events/" + result).text("View Recent Release");
+                             $("#view").attr("href", "../monitoring/events").text("View All Releases");
+                        else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
                         $('#view_modal').on('show.bs.modal', reposition);
                         $(window).on('resize', function() {
                             $('#view_modal:visible').each(reposition);

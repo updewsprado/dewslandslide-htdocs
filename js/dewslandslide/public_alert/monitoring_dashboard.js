@@ -47,7 +47,7 @@ $(document).ready( function() {
 		            {
 		            	data: "name", 
 		            	"render": function (data, type, full) {
-		            		return "<b><a href='../public_alert/monitoring_events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+		            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
 		            	},
 		        		"name": 'name',
 		            },
@@ -341,84 +341,19 @@ $(document).ready( function() {
 	});
 
 	$("#send").click(function () {
-		$('#sendBulletinModal').modal('hide');
-		$('.progress-bar').text('Rendering Bulletin PDF...');
-		$('.js-loading-bar').modal({ backdrop: 'static', show: 'true'});
-		$.ajax({
-	        url: '../bulletin/run_script/' + id, 
-	        type: 'POST',
-	        success: function(data)
-	        {
-	        	if(data == "Success.")
-	        	{
-	        		console.log("PDF RENDERED");
-	        		sendMail();
-	        	}
-	        }
-	    });
+		$('#bulletinModal').modal('hide');
+		$.when(renderPDF(id))
+        .then(function (x) {
+            if( x == "Success.")
+            {
+            	$('.progress-bar').text('Sending EWI and Bulletin...');
+                text = $("#info").html();
+                subject = $("#subject").text();
+                filename = $("#filename").text();
+                sendMail(text, subject, filename);
+            }
+        });
 	});
-
-	function sendMail() {
-
-		$('.progress-bar').text('Sending EWI and Bulletin...');
-
-		let form = {
-			text: text,
-			subject: subject,
-			filename: filename
-		};
-
-		$.ajax({
-	        url: '../bulletin/mail/', 
-	        type: 'POST',
-	        data: form,
-	        success: function(data)
-	        {
-	        	$('.js-loading-bar').modal('hide');
-	        	$('#resultModal > .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
-
-	        	setTimeout(function () {
-	        		if(data == "Sent.")
-		        	{
-		        		console.log('Email sent');
-		        		$("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!</p>');
-		        		$("#resultModal").modal('show');
-		        	}
-		        	else
-		        	{
-		        		console.log('EMAIL SENDING FAILED', data);
-		        		$("#resultModal .modal-body").html('<p><strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!</p>');
-		        		$("#resultModal").modal('show');
-	        		}	
-	        	}, 500);
-	        	
-	    	},
-	    	error: function(xhr, status, error) 
-	    	{
-	          let err = eval("(" + xhr.responseText + ")");
-	          alert(err.Message);
-	        }
-	    }); 
-	}
-
-	function loadBulletin(id) {
-	    $.ajax({
-	        url: '../gold/bulletin-main/' + id + '/0', 
-	        type: 'POST',
-	            success: function(data) {
-
-	        	$("#bulletin_modal").html(data);
-	        	let loc = $("#location").text();
-	        	let alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
-	        	let datetime = $("#datetime").text();
-	        	filename = $("#filename").text();
-	        	subject = $("#subject").text();
-	        	text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
-	        	$("#info").html(text);
-	        	$('#sendBulletinModal').modal('show');
-	        }
-	    }); 
-	}
 
 	function reposition() 
 	{
