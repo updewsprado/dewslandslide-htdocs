@@ -233,20 +233,12 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
-		// Hides the Search 
 		$('#search-key').hide();
-		// debugger;
 
-		// console.log("User is: " + msg.user);
-		// console.log("Message: " + msg.msg);
 		if (msg.user == "You") {
-			//TODO: must include logic for filtering the messages the current 
-			//	user is supposed to receive for either "groups/tags" mode or
-			//	normal usage
+
 			msg.isyou = 1;
 
-			//If in "groups/tags" mode, accept message from "You" only if the
-			//recipients are exactly the offices and sitenames you've selected
 			if (contactInfo == "groups") {
 				console.log("type is group/tags");
 				if (msg.type == "loadEmployeeTag") {
@@ -367,7 +359,7 @@ $(document).ready(function() {
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
 			try {
-				if (messages[counters]['user'] == 'You'){
+				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
 						lastMessageTimeStampYou = messages[counters]['timestamp'];
 					}
@@ -398,6 +390,7 @@ $(document).ready(function() {
 					$('html, body').scrollTop(maxScroll);
 				}
 			} catch(err){
+				console.log(err);
 				console.log("Not a Scroll/Search related feature");
 			}
 		}
@@ -1241,9 +1234,11 @@ function searchMessageIndividual(){
 		loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 	})
 
-	$(document).on("click","#search-search-global-result li",function(){
-		console.log(($(this).closest('li')).index());
+	$(document).on("click","#search-global-result li",function(){
+		var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
+		console.log(data);
 		console.log(($(this).closest('li')).find("input[id='msg_details']").val());
+		loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 	})
 
 	function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null){
@@ -1368,7 +1363,6 @@ function searchMessageIndividual(){
 	} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
 		messages = [];
 		var searchedResult = msg.data;
-		console.log(searchedResult);
 		var res;
 		try {
 			for (var i = 0;i < searchedResult.length; i++) {
@@ -1409,7 +1403,7 @@ function searchMessageIndividual(){
 		var searchedResult = msg.data;
 		var res;
 		var contact_header = "";
-
+		console.log(searchedResult);
 		try {
 			for (var i = searchedResult.length - 1; i >= 0; i--) {
 				res = searchedResult[i];
@@ -1450,7 +1444,6 @@ function searchMessageIndividual(){
 			messages = [];
 			var searchedResult = msg.data;
 			var res;
-
 			try {
 				for (var i = searchedResult.length - 1; i >= 0; i--) {
 					res = searchedResult[i];
@@ -1482,6 +1475,7 @@ function searchMessageIndividual(){
 			searchResults.push(msg);
 		} else {
 			msg.isyou = 0;
+			msg.user = msg.user + " - " + msg.user_number;
 			searchResults.push(msg);
 		}
 	}
@@ -1886,6 +1880,7 @@ function searchMessageIndividual(){
 	}
 
 	$('#go-load-groups').click(function() {
+		groupTags = [];
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
@@ -2609,7 +2604,6 @@ function fetchSiteAndOffice(){
 	}
 
 	$('#comm-settings-cmd button[type="submit"]').on('click',function(){
-		debugger;
 		if ($('#settings-cmd').val() != "updatecontact") {
 			var empty_fields = 0;
 			$('#community-contact-wrapper input').each(function(){
