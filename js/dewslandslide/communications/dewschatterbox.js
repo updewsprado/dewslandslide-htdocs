@@ -173,11 +173,9 @@ $(document).ready(function() {
 	var multiContactsList = [];
 	var timerID = 0;
 	var ewirecipients;
-	var lastMessageTimeStamp;
-	var lastMessageTimeStampIndi="";
+	var lastMessageTimeStamp="";
 	var lastMessageTimeStampYou="";
-	var lastMessageTimeStampGroup="";
-	var ewiFlagger = false;
+	var ewiFlagger = false; 
 	var convoFlagger = false;
 	var connection_status = true; // True means Connected.
 	var conn = connectWS();
@@ -360,13 +358,9 @@ $(document).ready(function() {
 					}
 				} else {
 
-					if (lastMessageTimeStampGroup == "") {
-						lastMessageTimeStampGroup = messages[counters]['timestamp'];
-					}
-
-					if (lastMessageTimeStampIndi == "") {
+					if (lastMessageTimeStamp == "") {
 						
-						lastMessageTimeStampIndi = messages[counters]['timestamp'];
+						lastMessageTimeStamp = messages[counters]['timestamp'];
 					}
 				}
 				if (msg.type == "smssend" || msg.type == "smssendgroup" || msg.type == "smssendgroupemployee") {
@@ -537,85 +531,46 @@ $(document).ready(function() {
 	}
 
 	var tempTimestampYou;
-	var tempTimestampIndi;
-	var tempTimestampGroup;
+	var tempTimestamp;
 
 	function loadOldMessages(msg){
 		counters = 0;
 		lastMessageTimeStampYou = "";
-		lastMessageTimeStampIndi = "";
-		lastMessageTimeStampGroup = "";
+		lastMessageTimeStamp = "";
 
-		console.log("Loading Old Messages");
-		if (msg.type == "oldMessage") {
+		var oldMessagesIndi = msg.data;
+		var oldMsg;
+		messages = [];
 
-			var oldMessagesIndi = msg.data;
-			var oldMsg;
-			messages = [];
-
-			if (msg.data != null){
-				for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
-					oldMsg = oldMessagesIndi[i];
-					oldMsg["type"] = "oldMessages";
-					updateOldMessages(oldMsg);
-					if (messages[counters].user == 'You'){
-						if (lastMessageTimeStampYou == "") {
-							lastMessageTimeStampYou = messages[counters]['timestamp'];
-							tempTimestampYou = lastMessageTimeStampYou;
-						}
-					} else {
-						if (lastMessageTimeStampIndi == "") {
-							lastMessageTimeStampIndi = messages[counters]['timestamp'];
-							tempTimestampIndi = lastMessageTimeStampIndi;
-						}
+		if (msg.data != null){
+			for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
+				oldMsg = oldMessagesIndi[i];
+				oldMsg["type"] = msg.type;
+				updateOldMessages(oldMsg);
+				if (messages[counters].user == 'You'){
+					if (lastMessageTimeStampYou == "") {
+						lastMessageTimeStampYou = messages[counters]['timestamp'];
+						tempTimestampYou = lastMessageTimeStampYou;
 					}
-					counters++;
+				} else {
+					if (lastMessageTimeStamp == "") {
+						lastMessageTimeStamp = messages[counters]['timestamp'];
+						tempTimestamp = lastMessageTimeStamp;
+					}
 				}
-
-				var htmlStringMessage = $('#messages').html();
-				lastMessageTimeStamp = messages[0]['timestamp'];
-				var messages_html = messages_template_both({'messages': messages});
-				$('#messages').html(messages_html+htmlStringMessage);
-				$('html, body').scrollTop(200);
-			} else {
-				convoFlagger = true;
-				alert("End of the Conversation");
-				console.log("Invalid Request/End of the Conversation");
+				counters++;
 			}
 
-		} else if (msg.type == "oldMessageGroup") {
-			var oldMessagesGroup = msg.data;
-			var oldMsg;
-			messages = [];
-
-			if (msg.data != null) {
-				for (var i = oldMessagesGroup.length - 1; i >= 0; i--) {
-					oldMsg = oldMessagesGroup[i];
-					oldMsg["type"] = "oldMessagesGroup";
-					updateOldMessages(oldMsg);
-					if (messages[counters].user == 'You'){
-						if (lastMessageTimeStampYou == "") {
-							lastMessageTimeStampYou = messages[counters]['timestamp'];
-							tempTimestampYou = lastMessageTimeStampYou;
-						}
-					} else {
-						if (lastMessageTimeStampGroup == "") {
-							lastMessageTimeStampGroup = messages[counters]['timestamp'];
-							tempTimestampGroup = lastMessageTimeStampGroup;
-						}
-					}
-					counters++;
-				}
-				var htmlStringMessage = $('#messages').html();
-				var messages_html = messages_template_both({'messages': messages});
-				$('#messages').html(messages_html+htmlStringMessage);
-				$('html, body').scrollTop(200);
-			} else {
-				convoFlagger = true;
-				alert("End of the Conversation");
-				console.log("Invalid Request/End of the Conversation");
-			}
+			var htmlStringMessage = $('#messages').html();
+			var messages_html = messages_template_both({'messages': messages});
+			$('#messages').html(messages_html+htmlStringMessage);
+			$('html, body').scrollTop(200);
+		} else {
+			convoFlagger = true;
+			alert("End of the Conversation");
+			console.log("Invalid Request/End of the Conversation");
 		}
+		console.log("Loading Old Messages");
 	}
 
 	$(window).scroll(function(){
@@ -639,19 +594,19 @@ $(document).ready(function() {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
 
-		if (lastMessageTimeStampIndi == "") {
-			lastMessageTimeStampIndi = tempTimestampIndi;
+		if (lastMessageTimeStamp == "") {
+			lastMessageTimeStamp = tempTimestamp;
 		}
 		
 		var request = {
 			'type': 'oldMessage',
 			'number': contactnumTrimmed,
 			'timestampYou': lastMessageTimeStampYou,
-			'timestampIndi': lastMessageTimeStampIndi
+			'timestampIndi': lastMessageTimeStamp
 		};
 
 		tempTimestampYou  = lastMessageTimeStampYou;
-		tempTimestampIndi = lastMessageTimeStampIndi;
+		tempTimestamp = lastMessageTimeStamp;
 
 		$('#user').val('You');
 		messages = [];
@@ -678,8 +633,8 @@ $(document).ready(function() {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
 
-		if (lastMessageTimeStampGroup == "") {
-			lastMessageTimeStampGroup = tempTimestampGroup;
+		if (lastMessageTimeStamp == "") {
+			lastMessageTimeStamp = tempTimestamp;
 		}
 
 		request = {
@@ -687,7 +642,7 @@ $(document).ready(function() {
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'lastMessageTimeStampYou': lastMessageTimeStampYou,
-			'lastMessageTimeStampGroup':lastMessageTimeStampGroup
+			'lastMessageTimeStampGroup':lastMessageTimeStamp
 		};
 
 		groupTags = {
@@ -697,7 +652,7 @@ $(document).ready(function() {
 		};
 
 		tempTimestampYou  = lastMessageTimeStampYou;
-		tempTimestampGroup = lastMessageTimeStampGroup;
+		tempTimestamp = lastMessageTimeStamp;
 
 		$('#user').val('You');
 
@@ -1609,8 +1564,6 @@ function searchMessageIndividual(){
 	}
 
 	function startChat(source="normal") {
-		//Reset the timestamp flaggers
-		tempTimestampIndi = "";
 		convoFlagger = false;
 		counters = 0;
 
@@ -1666,6 +1619,12 @@ function searchMessageIndividual(){
 
 	// Chat with selected recipients
 	$('#go-chat').click(function() {
+		//Reset the timestamp flaggers
+		lastMessageTimeStamp = "";
+		lastMessageTimeStampYou = "";
+		tempTimestamp = "";
+		tempTimestampYou = "";
+
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
@@ -1791,9 +1750,6 @@ function searchMessageIndividual(){
 	}
 
 	function loadGroupsCommunity(){
-		// Reset the timeStamp flaggers
-		tempTimestampYou = "";
-		tempTimestampGroup = "";
 		counters = 0;
 		convoFlagger = false;
 		//Reset the group tags
@@ -1862,6 +1818,11 @@ function searchMessageIndividual(){
 
 	$('#go-load-groups').click(function() {
 		groupTags = [];
+		// Reset the timeStamp flaggers
+		tempTimestampYou = "";
+		tempTimestampGroup = "";
+		lastMessageTimeStampYou = "";
+		lastMessageTimeStamp = "";
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
