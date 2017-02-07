@@ -1,0 +1,20 @@
+
+/****
+ *
+ *	Created by Kevin Dhale dela Cruz
+ *	CSS file for Monitoring Events Table [public_alert/monitoring_events_all.php]
+ *	[host]/public_alert/monitoring_events
+ *	
+****/
+
+table td, table th 
+{
+    text-align: center;
+    vertical-align: middle !important;
+    font-size: 15px;
+    color:black;
+}
+
+.on-going { background-color: rgba(246, 1, 1, 0.41); }
+.invalid { background-color: rgba(105, 105, 105, 0.4); }
+.finished, .extended { background-color: rgba(9, 147, 45, 0.49); }
