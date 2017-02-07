@@ -62,6 +62,30 @@ $(document).ready(function()
         $(".shift_end").on("dp.change", function (e) {
             $('.shift_start').data("DateTimePicker").maxDate(e.date);
         });
+
+        $('.shift_start_others').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:00',
+            allowInputToggle: true,
+            widgetPositioning: {
+                horizontal: 'right',
+                vertical: 'bottom'
+            }
+        });
+        $('.shift_end_others').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:00',
+            allowInputToggle: true,
+            widgetPositioning: {
+                horizontal: 'right',
+                vertical: 'bottom'
+            },
+            useCurrent: false //Important! See issue #1075
+        });
+        $(".shift_start_others").on("dp.change", function (e) {
+            $('.shift_end_others').data("DateTimePicker").minDate(e.date);
+        });
+        $(".shift_end+others").on("dp.change", function (e) {
+            $('.shift_start_others').data("DateTimePicker").maxDate(e.date);
+        });
     });
 
     let narrativeTable = null, narratives = [], original = [];
@@ -849,15 +873,8 @@ $(document).ready(function()
             shift_end: {
                 required: true,
                 TimestampTest: true
-            },
-            /*summary: {
-                required: { depends: function () { return checkOvertimeType("Others") }},
-                minlength: 20
-            },*/
+            }
         },
-        /*messages: {
-            summary: "Enter task summary (minimum of 20 characters)"
-        },*/
         errorPlacement: function ( error, element ) {
             var placement = $(element).closest('.form-group');
             //console.log(placement);
@@ -904,35 +921,110 @@ $(document).ready(function()
         },
         submitHandler: function (form) {
 
-            var formData = 
+        }
+    });
+
+    /******************************************
+     *
+     *   OTHERS TAB (ACCOMPLISHMENT GENERAL)
+     * 
+     *****************************************/
+
+    $("#othersForm").validate(
+    {
+        debug: true,
+        rules: {
+            shift_start_others: {
+                required: true
+            },
+            shift_end_others: {
+                required: true
+            },
+            summary: {
+                required: true,
+                minlength: 20,
+                maxlength: 360
+            },
+        },
+        errorPlacement: function ( error, element ) {
+            var placement = $(element).closest('.form-group');
+            //console.log(placement);
+            if (placement) {
+                $(placement).append(error)
+            } else {
+                error.insertAfter(placement);
+            } //remove on success 
+
+            // Add `has-feedback` class to the parent div.form-group
+            // in order to add icons to inputs
+            element.parents( ".form-group" ).addClass( "has-feedback" );
+
+            // Add the span element, if doesn't exists, and apply the icon classes to it.
+            if ( !element.next( "span" )[ 0 ] ) { 
+                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
+                if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
+                if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
+            }
+        },
+        success: function ( label, element ) {
+            // Add the span element, if doesn't exists, and apply the icon classes to it.
+            if ( !$( element ).next( "span" )) {
+                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
+            }
+
+           $(element).closest(".form-group").children("label.error").remove();
+        },
+        highlight: function ( element, errorClass, validClass ) {
+            $( element ).parents( ".form-group" ).addClass( "has-error" ).removeClass( "has-success" );
+            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
+                $( element ).nextAll( "span.glyphicon" ).remove();
+                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
+            }
+            else $( element ).next( "span" ).addClass( "glyphicon-remove" ).removeClass( "glyphicon-ok" );
+        },
+        unhighlight: function ( element, errorClass, validClass ) {
+            $( element ).parents( ".form-group" ).addClass( "has-success" ).removeClass( "has-error" );
+            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
+                $( element ).nextAll( "span.glyphicon" ).remove();
+                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
+            }
+            else $( element ).next( "span" ).addClass( "glyphicon-ok" ).removeClass( "glyphicon-remove" );
+        },
+        submitHandler: function (form) {
+
+            let formData = 
             {
-                shift_start: $("#shift_start").val(),
-                shift_end: $("#shift_end").val(),
-                on_duty: $("#on_duty").val()
+                staff_id: parseInt($("#staff_id").attr("value")),
+                shift_start: $("#shift_start_others").val(),
+                shift_end: $("#shift_end_others").val(),
+                summary: $("#summary").val()
             };
 
-            /*$.ajax({
-                url: "<?php echo base_url(); ?>accomplishment/insertData",
+            console.log(formData);
+
+            $.ajax({
+                url: "../../accomplishment/insertData",
                 type: "POST",
                 data : formData,
                 success: function(id, textStatus, jqXHR)
                 {
-                    //console.log(id);
-                    $('#modalTitle').html("Entry Insertion Notice");
-                    $('#modalBody').html('<p class="text-success"><b>Accomplishment report successfully submitted!</b></p>');
-                    $('#modalFooter').html('<a href="<?php echo base_url(); ?>gold/accomplishmentreport/individual/' + id + '" class="btn btn-info" role="button">View Entry</a>');
-                    $('#modalFooter').append('<a href="<?php echo base_url(); ?>gold" class="btn btn-success" role="button">Home</a>');
+                    console.log(id);
+                    $('#othersModal').on('show.bs.modal', reposition);
+                    $(window).on('resize', function() {
+                        $('#othersModal:visible').each(reposition);
+                    });
 
-                    $('#dataEntry').modal({backdrop: "static"});
+                    $("#othersModal").modal({backdrop: 'static', show: true});
                 },
                 error: function(xhr, status, error) {
                     var err = eval("(" + xhr.responseText + ")");
                     alert(err.Message);
                 }     
-            });*/
+            });
 
         }
     });
+
 
     function reposition() 
     {
