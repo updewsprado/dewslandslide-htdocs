@@ -545,6 +545,11 @@ $(document).ready( function() {
 			}
 			else entry.status = "on-going";
 			entry.event_id = previous.event_id;
+
+			let hour = moment(row.timestamp).hour();
+			let minute = moment(row.timestamp).minutes();
+			if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
+			else $("#release").prop("disabled", true);
 		}
 		else
 		{
@@ -557,6 +562,8 @@ $(document).ready( function() {
 			
 			// Put internal alert checker here if there's invalid trigger
 			entry.status = "new";
+
+			$("#release").prop("disabled", false);
 		}
 
 		$("#timestamp_entry").val(row.timestamp);
