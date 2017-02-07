@@ -59,6 +59,11 @@ $(document).ready(function()
         $('#resultModal:visible').each(reposition);
     });
 
+    setTimeout(function (a) {
+        let to_highlight = $("#to_highlight").attr("value");
+        if(to_highlight != "") $(".timeline-panel#" + to_highlight).focus()
+    }, 1000)
+
     function reposition() 
     {
         var modal = $(this),

@@ -98,3 +98,9 @@ footer .navbar { min-height: 40px; }
   background-color: #e0ffb3;
   color: black;
 }
+
+label.error {
+    font-size: 12px;
+    font-style: italic;
+    margin: 10px 0 0 10px;
+}

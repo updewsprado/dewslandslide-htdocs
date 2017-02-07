@@ -664,20 +664,6 @@ $(document).ready(function()
                        return status == 'invalid';
                 }}
             },
-            /*'alertGroups[]': {
-                required: {
-                    depends: function () {
-                        var temp = $("#internal_alert_level").val();
-                        return (temp === "A1-D" || temp === "ND-D");
-                }}
-            },
-            request_reason: {
-                required: {
-                    depends: function () {
-                        var temp = $("#internal_alert_level").val();
-                        return (temp === "A1-D" || temp === "ND-D");
-                }}
-            },*/
             'routine_sites[]': {
                 required: {
                     depends: function () {

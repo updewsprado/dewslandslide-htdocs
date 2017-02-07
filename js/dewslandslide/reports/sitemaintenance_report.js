@@ -3,7 +3,7 @@
  *
  *  Created by Kevin Dhale dela Cruz
  *  JS file for Site Maintenance Report Filing Form [reports/sitemaintenance_report.php]
- *  [host]/reports/accomplishment/form
+ *  [host]/reports/site_maintenance/form
  *  
 ****/
 
@@ -26,44 +26,42 @@ $(document).ready(function()
             },
             useCurrent: false //Important! See issue #1075
         });
-        $("#fieldWorkStart").on("dp.change", function (e) {
-            $('#fieldWorkEnd').data("DateTimePicker").minDate(e.date);
+        $(".fieldWorkStart").on("dp.change", function (e) {
+            $('.fieldWorkEnd').data("DateTimePicker").minDate(e.date);
         });
-        $("#fieldWorkEnd").on("dp.change", function (e) {
-            $('#fieldWorkStart').data("DateTimePicker").maxDate(e.date);
+        $(".fieldWorkEnd").on("dp.change", function (e) {
+            $('.fieldWorkStart').data("DateTimePicker").maxDate(e.date);
         });
     });
+
+    let maintenanceForm = null;
 
     /**
      * Activity Area
     **/
-
     let activiyList = null;
     $.get("../../sitemaintenance/getActivity", function (a) {
         activityList = a;
     }, "json")
 
     $("#activity").on("change", function () {
-        value = $(this).val();
+        let value = $(this).val();
         for(i = 0; i < activityList.length; i++) {
             if ( value === "") {
-                $("#description").html("");
-                $("#descriptionline").prop("hidden", true);
-                return i;
+                $("#description-well").hide();
             }
             else if (activityList[i].activity === value ) {
                 $("#description").html(activityList[i].description);
-                $("#descriptionline").prop("hidden", false);
-                return i;
+                $("#description-well").show();
             }
         }
     });
 
+
     /*
      * Objects Area
      */
-
-    objectList = ["Rain Gauge", "GSM Clock", "Sensor Column", "Solar Panel", "SD Card", "ARQ","Battery","Others (Type/Append on text field)"];
+    objectList = ["Rain Gauge", "GSM Clock", "Sensor Column", "Solar Panel", "SD Card", "ARQ", "Battery", "Others (Type/Append on text field)"];
     populateObject(objectList);
 
     function populateObject(objectList)
@@ -130,7 +128,6 @@ $(document).ready(function()
     /**
      * Activity - Objects Table
     **/
-
     function Entry(activity, object, remarks) 
     {
         this.activity = activity;
@@ -189,6 +186,7 @@ $(document).ready(function()
                 ("<td>" + obj.remarks + "</td>") +
                 ('<td><span class="glyphicon glyphicon-trash" onclick="deleteRow(' + i + ')"></span></td>') +
                 "</tr>");
+
         if(obj.activity == "-") 
         { 
             $(".glyphicon-trash").removeAttr("onclick");
@@ -216,12 +214,6 @@ $(document).ready(function()
             changeButton("#addRow", "rgba(255,0,0,0.4)", true);
         }
 
-        if(isInputAvailable(".class-staff:last")) {
-            changeButton("#addData", "#2aabd2", false);
-        } else {
-            changeButton("#addData", "rgba(255,0,0,0.4)", true);
-        }
-
     }
 
     function isInputAvailable(id) 
@@ -245,77 +237,48 @@ $(document).ready(function()
      * Staff Involved Area
     **/
 
-    let personnel = null;
-    $.get("../../sitemaintenance/getStaff", function (a) {
-         personnel = a;
-         addData();
-    }, "json");
+    let staffList = [];
+    $("#addStaff").click(function () {
+        let staff = $("#staff option:selected").text();
+        let staff_id = $("#staff").val();
 
-    // console.log(personnel);
-    // console.log(personnel.length);
-    counter = 0;
+        if( staffList.length == 0 ) $("#staffTable tr[value=none]").remove();
 
-    $("#addData").click(addData);
-    
-    function addData() 
-    {
-
-        if (counter != 0) updateData();
-
-        str = '<tr row="' + counter + '"><td class="form-group"><select class="form-control class-staff" id="staff" name="staff" onchange="validate()">'
-            + '<option value="">Please select staff</option>';
-        for (var i = 0; i < personnel.length; i++) {
-            str += '<option value="' +  personnel[i].last_name + ", " + personnel[i].first_name+ '">';
-            str += personnel[i].last_name + ", " + personnel[i].first_name + '</option>';
+        if( staffList.indexOf(staff_id) == -1 )
+        {
+            str = '<tr class="text-center" value="' + staff_id + '"><td>' + staff + '</td><td style="vertical-align: middle; text-align: center;"><span class="glyphicon glyphicon-trash" ></span></td></tr>';
+            $("#staffTable tbody").append(str);
+            staffList.push(staff_id);
         }
-        str += '</select></td><td style="vertical-align: middle; text-align: center;"><span class="glyphicon glyphicon-trash" ></span></td></tr>';
 
-        counter++;
-        $("#monitoringTable tbody").append(str);
-        validate();
-    }
-
-    function updateData()
-    {
-        $(".class-staff:last").prop("disabled", true);
-        a = $(".class-staff:last").val();
-        b = a.split(",")
-        c = personnel.findIndex(el => el.last_name === b[0]);
-        personnel.splice(c, 1);
-    }
-
-    /**
-     * Delete Data 
-    ***/
-    $(function () {
-        $("table#monitoringTable").on("click", ".glyphicon-trash", function () {
-            if( counter > 1) {
-                value = $(this).closest("td").siblings("td").children("select").val();
-                a = value.split(", ");
-                personnel.push({"first_name":a[1], "last_name":a[0] });
-                personnel.sort(function(a, b)
-                {
-                    return a[0] - b[0];
-                });
-
-                $(this).closest('tr').remove();
-                counter--;
-            }
-        });
+        $("#staff").valid();
+        
     });
 
+    $("#staffTable").on("click", ".glyphicon-trash", function () {
+        let x = $(this).parents('tr');
+        let id = x.attr("value");
+        x.remove();
+
+        let i = staffList.indexOf(x);
+        staffList.splice(i, 1);
+
+        if(staffList.length == 0) {
+            str = '<tr value="none"><td class="text-center"> - </td><td class="text-center"> - </td></tr>';
+            $("#staffTable tbody").append(str);
+        }
+    });
 
 
     /**
      * VALIDATION AREA
     **/
 
-    //$.validator.setDefaults({ ignore: ":hidden:not(.chosen-select)" }) //for all select having class .chosen-select
-    $.validator.addMethod("valueNotEquals", function(value, element, arg) {
-      return arg != value;
-     }, "Value must not equal arg.");
+    jQuery.validator.addMethod("hasStaff", function(value, element, param) {
+        return staffList.length !== 0;
+    }, "");
 
-    $("#maintenanceForm").validate(
+    maintenanceForm = $("#maintenanceForm").validate(
     {
         ignore: ".ignore",
         rules: {
@@ -331,36 +294,23 @@ $(document).ready(function()
                 required: true
             },
             staff: {
-                required: true
+                required: true,
+                "hasStaff": true
             },
             object: "required"
         },
-        /*messages: {
-            fieldWorkStart: "Please enter 'Start Date and Time'.",
-            fieldWorkEnd: "Please enter 'End Date and Time'.",
-        },
-        errorElement: "em",*/
+        errorElement: "em",
         errorPlacement: function ( error, element ) {
-            /*// Add the `help-block` class to the error element
-            error.addClass( "help-block" );
 
-            if ( element.prop( "type" ) === "checkbox" ) {
-                error.insertAfter( element.parent( "label" ) );
-            } else {
-                error.insertAfter( element );
-            }*/
-
-            // Add `has-feedback` class to the parent div.form-group
-            // in order to add icons to inputs
             element.parents( ".form-group" ).addClass( "has-feedback" );
 
             // Add the span element, if doesn't exists, and apply the icon classes to it.
             if ( !element.next( "span" )[ 0 ] ) { 
-                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:19px; right:15px;'></span>" ).insertAfter( element );
-                if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-                if(element[0].id == "site" || element[0].id == "activity" ) element.next("span").css("right", "21px");
+                $( "<span class='glyphicon glyphicon-remove form-control-feedback'></span>" ).insertAfter( element );
+                if( element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
+                if( element.is("select") ) element.next("span").css({"top": "24px", "right": "25px"});
+                if( element.is("textarea") ) element.next("span").css({"top": "25px", "right": "14px"});
                 if(element[0].id == "object" ) element.next("span").css({"top": 0, "right": "30px"});
-                if(element[0].id == "staff" ) element.next("span").css({"top": "5px", "right": "10px"});
 
             }
         },
@@ -388,11 +338,6 @@ $(document).ready(function()
         },
         submitHandler: function (form) {
 
-            var staffList = [];
-            $(".class-staff").each(function() {
-                staffList.push($(this).val());
-            });
-
             if (rowList.length == 0) {
                 var newEntry = new Entry();
                 newEntry.activity = $("#activity").val();
@@ -402,7 +347,7 @@ $(document).ready(function()
                 rowList.push(newEntry);
             }
 
-            var formData = 
+            let formData = 
             {
                 start_date: $("#fieldWorkStart").val(),
                 end_date: $("#fieldWorkEnd").val(),
@@ -413,17 +358,22 @@ $(document).ready(function()
 
             console.log(formData);
 
-            $("#myModal").modal({backdrop: "static"});
+            $("#myModal").modal({backdrop: "static", show: false});
 
             $.ajax({
-                url: "<?php echo base_url(); ?>sitemaintenance/insertData",
+                url: "../../sitemaintenance/insertData",
                 type: "POST",
                 data : formData,
                 success: function(id, textStatus, jqXHR)
                 {
                     $("#viewEntry").attr("href", "<?php echo base_url(); ?>gold/sitemaintenancereport/individual/" + id);
-                    $("#returnHome").attr("href", "<?php echo base_url(); ?>gold");
-                    $("#myModal").modal({backdrop: "static"});
+                    $("#returnHome").attr("href", "../../home");
+                    $('#myModal').on('show.bs.modal', reposition);
+                    $(window).on('resize', function() {
+                        $('#myModal:visible').each(reposition);
+                    });
+                    $("#myModal").modal("show");
+
                     console.log(id);
                 },
                 error: function(xhr, status, error) {
@@ -433,5 +383,19 @@ $(document).ready(function()
             });
         }
     });
+
+    function reposition() 
+    {
+        console.log("Repositioned");
+
+        var modal = $(this),
+            dialog = modal.find('.modal-dialog');
+        
+        modal.css('display', 'block');
+        
+        // Dividing by two centers the modal exactly, but dividing by three 
+        // or four works better for larger screens.
+        dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
+    }
 
 });

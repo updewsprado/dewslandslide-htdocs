@@ -442,7 +442,7 @@ $(document).ready(function()
 
     /***==============================================================***/
 
-     function groupBy(collection, property, type) 
+    function groupBy(collection, property, type) 
     {
         var i = 0, val, index,
             values = [], result = [];
