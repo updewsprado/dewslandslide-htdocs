@@ -8,7 +8,7 @@
 ****/
 
 $(document).ready( function() {
-
+	
 	let setElementHeight = function () {
 	    let col_height = $("#column_2").height();
 	    $('#map-canvas').css('min-height', col_height-20);
@@ -325,15 +325,8 @@ $(document).ready( function() {
 
 	let id = null, text = null, filename = null, subject = null;
 
-	$('.js-loading-bar').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('.js-loading-bar:visible').each(reposition);
-	});
-
-	$('#resultModal').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('#resultModal:visible').each(reposition);
-	});
+	reposition("#bulletinLoadingModal");
+	reposition("#resultModal");
 
 	$("#latest, #extended").on( "click", 'tbody tr .glyphicon-envelope', function(x) {
 		id = $(this).prop('id');
@@ -346,7 +339,7 @@ $(document).ready( function() {
         .then(function (x) {
             if( x == "Success.")
             {
-            	$('.progress-bar').text('Sending EWI and Bulletin...');
+            	$('#bulletinLoadingModal .progress-bar').text('Sending EWI and Bulletin...');
                 text = $("#info").html();
                 subject = $("#subject").text();
                 filename = $("#filename").text();
@@ -354,18 +347,6 @@ $(document).ready( function() {
             }
         });
 	});
-
-	function reposition() 
-	{
-	    var modal = $(this),
-	        dialog = modal.find('.modal-dialog');
-	    
-	    modal.css('display', 'block');
-	    
-	    // Dividing by two centers the modal exactly, but dividing by three 
-	    // or four works better for larger screens.
-	    dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-	}
 
 	/********** END OF AUTOMATED PDF SENDING **********/ 
 
@@ -375,10 +356,7 @@ $(document).ready( function() {
 	 * 		AUTOMATED EWI SITE RELEASE
 	 * 
 	******************************************/
-	$('#releaseModal').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('#releaseModal:visible').each(reposition);
-	});
+	reposition("#releaseModal");
 
 	let realtime_cache = [],
 		ongoing = [], candidate_triggers = [];

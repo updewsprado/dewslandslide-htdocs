@@ -28,8 +28,9 @@ function renderPDF(id)
 {
     console.log("ID", id);
     $('#bulletinModal').modal('hide');
-    $('.progress-bar').text('Rendering Bulletin PDF...');
-    $('.js-loading-bar').modal({ backdrop: 'static', show: 'true'});
+    $('#bulletinLoadingModal .progress-bar').text('Rendering Bulletin PDF...');
+    reposition('#bulletinLoadingModal');
+    $('#bulletinLoadingModal').modal({ backdrop: 'static', show: 'true'});
     let address = '../../bulletin/run_script/' + id;
 
     return $.ajax ({
@@ -48,7 +49,7 @@ function renderPDF(id)
 
 function sendMail(text, subject, filename) {
 
-    $('.progress-bar').text('Sending EWI and Bulletin...');
+    $('#bulletinLoadingModal .progress-bar').text('Sending EWI and Bulletin...');
 
     let form = {
         text: text,
@@ -64,7 +65,7 @@ function sendMail(text, subject, filename) {
         data: form,
         success: function(data)
         {
-            $('.js-loading-bar').modal('hide');
+            $('#bulletinLoadingModal').modal('hide');
             $('#resultModal > .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
 
             setTimeout(function () {

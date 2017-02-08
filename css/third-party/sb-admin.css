@@ -27,6 +27,8 @@ body {
     .dropdown-nav .dropdown-menu > li > a:hover { background-image: -webkit-linear-gradient(top, #555555 0, #555555 50%); }
 }
 
+.navbar-fixed-top .container { padding: 0 0; }
+
 .navbar-brand img {
     width: 49px; 
     height: 34px;
@@ -104,3 +106,5 @@ label.error {
     font-style: italic;
     margin: 10px 0 0 10px;
 }
+
+#loading .modal-body { padding: 15px 15px 0; }

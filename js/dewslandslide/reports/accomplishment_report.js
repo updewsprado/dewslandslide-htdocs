@@ -92,15 +92,7 @@ $(document).ready(function()
     let hasEdit = false;
     narrativeTable = showNarrative(narratives);
 
-    $('#saveNarrativeModal').on('show.bs.modal', reposition);
-    $(window).on('resize', function() {
-        $('#saveNarrativeModal:visible').each(reposition);
-    });
-
-    $('.js-loading-bar').on('show.bs.modal', reposition);
-    $(window).on('resize', function() {
-        $('.js-loading-bar:visible').each(reposition);
-    });
+    reposition("#saveNarrativeModal");
 
     $("#event_id").change(function () {
         let event_id = $(this).val();
@@ -304,10 +296,7 @@ $(document).ready(function()
         }
     }
 
-    $('#editModal').on('show.bs.modal', reposition);
-    $(window).on('resize', function() {
-        $('#editModal:visible').each(reposition);
-    });
+    reposition("#editModal");
 
     $("#narrativeTable tbody").on("click", "tr .glyphicon-trash", function (e) {
         let self = $(this);
@@ -315,8 +304,7 @@ $(document).ready(function()
         $(".delete-warning").show();
         $("#editModal input, #editModal textarea").prop("disabled", true);
         $("#update").hide();
-        $('#editModal').modal({ backdrop: 'static', keyboard: false });
-        $('#editModal').modal("show");
+        $('#editModal').modal({ backdrop: 'static', keyboard: false, show: true });
     });
 
     $("#delete").click(function () {
@@ -331,8 +319,7 @@ $(document).ready(function()
         $(".delete-warning").hide();
         $("#update").show();
         $("#editModal input, #editModal textarea").prop("disabled", false);
-        $('#editModal').modal({ backdrop: 'static', keyboard: false });
-        $('#editModal').modal("show");
+        $('#editModal').modal({ backdrop: 'static', keyboard: false, show: true });
     });
 
     let edit_validate = $("#editForm").validate(
@@ -424,11 +411,9 @@ $(document).ready(function()
         $("#saveNarrativeModal").modal('hide');
         setTimeout(function () 
         {
-            $(".progress-bar").text("Saving...");
-            $('.js-loading-bar').modal({
-                backdrop: 'static',
-                show: 'true'
-            });
+            $("#loading .progress-bar").text("Saving...");
+            $("#loading").modal("show");
+
             let data = { narratives: narratives };
             $.ajax({
                 url: "../../accomplishment/insertNarratives",
@@ -440,12 +425,8 @@ $(document).ready(function()
                     console.log(result);
                     setTimeout(function () 
                     {
-                        $('#saveNarrativeSuccess').on('show.bs.modal', reposition);
-                        $(window).on('resize', function() {
-                            $('#saveNarrativeSuccess:visible').each(reposition);
-                        });
-                        $('#saveNarrativeSuccess').modal({ backdrop: 'static', keyboard: false });
-                        $('#saveNarrativeSuccess').modal('show');
+                        reposition("#saveNarrativeSuccess");
+                        $('#saveNarrativeSuccess').modal({ backdrop: 'static', keyboard: false, show: true });
                     }, 500);
                 },
                 error: function(xhr, status, error) {
@@ -507,11 +488,8 @@ $(document).ready(function()
     var result, flag = 0, duties = [];
     $("#generate").on("click", function (e) {
 
-        $(".progress-bar").text("Generating end-of-shift report...");
-        $('.js-loading-bar').modal({
-            backdrop: 'static',
-            show: 'true'
-        });
+        $("#loading .progress-bar").text("Generating end-of-shift report...");
+        $('#loading').modal("show");
 
         if( checkTimestamp($("#shift_end").val(), $("#shift_end")[0] ) )
         {
@@ -1024,21 +1002,4 @@ $(document).ready(function()
 
         }
     });
-
-
-    function reposition() 
-    {
-
-        console.log("Repositioned");
-
-        var modal = $(this),
-            dialog = modal.find('.modal-dialog');
-        
-        modal.css('display', 'block');
-        
-        // Dividing by two centers the modal exactly, but dividing by three 
-        // or four works better for larger screens.
-        dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-    }
-
 });

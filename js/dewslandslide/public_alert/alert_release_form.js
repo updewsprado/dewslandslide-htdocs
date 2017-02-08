@@ -817,20 +817,9 @@ $(document).ready(function()
 
             console.log(temp);
 
-            $('.js-loading-bar').modal({
-                backdrop: 'static',
-                //show: false
-            });
-
-            $('.js-loading-bar').on('show.bs.modal', reposition);
-            $(window).on('resize', function() {
-                $('.js-loading-bar:visible').each(reposition);
-            });
-
-            $('.js-loading-bar').modal("show");
-            let $modal = $('.js-loading-bar'),
-            $bar = $modal.find('.progress-bar');
-            $(".modal-header button").hide();
+            $("#loading .progress-bar").text("Submitting early warning releases... Please wait.");
+            reposition("#loading");
+            $("#loading").modal("show");
 
             $.ajax({
                 url: "../pubrelease/insert",
@@ -838,17 +827,15 @@ $(document).ready(function()
                 data : temp,
                 success: function(result, textStatus, jqXHR)
                 {
-                    $modal.modal('hide');
+                    $("#loading").modal("hide");
+                    $("#loading .progress-bar").text("Loading...");
                     console.log(result);
                     setTimeout(function () 
                     {
                         if( result == "Routine")
                              $("#view").attr("href", "../monitoring/events").text("View All Releases");
                         else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
-                        $('#view_modal').on('show.bs.modal', reposition);
-                        $(window).on('resize', function() {
-                            $('#view_modal:visible').each(reposition);
-                        });
+                        reposition("#view_modal");
                         $('#view_modal').modal('show');
                     }, 1000);
                 },
@@ -859,19 +846,4 @@ $(document).ready(function()
             });
         }
     });
-
-	function reposition() 
-	{
-	    console.log("Repositioned");
-
-	    var modal = $(this),
-	        dialog = modal.find('.modal-dialog');
-	    
-	    modal.css('display', 'block');
-	    
-	    // Dividing by two centers the modal exactly, but dividing by three 
-	    // or four works better for larger screens.
-	    dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-	}
-
 });

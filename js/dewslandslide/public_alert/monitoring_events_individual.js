@@ -9,11 +9,6 @@
 
 $(document).ready(function() 
 {
-	$('#nd label').tooltip();
-    $('#formGeneral').hide();
-    $('#formDate').hide();
-    $('#button_right').hide();
-
     $('.datetime').datetimepicker({
         format: 'YYYY-MM-DD HH:mm:ss',
         allowInputToggle: true,
@@ -49,39 +44,21 @@ $(document).ready(function()
         $('#page-wrapper').css('min-height', ($(window).height()));
     }).resize();
 
-    $('.js-loading-bar').on('show.bs.modal', reposition);
-    $(window).on('resize', function() {
-        $('.js-loading-bar:visible').each(reposition);
-    });
-
-    $('#resultModal').on('show.bs.modal', reposition);
-    $(window).on('resize', function() {
-        $('#resultModal:visible').each(reposition);
-    });
+    reposition("#edit");
+    reposition("#outcome");
+    reposition("#bulletinLoadingModal");
 
     setTimeout(function (a) {
         let to_highlight = $("#to_highlight").attr("value");
         if(to_highlight != "") $(".timeline-panel#" + to_highlight).focus()
     }, 1000)
 
-    function reposition() 
-    {
-        var modal = $(this),
-            dialog = modal.find('.modal-dialog');
-        
-        modal.css('display', 'block');
-        
-        // Dividing by two centers the modal exactly, but dividing by three 
-        // or four works better for larger screens.
-        dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-    }
-
     let current_release = {};
 
     $("span.glyphicon-edit").click(function () 
     {
         let release_id = this.id;
-        $.get( "../pubrelease/getRelease/" + release_id, 
+        $.get( "../../pubrelease/getRelease/" + release_id, 
         function (release) 
         {
             $("#data_timestamp").val(release.data_timestamp);
@@ -90,7 +67,7 @@ $(document).ready(function()
 
             console.log("release ", release);
             current_release = jQuery.extend(true, {}, release);
-            $.get( "../pubrelease/getAllEventTriggers/" +  release.event_id + "/" + release_id, 
+            $.get( "../../pubrelease/getAllEventTriggers/" +  release.event_id + "/" + release_id, 
             function (triggers) 
             {
                 let lookup = { "G":"ground", "g":"ground", "S":"sensor", "s":"sensor", "E":"eq", "R":"rain", "D":"od" };
@@ -201,7 +178,7 @@ $(document).ready(function()
             temp.release_id = current_release.release_id;
             temp.trigger_list = current_release.trigger_list.length == 0 ? null : current_release.trigger_list;
             console.log(temp);
-            $.post( "../pubrelease/update", temp)
+            $.post( "../../pubrelease/update", temp)
             .done(function( data ) 
             {
                 $("#outcome").modal({backdrop: "static"});
@@ -223,7 +200,7 @@ $(document).ready(function()
     $('#download').click(function () {
        $.when(renderPDF(id))
        .then(function () {
-            $('.js-loading-bar').modal('hide');
+            $('#bulletinLoadingModal').modal('hide');
             filename = $("#filename").text();
             window.location.href = "../bulletin/view/DEWS-L Bulletin for " + filename + ".pdf";
        });

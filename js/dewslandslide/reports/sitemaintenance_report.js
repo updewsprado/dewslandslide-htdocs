@@ -368,10 +368,7 @@ $(document).ready(function()
                 {
                     $("#viewEntry").attr("href", "<?php echo base_url(); ?>gold/sitemaintenancereport/individual/" + id);
                     $("#returnHome").attr("href", "../../home");
-                    $('#myModal').on('show.bs.modal', reposition);
-                    $(window).on('resize', function() {
-                        $('#myModal:visible').each(reposition);
-                    });
+                    reposition("#myModal");
                     $("#myModal").modal("show");
 
                     console.log(id);
@@ -383,19 +380,4 @@ $(document).ready(function()
             });
         }
     });
-
-    function reposition() 
-    {
-        console.log("Repositioned");
-
-        var modal = $(this),
-            dialog = modal.find('.modal-dialog');
-        
-        modal.css('display', 'block');
-        
-        // Dividing by two centers the modal exactly, but dividing by three 
-        // or four works better for larger screens.
-        dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-    }
-
 });
