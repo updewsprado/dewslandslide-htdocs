@@ -101,14 +101,18 @@ function initialize_map() {
 				google.maps.event.addListener(mark, 'click', (function(name) {
 					//event.preventDefault();
                     return function(){
-                        alert(name);
+                        //alert(name);
+						var urlExt = "gold/site/" + name;
+						var urlBase = "http://www.dewslandslide.com/";
+						
+						window.location.href = urlBase + urlExt;                        
                     };
 				})(siteName));
 			}
 		}
 	};
 	
-	var url = "temp/getSenslopeData.php?coord";
+	var url = "/temp/getSenslopeData.php?coord";
 	xmlhttp.open("GET",url,true);	  
 	xmlhttp.send();
 	
@@ -119,15 +123,48 @@ function initialize_map() {
 
 	var map = new google.maps.Map(document.getElementById("map-canvas"),
 		mapOptions);
-		
-	/*
-	google.maps.event.addListener(marker, 'click', function() {
-		map.setZoom(8);
-		map.setCenter(marker.getPosition());
-	});
-	*/
 }
 
+function initialize_map2() {
+	//gmapJSON = <?php echo $sitesCoord; ?>;
+	var siteCoords = gmapJSON;
+	//var siteCoords = JSON.parse(gmapJSON);
+	
+	//var siteCoords = JSON.parse(xmlhttp.responseText);
+	
+	var mapOptions = {
+		center: new google.maps.LatLng(14.5995, 120.9842),
+		zoom: 5
+	};
+
+	var map = new google.maps.Map(document.getElementById("map-canvas"),
+		mapOptions);
+
+	marker = [];
+	for (var i = 0 ; i < siteCoords.length; i++){
+		marker[i] = new google.maps.Marker({
+			position: new google.maps.LatLng(
+				parseFloat(siteCoords[i]['lat']), 
+				parseFloat(siteCoords[i]['long'])
+			),
+			map: map,
+			title: siteCoords[i]['name'].toLowerCase() + '\n'
+					+ siteCoords[i]['place_installed']
+		});
+
+		var siteName = siteCoords[i]['name'].toLowerCase();
+		var mark = marker[i];
+		google.maps.event.addListener(mark, 'click', (function(name) {
+            return function(){
+                //alert(name);
+				var urlExt = "gold/site/" + name;
+				var urlBase = "http://www.dewslandslide.com/";
+				
+				window.location.href = urlBase + urlExt;   
+            };
+		})(siteName));
+	}
+}
 
 
 

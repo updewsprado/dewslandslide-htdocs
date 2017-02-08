@@ -1,7 +1,20 @@
 isStacked = false;
 var site = window.location.search.substring(1).split('=')[1];
 //var dir = "http://www.dewslandslide.com/ajax/csvmonitoring/";
-var dir = "../temp/csvmonitoring/";
+//var dir = "../temp/csvmonitoring/";
+
+var fullUrl = window.location.href;
+var semiUrl = fullUrl.split("//")[1];
+var domain = semiUrl.split("/")[0];
+
+var dir = "";
+
+if(domain == "localhost") {
+	dir = "/temp/csvmonitoring/";
+}
+else {
+	dir = "/ajax/csvmonitoring/";	
+}
 
 var div_array = [];
 
