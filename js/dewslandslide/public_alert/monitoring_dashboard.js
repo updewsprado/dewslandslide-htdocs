@@ -8,7 +8,7 @@
 ****/
 
 $(document).ready( function() {
-
+	
 	let setElementHeight = function () {
 	    let col_height = $("#column_2").height();
 	    $('#map-canvas').css('min-height', col_height-20);
@@ -47,7 +47,7 @@ $(document).ready( function() {
 		            {
 		            	data: "name", 
 		            	"render": function (data, type, full) {
-		            		return "<b><a href='../public_alert/monitoring_events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+		            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
 		            	},
 		        		"name": 'name',
 		            },
@@ -325,15 +325,8 @@ $(document).ready( function() {
 
 	let id = null, text = null, filename = null, subject = null;
 
-	$('.js-loading-bar').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('.js-loading-bar:visible').each(reposition);
-	});
-
-	$('#resultModal').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('#resultModal:visible').each(reposition);
-	});
+	reposition("#bulletinLoadingModal");
+	reposition("#resultModal");
 
 	$("#latest, #extended").on( "click", 'tbody tr .glyphicon-envelope', function(x) {
 		id = $(this).prop('id');
@@ -341,96 +334,19 @@ $(document).ready( function() {
 	});
 
 	$("#send").click(function () {
-		$('#sendBulletinModal').modal('hide');
-		$('.progress-bar').text('Rendering Bulletin PDF...');
-		$('.js-loading-bar').modal({ backdrop: 'static', show: 'true'});
-		$.ajax({
-	        url: '../bulletin/run_script/' + id, 
-	        type: 'POST',
-	        success: function(data)
-	        {
-	        	if(data == "Success.")
-	        	{
-	        		console.log("PDF RENDERED");
-	        		sendMail();
-	        	}
-	        }
-	    });
+		$('#bulletinModal').modal('hide');
+		$.when(renderPDF(id))
+        .then(function (x) {
+            if( x == "Success.")
+            {
+            	$('#bulletinLoadingModal .progress-bar').text('Sending EWI and Bulletin...');
+                text = $("#info").html();
+                subject = $("#subject").text();
+                filename = $("#filename").text();
+                sendMail(text, subject, filename);
+            }
+        });
 	});
-
-	function sendMail() {
-
-		$('.progress-bar').text('Sending EWI and Bulletin...');
-
-		let form = {
-			text: text,
-			subject: subject,
-			filename: filename
-		};
-
-		$.ajax({
-	        url: '../bulletin/mail/', 
-	        type: 'POST',
-	        data: form,
-	        success: function(data)
-	        {
-	        	$('.js-loading-bar').modal('hide');
-	        	$('#resultModal > .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
-
-	        	setTimeout(function () {
-	        		if(data == "Sent.")
-		        	{
-		        		console.log('Email sent');
-		        		$("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!</p>');
-		        		$("#resultModal").modal('show');
-		        	}
-		        	else
-		        	{
-		        		console.log('EMAIL SENDING FAILED', data);
-		        		$("#resultModal .modal-body").html('<p><strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!</p>');
-		        		$("#resultModal").modal('show');
-	        		}	
-	        	}, 500);
-	        	
-	    	},
-	    	error: function(xhr, status, error) 
-	    	{
-	          let err = eval("(" + xhr.responseText + ")");
-	          alert(err.Message);
-	        }
-	    }); 
-	}
-
-	function loadBulletin(id) {
-	    $.ajax({
-	        url: '../gold/bulletin-main/' + id + '/0', 
-	        type: 'POST',
-	            success: function(data) {
-
-	        	$("#bulletin_modal").html(data);
-	        	let loc = $("#location").text();
-	        	let alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
-	        	let datetime = $("#datetime").text();
-	        	filename = $("#filename").text();
-	        	subject = $("#subject").text();
-	        	text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
-	        	$("#info").html(text);
-	        	$('#sendBulletinModal').modal('show');
-	        }
-	    }); 
-	}
-
-	function reposition() 
-	{
-	    var modal = $(this),
-	        dialog = modal.find('.modal-dialog');
-	    
-	    modal.css('display', 'block');
-	    
-	    // Dividing by two centers the modal exactly, but dividing by three 
-	    // or four works better for larger screens.
-	    dialog.css("margin-top", Math.max(0, ($(window).height() - dialog.height()) / 2));
-	}
 
 	/********** END OF AUTOMATED PDF SENDING **********/ 
 
@@ -440,10 +356,7 @@ $(document).ready( function() {
 	 * 		AUTOMATED EWI SITE RELEASE
 	 * 
 	******************************************/
-	$('#releaseModal').on('show.bs.modal', reposition);
-	$(window).on('resize', function() {
-	    $('#releaseModal:visible').each(reposition);
-	});
+	reposition("#releaseModal");
 
 	let realtime_cache = [],
 		ongoing = [], candidate_triggers = [];
@@ -610,6 +523,11 @@ $(document).ready( function() {
 			}
 			else entry.status = "on-going";
 			entry.event_id = previous.event_id;
+
+			let hour = moment(row.timestamp).hour();
+			let minute = moment(row.timestamp).minutes();
+			if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
+			else $("#release").prop("disabled", true);
 		}
 		else
 		{
@@ -622,6 +540,8 @@ $(document).ready( function() {
 			
 			// Put internal alert checker here if there's invalid trigger
 			entry.status = "new";
+
+			$("#release").prop("disabled", false);
 		}
 
 		$("#timestamp_entry").val(row.timestamp);

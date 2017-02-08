@@ -173,11 +173,9 @@ $(document).ready(function() {
 	var multiContactsList = [];
 	var timerID = 0;
 	var ewirecipients;
-	var lastMessageTimeStamp;
-	var lastMessageTimeStampIndi="";
+	var lastMessageTimeStamp="";
 	var lastMessageTimeStampYou="";
-	var lastMessageTimeStampGroup="";
-	var ewiFlagger = false;
+	var ewiFlagger = false; 
 	var convoFlagger = false;
 	var connection_status = true; // True means Connected.
 	var conn = connectWS();
@@ -240,12 +238,10 @@ $(document).ready(function() {
 			msg.isyou = 1;
 
 			if (contactInfo == "groups") {
-				console.log("type is group/tags");
 				if (msg.type == "loadEmployeeTag") {
 					messages.push(msg);
 				} else {
 					if (msgType == "smsloadrequestgroup") {
-						console.log("type smsloadrequestgroup")
 						messages.push(msg);
 					} else {
 						searchResults.push(msg);
@@ -259,9 +255,6 @@ $(document).ready(function() {
 						} else {
 							if (msg.sitenames != undefined|| groupTags.sitenames != undefined){
 								if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
-									console.log("type found match for group send receive")
-									console.log("the message before it gets pushed:");
-									console.log(msg);
 									messages.push(msg);
 								}
 							}
@@ -365,13 +358,9 @@ $(document).ready(function() {
 					}
 				} else {
 
-					if (lastMessageTimeStampGroup == "") {
-						lastMessageTimeStampGroup = messages[counters]['timestamp'];
-					}
-
-					if (lastMessageTimeStampIndi == "") {
+					if (lastMessageTimeStamp == "") {
 						
-						lastMessageTimeStampIndi = messages[counters]['timestamp'];
+						lastMessageTimeStamp = messages[counters]['timestamp'];
 					}
 				}
 				if (msg.type == "smssend" || msg.type == "smssendgroup" || msg.type == "smssendgroupemployee") {
@@ -401,8 +390,6 @@ $(document).ready(function() {
 			//Don't do anything if the message came from Dynaslope
 		}
 		else {
-			// console.log("Name and User is: " + msg.name + ", " + msg.user); For logging purposes only.
-			// console.log("Timestamp and Message: " + msg.timestamp + ", " + msg.msg);
 
 			var targetInbox;
 			var quick_inbox_html;
@@ -449,7 +436,6 @@ $(document).ready(function() {
 	function initLoadMessageHistory(msgHistory) {
 		if (msgHistory['hasNull'] == true) {
 			for (var i = 0; i < msgHistory['data'].length; i++){
-				console.log(msgHistory['data'][i]);
 				$('.list-ewi-recipient').append("<li class='list-group-item'><div class='checkbox'><label><input type='checkbox' name='ewi_recipients' value='"+JSON.stringify(msgHistory['data'][i])+"'>"+
 					msgHistory['data'][i].office+" "+msgHistory['data'][i].sitename+" "+msgHistory['data'][i].lastname+", "+msgHistory['data'][i].firstname+
 					" - "+msgHistory['data'][i].number+"</label></div></li>");
@@ -545,86 +531,46 @@ $(document).ready(function() {
 	}
 
 	var tempTimestampYou;
-	var tempTimestampIndi;
-	var tempTimestampGroup;
+	var tempTimestamp;
 
 	function loadOldMessages(msg){
 		counters = 0;
 		lastMessageTimeStampYou = "";
-		lastMessageTimeStampIndi = "";
-		lastMessageTimeStampGroup = "";
+		lastMessageTimeStamp = "";
 
-		console.log("Loading Old Messages");
-		// console.log(msg);
-		if (msg.type == "oldMessage") {
+		var oldMessagesIndi = msg.data;
+		var oldMsg;
+		messages = [];
 
-			var oldMessagesIndi = msg.data;
-			var oldMsg;
-			messages = [];
-
-			if (msg.data != null){
-				for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
-					oldMsg = oldMessagesIndi[i];
-					oldMsg["type"] = "oldMessages";
-					updateOldMessages(oldMsg);
-					if (messages[counters].user == 'You'){
-						if (lastMessageTimeStampYou == "") {
-							lastMessageTimeStampYou = messages[counters]['timestamp'];
-							tempTimestampYou = lastMessageTimeStampYou;
-						}
-					} else {
-						if (lastMessageTimeStampIndi == "") {
-							lastMessageTimeStampIndi = messages[counters]['timestamp'];
-							tempTimestampIndi = lastMessageTimeStampIndi;
-						}
+		if (msg.data != null){
+			for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
+				oldMsg = oldMessagesIndi[i];
+				oldMsg["type"] = msg.type;
+				updateOldMessages(oldMsg);
+				if (messages[counters].user == 'You'){
+					if (lastMessageTimeStampYou == "") {
+						lastMessageTimeStampYou = messages[counters]['timestamp'];
+						tempTimestampYou = lastMessageTimeStampYou;
 					}
-					counters++;
+				} else {
+					if (lastMessageTimeStamp == "") {
+						lastMessageTimeStamp = messages[counters]['timestamp'];
+						tempTimestamp = lastMessageTimeStamp;
+					}
 				}
-
-				var htmlStringMessage = $('#messages').html();
-				lastMessageTimeStamp = messages[0]['timestamp'];
-				var messages_html = messages_template_both({'messages': messages});
-				$('#messages').html(messages_html+htmlStringMessage);
-				$('html, body').scrollTop(200);
-			} else {
-				convoFlagger = true;
-				alert("End of the Conversation");
-				console.log("Invalid Request/End of the Conversation");
+				counters++;
 			}
 
-		} else if (msg.type == "oldMessageGroup") {
-			var oldMessagesGroup = msg.data;
-			var oldMsg;
-			messages = [];
-
-			if (msg.data != null) {
-				for (var i = oldMessagesGroup.length - 1; i >= 0; i--) {
-					oldMsg = oldMessagesGroup[i];
-					oldMsg["type"] = "oldMessagesGroup";
-					updateOldMessages(oldMsg);
-					if (messages[counters].user == 'You'){
-						if (lastMessageTimeStampYou == "") {
-							lastMessageTimeStampYou = messages[counters]['timestamp'];
-							tempTimestampYou = lastMessageTimeStampYou;
-						}
-					} else {
-						if (lastMessageTimeStampGroup == "") {
-							lastMessageTimeStampGroup = messages[counters]['timestamp'];
-							tempTimestampGroup = lastMessageTimeStampGroup;
-						}
-					}
-					counters++;
-				}
-				var htmlStringMessage = $('#messages').html();
-				var messages_html = messages_template_both({'messages': messages});
-				$('#messages').html(messages_html+htmlStringMessage);
-				$('html, body').scrollTop(200);
-			} else {
-				convoFlagger = true;
-				alert("End of the Conversation");
-				console.log("Invalid Request/End of the Conversation");
-			}
+			var htmlStringMessage = $('#messages').html();
+			var messages_html = messages_template_both({'messages': messages});
+			$('#messages').html(messages_html+htmlStringMessage);
+			$('html, body').scrollTop(200);
+		} else {
+			convoFlagger = true;
+			alert("End of the Conversation");
+			console.log("Invalid Request/End of the Conversation");
 		}
+		console.log("Loading Old Messages");
 	}
 
 	$(window).scroll(function(){
@@ -648,19 +594,19 @@ $(document).ready(function() {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
 
-		if (lastMessageTimeStampIndi == "") {
-			lastMessageTimeStampIndi = tempTimestampIndi;
+		if (lastMessageTimeStamp == "") {
+			lastMessageTimeStamp = tempTimestamp;
 		}
 		
 		var request = {
 			'type': 'oldMessage',
 			'number': contactnumTrimmed,
 			'timestampYou': lastMessageTimeStampYou,
-			'timestampIndi': lastMessageTimeStampIndi
+			'timestampIndi': lastMessageTimeStamp
 		};
 
 		tempTimestampYou  = lastMessageTimeStampYou;
-		tempTimestampIndi = lastMessageTimeStampIndi;
+		tempTimestamp = lastMessageTimeStamp;
 
 		$('#user').val('You');
 		messages = [];
@@ -687,8 +633,8 @@ $(document).ready(function() {
 			lastMessageTimeStampYou = tempTimestampYou;
 		}
 
-		if (lastMessageTimeStampGroup == "") {
-			lastMessageTimeStampGroup = tempTimestampGroup;
+		if (lastMessageTimeStamp == "") {
+			lastMessageTimeStamp = tempTimestamp;
 		}
 
 		request = {
@@ -696,7 +642,7 @@ $(document).ready(function() {
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'lastMessageTimeStampYou': lastMessageTimeStampYou,
-			'lastMessageTimeStampGroup':lastMessageTimeStampGroup
+			'lastMessageTimeStampGroup':lastMessageTimeStamp
 		};
 
 		groupTags = {
@@ -706,7 +652,7 @@ $(document).ready(function() {
 		};
 
 		tempTimestampYou  = lastMessageTimeStampYou;
-		tempTimestampGroup = lastMessageTimeStampGroup;
+		tempTimestamp = lastMessageTimeStamp;
 
 		$('#user').val('You');
 
@@ -762,29 +708,19 @@ $(document).ready(function() {
 	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://54.166.60.233:5050'); // Other server
-		var tempConn = new WebSocket('ws://localhost:5050'); // For local server
+		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050'); // For local server
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
 			enableCommands(); // Enable commands for chatterbox
 
 			connection_status = true;
-			// $("#connectionStatusModal").modal("hide");
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
 			if (isFirstSuccessfulConnect) {
-				//TODO: load contacts information for first successful connect
-				//contacts currently 9KB in size. too big for the WSS setup
-
 				getOfficesAndSitenames();
-
-				//getInitialQuickInboxMessages();
-
-				//TODO: Optimize the loading speed
-				//Set a 2 sec delay before getting the initial quick inbox messages
 				setTimeout(
 					function() {
 						getInitialQuickInboxMessages();
@@ -1628,8 +1564,6 @@ function searchMessageIndividual(){
 	}
 
 	function startChat(source="normal") {
-		//Reset the timestamp flaggers
-		tempTimestampIndi = "";
 		convoFlagger = false;
 		counters = 0;
 
@@ -1685,6 +1619,12 @@ function searchMessageIndividual(){
 
 	// Chat with selected recipients
 	$('#go-chat').click(function() {
+		//Reset the timestamp flaggers
+		lastMessageTimeStamp = "";
+		lastMessageTimeStampYou = "";
+		tempTimestamp = "";
+		tempTimestampYou = "";
+
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
@@ -1810,9 +1750,6 @@ function searchMessageIndividual(){
 	}
 
 	function loadGroupsCommunity(){
-		// Reset the timeStamp flaggers
-		tempTimestampYou = "";
-		tempTimestampGroup = "";
 		counters = 0;
 		convoFlagger = false;
 		//Reset the group tags
@@ -1881,6 +1818,11 @@ function searchMessageIndividual(){
 
 	$('#go-load-groups').click(function() {
 		groupTags = [];
+		// Reset the timeStamp flaggers
+		tempTimestampYou = "";
+		tempTimestampGroup = "";
+		lastMessageTimeStampYou = "";
+		lastMessageTimeStamp = "";
 		if (connection_status == false){
 			console.log("NO CONNECTION");
 		} else {
@@ -1892,36 +1834,6 @@ function searchMessageIndividual(){
 		var table = $('#response-contact-container').DataTable();
 	});
 
-	$('input[type="radio"]').on('change', function(e) {
-		if ($("input[name='category']:checked").val() == "employee_contacts_radio") {
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/get_employee_contacts",             
-				dataType: "html",              
-				success: function(response){
-					$("#response-contact-container").DataTable().clear();
-					$("#response-contact-container").DataTable().destroy();
-					$('#response-contact-container').show();
-					$("#response-contact-container").html(response);
-					$("#response-contact-container").DataTable();
-				}
-			});
-		} else {
-			$.ajax({
-				type: "GET",
-				url: "../chatterbox/get_community_contacts",             
-				dataType: "html",              
-				success: function(response){
-					$("#response-contact-container").DataTable().clear();
-					$("#response-contact-container").DataTable().destroy();
-					$('#response-contact-container').show();
-					$("#response-contact-container").html(response); 
-					$("#response-contact-container").DataTable();
-				}
-			});
-		}
-	});
-
 	String.prototype.capitalize = function() {
 		return this.charAt(0).toUpperCase() + this.slice(1);
 	}
@@ -1929,7 +1841,6 @@ function searchMessageIndividual(){
 	$('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var table = $('#response-contact-container').DataTable();
 		var data = table.row(this).data();
-		console.log(data);
 		if (data[0].charAt(0) == "c") {
 			reset_cc();
 			var container = document.getElementById("community-contact-wrapper");
@@ -1962,7 +1873,6 @@ function searchMessageIndividual(){
 			var input = document.createElement("input");
 			input.id = "eid";
 			input.value = data[0];
-			console.log(data[0]);
 			input.setAttribute('hidden',true);
 			container.appendChild(input);
 			$('#response-contact-container_wrapper').prop('hidden',true);
@@ -2330,8 +2240,6 @@ function fetchSiteAndOffice(){
 			'ewi_filter': true
 		};
 
-		console.log(msg);
-
 		conn.send(JSON.stringify(msg));
 		msgType = "smssendgroup";
 		messages = [];
@@ -2533,6 +2441,11 @@ function fetchSiteAndOffice(){
 	});
 
 	$('#settings-cmd').on('change',function(){
+
+		reset_cc(); // Reset the fields for Employee/Community Contacts
+		reset_ec();
+
+
 		if ($('#settings-cmd').val() != 'default') {
 			$('#settings-cmd').css("border-color", "#3c763d");
 			$('#settings-cmd').css("background-color", "#dff0d8");
@@ -2575,13 +2488,49 @@ function fetchSiteAndOffice(){
 		var table = $('#response-contact-container').DataTable();
 		$.ajax({
 			type: "GET",
-			url: "../chatterbox/get_community_contacts",             
-			dataType: "html",              
+			url: "../chatterbox/get_community_contacts",      
 			success: function(response){
+				var data = JSON.parse(response);
+				console.log(data);
+
 				$("#response-contact-container").DataTable().clear();
 				$("#response-contact-container").DataTable().destroy();
+
+				$('thead tr th').remove();
+				$('thead tr').append( $('<th />', {text : 'c_id'}).css("display", "none"));
+				$('thead tr').append( $('<th />', {text : 'First name'}));
+				$('thead tr').append( $('<th />', {text : 'Last name'}));
+				$('thead tr').append( $('<th />', {text : 'Prefix'}));
+				$('thead tr').append( $('<th />', {text : 'Office'}));
+				$('thead tr').append( $('<th />', {text : 'Sitename'}));
+				$('thead tr').append( $('<th />', {text : 'Contact #'}));
+				$('thead tr').append( $('<th />', {text : 'Rel'}));
+				$('thead tr').append( $('<th />', {text : 'EWI Recipient'}));
+
+				$('tfoot tr th').remove();
+				$('tfoot tr').append( $('<th />', {text : 'c_id'}).css("display", "none"));
+				$('tfoot tr').append( $('<th />', {text : 'First name'}));
+				$('tfoot tr').append( $('<th />', {text : 'Last name'}));
+				$('tfoot tr').append( $('<th />', {text : 'Prefix'}));
+				$('tfoot tr').append( $('<th />', {text : 'Office'}));
+				$('tfoot tr').append( $('<th />', {text : 'Sitename'}));
+				$('tfoot tr').append( $('<th />', {text : 'Contact #'}));
+				$('tfoot tr').append( $('<th />', {text : 'Rel'}));
+				$('tfoot tr').append( $('<th />', {text : 'EWI Recipient'}));
+
+				for (var i = 0; i < data.length; i++) {
+					var ewi_flag = "";
+					if (data[i].ewirecipient == true) {
+						ewi_flag = "Yes";
+					} else {
+						ewi_flag = "No";
+					}
+					var newContent = "<tr><td style='display:none;'>c_"+data[i].c_id+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].prefix+"</td><td>"+data[i].office+"</td><td>"+data[i].sitename+"</td><td>"+data[i].number+"</td><td>"+data[i].rel+"</td><td>"+ewi_flag+"</td></tr>";
+					$("#response-contact-container tbody").append(newContent);
+				}
+
+
 				$('#response-contact-container').show();
-				$("#response-contact-container").html(response); 
 				$("#response-contact-container").DataTable();
 			}
 		});
@@ -2591,13 +2540,40 @@ function fetchSiteAndOffice(){
 		var table = $('#response-contact-container').DataTable();
 		$.ajax({
 			type: "GET",
-			url: "../chatterbox/get_employee_contacts",             
-			dataType: "html",              
+			url: "../chatterbox/get_employee_contacts",        
 			success: function(response){
+				var data = JSON.parse(response);
+				console.log(data);
 				$("#response-contact-container").DataTable().clear();
 				$("#response-contact-container").DataTable().destroy();
+
+				$('thead tr th').remove();
+				$('thead tr').append( $('<th />', {text : 'eid'}).css("display", "none"));
+				$('thead tr').append( $('<th />', {text : 'First name'}));
+				$('thead tr').append( $('<th />', {text : 'Last name'}));
+				$('thead tr').append( $('<th />', {text : 'Nickname'}));
+				$('thead tr').append( $('<th />', {text : 'Birthdate'}));
+				$('thead tr').append( $('<th />', {text : 'Email'}));
+				$('thead tr').append( $('<th />', {text : 'Contact #'}));
+				$('thead tr').append( $('<th />', {text : 'Group Tags'}));
+
+				$('tfoot tr th').remove();
+				$('tfoot tr').append( $('<th />', {text : 'eid'}).css("display", "none"));
+				$('tfoot tr').append( $('<th />', {text : 'First name'}));
+				$('tfoot tr').append( $('<th />', {text : 'Last name'}));
+				$('tfoot tr').append( $('<th />', {text : 'Nickname'}));
+				$('tfoot tr').append( $('<th />', {text : 'Birthdate'}));
+				$('tfoot tr').append( $('<th />', {text : 'Email'}));
+				$('tfoot tr').append( $('<th />', {text : 'Contact #'}));
+				$('tfoot tr').append( $('<th />', {text : 'Group Tags'}));
+
+				for (var i = 0; i < data.length; i++) {
+					console.log(data[i].numbers);
+					var newContent = "<tr><td style='display:none;'>"+data[i].eid+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].nickname+"</td><td>"+data[i].birthday+"</td><td>"+data[i].email+"</td><td>"+data[i].numbers+"</td><td>"+data[i].grouptags+"</td></tr>";
+					$("#response-contact-container tbody").append(newContent);
+				}
+
 				$('#response-contact-container').show();
-				$("#response-contact-container").html(response);
 				$("#response-contact-container").DataTable();
 			}
 		});
@@ -2712,7 +2688,6 @@ function fetchSiteAndOffice(){
 	});
 
 $('#emp-settings-cmd button[type="submit"]').on('click',function(){
-	console.log()
 	if ($('#settings-cmd').val() != "updatecontact") {
 		var empty_fields = 0;
 		$('#employee-contact-wrapper input').each(function(){
@@ -2792,7 +2767,6 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 					'numbers': $('#numbers_ec').val(),
 					'grouptags': $('#grouptags_ec').val()
 				};
-				console.log(data);
 				updateContactService(data,"employee-contact-wrapper");
 			}
 		}

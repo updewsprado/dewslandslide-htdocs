@@ -154,7 +154,7 @@ $(document).ready(function(e) {
 				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
 			}
 			for (i = 0; i < series_data.length; i++) {
-				chartProcess(id[i],series_data[i],series_name[i])
+				chartProcess(id[i],series_data[i],series_name[i],color_series)
 			}
 		});
 	}
@@ -214,10 +214,12 @@ $(document).ready(function(e) {
 				var dataseries_batt =[];
 				batt_series.push(series[3])
 				batt_series.push(series_id[3])
+				var visibility =[true,false]
 				for (i = 0; i < batt_series.length; i++) {
-					dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: 'dataseries'});
+					dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: 'dataseries',visible:visibility[i]});
 				}
-				chartProcess(data.id[3],dataseries_batt,"Batt")
+				var color_series = ["#d48a3b","#fff"]
+				chartProcess(data.id[3],dataseries_batt,"Batt",color_series)
 			}
 		});	
 	}
@@ -271,6 +273,8 @@ $(document).ready(function(e) {
 				var series_title = ["xvalue","yvalue","zvalue","batt"]
 				var series_name = ["x1(raw)","x2(raw)","x1(filterd)","x2(filterd)",
 				"y1(raw)","y2(raw)","y1(filterd)","y2(filterd)","z1(raw)","z2(raw)","z1(filterd)","z2(filterd)"];
+				var visibility =[true,false,false,false,true,false,false,false,true,false,false,false]
+				var color_series = [["#5ff101","#9301f1","#fff","#01f193"],["#3362ff","#9301f1","#fff","#01f193"],["#ff4500","#9301f1","#fff","#01f193"],["#d48a3b","#fff",'#ff8000',"#ffbf00"]]
 				series.push(series_id)
 				var process_dataseries = []; // sorthing by dataseries
 				for (i = 0; i < series.length-1; i++) {
@@ -283,22 +287,23 @@ $(document).ready(function(e) {
 				for (i = 0; i < process_dataseries.length; i++) { 
 					if (temp == "") {
 						temp = series_name[i].substring(0,1);
-						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries'});
+						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
 					} else {
 						if (temp == series_name[i].substring(0,1)) {
-							plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries'});
+							plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
 						} else {
 							series_data.push(plot_data);
 							temp = series_name[i].substring(0,1);
 							plot_data = [];
-							plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries'});
+							plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
 						}
 					}
 				}
 				series_data.push(plot_data);
 				plot_data = [];
+
 				for (i = 0; i < series_data.length; i++) { 
-					chartProcess(data.id[i] , series_data[i] , series_title[i])
+					chartProcess(data.id[i] , series_data[i] , series_title[i],color_series[i])
 				}
 
 			}
@@ -359,7 +364,8 @@ $(document).ready(function(e) {
 					id_name : id_name,
 					id:id
 				}
-				 somsfiltered(data,dataSoms,somsDataSeries)
+				var color_series = ["#00a09e" ,"#fff"];
+				somsfiltered(data,dataSoms,somsDataSeries,color_series)
 			}
 		});	
 	}
@@ -383,21 +389,23 @@ $(document).ready(function(e) {
 				}
 				series_data.push(series)
 				series_data.push(filterDataSeries)
+				var visibility =[true,false]
 				for (i = 0; i < series_data.length; i++) {
-					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries'});
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
 				}	
-				chartProcess(dataSoms.id,data_series,dataSoms.id_name)
+				var color_series =["#00ff80" ,"#ffff00"];
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 			}
 		});	
 	}
 
-	function chartProcess(id,data_series,name){
+	function chartProcess(id,data_series,name,color){
 
 		Highcharts.setOptions({
 			global: {
 				timezoneOffset: -8 * 60
 			},
-			colors: ['#fe0000', '#fdfe02', '#0bff01', '#011efe', '#fe00f6'],
+			colors: color,
 		});
 
 		$("#"+id).highcharts({
@@ -509,9 +517,8 @@ $(document).ready(function(e) {
                         }
                         );
 		// var chart = $("#"+id).highcharts();
-		// chart.series[1].hide();
-		// for (i = 1; i < data_series.length; i++) { 
-		// 	console.log(i)
-		// }
+		// var hi = [chart.series[1].hide(),chart.series[2].hide()];
+		// for (i = 0; i < series_data.length; i++) {}
+		
 	}
 });

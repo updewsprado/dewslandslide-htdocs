@@ -45,8 +45,6 @@ $(document).ready(function(e) {
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
-			// $("#ground_table").DataTable().clear();
-			// $("#ground_table").DataTable().destroy();
 			$('.crack_id_form').show()
 			$("#crackgeneral").empty();
 			$("#analysisVelocity").hide();
@@ -71,6 +69,7 @@ $(document).ready(function(e) {
 				}
 
 				var select = document.getElementById('crackgeneral');
+
 				$("#crackgeneral").append('<option value="">Select Crack</option>');
 				var i;
 				for (i = 0; i < crack_name.length; i++) {
@@ -205,7 +204,7 @@ $(document).ready(function(e) {
 			for (dd = 0; dd < dataTable_timestamp_2.length; dd++) {
 				 dataTable_timestamp_3.push(dataTable_timestamp_1.slice(dataTable_timestamp_2[dd],dataTable_timestamp_2[dd+1]))
 			}
-			console.log(dataTable_timestamp_3)
+
 
 			var dataTable_process_2 = [0]
 			for (c = 0; c < dataTable_process_1.length; c++) {
@@ -231,10 +230,13 @@ $(document).ready(function(e) {
 
 			surficialDataTable(dataSubmit,dataTable_process_4result,columns_date)
 			
-			// for(var aaa = 0; aaa < dataTable_timestamp_3.length; aaa++){
-			// 	if( dataTable_timestamp_3)
+			if(dataTable_process_4.length != 0 ){
+				for(var aaa = 0; aaa < dataTable_process_4.length; aaa++){
+					console.log(dataTable_process_4[aaa][0].crack_id)
+				}
+			}
 
-			// }
+			
 			
 		});
 	}
