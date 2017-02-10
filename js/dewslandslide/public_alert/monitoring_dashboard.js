@@ -640,7 +640,7 @@ $(document).ready( function() {
 	        if ( !element.next( "span" )[ 0 ] ) { 
 	            $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
 	            if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-	            if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
+	            if(element.is("select")) element.next("span").css({"top": "25px", "right": "23px"});
 	        }
 	    },
 	    success: function ( label, element ) {
@@ -674,7 +674,7 @@ $(document).ready( function() {
 	        temp.public_alert_level = aX == "ND" ? "A1" : aX;
 	        temp.status = entry.status;
 	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
-	        temp.reporter_1 = "<?php echo $user_id; ?>";
+	        temp.reporter_1 = $("#reporter_1").attr("value-id");
 
 	        if (entry.status == "new")
 	        {

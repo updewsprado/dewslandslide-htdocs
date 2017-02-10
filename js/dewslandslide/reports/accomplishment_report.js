@@ -139,6 +139,11 @@ $(document).ready(function()
         //return $(element).val() !== '';
     }, "Add a new timestamp or edit the entry with the same timestamp to include new narrative development.");
 
+    jQuery.validator.addMethod("noSpace", function(value, element) { 
+        console.log(value[0]);
+        return value.trim() != ""; 
+    }, "Write a narrative before adding.");
+
     $("#narrativeForm").validate(
     {
         rules: {
@@ -153,7 +158,8 @@ $(document).ready(function()
                 required: true
             },
             narrative: {
-                required: true
+                required: true,
+                noSpace: true
             }
         },
         errorPlacement: function ( error, element ) {
@@ -212,6 +218,7 @@ $(document).ready(function()
                 if(value.name != "timestamp_time" && value.name != "timestamp_date") temp[value.name] = value.value == "" ? null : value.value; 
             })
            temp.timestamp = $("#timestamp_date").val() + " " + $("#timestamp_time").val();
+           temp.narrative = temp.narrative.trim();
 
             console.log("ADDED", temp);
             narratives.push(temp);
