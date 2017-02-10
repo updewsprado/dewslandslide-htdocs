@@ -508,8 +508,8 @@ $(document).ready(function()
             
             getShiftReleases(formData, function (res) 
             {
-                //console.log(res);
-                let event_groups = groupBy(res, "event_id",'releases');
+                console.log(res);
+                let event_groups = groupBy(res, "event_id", 'releases');
                 let ids = {};
                 ids.release_ids = res.map( x => x.release_id );
                 ids.event_ids = res.map( x => x.event_id );
@@ -794,7 +794,14 @@ $(document).ready(function()
             success: function(response, textStatus, jqXHR)
             {
                 result = JSON.parse(response);
-                callback(result);
+                if(result.length != 0) callback(result);
+                else {
+                    $("#loading").modal("hide");
+                    CKEDITOR.instances.report.setData('', function () {
+                        CKEDITOR.instances['report'].insertText("No early warning information released for this shift.");
+                        CKEDITOR.instances['report'].focus();
+                    });
+                }
             },
             error: function(xhr, status, error) {
                 var err = eval("(" + xhr.responseText + ")");
