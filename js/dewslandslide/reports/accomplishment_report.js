@@ -22,6 +22,14 @@ $(document).ready(function()
 
     /*** Initialize Date/Time Input Fields ***/
     $(function () {
+    	$('.timestamp').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:00',
+            allowInputToggle: true,
+            widgetPositioning: {
+                horizontal: 'right',
+                vertical: 'bottom'
+            }
+        });
         $('.timestamp_date').datetimepicker({
             format: 'YYYY-MM-DD',
             allowInputToggle: true,
@@ -31,7 +39,7 @@ $(document).ready(function()
             }
         });
         $('.timestamp_time').datetimepicker({
-            format: 'HH:mm:ss',
+            format: 'HH:mm:00',
             allowInputToggle: true,
             widgetPositioning: {
                 horizontal: 'right',
@@ -129,14 +137,20 @@ $(document).ready(function()
 
     let index_global = null;
     jQuery.validator.addMethod("isUniqueTimestamp", function(value, element, param) {
-        let date = $("#timestamp_date").val();
-        let timestamp = date + " " + value;
+    	let timestamp = null;
+    	if( $(element).prop('id') == "timestamp_time" )
+    	{
+    		let date = $("#timestamp_date").val();
+        	timestamp = date + " " + value;
+    	} else timestamp = $("#timestamp_edit").val();
 
         let i = narratives.map( el => el.timestamp ).indexOf(timestamp);
-        if( $(element).prop("id") === 'timestamp' ) 
-        { if( i < 0 ) return true; else false; }
+        if( $(element).prop("id") === 'timestamp_time' ) 
+        { 
+        	if( i < 0 ) return true; else false; 
+        }
         else { if( i < 0 || i == index_global ) return true; else false; }
-        //return $(element).val() !== '';
+
     }, "Add a new timestamp or edit the entry with the same timestamp to include new narrative development.");
 
     jQuery.validator.addMethod("noSpace", function(value, element) { 
