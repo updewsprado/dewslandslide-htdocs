@@ -255,7 +255,7 @@ $(document).ready( function() {
 		  	// }
 	    });
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data, candidate); });
 
 	    isTableInitialized = true;
 	}
@@ -264,6 +264,11 @@ $(document).ready( function() {
 	{
 		if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
 	    {
+	    	if( table == "candidate" && candidate == null ) {
+	    		reposition("#errorModal");
+			    $("#errorModal").modal("show");
+	    	}
+
 	        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
 	        $("#" + table + " thead").remove();
 	    }
@@ -484,9 +489,11 @@ $(document).ready( function() {
 
 	function reloadTable(table, data) {
 		table.clear();
+		let x = data;
+		if( data == null ) { data = []; x = null; }
 	    table.rows.add(data).draw();
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table, x); });
 	}
 
 	let modalForm = null, entry = {};
@@ -709,7 +716,12 @@ $(document).ready( function() {
 	                $.when(f2)
 					.done(function (a) 
 					{
-						candidate = checkCandidateTriggers(realtime_cache);
+						try {
+							candidate = checkCandidateTriggers(realtime_cache);
+						} catch (err) {
+							console.log(err);
+							candidate = null;
+						}
 
 						reloadTable(latest_table, ongoing.latest);
 						reloadTable(extended_table, ongoing.extended);
@@ -770,8 +782,13 @@ $(document).ready( function() {
 		$.when(f2)
 		.done(function (a) 
 		{
-			candidate = checkCandidateTriggers(realtime_cache);
-			console.log("CANDI", candidate);
+			try {
+				candidate = checkCandidateTriggers(realtime_cache);
+				console.log("CANDI", candidate);
+			} catch (err) {
+				console.log(err);
+				candidate = null;
+			}
 
 			if(isTableInitialized) 
 			{

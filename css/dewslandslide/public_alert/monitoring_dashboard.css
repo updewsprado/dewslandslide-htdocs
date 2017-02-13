@@ -167,7 +167,7 @@ h2 {
 }
 
 #sendBulletinModal .modal-body { padding-bottom: 0; }
-#resultModal .modal-body { font-size: 14px; }
+#resultModal .modal-body, #errorModal .modal-body { font-size: 14px; }
 
 label.error {
     font-size: 12px;
