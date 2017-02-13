@@ -129,7 +129,7 @@ $(document).ready( function() {
 	            {
 	            	data: "name", 
 	            	"render": function (data, type, full) {
-	            		return "<b><a href='../monitoring_events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
 	            	},
 	        		"name": 'name',
 	            },
@@ -174,9 +174,11 @@ $(document).ready( function() {
 		    {
 	            switch(data.day)
 	            {
+	            	case 0: 
 	            	case 1: $(row).addClass("day-one"); break;
 	                case 2: $(row).addClass("day-two"); break;
 	                case 3: $(row).addClass("day-three"); break;
+	                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
 	            }
 		  	}
 	    });

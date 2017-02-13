@@ -61,6 +61,15 @@ hr {
 	background-color: rgba(8, 139, 42, 0.5);
 }
 
+.day-overdue {
+	background-color:  rgba(60, 60, 60, 0.5);
+}
+
+.day-overdue-square {
+	color:  rgba(60, 60, 60, 0.8);
+	background-color: rgba(60, 60, 60, 0.5);
+}
+
 .close { margin-top: -3px; }
 
 #send-btn-ewi-amd {
