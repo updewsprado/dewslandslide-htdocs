@@ -11,7 +11,8 @@ function sendViaAlertMonitor(data){
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
 			10: "October", 11: "November", 12: "December"};
-
+			debugger;
+			console.log(data["internal_alert_level"].toUpperCase());
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
@@ -19,10 +20,10 @@ function sendViaAlertMonitor(data){
 					var preConstructedEWI = response["A3"];
 				}
 			} else {
-				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND") {
+				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND" && data['status'] != 'extended') {
 					var preConstructedEWI = response["A1-"+data["internal_alert_level"].toUpperCase().substring(3)];
 				} else {
-					var preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];
+					var preConstructedEWI = response["A0"];
 				}
 				
 			}
@@ -708,8 +709,8 @@ $(document).ready(function() {
 	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		// var tempConn = new WebSocket('ws://localhost:5050'); // For local server
+		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		var tempConn = new WebSocket('ws://localhost:5050'); // For local server
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -2773,6 +2774,12 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 	}
 });
 
+	$(document).on("click","#messages li",function(){
+		console.log("test");
+		reposition('#gintag-modal');
+		$('#gintag-modal').modal('toggle');
+	})
+	$('#gintags').tagsinput('add','#'+event.item);
 function updateContactService(data,wrapper){
 	$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
 	.done(function(response) {
