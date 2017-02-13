@@ -154,6 +154,10 @@ body {
   width: 100%;
 }
 
+#submit-gintag {
+  margin-top: 10px;
+}
+
 .inbox-tab {
   position: fixed;
   list-style: none;

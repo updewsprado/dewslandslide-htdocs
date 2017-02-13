@@ -10,8 +10,7 @@ function sendViaAlertMonitor(data){
 			var months = {1: "January",2: "February",3: "March",
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
-			10: "October", 11: "November", 12: "December"};
-			debugger;
+			10: "October", 11: "November", 12: "December"};		
 			console.log(data["internal_alert_level"].toUpperCase());
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
@@ -183,6 +182,7 @@ $(document).ready(function() {
 	var quickGroupSelectionFlag = false;
 	var delayReconn = 10000;	//10 Seconds
 	var gsmTimestampIndicator = "";
+	var gintags_msg_details;
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.\
@@ -232,6 +232,7 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
+		console.log(msg);
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -2775,11 +2776,38 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 });
 
 	$(document).on("click","#messages li",function(){
-		console.log("test");
+		gintags_msg_details = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 		reposition('#gintag-modal');
 		$('#gintag-modal').modal('toggle');
 	})
-	$('#gintags').tagsinput('add','#'+event.item);
+
+	$('#confirm-gintags').click(function(){
+		insertGintagService(gintags_msg_details);
+	});
+
+
+function insertGintagService(data){
+	var tags = $('#gintags').val();
+	// var tagger = <?php echo $this->session->userdata["id"]?>;
+	var gintags;
+	tags = tags.split(',');
+
+	for (var i = 0; i < tags.length;i++) {
+		gintags = {
+			'tag_name': tags[i],
+			'tag_description': "communications",
+			'tagger': tagger_user_id,
+			'remarks': data[5],
+			'table_used': data[6]
+		}
+		console.log(gintags);
+		$.post( "../communications/chatterbox/inserGinTags/", {gintags: JSON.stringify(gintags)})
+		.done(function(response) {
+			console.log(response);
+		});
+	}
+}
+
 function updateContactService(data,wrapper){
 	$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
 	.done(function(response) {
