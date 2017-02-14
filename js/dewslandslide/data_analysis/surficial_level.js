@@ -13,7 +13,6 @@ $(document).ready(function(e) {
 		for (i = 0; i <  all_sites.length; i++) {
 			names.push(all_sites[i].name)
 		}
-
 		var select = document.getElementById('sitegeneral');
 		$("#sitegeneral").append('<option value="">SELECT</option>');
 		var i;
@@ -45,6 +44,8 @@ $(document).ready(function(e) {
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
+			$("#graphS1").empty()
+			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
 			$('.crack_id_form').show()
 			$("#crackgeneral").empty();
 			$("#analysisVelocity").hide();
@@ -86,7 +87,6 @@ $(document).ready(function(e) {
 
 					select.appendChild(el);
 				}
-				surficialGraph(curSite,crack_name)
 				dataTableProcess(dataSubmit,crack_name)
 				$("#crackgeneral").change(function () {
 					var current_crack = $(this).find("option:selected").text();
@@ -143,6 +143,7 @@ $(document).ready(function(e) {
 				all_data_last:result,
 			}
 			surficialMeasurement(dataTableSubmit)
+			surficialGraph(dataTableSubmit)
 		});
 
 	}
@@ -161,10 +162,10 @@ $(document).ready(function(e) {
 			var columns_date_tooltip =[]; // <-- header tooltip data
 
 			columns_date.push({title:'Crack ID'});
-			for (i = dataSubmit.last.length-1; i > 0; i--) { // <-- header date process
-				if(dataSubmit.all_data_last[i].meas_type == "ROUTINE"){
+			for (i = dataSubmit.last.length; i > 0; i--) { // <-- header date process
+				if(dataSubmit.all_data_last[i-1].meas_type == "ROUTINE"){
 					var color ="color:#4066e2"
-				}else if(dataSubmit.all_data_last[i].meas_type == "EVENT"){
+				}else if(dataSubmit.all_data_last[i-1].meas_type == "EVENT"){
 					var color ="color:#38bee6"
 				}else{
 					var color ="color:#30eab1"
@@ -187,7 +188,6 @@ $(document).ready(function(e) {
 				}
 			}
 
-
 			var dataTable_timestamp_1=[]
 			for (aa = 0; aa < dataSubmit.crack_name.length; aa++) {
 				for (bb = 0; bb < dataSubmit.last.length; bb++) {
@@ -204,82 +204,84 @@ $(document).ready(function(e) {
 			for (dd = 0; dd < dataTable_timestamp_2.length; dd++) {
 				 dataTable_timestamp_3.push(dataTable_timestamp_1.slice(dataTable_timestamp_2[dd],dataTable_timestamp_2[dd+1]))
 			}
-
-
-			var dataTable_process_2 = [0]
-			for (c = 0; c < dataTable_process_1.length; c++) {
-				if( dataTable_process_1[c] != dataTable_process_1[c+1]){
-					dataTable_process_2.push(c+1)
-				}
-			}
-			var dataTable_process_3result = []
-			for(var d = 0; d < dataTable_process_2.length-1; d++){
-				dataTable_process_3result.push(dataTable_process_1result.slice(dataTable_process_2[d],dataTable_process_2[d+1]))
-			}
-
-			var dataTable_process_4result = []
-			var dataTable_process_4 = []
-			for(var e = 0; e < dataTable_process_3result.length; e++){
-				if( dataTable_process_3result[e].length != dataSubmit.last.length){
-					var length = dataTable_process_3result[e].length
-					dataTable_process_4.push(dataTable_process_3result[e])
-				}else{
-					dataTable_process_4result.push(dataTable_process_3result[e])
-				}
-			}
-
-			surficialDataTable(dataSubmit,dataTable_process_4result,columns_date)
-			
-			if(dataTable_process_4.length != 0 ){
-				for(var aaa = 0; aaa < dataTable_process_4.length; aaa++){
-					console.log(dataTable_process_4[aaa][0].crack_id)
-				}
-			}
-
-			
-			
+			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
+				
 		});
 	}
 
-	function surficialDataTable(dataSubmit,data,columns_date) {  
-		var data_process_2 =[]
-		var crack_with_data = []
-		// var sorted_crack =[];
-		for(var a = 0; a < data.length; a++){
-			var data_process_1 =[]
-			data_process_1.push(data[a][0].crack_id)
-			crack_with_data.push(data[a][0].crack_id)
-			for(var b = data[0].length -1; b > 0; b--){
-				data_process_1.push(data[a][b-1].meas)
-			}
-			data_process_2.push(data_process_1)
-		}
-		for(var c = 0; c< crack_with_data.length; c++){
-			dataSubmit.crack_name.splice( dataSubmit.crack_name.indexOf(crack_with_data[c]), 1 ) 
-		}
-		for(var d = 0; d< dataSubmit.crack_name.length; d++){
-			var data_process_3=[]
-			data_process_3.push(dataSubmit.crack_name[d])
-			for(var e = 0; e < columns_date.length; e++){
-				data_process_3.push(" ")
-			}
-			data_process_2.push(data_process_3)
-		}
-		$('#ground_table').DataTable( {
-			data: data_process_2 ,
-			columns: columns_date,
-			"processing": true,
-			 
-		});
-	}
-	function surficialGraph(site,crack_name) {  
+	function surficialDataTable(dataSubmit,totalSlice,columns_date) {  
 		$.ajax({ 
 			dataType: "json",
-			url: "/api/GroundDataFromLEWS/"+site,  success: function(data_result) {
+			url: "/api/last10GroundData/"+dataSubmit.site,  success: function(data_result) {
+				var result = JSON.parse(data_result)
+				var organize_ground_data = []
+				var ground_data_all =[]
+				var crackID_withData =[]
+				for(var a = 0; a < result.length; a++){
+					ground_data_all.push(result[a].crack_id)
+					crackID_withData.push(result[a].crack_id)
+					for(var b = dataSubmit.last.length; b > 0; b--){
+						ground_data_all.push(result[a][dataSubmit.last[b-1]])
+					}
+				}
+				
+				for(var c = 0; c < crackID_withData.length; c++){
+					dataSubmit.crack_name.splice( dataSubmit.crack_name.indexOf(crackID_withData[c]), 1 ) 
+				}
+				
+				for(var d = 0; d < dataSubmit.crack_name.length; d++){
+					var no_Data_meas=[]
+					no_Data_meas.push(dataSubmit.crack_name[d])
+					for(var e = 0; e < columns_date.length; e++){
+						no_Data_meas.push(" ")
+					}
+					organize_ground_data.push(no_Data_meas)
+				}
+
+				var slice_num_meas=[]
+				
+				for(var e = 0; e < ground_data_all.length; e++){
+					for(var f = 0; f < crackID_withData.length; f++){
+						if(crackID_withData[f] == ground_data_all[e]){
+							slice_num_meas.push(e)
+						}
+					}
+				}
+				slice_num_meas.push(ground_data_all.length)
+				for(var g = 0; g < slice_num_meas.length; g++){
+					organize_ground_data.push(ground_data_all.slice(slice_num_meas[g],slice_num_meas[g+1]))
+				}
+				organize_ground_data.pop()
+
+				$('#ground_table').DataTable( {
+					columns: columns_date,
+				});
+					$("#ground_table").DataTable().clear();
+					$("#ground_table").DataTable().destroy();
+				$('#ground_table').DataTable( {
+					data: organize_ground_data,
+					retrieve: true,
+					columns: columns_date, 
+				});
+			}
+			
+		});	
+	}
+	function surficialGraph(dataTableSubmit) {  
+		$.ajax({ 
+			dataType: "json",
+			url: "/api/GroundDataFromLEWS/"+dataTableSubmit.site,  success: function(data_result) {
 				var result = JSON.parse(data_result)
 				var slice =[0];
 				var data1 =[];
 				var data =[];
+				var opts = $('#crackgeneral')[0].options;
+
+				var array = $.map(opts, function(elem) {
+					return (elem.value || elem.text);
+				});
+				array.shift()
+				var crack_name = array
 				for (var a = 0; a < crack_name.length; a++) {
 					var all = []
 					for (var i = 0; i < result.length; i++) {
@@ -295,6 +297,8 @@ $(document).ready(function(e) {
 					}
 				}
 				var series_data=[]
+
+
 				for(var a = 0; a < crack_name.length; a++){
 					series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
 				}

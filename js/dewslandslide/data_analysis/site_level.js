@@ -41,12 +41,13 @@ $(document).ready(function(e) {
 	})
 	$('#searchtool input[id="submit"]').on('click',function(){
 		if($("#sitegeneral").val() != ""){
+			document.getElementById('graph').textContent = '';
+			document.getElementById('healthbars-canvas-div').textContent = '';
 			var subSites =[];
 			var curSite = $("#sitegeneral").val();
 			var node = $ ("#node").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
-			var urlExt = "gold/site/"+node+"/"+ curSite + "/" + fromDate + "/" + toDate ;
 			$("#siteD").DataTable().clear();
 			$("#siteD").DataTable().destroy();
 			$("#mTable").DataTable().clear();
@@ -58,23 +59,19 @@ $(document).ready(function(e) {
 					subSites.push(per_site_name[i])
 				}
 			}
-			let dataSubmitAlertmini = { 
-				site : subSites[0], 
-			}
 			let dataSubmit = { 
 				site : curSite, 
 				fdate : fromDate,
 				tdate : toDate
 			}
-		
-			$.post("../site_level_page/getDatafromSingleMaxNode", {data : dataSubmitAlertmini} ).done(function(data){ // <----------------- Data for alertmini
 
-			});
-
-			$.post("../site_level_page/getDatafromNodeStatus", {data : dataSubmitAlertmini} ).done(function(data){ // <----------------- Data for alertmini
-			// getNodeStatus(data)
-			});
-
+			for (i = 0; i <  subSites.length; i++) { // <--- adding alert mini
+				$(".header-site").hide()
+				$("#graph").append("<div  id='mini-alert-canvas"+i+"'><h3 class='panel-title'> "+subSites[i].toUpperCase()+"</h3></div>")
+				$("#healthbars-canvas-div").append("<div class='col-lg-6'><div class='panel panel-default'><div class='panel-heading'><h3 class='panel-title'>"+subSites[i].toUpperCase()+"</h3></div><div class='panel-body'><div  id='healthbars-canvas"+i+"'></div></div></div>")
+				getAlertmini(subSites[i],'mini-alert-canvas'+i)
+				showCommHealthPlotGeneral(subSites[i],'healthbars-canvas'+i)
+			}
 			$.post("../site_level_page/getDatafromRainProps", {data : dataSubmit} ).done(function(data){ // <------------ Data for Site Rain gauge datas
 				var result = JSON.parse(data);
 				getRainSenslope(result[0].rain_senslope , fromDate ,toDate , result[0].max_rain_2year,'rain_senslope');
@@ -83,11 +80,6 @@ $(document).ready(function(e) {
 				getDistanceRainSite(result[0].RG2, fromDate ,toDate , result[0].max_rain_2year,'rain2');
 				getDistanceRainSite(result[0].RG3, fromDate ,toDate , result[0].max_rain_2year,'rain3');
 			});
-
-			$.post("../site_level_page/getDatafromSiteRainProps", {data : dataSubmit} ).done(function(data){ // <-----------------old site rain schema
-			// console.log(data);
-			});
-
 
 			$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){ // <------------ Data for Site Maintenance History
 				var result = JSON.parse(data);
@@ -148,7 +140,17 @@ $(document).ready(function(e) {
 
 	}
 
-
+	function getAlertmini(site,siteDiv){ 
+		let dataSubmit = { site:site}
+		$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
+			var result = JSON.parse(data);
+			nodeAlertJSON = JSON.parse(result.nodeAlerts)
+			maxNodesJSON = JSON.parse(result.siteMaxNodes)
+			nodeStatusJSON = JSON.parse(result.nodeStatus)
+			initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
+			
+		});
+	}
 	function getDistanceRainSite(site,fdate,tdate,max_rain,id) { 
 
 		if(site.slice(0,1) == "r" ){

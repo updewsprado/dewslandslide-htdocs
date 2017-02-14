@@ -34,6 +34,7 @@ $(document).ready(function(e) {
 
 	$.get("../site_level_page/getAllSiteNamesPerSite").done(function(data){
 		var all_sites = JSON.parse(data);
+
 		var names=[];
 		for (i = 0; i <  all_sites.length; i++) {
 			names.push(all_sites[i].name)
@@ -58,9 +59,11 @@ $(document).ready(function(e) {
 		}
 	});
 
+
 	$('#searchtool input[id="submit"]').on('click',function(){
 		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){	
 			if( $("#node").val() <= 40 ){
+				$('.mini-alert-canvas div:first').remove(); 
 				var curSite = $("#sitegeneral").val();
 				var node = $ ("#node").val();
 				var fromDate = $('#reportrange span').html().slice(0,10);
@@ -71,6 +74,15 @@ $(document).ready(function(e) {
 					fdate : fromDate,
 					tdate : toDate
 				}
+				$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
+					var result = JSON.parse(data);
+					 nodeAlertJSON = JSON.parse(result.nodeAlerts)
+					 maxNodesJSON = JSON.parse(result.siteMaxNodes)
+					 nodeStatusJSON = JSON.parse(result.nodeStatus)
+					 $( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas"></div>' );
+					initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,"mini-alert-canvas")
+				});
+
 				$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){ 
 					var result = JSON.parse(data);
 					document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" v"+ result[0].version +" (node "+ node +") Overview"
@@ -124,6 +136,8 @@ $(document).ready(function(e) {
 			$("#errorMsg").modal('show')
 		}
 	});
+
+
 	function accelVersion1(curSite,node,fromDate,toDate,id){
 
 		let dataVersion1= { 
@@ -516,9 +530,5 @@ $(document).ready(function(e) {
                             series:data_series
                         }
                         );
-		// var chart = $("#"+id).highcharts();
-		// var hi = [chart.series[1].hide(),chart.series[2].hide()];
-		// for (i = 0; i < series_data.length; i++) {}
-		
 	}
 });

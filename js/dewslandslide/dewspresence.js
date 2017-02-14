@@ -1,4 +1,3 @@
-
 var presenceJSON = 0;
 var allSitesJSON = 0;
 
@@ -226,13 +225,9 @@ function generatePresencePlot(url, title, xOffset, isLegends, graphNum) {
 	
 }
 
-	
 var nodeAlertJSON = 0;
 function showDataPres() {
-	//presenceJSON = <?php echo $dataPresence; ?>;
-	//allSitesJSON = <?php echo $allSites; ?>;
 	allSitesJSON = maxNodesJSON;
-	//var url = "/test/allpres/24";
 	var url = "/test/allpres";
 	
 	generatePresencePlot(url, "Data Presence Map", 0, true, 1);
@@ -243,9 +238,6 @@ function dataPresencePlot() {
 	showDataPres();	
 }
 
-window.onload = function() {
-	//dataPresencePlot();
-};
 
 
 

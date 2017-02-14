@@ -538,7 +538,6 @@ function alertLegends(frm) {
 	}
 }
 
-//window.onload = initPosPlot();
 
 
 
