@@ -78,7 +78,7 @@ $(document).ready(function()
 
     var options = [];
 
-    $( '.dropdown-menu a' ).on( 'click', function( event )
+    $( '#object.dropdown-menu a' ).on( 'click', function( event )
     {
         var $target = $( event.currentTarget ),
         val = $target.attr( 'data-value' ),
@@ -366,7 +366,7 @@ $(document).ready(function()
                 data : formData,
                 success: function(id, textStatus, jqXHR)
                 {
-                    $("#viewEntry").attr("href", "<?php echo base_url(); ?>gold/sitemaintenancereport/individual/" + id);
+                    $("#viewEntry").attr("href", "../../reports/site_maintenance/" + id);
                     $("#returnHome").attr("href", "../../home");
                     reposition("#myModal");
                     $("#myModal").modal("show");

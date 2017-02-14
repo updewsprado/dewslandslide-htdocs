@@ -22,6 +22,14 @@ $(document).ready(function()
 
     /*** Initialize Date/Time Input Fields ***/
     $(function () {
+    	$('.timestamp').datetimepicker({
+            format: 'YYYY-MM-DD HH:mm:00',
+            allowInputToggle: true,
+            widgetPositioning: {
+                horizontal: 'right',
+                vertical: 'bottom'
+            }
+        });
         $('.timestamp_date').datetimepicker({
             format: 'YYYY-MM-DD',
             allowInputToggle: true,
@@ -31,7 +39,7 @@ $(document).ready(function()
             }
         });
         $('.timestamp_time').datetimepicker({
-            format: 'HH:mm:ss',
+            format: 'HH:mm:00',
             allowInputToggle: true,
             widgetPositioning: {
                 horizontal: 'right',
@@ -129,15 +137,26 @@ $(document).ready(function()
 
     let index_global = null;
     jQuery.validator.addMethod("isUniqueTimestamp", function(value, element, param) {
-        let date = $("#timestamp_date").val();
-        let timestamp = date + " " + value;
+    	let timestamp = null;
+    	if( $(element).prop('id') == "timestamp_time" )
+    	{
+    		let date = $("#timestamp_date").val();
+        	timestamp = date + " " + value;
+    	} else timestamp = $("#timestamp_edit").val();
 
         let i = narratives.map( el => el.timestamp ).indexOf(timestamp);
-        if( $(element).prop("id") === 'timestamp' ) 
-        { if( i < 0 ) return true; else false; }
+        if( $(element).prop("id") === 'timestamp_time' ) 
+        { 
+        	if( i < 0 ) return true; else false; 
+        }
         else { if( i < 0 || i == index_global ) return true; else false; }
-        //return $(element).val() !== '';
+
     }, "Add a new timestamp or edit the entry with the same timestamp to include new narrative development.");
+
+    jQuery.validator.addMethod("noSpace", function(value, element) { 
+        console.log(value[0]);
+        return value.trim() != ""; 
+    }, "Write a narrative before adding.");
 
     $("#narrativeForm").validate(
     {
@@ -153,7 +172,8 @@ $(document).ready(function()
                 required: true
             },
             narrative: {
-                required: true
+                required: true,
+                noSpace: true
             }
         },
         errorPlacement: function ( error, element ) {
@@ -212,6 +232,7 @@ $(document).ready(function()
                 if(value.name != "timestamp_time" && value.name != "timestamp_date") temp[value.name] = value.value == "" ? null : value.value; 
             })
            temp.timestamp = $("#timestamp_date").val() + " " + $("#timestamp_time").val();
+           temp.narrative = temp.narrative.trim();
 
             console.log("ADDED", temp);
             narratives.push(temp);
@@ -501,8 +522,8 @@ $(document).ready(function()
             
             getShiftReleases(formData, function (res) 
             {
-                //console.log(res);
-                let event_groups = groupBy(res, "event_id",'releases');
+                console.log(res);
+                let event_groups = groupBy(res, "event_id", 'releases');
                 let ids = {};
                 ids.release_ids = res.map( x => x.release_id );
                 ids.event_ids = res.map( x => x.event_id );
@@ -787,7 +808,14 @@ $(document).ready(function()
             success: function(response, textStatus, jqXHR)
             {
                 result = JSON.parse(response);
-                callback(result);
+                if(result.length != 0) callback(result);
+                else {
+                    $("#loading").modal("hide");
+                    CKEDITOR.instances.report.setData('', function () {
+                        CKEDITOR.instances['report'].insertText("No early warning information released for this shift.");
+                        CKEDITOR.instances['report'].focus();
+                    });
+                }
             },
             error: function(xhr, status, error) {
                 var err = eval("(" + xhr.responseText + ")");

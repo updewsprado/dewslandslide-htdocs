@@ -720,7 +720,7 @@ $(document).ready(function()
                 if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
                 if(element.is("select") || element.is("textarea")) element.next("span").css({"top": "25px", "right": "25px"});
                 if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
-                if(element.is("input[type=number]")) element.next("span").css({"top": "18px", "right": "13px"});
+                if(element.is("input[type=number]")) element.next("span").css({"top": "24px", "right": "0px"});
             }
         },
         success: function ( label, element ) {
