@@ -7,13 +7,12 @@ body { font: 12px Arial;}
 	height: 400px; 
 	font: 12px Arial;
 }
-
-path { 
+/*path { 
     stroke: steelblue;
     stroke-width: 2;
-    /*fill: none;*/
+    fill: none;
 }
-
+*/
 .axis path,
 .axis line {
     fill: none;
