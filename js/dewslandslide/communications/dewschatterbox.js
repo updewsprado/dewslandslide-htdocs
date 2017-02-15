@@ -22,7 +22,12 @@ function sendViaAlertMonitor(data){
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND" && data['status'] != 'extended') {
 					var preConstructedEWI = response["A1-"+data["internal_alert_level"].toUpperCase().substring(3)];
 				} else {
-					var preConstructedEWI = response["A0"];
+					var preConstructedEWI = "";
+					if (data['day'] == "3") {
+						preConstructedEWI = response["ROUTINE"];	
+					} else {
+						preConstructedEWI = response["A0"];	
+					}
 				}
 				
 			}
@@ -232,7 +237,6 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
-		console.log(msg);
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -2778,6 +2782,9 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 	$(document).on("click","#messages li",function(){
 		gintags_msg_details = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 		reposition('#gintag-modal');
+
+		// Fetch Gintags from server
+		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
 	})
 
@@ -2788,7 +2795,6 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 
 function insertGintagService(data){
 	var tags = $('#gintags').val();
-	// var tagger = <?php echo $this->session->userdata["id"]?>;
 	var gintags;
 	tags = tags.split(',');
 
@@ -2796,16 +2802,29 @@ function insertGintagService(data){
 		gintags = {
 			'tag_name': tags[i],
 			'tag_description': "communications",
+			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 			'tagger': tagger_user_id,
 			'remarks': data[5],
 			'table_used': data[6]
 		}
-		console.log(gintags);
-		$.post( "../communications/chatterbox/inserGinTags/", {gintags: JSON.stringify(gintags)})
+		$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags)})
 		.done(function(response) {
 			console.log(response);
 		});
 	}
+}
+
+function getGintagService(data){
+	$('#gintags').val('');
+	$('#gintags').tagsinput("removeAll");
+	$.post( "../generalinformation/getGinTags/", {gintags: JSON.stringify(data)})
+		.done(function(response) {
+			var data = JSON.parse(response);
+			console.log(data);
+			for (var i = 0; i < data.length; i++) {
+				$('#gintags').tagsinput('add',data[i].tag_name);
+			}
+	});
 }
 
 function updateContactService(data,wrapper){
