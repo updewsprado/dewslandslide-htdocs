@@ -10,8 +10,7 @@ function sendViaAlertMonitor(data){
 			var months = {1: "January",2: "February",3: "March",
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
-			10: "October", 11: "November", 12: "December"};		
-			console.log(data["internal_alert_level"].toUpperCase());
+			10: "October", 11: "November", 12: "December"};
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
@@ -25,8 +24,10 @@ function sendViaAlertMonitor(data){
 					var preConstructedEWI = "";
 					if (data['day'] == "3") {
 						preConstructedEWI = response["ROUTINE"];	
-					} else {
+					} else if (data['status'] == "extended"){
 						preConstructedEWI = response["A0"];	
+					} else {
+						preConstructedEWI = response[data["internal_alert_level"].toUpperCase()];	
 					}
 				}
 				
@@ -188,6 +189,7 @@ $(document).ready(function() {
 	var delayReconn = 10000;	//10 Seconds
 	var gsmTimestampIndicator = "";
 	var gintags_msg_details;
+	var tagger_id = "";
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.\
@@ -777,16 +779,13 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadGlobalSearched"){
 				loadSearchedMessage(msg);
-			}
-			else if (msg.type == "smsloadquickinbox") {
+			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
-			}
-			else if (msg.type == "loadofficeandsites") {
+			} else if (msg.type == "loadofficeandsites") {
 				// loadCommunityContactRequest(msg);
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
-			}
-			else if (msg.type == "loadnamesuggestions") {
+			} else if (msg.type == "loadnamesuggestions") {
 				contactSuggestions = msg.data;
 
 				if (msg.data == null) {
@@ -801,8 +800,23 @@ $(document).ready(function() {
 				}
 
 				comboplete.list = suggestionsArray;
-			}
-			else {
+			} else if (msg.type == "ewi_tagging") {
+				console.log(msg["data"]);
+				for (var i = 0; i < msg["data"].length; i++) {
+					gintags = {
+						'tag_name': "#EwiMessage",
+						'tag_description': "communications",
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+						'tagger': tagger_user_id,
+						'remarks': msg["data"][i][0],
+						'table_used': "smsoutbox"
+					}
+					// $.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags)})
+					// .done(function(response) {
+					// 	console.log(response);
+					// });
+				}
+			} else {
 
 				var numbers = /^[0-9]+$/; 
 				console.log(msg);
@@ -2221,51 +2235,52 @@ function fetchSiteAndOffice(){
 			var text = $('#constructed-ewi-amd').val();
 			try {
 
-		// Assume All 4 offices will be included in the EWI
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+				// Assume All 4 offices will be included in the EWI
+				var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
 
-		$('input[name="offices"]').prop('checked', false);
-		$('input[name="sitenames"]').prop('checked', false);
+				$('input[name="offices"]').prop('checked', false);
+				$('input[name="sitenames"]').prop('checked', false);
 
-		var tagSitenames = [];
-		tagSitenames.push($('#site-abbr').val().toUpperCase());
+				var tagSitenames = [];
+				tagSitenames.push($('#site-abbr').val().toUpperCase());
 
-		if (tagSitenames[0] == "MNG" || tagSitenames[0] == "MAN") {
-			tagSitenames[0] = "MAN/MNG";
-		} else if (tagSitenames[0] == "JOR" || tagSitenames[0] == "POB") {
-			tagSitenames[0] = "JOR/POB";
-		}
+				if (tagSitenames[0] == "MNG" || tagSitenames[0] == "MAN") {
+					tagSitenames[0] = "MAN/MNG";
+				} else if (tagSitenames[0] == "JOR" || tagSitenames[0] == "POB") {
+					tagSitenames[0] = "JOR/POB";
+				}
 
-		var msg = {
-			'type': 'smssendgroup',
-			'user': 'You',
-			'offices': tagOffices,
-			'sitenames': tagSitenames,
-			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-			'ewi_filter': true
-		};
+				var msg = {
+					'type': 'smssendgroup',
+					'user': 'You',
+					'offices': tagOffices,
+					'sitenames': tagSitenames,
+					'msg': text+footer,
+					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+					'ewi_filter': true,
+					'ewi_tag': true
+				};
 
-		conn.send(JSON.stringify(msg));
-		msgType = "smssendgroup";
-		messages = [];
-		updateMessages(msg);
-		
-		$('#constructed-ewi-amd').val('');
-		$('#result-ewi-message').text('Early Warning Information sent successfully!');
-		$('#success-ewi-modal').modal('toggle');
-		$('#ewi-asap-modal').modal('toggle');
-	} catch(err) {
-		$('#result-ewi-message').text('Failed!, Please check the template.');
-		alert(err.stack);
-		$('#success-ewi-modal').modal('toggle');
-		$('#ewi-asap-modal').modal('toggle');
-	}
-});
-
-		$('#sbt-update-contact-info').click(function(){
-			$('#edit-contact').modal('toggle');
+				conn.send(JSON.stringify(msg));
+				msgType = "smssendgroup";
+				messages = [];
+				updateMessages(msg);
+				
+				$('#constructed-ewi-amd').val('');
+				$('#result-ewi-message').text('Early Warning Information sent successfully!');
+				$('#success-ewi-modal').modal('toggle');
+				$('#ewi-asap-modal').modal('toggle');
+			} catch(err) {
+				$('#result-ewi-message').text('Failed!, Please check the template.');
+				alert(err.stack);
+				$('#success-ewi-modal').modal('toggle');
+				$('#ewi-asap-modal').modal('toggle');
+			}
 		});
+
+	$('#sbt-update-contact-info').click(function(){
+		$('#edit-contact').modal('toggle');
+	});
 
 	//CHECK ALL Offices in the advanced search
 	$('#checkAllOffices').click(function() {
@@ -2791,7 +2806,6 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 	$('#confirm-gintags').click(function(){
 		insertGintagService(gintags_msg_details);
 	});
-
 
 function insertGintagService(data){
 	var tags = $('#gintags').val();
