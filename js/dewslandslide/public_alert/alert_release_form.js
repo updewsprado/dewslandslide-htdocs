@@ -172,7 +172,7 @@ $(document).ready(function()
         }
 
         // Prevent entering of NO DATA trigger on NEW ON-GOING ENTRIES
-        if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
+        // if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
 
 
         $(".cbox_trigger_switch").trigger("change");
@@ -291,7 +291,8 @@ $(document).ready(function()
             if( x>y ) return -1; else return 1;
         });
 
-        let alert = trigger_list.length > 0 ? $("#public_alert_level").val() + "-" + trigger_list.join("") : $("#public_alert_level").val();
+        let alert_level = $(".cbox_nd[value=ND]").is(":checked") ? "ND" : $("#public_alert_level").val();
+        let alert = trigger_list.length > 0 ? alert_level + "-" + trigger_list.join("") : alert_level;
         alert = $("#public_alert_level").val() == "A0" ? "A0" : alert;
         $("#internal_alert_level").val(alert);
     });
