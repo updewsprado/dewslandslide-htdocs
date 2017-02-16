@@ -117,6 +117,7 @@ $(document).ready(function(e) {
 	var start = moment().subtract(7, 'days'); 
 	var end = moment().add(1, 'days');
 
+
 	$('#reportrange').daterangepicker({
 		maxDate: new Date(),
 		autoUpdateInput: true,

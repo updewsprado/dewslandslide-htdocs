@@ -155,11 +155,11 @@ function getSiteMaxNodes(xOffset,maxNodesJSON) {
 	var data = maxNodesJSON;
 	
 	siteMaxNodes = data;
-	
 	//add node links to nodes with normal status
 	var urlBase = "http://" + window.location.hostname + "/";
-	var urlNodeExt = "gold/node/";		
-	
+	var urlNodeExt = "data_analysis/node/";		
+	var start = moment().subtract(7, 'days').format('YYYY-MM-DD'); 
+	var end = moment().add(1, 'days').format('YYYY-MM-DD');
 	maxNode = d3.max(data, function(d) { return parseFloat(d.maxall); });
 	
 	// Scale the range of the data
@@ -191,7 +191,7 @@ function getSiteMaxNodes(xOffset,maxNodesJSON) {
 		.on('mouseover', tip.show)
 		.on('mouseout', tip.hide)
 		.on("click", function(d){
-	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+	        document.location.href = urlBase+urlNodeExt+d.site+'/'+ d.node+'/'+start+'/'+end;
 	    });	
 }
 
@@ -236,10 +236,10 @@ function getNodeStatus(xOffset,nodeStatusJSON) {
 }
 
 var alertdata = [];
-function generateAlertPlot(url, title, xOffset, isLegends, graphNum,maxNodesJSON,nodeStatusJSON) {
+function generateAlertPlot(url, title, xOffset, isLegends, graphNum,maxNodesJSON,nodeStatusJSON,data) {
 	// Get the data
 	var jsondata = [];
-	getSiteMaxNodes(xOffset,maxNodesJSON);
+	getSiteMaxNodes(xOffset,maxNodesJSON,data);
 	
 	var delay1 = 1000;//1 second
 
@@ -271,8 +271,8 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum,maxNodesJSON
 	
 			// Add hyperlinks to Y Axis ticks
 			var urlBase = "http://" + window.location.hostname + "/";
-			var urlExt = "gold/site/";	
-			var urlNodeExt = "gold/node/";		
+			var urlExt = "data_analysis/site/";	
+			var urlNodeExt = "data_analysis/node/";		
 			
 			d3.selectAll("text")
 			    .filter(function(d){ return typeof(d) == "string"; })
