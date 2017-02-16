@@ -806,7 +806,7 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
-				console.log(msg["data"]);
+				gintags_collection = [];
 				for (var i = 0; i < msg["data"].length; i++) {
 					gintags = {
 						'tag_name': "#EwiMessage",
@@ -816,11 +816,13 @@ $(document).ready(function() {
 						'remarks': msg["data"][i][0],
 						'table_used': "smsoutbox"
 					}
-					// $.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags)})
-					// .done(function(response) {
-					// 	console.log(response);
-					// });
+					gintags_collection.push(gintags)
 				}
+				console.log(gintags_collection);
+				$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				.done(function(response) {
+					console.log(response);
+				});
 			} else {
 
 				var numbers = /^[0-9]+$/; 
