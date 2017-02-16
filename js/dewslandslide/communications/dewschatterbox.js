@@ -190,13 +190,14 @@ $(document).ready(function() {
 	var gsmTimestampIndicator = "";
 	var gintags_msg_details;
 	var tagger_id = "";
+	var temp_ewi_template_holder = "";
 
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.\
 
-	// Initialize Gintags DB if it exist
+	// Creates Gintags table
 	$.get( "../generalinformation/initialize", function( data ) {
-		console.log(data);
+		// Initialize DB for Gintags
 	});
 
 	try {
@@ -721,8 +722,8 @@ $(document).ready(function() {
 	//Connect the app to the Web Socket Server
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		// var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
-		var tempConn = new WebSocket('ws://localhost:5050'); // For local server
+		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		// var tempConn = new WebSocket('ws://localhost:5050'); // For local server
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -2235,6 +2236,22 @@ function fetchSiteAndOffice(){
 			}
 		}
 
+		$('#edit-btn-ewi-amd').click(function(){
+			if ($('#edit-btn-ewi-amd').val() === "edit"){
+				$('#constructed-ewi-amd').prop("disabled", false );
+				temp_ewi_template_holder = $('#constructed-ewi-amd').val();
+				$('#edit-btn-ewi-amd').val("undo");
+				$('#edit-btn-ewi-amd').text("Undo");
+				$("#edit-btn-ewi-amd").attr('class', 'btn btn-danger');
+			} else {
+				$('#constructed-ewi-amd').prop("disabled", true );
+				$('#constructed-ewi-amd').val(temp_ewi_template_holder);
+				$("#edit-btn-ewi-amd").attr('class', 'btn btn-warning');
+				$('#edit-btn-ewi-amd').text("Edit");
+				$('#edit-btn-ewi-amd').val("edit");
+			}
+		});
+
 		$('#send-btn-ewi-amd').click(function(){
 			ewiFlagger = true;
 			var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
@@ -2817,9 +2834,11 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 function insertGintagService(data){
 	var tags = $('#gintags').val();
 	var gintags;
+	var gintags_collection = [];
 	tags = tags.split(',');
 
 	for (var i = 0; i < tags.length;i++) {
+		gintags_collection = [];
 		gintags = {
 			'tag_name': tags[i],
 			'tag_description': "communications",
@@ -2828,7 +2847,8 @@ function insertGintagService(data){
 			'remarks': data[5],
 			'table_used': data[6]
 		}
-		$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags)})
+		gintags_collection.push(gintags);
+		$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags_collection)})
 		.done(function(response) {
 			console.log(response);
 		});
