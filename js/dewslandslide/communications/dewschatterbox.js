@@ -820,7 +820,7 @@ $(document).ready(function() {
 					gintags_collection.push(gintags)
 				}
 				console.log(gintags_collection);
-				$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
 					console.log(response);
 				});
@@ -2848,7 +2848,7 @@ function insertGintagService(data){
 			'table_used': data[6]
 		}
 		gintags_collection.push(gintags);
-		$.post( "../generalinformation/inserGinTags/", {gintags: JSON.stringify(gintags_collection)})
+		$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 		.done(function(response) {
 			console.log(response);
 		});
