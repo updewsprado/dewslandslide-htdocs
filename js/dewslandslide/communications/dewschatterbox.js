@@ -194,6 +194,11 @@ $(document).ready(function() {
 	// first_name came from PHP Session Variable. Look for chatterbox.php
 	//	in case you want to edit it.\
 
+	// Initialize Gintags DB if it exist
+	$.get( "../generalinformation/initialize", function( data ) {
+		console.log(data);
+	});
+
 	try {
 		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
 		var remChars = 800 - $("#msg").val().length - footer.length;
