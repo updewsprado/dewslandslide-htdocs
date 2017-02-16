@@ -76,13 +76,15 @@ $(document).ready(function()
                 current_release.trigger_list = [];
                 triggers.forEach(function (a) 
                 {
-                    let delegate = function (x,a) { $(x).val(a).prop("disabled", false); }
+                    let delegate = function (x,a) { if(x.includes(".od_group")) { $(x).prop("disabled", false).prop("checked", parseInt(a)); } else $(x).val(a).prop("disabled", false); }
                     switch(a.trigger_type)
                     {
                         case "g": case "s": $("#trigger_" + lookup[a.trigger_type] + "_1").val(a.timestamp).prop("disabled", false);  $("#trigger_" + lookup[a.trigger_type] + "_1_info").val(a.info).prop("disabled", false); current_release.trigger_list.push( ["trigger_" + lookup[a.trigger_type] + "_1", a.trigger_id] ); break;
                         case "G": case "S": $("#trigger_" + lookup[a.trigger_type] + "_2").val(a.timestamp).prop("disabled", false); $("#trigger_" + lookup[a.trigger_type] + "_2_info").val(a.info).prop("disabled", false); current_release.trigger_list.push( ["trigger_" + lookup[a.trigger_type] + "_2", a.trigger_id] ); break;
-                        case "E": delegate("#magnitude", a.eq_info[0].magnitude); delegate("#latitude", a.eq_info[0].latitude); delegate("#longitude", a.eq_info[0].longitude);
-                        default: $("#trigger_" + lookup[a.trigger_type]).val(a.timestamp).prop("disabled", false); $("#trigger_" + lookup[a.trigger_type] + "_info").val(a.info).prop("disabled", false); current_release.trigger_list.push( ["trigger_" + lookup[a.trigger_type], a.trigger_id] );
+                        case "R": case "E": 
+                        case "D": $("#trigger_" + lookup[a.trigger_type]).val(a.timestamp).prop("disabled", false); $("#trigger_" + lookup[a.trigger_type] + "_info").val(a.info).prop("disabled", false); current_release.trigger_list.push( ["trigger_" + lookup[a.trigger_type], a.trigger_id] );
+                                  if ( a.trigger_type == "E"  ) { delegate("#magnitude", a.eq_info[0].magnitude); delegate("#latitude", a.eq_info[0].latitude); delegate("#longitude", a.eq_info[0].longitude); break; }
+                                  else if ( a.trigger_type == "D"  ) { delegate("#reason", a.od_info[0].reason); delegate(".od_group[name=llmc]", a.od_info[0].is_llmc); delegate(".od_group[name=lgu]", a.od_info[0].is_lgu); break; }
                     }
                     $("#" + lookup[a.trigger_type] + "_area").show();
                 })
@@ -96,6 +98,14 @@ $(document).ready(function()
 
     });
 
+    jQuery.validator.addMethod("at_least_one", function(value, element, options) {
+        if( $(".od_group[name=llmc").is(":checked") || $(".od_group[name=lgu").is(":checked") )
+            return true;
+        else return false;
+    }, "");
+
+    jQuery.validator.addClassRules("od_group", {at_least_one: true});
+
     $("#modalForm").validate(
     {
         debug: true,
@@ -104,6 +114,7 @@ $(document).ready(function()
             release_time: "required",
             trigger_rain: "required",
             trigger_eq: "required",
+            trigger_od: "required",
             trigger_ground_1: "required",
             trigger_ground_2: "required",
             trigger_sensor_1: "required",
@@ -115,36 +126,31 @@ $(document).ready(function()
             trigger_sensor_1_info: "required",
             trigger_sensor_2_info: "required",
             magnitude: {
-                required: {
-                    depends: function () {
-                        return $(".cbox_trigger[value='E']").is(":checked");
-                }},
+                required: true,
                 step: false
             },
             latitude: {
-                required: {
-                    depends: function () {
-                        return $(".cbox_trigger[value='E']").is(":checked");
-                }},
+                required: true,
                 step: false
             },
             longitude: {
-                required: {
-                    depends: function () {
-                        return $(".cbox_trigger[value='E']").is(":checked");
-                }},
+                required: true,
                 step: false
-            },
+            }
         },
         errorPlacement: function ( error, element ) {
 
             element.parents( ".form-group" ).addClass( "has-feedback" );
 
             // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !element.next( "span" )[ 0 ] ) { 
-                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
-                if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
+            if ( !element.next( "span" )[ 0 ] ) {
+                if( !element.is("[type=checkbox]") )
+                    $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
+                if(element.parent().is(".datetime")) element.next("span").css("right", "15px");
                 if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
+                if(element.is("input[type=number]")) element.next("span").css({"top": "24px", "right": "20px"});
+                if(element.is("textarea")) element.next("span").css({"top": "24px", "right": "22px"});
+                if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
             }
         },
         success: function ( label, element ) {
