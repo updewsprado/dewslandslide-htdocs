@@ -816,7 +816,6 @@ $(document).ready(function() {
 			} else if (msg.type == "ewi_tagging") {
 				gintags_collection = [];
 				var tag = "";
-				console.log($('#edit-btn-ewi-amd').val());
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
 					tag = "#EwiMessage";
 				} else {
@@ -833,7 +832,6 @@ $(document).ready(function() {
 					}
 					gintags_collection.push(gintags)
 				}
-				console.log(gintags_collection);
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
 					// console.log(response);
@@ -2275,14 +2273,9 @@ function fetchSiteAndOffice(){
 			var text = $('#constructed-ewi-amd').val();
 
 			// Checks if the edited version is the same with the original template
-			debugger;
 			if (temp_ewi_template_holder == $('#constructed-ewi-amd').val()) {
 				$('#edit-btn-ewi-amd').val('edit');
 			}
-
-			console.log(temp_ewi_template_holder);
-			console.log("-----------------------------------------------------");
-			console.log($('#constructed-ewi-amd').val());
 
 			try {
 				// Assume All 4 offices will be included in the EWI
