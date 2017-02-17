@@ -1,5 +1,12 @@
 function sendViaAlertMonitor(data){
-	console.log(data);
+
+	// Resets the settings for tagging.
+	$('#constructed-ewi-amd').prop("disabled", true );
+	$("#edit-btn-ewi-amd").attr('class', 'btn btn-warning');
+	$('#edit-btn-ewi-amd').text("Edit");
+	$('#edit-btn-ewi-amd').val("edit");
+
+
 	$.ajax({
 		type: "GET",
 		url: "../chatterbox/getewi",             	
@@ -808,9 +815,15 @@ $(document).ready(function() {
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
 				gintags_collection = [];
+				var tag = "";
+				if ($('#edit-btn-ewi-amd').val() === "edit") {
+					tag = "#EwiMessage";
+				} else {
+					tag = "#AlteredEWI"
+				}
 				for (var i = 0; i < msg["data"].length; i++) {
 					gintags = {
-						'tag_name': "#EwiMessage",
+						'tag_name': tag,
 						'tag_description': "communications",
 						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 						'tagger': tagger_user_id,
@@ -819,10 +832,9 @@ $(document).ready(function() {
 					}
 					gintags_collection.push(gintags)
 				}
-				console.log(gintags_collection);
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
-					console.log(response);
+					// console.log(response);
 				});
 			} else {
 
@@ -2239,7 +2251,6 @@ function fetchSiteAndOffice(){
 		$('#edit-btn-ewi-amd').click(function(){
 			if ($('#edit-btn-ewi-amd').val() === "edit"){
 				$('#constructed-ewi-amd').prop("disabled", false );
-				temp_ewi_template_holder = $('#constructed-ewi-amd').val();
 				$('#edit-btn-ewi-amd').val("undo");
 				$('#edit-btn-ewi-amd').text("Undo");
 				$("#edit-btn-ewi-amd").attr('class', 'btn btn-danger');
@@ -2252,13 +2263,21 @@ function fetchSiteAndOffice(){
 			}
 		});
 
+		$("#ewi-asap-modal").on('shown.bs.modal', function(){
+		    temp_ewi_template_holder = $("#constructed-ewi-amd").val();
+		});
+
 		$('#send-btn-ewi-amd').click(function(){
 			ewiFlagger = true;
 			var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
-
 			var text = $('#constructed-ewi-amd').val();
-			try {
 
+			// Checks if the edited version is the same with the original template
+			if (temp_ewi_template_holder == $('#constructed-ewi-amd').val()) {
+				$('#edit-btn-ewi-amd').val('edit');
+			}
+
+			try {
 				// Assume All 4 offices will be included in the EWI
 				var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
 
