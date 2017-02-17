@@ -129,7 +129,7 @@ $(document).ready( function() {
 	            {
 	            	data: "name", 
 	            	"render": function (data, type, full) {
-	            		return "<b><a href='../monitoring_events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
 	            	},
 	        		"name": 'name',
 	            },
@@ -174,9 +174,11 @@ $(document).ready( function() {
 		    {
 	            switch(data.day)
 	            {
+	            	case 0: 
 	            	case 1: $(row).addClass("day-one"); break;
 	                case 2: $(row).addClass("day-two"); break;
 	                case 3: $(row).addClass("day-three"); break;
+	                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
 	            }
 		  	}
 	    });
@@ -255,7 +257,7 @@ $(document).ready( function() {
 		  	// }
 	    });
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data, candidate); });
 
 	    isTableInitialized = true;
 	}
@@ -264,6 +266,11 @@ $(document).ready( function() {
 	{
 		if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
 	    {
+	    	if( table == "candidate" && candidate == null ) {
+	    		reposition("#errorModal");
+			    $("#errorModal").modal("show");
+	    	}
+
 	        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
 	        $("#" + table + " thead").remove();
 	    }
@@ -484,9 +491,11 @@ $(document).ready( function() {
 
 	function reloadTable(table, data) {
 		table.clear();
+		let x = data;
+		if( data == null ) { data = []; x = null; }
 	    table.rows.add(data).draw();
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table, x); });
 	}
 
 	let modalForm = null, entry = {};
@@ -640,7 +649,7 @@ $(document).ready( function() {
 	        if ( !element.next( "span" )[ 0 ] ) { 
 	            $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
 	            if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-	            if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
+	            if(element.is("select")) element.next("span").css({"top": "25px", "right": "23px"});
 	        }
 	    },
 	    success: function ( label, element ) {
@@ -674,7 +683,7 @@ $(document).ready( function() {
 	        temp.public_alert_level = aX == "ND" ? "A1" : aX;
 	        temp.status = entry.status;
 	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
-	        temp.reporter_1 = "<?php echo $user_id; ?>";
+	        temp.reporter_1 = $("#reporter_1").attr("value-id");
 
 	        if (entry.status == "new")
 	        {
@@ -709,7 +718,12 @@ $(document).ready( function() {
 	                $.when(f2)
 					.done(function (a) 
 					{
-						candidate = checkCandidateTriggers(realtime_cache);
+						try {
+							candidate = checkCandidateTriggers(realtime_cache);
+						} catch (err) {
+							console.log(err);
+							candidate = null;
+						}
 
 						reloadTable(latest_table, ongoing.latest);
 						reloadTable(extended_table, ongoing.extended);
@@ -770,8 +784,13 @@ $(document).ready( function() {
 		$.when(f2)
 		.done(function (a) 
 		{
-			candidate = checkCandidateTriggers(realtime_cache);
-			console.log("CANDI", candidate);
+			try {
+				candidate = checkCandidateTriggers(realtime_cache);
+				console.log("CANDI", candidate);
+			} catch (err) {
+				console.log(err);
+				candidate = null;
+			}
 
 			if(isTableInitialized) 
 			{
