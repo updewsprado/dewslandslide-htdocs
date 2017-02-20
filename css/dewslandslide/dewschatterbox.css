@@ -25,8 +25,11 @@ body {
 }
 
 
-.tag {
-  background-color: #f3e9af;
+.tagged {
+  border-style: solid;
+  border-color: #90dea6;
+  border-width: 10px;
+  border-radius: 5px;
 }
 
 #main-container {

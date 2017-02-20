@@ -685,12 +685,13 @@ $(document).ready(function() {
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		//Base url and Ws indicator.
-		if (window.location.host == "dewslandslide.com") {
+		if (window.location.host == "localhost" || window.location.host == "swatqa") {
+			$('#testing-site-indicator').show();
+			$('#testing-site-indicator span').html("TEST SITE: "+window.location.host);
+			socket = "ws://localhost:5050";
+		} else {
 			$('#testing-site-indicator').hide();
 			socket = "ws://www.dewslandslide.com:5050";
-		} else {
-			$('#testing-site-indicator').show();
-			socket = "ws://localhost:5050";
 		}
 		var tempConn = new WebSocket(socket);
 
@@ -1202,8 +1203,8 @@ $(document).ready(function() {
 		}
 	}
 	try {
-		Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4,options) {
-			if(v1 === v2 || v1 == v3 || v1 == v4) {
+		Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5,options) {
+			if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5) {
 				return options.fn(this)
 			} else {
 				return options.inverse(this);	
