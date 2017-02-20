@@ -45,6 +45,7 @@ $(document).ready(function(e) {
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
 			$("#graphS1").empty()
+			$("#graphS4").empty()
 			$("#alert_div").empty()
 			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
 			$('.crack_id_form').show()
@@ -63,6 +64,7 @@ $(document).ready(function(e) {
 				fdate : fromDate,
 				tdate : toDate
 			}
+			piezometer(dataSubmit);
 			$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){ // <----------------- Data for crack name
 				var result= JSON.parse(data_result)
 				var crack_name= [];
@@ -242,11 +244,6 @@ $(document).ready(function(e) {
 				}
 
 				var total_crackID = dataSubmit.crack_name.length
-				// var crack_name_id = []
-				// for(var aaaa = 0; aaaa < dataSubmit.crack_name.length; aaaa++){
-				// 	crack_name_id.push(dataSubmit.crack_name[aaaa])
-				// }
-
 				for(var c = 0; c < crackID_withData.length; c++){
 					dataSubmit.crack_name.splice(dataSubmit.crack_name.indexOf(crackID_withData[c]), 1 ) 
 				}
@@ -509,6 +506,31 @@ function surficialAnalysis(site,crack_id) {
 		}
 	});	
 }
+
+function piezometer(dataSubmit){
+	$("#graphS4").append('<div id="fred_div"></div>');
+	$("#graphS4").append('<div id="temp_div"></div>');
+	$.ajax({
+		dataType: "json",
+		url: "/api/PiezometerAllData/ltesapzpz",success: function(result) { 
+			var freq_data=[] , temp_data =[];
+			var freqDataseries =[] ,tempDataseries =[];
+			for(var i = 0; i < result.length; i++){
+				var time = Date.parse(result[i].timestamp)
+				var freq = [time,parseFloat(result[i].freq)]
+				var temp = [time,parseFloat(result[i].temp)]
+				freq_data.push(freq)
+				temp_data.push(temp)
+			}
+			
+			freqDataseries.push({name:'frequency',data:freq_data})
+			tempDataseries.push({name:'Temperature',data:temp_data})
+			chartProcess('fred_div',freqDataseries,'Piezometer frequency')
+			chartProcess('temp_div',tempDataseries,'Piezometer Temperature')
+		} 
+	});	
+}
+
 function chartProcess(id,data_series,name){
 	Highcharts.setOptions({
 		global: {
@@ -553,6 +575,9 @@ function chartProcess(id,data_series,name){
 			series:data_series
 		});
 }
+
+
+
 function chartProcess2(id,data_series,name){
 	Highcharts.setOptions({
 		global: {
@@ -597,5 +622,8 @@ function chartProcess2(id,data_series,name){
 		series:data_series
 	});
 }
+
+
+
 });
 
