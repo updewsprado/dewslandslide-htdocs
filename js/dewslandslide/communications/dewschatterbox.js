@@ -241,6 +241,7 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
+		console.log(msg);
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -2697,6 +2698,9 @@ $(document).ready(function() {
 
 	$('#confirm-gintags').click(function(){
 		insertGintagService(gintags_msg_details);
+		if ($('#gintags').val() != "") {
+			$( "#messages li" ).last().addClass("tagged");
+		}
 	});
 
 	function insertGintagService(data){
