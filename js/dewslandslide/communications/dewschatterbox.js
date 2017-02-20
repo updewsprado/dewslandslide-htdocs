@@ -193,6 +193,9 @@ $(document).ready(function() {
 	var gintags_msg_details;
 	var tagger_id = "";
 	var temp_ewi_template_holder = "";
+	var temp_msg_holder = "";
+	var socket = "";
+
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
 
@@ -681,8 +684,15 @@ $(document).ready(function() {
 	}
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		// var tempConn = new WebSocket('ws://localhost:5050');
-		var tempConn = new WebSocket('ws://www.dewslandslide.com:5050');
+		//Base url and Ws indicator.
+		if (window.location.host == "dewslandslide.com") {
+			$('#testing-site-indicator').hide();
+			socket = "ws://www.dewslandslide.com:5050";
+		} else {
+			$('#testing-site-indicator').show();
+			socket = "ws://localhost:5050";
+		}
+		var tempConn = new WebSocket(socket);
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -768,6 +778,8 @@ $(document).ready(function() {
 					tag = "#AlteredEWI"
 				}
 
+				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
+				updateMessages(temp_msg_holder);
 				if (tag != "") {
 					for (var i = 0; i < msg["data"].length; i++) {
 					gintags = {
@@ -1584,7 +1596,8 @@ $(document).ready(function() {
 						'user': user,
 						'tag': emp_tag,
 						'msg': text + footer,
-						'timestamp': gsmTimestampIndicator
+						'timestamp': gsmTimestampIndicator,
+						'ewi_tag': false
 					};
 
 					conn.send(JSON.stringify(msg));
@@ -1607,7 +1620,7 @@ $(document).ready(function() {
 						tagSitenames.push(this.value);
 					});
 
-					var msg = {
+					temp_msg_holder = {
 						'type': 'smssendgroup',
 						'user': user,
 						'offices': tagOffices,
@@ -1620,14 +1633,12 @@ $(document).ready(function() {
 
 					console.log(msg);
 
-					conn.send(JSON.stringify(msg));
+					conn.send(JSON.stringify(temp_msg_holder));
 
 					msgType = "smssendgroup";
 					testMsg = msg;
 					counters = 0;
 					messages = [];
-					updateMessages(msg);
-
 					$('#msg').val('');	
 				}
 			}
@@ -1641,16 +1652,16 @@ $(document).ready(function() {
 
 				user = "You";
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
-				var msg = {
+				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'numbers': normalized,
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator
+					'timestamp': gsmTimestampIndicator,
+					'ewi_tag':false
 				};
-				updateMessages(msg);
-				conn.send(JSON.stringify(msg));
-
+				// updateMessages(temp_msg_holder);
+				conn.send(JSON.stringify(temp_msg_holder));
 				$('#msg').val('');
 			}
 
@@ -2705,7 +2716,6 @@ $(document).ready(function() {
 		});
 
 		if (tagOffices.length != 0 && tagSitenames.length != 0) {
-			console.log(data);
 			if (data[1] == "You") {
 				var gintag_details = {
 					"office" : tagOffices,
@@ -2754,7 +2764,30 @@ $(document).ready(function() {
 	function getGintagGroupContacts(gintag_details){
 		$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 		.done(function(response) {
-			console.log(response);
+			var data = JSON.parse(response);
+			var tags = $('#gintags').val();
+			tags = tags.split(',');
+			console.log(data);
+			for (var i = 0; i < tags.length; i++) {
+				gintags_collection = [];
+				for (var x = 0 ; x < data.length; x++) {
+					for (var y = 0; y < data[x].length; y ++) {
+						gintags = {
+							'tag_name': tags[i],
+							'tag_description': "communications",
+							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+							'tagger': tagger_user_id,
+							'remarks': data[x][y].sms_id,					
+							'table_used': "smsoutbox"
+						}
+						gintags_collection.push(gintags);
+					}
+				}
+				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				.done(function(response) {
+					console.log("Tagged success!");
+				});
+			}
 		});
 	}
 
@@ -2764,7 +2797,6 @@ $(document).ready(function() {
 		$.post( "../generalinformation/getGinTags/", {gintags: JSON.stringify(data)})
 		.done(function(response) {
 			var data = JSON.parse(response);
-			console.log(data);
 			for (var i = 0; i < data.length; i++) {
 				$('#gintags').tagsinput('add',data[i].tag_name);
 			}
