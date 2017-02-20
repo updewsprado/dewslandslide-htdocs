@@ -57,6 +57,9 @@ $(document).ready(function()
 
     $("span.glyphicon-edit").click(function () 
     {
+        $('#modalForm .form-group').removeClass('has-feedback').removeClass('has-error').removeClass('has-success');
+        $('#modalForm .glyphicon.form-control-feedback').remove();
+
         let release_id = this.id;
         $.get( "../../pubrelease/getRelease/" + release_id, 
         function (release) 
@@ -121,6 +124,7 @@ $(document).ready(function()
             trigger_sensor_2: "required",
             trigger_rain_info: "required",
             trigger_eq_info: "required",
+            trigger_od_info: "required",
             trigger_ground_1_info: "required",
             trigger_ground_2_info: "required",
             trigger_sensor_1_info: "required",
@@ -136,7 +140,8 @@ $(document).ready(function()
             longitude: {
                 required: true,
                 step: false
-            }
+            },
+            reason: "required"
         },
         errorPlacement: function ( error, element ) {
 
