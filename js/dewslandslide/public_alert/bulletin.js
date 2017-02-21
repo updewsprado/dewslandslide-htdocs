@@ -15,7 +15,7 @@ function loadBulletin(id1, id2) {
     event_id = id2;
 
     $.ajax({
-        url: '../../bulletin/main/' + id1 + '/0', 
+        url: '/../../bulletin/main/' + id1 + '/0', 
         type: 'POST',
         success: function(data) {
             onEdit = false;
@@ -49,7 +49,7 @@ function renderPDF(id)
     $('#bulletinLoadingModal .progress-bar').text('Rendering Bulletin PDF...');
     reposition('#bulletinLoadingModal');
     $('#bulletinLoadingModal').modal({ backdrop: 'static', show: 'true'});
-    let address = '../../bulletin/run_script/' + id + '/' + isEdited + "/" + edits.join("|");
+    let address = '/../../bulletin/run_script/' + id + '/' + isEdited + "/" + edits.join("|");
 
     edit(false);
 
@@ -81,13 +81,14 @@ function sendMail(text, subject, filename) {
     console.log("Sent", text, subject, filename);
 
     $.ajax({
-        url: '../../bulletin/mail/', 
+        url: '/../../bulletin/mail/', 
         type: 'POST',
         data: form,
         success: function(data)
         {
             $('#bulletinLoadingModal').modal('hide');
             $('#resultModal > .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
+            reposition("#resultModal");
 
             setTimeout(function () {
                 if(data == "Sent.")

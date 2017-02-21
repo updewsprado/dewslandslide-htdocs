@@ -56,7 +56,7 @@ $(document).ready(function()
     let event_id = window.location.pathname.split("/")[3];
     let event = null;
     let latitude = null, longitude = null, site_code = null, address = null;
-    $.get( "../../../pubrelease/getEvent/" + event_id, function( data ) {
+    $.get( "/../../../pubrelease/getEvent/" + event_id, function( data ) {
         event = data.slice(0)[0];
     }, "json")
     .done(function (data) {
@@ -75,7 +75,7 @@ $(document).ready(function()
         $('#modalForm .glyphicon.form-control-feedback').remove();
 
         let release_id = this.id;
-        $.get( "../../pubrelease/getRelease/" + release_id, 
+        $.get( "/../../pubrelease/getRelease/" + release_id, 
         function (release) 
         {
             $("#data_timestamp").val(release.data_timestamp);
@@ -84,7 +84,7 @@ $(document).ready(function()
 
             console.log("release ", release);
             current_release = jQuery.extend(true, {}, release);
-            $.get( "../../pubrelease/getAllEventTriggers/" +  release.event_id + "/" + release_id, 
+            $.get( "/../../pubrelease/getAllEventTriggers/" +  release.event_id + "/" + release_id, 
             function (triggers) 
             {
                 let lookup = { "G":"ground", "g":"ground", "S":"sensor", "s":"sensor", "E":"eq", "R":"rain", "D":"od" };
@@ -203,7 +203,7 @@ $(document).ready(function()
             temp.release_id = current_release.release_id;
             temp.trigger_list = current_release.trigger_list.length == 0 ? null : current_release.trigger_list;
             console.log(temp);
-            $.post( "../../pubrelease/update", temp)
+            $.post( "/../../pubrelease/update", temp)
             .done(function( data ) 
             {
                 $("#outcome").modal({backdrop: "static"});
@@ -227,7 +227,7 @@ $(document).ready(function()
        .then(function () {
             $('#bulletinLoadingModal').modal('hide');
             filename = $("#filename").text();
-            window.location.href = "../bulletin/view/DEWS-L Bulletin for " + filename + ".pdf";
+            window.location.href = "/../bulletin/view/DEWS-L Bulletin for " + filename + ".pdf";
        });
     });
 
