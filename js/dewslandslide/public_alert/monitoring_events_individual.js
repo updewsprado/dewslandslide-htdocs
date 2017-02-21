@@ -53,6 +53,20 @@ $(document).ready(function()
         if(to_highlight != "") $(".timeline-panel#" + to_highlight).focus()
     }, 1000)
 
+    let event_id = window.location.pathname.split("/")[3];
+    let event = null;
+    let latitude = null, longitude = null, site_code = null, address = null;
+    $.get( "../../../pubrelease/getEvent/" + event_id, function( data ) {
+        event = data.slice(0)[0];
+    }, "json")
+    .done(function (data) {
+        latitude = event.latitude;
+        longitude = event.longitude;
+        site_code = name.toUpperCase();
+        address = event.barangay + ", " + event.municipality + ", " + event.province;
+        initialize_map();
+    });
+
     let current_release = {};
 
     $("span.glyphicon-edit").click(function () 
@@ -232,10 +246,10 @@ $(document).ready(function()
 
     function initialize_map() 
     {
-        var lat = "<?php echo $event->latitude; ?>";
-        var lon = "<?php echo $event->longitude; ?>";
-        var name = "<?php echo strtoupper($event->name); ?>";
-        var address = '<?php echo $event->barangay . ", " . $event->municipality . ", " . $event->province; ?>';
+        var lat = latitude;
+        var lon = longitude;
+        var name = site_code;
+        var address = address;
       
         var mapOptions = {
             //center: new google.maps.LatLng(14.5995, 120.9842),
