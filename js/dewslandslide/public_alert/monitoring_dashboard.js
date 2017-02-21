@@ -706,6 +706,7 @@ $(document).ready( function() {
 	    },
 	    submitHandler: function (form) 
 	    {
+	    	$("#releaseModal").modal('hide');
 	    	let data = $( "#modalForm" ).serializeArray();
 	        let temp = {};
 	        data.forEach(function (value) { temp[value.name] = value.value == "" ? null : value.value; });
@@ -753,7 +754,6 @@ $(document).ready( function() {
 	            data : temp,
 	            success: function(result, textStatus, jqXHR)
 	            {
-	                $("#releaseModal").modal('hide');
 	                console.log(result);
 
 	                let f2 = getOnGoingAndExtended();
