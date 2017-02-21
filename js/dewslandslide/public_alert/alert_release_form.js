@@ -105,8 +105,8 @@ $(document).ready(function()
             $.get( "../pubrelease/getSentRoutine", {timestamp: timestamp}, 
             function( data ) 
             {
-                if( data.length == 0 ) $("input[name='routine_sites[]']:checked").prop("disabled", false).prop("checked", false);
-                else data.forEach(function (a) { $("input[name='routine_sites[]'][value=" + a.site_id + "]").prop("checked", true).prop("disabled", true); })
+                if( data.length == 0 ) $("input.routine-checkboxes:checked").prop("disabled", false).prop("checked", false);
+                else data.forEach(function (a) { $("input.routine-checkboxes[value=" + a.site_id + "]").prop("checked", true).prop("disabled", true); })
             }, "json" )
             .done(function () {
                 $("#sites_area .panel-body").slideDown();
@@ -779,7 +779,7 @@ $(document).ready(function()
                 // If A0, check if legit lowered or invalid
                 else if( temp.public_alert_level == "A0")
                 {
-                    if( moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
+                    if( moment(current_event.validity).isSameOrAfter(moment(temp.timestamp_entry).add(30, 'minutes')) )
                         temp.status = "extended";
                     else
                         temp.status = "invalid";
