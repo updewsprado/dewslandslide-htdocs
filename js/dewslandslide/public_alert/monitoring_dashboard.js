@@ -88,7 +88,7 @@ $(document).ready( function() {
 		        	},
 		        	{
 		        		"render": function (data, type, full) {
-		            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "'></span></a>";
+		            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' event-id='" + full.event_id + "'></span></a>";
 		            	}
 		        	}
 		    	],
@@ -257,7 +257,7 @@ $(document).ready( function() {
 		  	// }
 	    });
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data, candidate); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
 
 	    isTableInitialized = true;
 	}
@@ -337,7 +337,9 @@ $(document).ready( function() {
 
 	$("#latest, #extended").on( "click", 'tbody tr .glyphicon-envelope', function(x) {
 		id = $(this).prop('id');
-		loadBulletin(id);
+		let event_id = $(this).attr('event-id')
+		console.log("event", event_id)
+		loadBulletin(id, event_id);
 	});
 
 	$("#send").click(function () {
@@ -491,11 +493,9 @@ $(document).ready( function() {
 
 	function reloadTable(table, data) {
 		table.clear();
-		let x = data;
-		if( data == null ) { data = []; x = null; }
 	    table.rows.add(data).draw();
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table, x); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table); });
 	}
 
 	let modalForm = null, entry = {};
@@ -747,47 +747,47 @@ $(document).ready( function() {
 	        }
 
 	        console.log(temp);
-	    //  	$.ajax({
-	    //         url: "../pubrelease/insert",
-	    //         type: "POST",
-	    //         data : temp,
-	    //         success: function(result, textStatus, jqXHR)
-	    //         {
-	    //             $("#releaseModal").modal('hide');
-	    //             console.log(result);
+	     	$.ajax({
+	            url: "../pubrelease/insert",
+	            type: "POST",
+	            data : temp,
+	            success: function(result, textStatus, jqXHR)
+	            {
+	                $("#releaseModal").modal('hide');
+	                console.log(result);
 
-	    //             let f2 = getOnGoingAndExtended();
-	    //             $.when(f2)
-					// .done(function (a) 
-					// {
-					// 	try {
-					// 		candidate = checkCandidateTriggers(realtime_cache);
-					// 	} catch (err) {
-					// 		console.log(err);
-					// 		candidate = null;
-					// 	}
+	                let f2 = getOnGoingAndExtended();
+	                $.when(f2)
+					.done(function (a) 
+					{
+						try {
+							candidate = checkCandidateTriggers(realtime_cache);
+						} catch (err) {
+							console.log(err);
+							candidate = null;
+						}
 
-					// 	reloadTable(latest_table, ongoing.latest);
-					// 	reloadTable(extended_table, ongoing.extended);
-					// 	reloadTable(overdue_table, ongoing.overdue);
-					// 	reloadTable(candidate_table, candidate);
+						reloadTable(latest_table, ongoing.latest);
+						reloadTable(extended_table, ongoing.extended);
+						reloadTable(overdue_table, ongoing.overdue);
+						reloadTable(candidate_table, candidate);
 
-					// 	initialize_map();
-					// });
+						initialize_map();
+					});
 
-	    //             setTimeout(function () 
-	    //             {
-	    //         		$('#resultModal .modal-header').html("<h4>Early Warning Information Release</h4>");
-	    //             	$("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information successfully released on site!</p>');
-	    //             	$('#resultModal').modal('show');
+	                setTimeout(function () 
+	                {
+	            		$('#resultModal .modal-header').html("<h4>Early Warning Information Release</h4>");
+	                	$("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information successfully released on site!</p>');
+	                	$('#resultModal').modal('show');
 
-	    //             }, 1000);
-	    //         },
-	    //         error: function(xhr, status, error) {
-	    //           var err = eval("(" + xhr.responseText + ")");
-	    //           alert(err.Message);
-	    //         }
-	    //     });
+	                }, 1000);
+	            },
+	            error: function(xhr, status, error) {
+	              var err = eval("(" + xhr.responseText + ")");
+	              alert(err.Message);
+	            }
+	        });
 	    }
 	});
 
