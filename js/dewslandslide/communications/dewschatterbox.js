@@ -4,6 +4,8 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 
+	console.log(data);
+
 
 	$.ajax({
 		type: "GET",
@@ -74,7 +76,7 @@ function sendViaAlertMonitor(data){
 			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
 
 			constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
-			var ewiLocation = data["sitio"]+","+data["barangay"]+","+data["municipality"]+","+data["province"];
+			var ewiLocation = data["sitio"]+", "+data["barangay"]+", "+data["municipality"]+", "+data["province"];
 
 			var formatSbmp = ewiLocation.replace("null","");
 			if (formatSbmp.charAt(0) == ",") {
@@ -241,7 +243,6 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
-		console.log(msg);
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -2158,11 +2159,27 @@ $(document).ready(function() {
 			var tagSitenames = [];
 			tagSitenames.push($('#site-abbr').val().toUpperCase());
 
-			if (tagSitenames[0] == "MNG" || tagSitenames[0] == "MAN") {
-				tagSitenames[0] = "MAN/MNG";
-			} else if (tagSitenames[0] == "JOR" || tagSitenames[0] == "POB") {
-				tagSitenames[0] = "JOR/POB";
+			switch(tagSitenames[0]) {
+			    case "MNG":
+			        tagSitenames[0] = "MAN/MNG";
+			        break;
+			    case "MAN":
+			        tagSitenames[0] = "MAN/MNG";
+			        break;
+   			    case "JOR":
+			        tagSitenames[0] = "JOR/POB";
+			        break;
+			    case "POB":
+			        tagSitenames[0] = "JOR/POB";
+			        break;
+			    case "MSL":
+			        tagSitenames[0] = "MES";
+			        break;
+			    case "MSU":
+			        tagSitenames[0] = "MES";
+			        break;
 			}
+
 
 			var msg = {
 				'type': 'smssendgroup',
@@ -2689,17 +2706,20 @@ $(document).ready(function() {
 		}
 	});
 
+	var message_li_index;
 	$(document).on("click","#messages li",function(){
+		message_li_index = $(this).index();
 		gintags_msg_details = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 		reposition('#gintag-modal');
 		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
 	})
 
+
 	$('#confirm-gintags').click(function(){
 		insertGintagService(gintags_msg_details);
 		if ($('#gintags').val() != "") {
-			$( "#messages li" ).last().addClass("tagged");
+			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
 	});
 
