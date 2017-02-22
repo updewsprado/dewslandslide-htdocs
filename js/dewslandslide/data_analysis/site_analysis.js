@@ -8,10 +8,8 @@
 $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	$('#sitegeneral').selectpicker();
-	$('#columngeneral-tr').hide();
-	$('#nodegeneral-tr').hide();
-	$('.daterange-tr').hide();
-	$('.charts-graphs-tr').hide();
+	$('.col_level_checkbox').prop('disabled', true);
+	$('.site_level_checkbox').prop('disabled', true);
 	var start = moment().subtract(2, 'days'); 
 	var end = moment().add(1, 'days');
 
@@ -45,9 +43,9 @@ $(document).ready(function(e) {
 
 	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selecte_site = $(this).find('option').eq(clickedIndex).text();
-		$('#columngeneral-tr').show();
-		$('#columngeneral-tr').empty();
-		$('#columngeneral-tr').append('<th> Column: </th><td><select class="selectpicker"  id="columngeneral" data-live-search="true"></td>');
+		$('.site_level_checkbox').prop('disabled', false);
+		$('.columngeneral').empty();
+		$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
 		$('#columngeneral').selectpicker();
 		$('#columngeneral').append('<option >Select Column</option>');
 		$.ajax({url: "/api/SiteDetails/"+selecte_site , dataType: "json",success: function(result){
@@ -83,35 +81,28 @@ function mapGenerator(site) {
 
 function SelectedColumn(selecte_site) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-		$( "#container-nav ").switchClass( "container", "container-fluid");
-		$( "#container-nav-size ").switchClass( "col-sm-3", "col-sm-2");
-		$( "#divData").switchClass( "col-sm-9", "col-sm-12");
-		$("#divData").empty()
+		$( "#analysis_panel_body").empty();
+		var selecte_column = $(this).find('option').eq(clickedIndex).text();
+		$('.col_level_checkbox').prop('disabled', false);
+		$( "#analysis_panel_body").append('<small id="small_header"><b>&nbsp;&nbsp;&nbsp;'+selecte_site.toUpperCase()+'&nbsp;&nbsp;&nbsp;>&nbsp;&nbsp;&nbsp;'
+			+selecte_column.toUpperCase()+'</b></small><div class="panel panel-default "><div class="panel-body"><div id="divData"></div> </div></div>');
 		$("#divData").append('<h1 id="site_info"></h1>')
 		$("#divData").append('<h3 id="site_info_sub"></h3>')
-		$("#divData").append('<h4 id="site_info_sub_sub"></h4>')
-		$("#divData").append('<div class = "col-sm-3" id="map-canvas" style="height:'+$("#site_details").height()+'"></div>')
-		$("#divData").append('<div class="col-sm-9"><ul class="nav nav-tabs" id="divData-ul"><li id="site_details_li" class="active"><a data-toggle="tab" href="#site_details">Site Details</a></li></ul>'+'<div class="tab-content  id="divData-tab-content"><div id="site_details" class="tab-pane fade in active"></div></div></div>')
+		$("#divData").append('<h4 id="site_info_sub_sub"></h4><hr>')
+		$("#divData").append('<div class = "col-md-3" id="map-canvas"></div>')
+		$("#divData").append('<div class="col-md-8 divData-colmd8"><ul class="nav nav-tabs" id="divData-ul"><li id="site_details_li" class="active"><a data-toggle="tab" href="#site_details">Site Details</a></li>'+
+			'<li id="site_maintenance_li" class=""><a data-toggle="tab" href="#site_maintenance">Site Maintenance</a></li></ul>'+
+			'<div class="tab-content  id="divData-tab-content"><div id="site_details" class="tab-pane fade in active"></div><div id="site_maintenance" class="tab-pane fade "></div></div></div>')
 		
-		var selecte_column = $(this).find('option').eq(clickedIndex).text();
 		SiteInfo(selecte_column)
+		DataPresence(selecte_column,'data_presence_div')
 		NodeSumary(selecte_column,'node_summary_div')
 		mapGenerator(selecte_column)
 		siteMaintenance(selecte_column)
 		showCommHealthPlotGeneral(selecte_column,'healthbars')
-		CheckBoxSiteLevel(selecte_site,selecte_column)
-		$(".tab-content").append('<div id="rainfall_data" class="tab-pane fade rainfall_data">'+
-			'</div><div id="surficial_measurement_data" class="tab-pane fade surficial_measurement_data"></div>')
-		$("#divData-ul").append('<li id="rainfall_data_li"><a data-toggle="tab" href="#rainfall_data">Rain Graphs</a></li>'+
-			'<li id="surficial_measurement_data_li"><a data-toggle="tab" href="#surficial_measurement_data">Surficial Measurement</a></li>')
-		$('#rainfall_data_li').hide()
-		$('#rainfall_data').hide()
-		$('#surficial_measurement_data_li').hide()
-		$('#surficial_measurement_data').hide()
-		$(".rainfall_data").append('<br><h3><span class="glyphicon glyphicon-chevron-down"></span><b>Rainfall Graphs</b></h3><div id="rain_arq" ></div><br><div id="rain_senslope"></div><br><div id="rain1"></div><br><div id="rain2" ></div><br><div id="rain3" ></div><br>')
-		$(".surficial_measurement_data").append('<br><h3><span class="glyphicon glyphicon-chevron-down"></span><b>Surficial Measurements</b></h3><div id="rain_arq"><br>')
-		$( "#rain_graph_checkbox" ).prop( "checked", false );
-		$('#nodegeneral-tr').show();
+		CheckBoxSiteLevel(selecte_site,selecte_column);
+		$('.nodegeneral').empty();
+		$('.nodegeneral').append('<label for="nodegeneral">Node</label><select class="selectpicker"  id="nodegeneral" multiple data-live-search="true"></select>');
 		$('#nodegeneral').selectpicker();
 		$.ajax({url: "/api/NodeNumberPerSite/"+selecte_column , dataType: "json",success: function(result){
 			for (c = 0; c <  result.length; c++) {
@@ -119,8 +110,6 @@ function SelectedColumn(selecte_site) {
 					dropdowlistAppendValue((d+1),(d+1),'#nodegeneral');
 				}
 			}
-			$('.daterange-tr').show();
-			$('.charts-graphs-tr').show();
 			SelectedNodes(selecte_site,selecte_column)
 		}
 	})
@@ -129,8 +118,8 @@ function SelectedColumn(selecte_site) {
 
 function siteMaintenance(curSite) {
 	let dataSubmit = {site : curSite}
-	$("#site_details").append('<br><hr><h3><span class="glyphicon glyphicon-chevron-down"></span><b>Site Maintenance</b></h3><table id="mTable" class="display table" cellspacing="0" width="100%"></table>')
-
+	$("#site_maintenance").append('<br><h4><span class="glyphicon glyphicon-chevron-down"></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
+		'<thead><tr><th>ID</th><th>Site Name</th>th>Start Date</th><th>End Date</th><th>Personel</th><th>Activity</th><th>Object(s)</th><th>Remarks</th></tr> </thead><tbody> </tbody></table>')
 	$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
 		var site_maintenace = []
@@ -140,29 +129,21 @@ function siteMaintenance(curSite) {
 		}
 		$('#mTable').DataTable({
 			data:  site_maintenace,
-			columns:[{ title: "ID" },
-			{ title: "Site Name" },
-			{ title: "Start Date" },
-			{ title: "End Date" },
-			{ title: "Personel" },
-			{ title: "Activity" },
-			{ title: "Objects" },
-			{ title: "Remarks" }
-			],
 			"processing": true, 
-			"lengthMenu": [ 5,10, 25, 50, 75, 100 ]
+			"lengthMenu": [ 10, 25, 50, 75, 100 ]
 		} );
 	});
 }
 
 function NodeSumary(site,siteDiv){ 
 	let dataSubmit = { site:site}
-	$("#site_details").append('<br><div class="col-sm-9 row" id="node_summary_div" style="height: 18px; width:'+ ($("#container-nav-size").width()*2.8)+'px"><h3><span class="glyphicon glyphicon-chevron-down"></span><b> Node Summary</b><h3></div><br>')
-	$("#site_details").append('<br><hr><h3><span class="glyphicon glyphicon-chevron-down"></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h3><div width="250px" id="legends" style="visibility:hidden; display:none;">'+
+	$("#site_details").append('<br><div  id="data_presence_div"><h4><span class="glyphicon glyphicon-chevron-down"></span><b> Data Presence</b></h4></div><br>')
+	$("#site_details").append('<hr><div  id="node_summary_div"><h4><span class="glyphicon glyphicon-chevron-down"></span><b> Node Summary</b></h4></div>')
+	$("#site_details").append('<h4><span class="glyphicon glyphicon-chevron-down"></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div width="250px" id="legends" style="visibility:hidden; display:none;">'+
 			'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
 			'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
 			'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
-			'</div><div class="row" id="healthbars" style=" height: 150px;width:'+ ($("#container-nav-size").width()*3.5)+'px"></div>')
+			'</div><div class="row" id="healthbars" style=" height: 300px;width:500px"></div>')
 	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
 		nodeAlertJSON = JSON.parse(result.nodeAlerts)
@@ -176,10 +157,80 @@ function SiteInfo(site){
 	let dataSubmit = { site:site}
 	$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
-		$("#site_info").append(result[0].name.toUpperCase()+"(v"+result[0].version+")")
-		$("#site_info_sub").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province)
+		$("#site_info").append("Overview")
+		$("#site_info_sub").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase()+")")
 		$("#site_info_sub_sub").append("Date install("+result[0].date_install +") / Date Activation("+result[0].date_activation+")")
 	});
+}
+function DataPresence(site,siteDiv){
+		$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/2016-04-20/2016-04-21",
+			dataType: "json",
+			success: function(result){
+				console.log(($(".container").width()-$("#site_info").width()))
+				var time_non_moment = []
+				var time_index_obj =[]
+				var time_data =[]
+				var pattern = []
+				for (a = 0; a < 48; a++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_non_moment.push(time.format('YYYY-MM-DD HH:mm:ss'))
+				}
+				time_non_moment.reverse()
+				for (b = 0; b < 48; b++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_index_obj.push({index:b,time:time_non_moment[b]})
+				}
+				for (c = 0; c < time_non_moment.length; c++) {
+					for (d = 0; d < result.length; d++) {
+						if(time_non_moment[c] == result[d].timeslice){
+							time_data.push(c)
+						}
+					}
+				}
+
+				colors = [ "#222", "#222"]
+				for (e = 0; e < time_data.length; e++) {
+					pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
+				}
+				console.log(($(".container").width()-$("map-canvas").width()))
+				var colorDomain = d3.extent(pattern, function(d) {
+					return d.time;
+				});
+
+				var colorScale = d3.scale.linear()
+				.domain(colorDomain)
+				.range(colors);
+
+				var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(d) {
+					return "<strong>timestamp:</strong> <span style='color:red'>"+d.timestamp+"</span>";
+				}) 
+
+				var svg = d3.select("#"+siteDiv)
+				.append("svg")
+				.attr("width", ($(".container").width()-$("#site_info").width())+200)
+				.attr("height", 100);
+
+                svg.call(tip);
+
+				var rectangles = svg.selectAll("rect")
+				.data(pattern)
+				.enter().append("rect")
+
+				rectangles.attr("x", function(d) {
+					return d.index_x * (((($(".container").width()-$("#site_info").width())+200)/48));})
+				.attr("y", function(d) {
+					return d.index_y * (((($(".container").width()-$("#site_info").width())+200)/48));})
+				.attr("width", (((($(".container").width()-$("#site_info").width())+200)/48)-2))
+				.attr("height", 15).
+				style("fill", function(d) {
+					return colorScale(d.index_x);})
+				.on('mouseover', tip.show)
+				.on('mouseout', tip.hide)
+			}
+		});
 }
 function SelectedNodes(selecte_site,selecte_column){
 	$('#nodegeneral').on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
@@ -187,31 +238,38 @@ function SelectedNodes(selecte_site,selecte_column){
 	});
 }
 function CheckBoxSiteLevel(selecte_site,selecte_column){
-	// var ckbox = $('#rain_graph_checkbox');
-	var ckbox = $('#ground_measurement_checkbox');
-
-	// $('input').on('click',function () {
-	// 	if (ckbox.is(':checked')) {
-	// 		$('#rainfall_data_li').show()
-	// 		$('#rainfall_data').show()
-	// 		RainFallProcess(selecte_site)
-	// 	}else{
-	// 		$('#rainfall_data_li').hide()
-	// 		$('#rainfall_data').hide()
-	// 	}
-	// });
-
+	$("#divData").append('<h1 class="header_level col-sm-12">Site Level Overview</h1><hr>')
+	$("#divData").append('<div class="col-sm-12" id="site_level"></div>')
+	$("#divData").append('<h1 class="header_level col-sm-12">Column Level Overview</h1><hr>')
+	$("#divData").append('<div class="col-sm-12" id="column_level"></div>')
+	$("#site_level").append('<br><div id="raincharts"><h4><span class="glyphicon glyphicon-chevron-down"></span><b>Rainfall Graphs</b></h4><div id="rain_arq" >'+
+		'</div><br><div id="rain_senslope"></div><br><div id="rain1"></div><br><div id="rain2" ></div><br><div id="rain3"></div></div><br>')
 	$('input').on('click',function () {
-		if (ckbox.is(':checked')) {
-			$('#surficial_measurement_data_li').show()
-			$('#surficial_measurement_data').show()
-			RainFallProcess(selecte_site)
+		if ($('#rain_graph_checkbox').is(':checked')) {
+			 RainFallProcess(selecte_site)
+			 $("#raincharts").show()
 		}else{
-			$('#surficial_measurement_data_li').hide()
-			$('#surficial_measurement_data').hide()
+			$("#raincharts").hide()
+		}
+		if ($('#ground_measurement_checkbox').is(':checked')) {
+			 // RainFallProcess(selecte_site)
+			 // $("#raincharts").show()
+		}else{
+			// $("#raincharts").hide()
+		}
+		if ($('#surficial_velocity_checkbox').is(':checked')) {
+			 // RainFallProcess(selecte_site)
+			 // $("#raincharts").show()
+		}else{
+			// $("#raincharts").hide()
+		}
+		if ($('#surficial_displacement_checkbox').is(':checked')) {
+			 // RainFallProcess(selecte_site)
+			 // $("#raincharts").show()
+		}else{
+			// $("#raincharts").hide()
 		}
 	});
-
 }
 function RainFallProcess(curSite){
 	
@@ -244,7 +302,6 @@ function getDistanceRainSite(site,fdate,tdate,max_rain,id) {
 	}
 
 }
-
 function getRainSenslope(site,fdate,tdate,max_rain,id) {
 	if(site != null){
 		$.ajax({
@@ -524,8 +581,3 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
                             series:series_data
                         });
 }
-
-function SurficialProcess() {
-
-}
-

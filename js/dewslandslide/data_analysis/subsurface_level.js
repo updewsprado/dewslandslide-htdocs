@@ -45,7 +45,7 @@ $(document).ready(function(e) {
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
-
+			// dataPresencePerSite(curSite)
 			document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Site Overview"
 			for (i = 0; i <  per_site_name.length; i++) {
 				var siteCode = per_site_name[i].slice(0,3)
@@ -92,9 +92,9 @@ $(document).ready(function(e) {
 		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
-			var data = JSON.parse(result);
-			columnPosition(data[0].c)
-			displacementPosition(data[0].d,data[0].v)
+				var data = JSON.parse(result);
+				columnPosition(data[0].c)
+				displacementPosition(data[0].d,data[0].v)
 			}
 		});
 	}
@@ -460,8 +460,89 @@ $(document).ready(function(e) {
 			series:data_series
 		});
 	}
+	function dataPresencePerSite(site){
+		$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/2016-04-20/2016-04-21",
+			dataType: "json",
+			success: function(result){
+				var time_non_moment = []
+				var time_index_obj =[]
+				var time_data =[]
+				var pattern = []
+				for (a = 0; a < 48; a++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_non_moment.push(time.format('YYYY-MM-DD HH:mm:ss'))
+				}
+				time_non_moment.reverse()
+				for (b = 0; b < 48; b++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_index_obj.push({index:b,time:time_non_moment[b]})
+				}
+				for (c = 0; c < time_non_moment.length; c++) {
+					for (d = 0; d < result.length; d++) {
+						if(time_non_moment[c] == result[d].timeslice){
+							time_data.push(c)
+						}
+					}
+				}
+
+				colors = [ "#1a9850", "#222"]
+				for (e = 0; e < time_data.length; e++) {
+					pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
+				}
+				
+
+				var colorDomain = d3.extent(pattern, function(d) {
+					return d.time;
+				});
+
+				var colorScale = d3.scale.linear()
+				.domain(colorDomain)
+				.range(colors);
+
+				var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(d) {
+					return "<strong>timestamp:</strong> <span style='color:red'>"+d.timestamp+"</span>";
+				}) 
 
 
+				var svg = d3.select(".heatmap")
+				.append("svg")
+				.attr("width", 48 * 25)
+				.attr("height", 100);
 
 
+ 				// var timeLabels = svg.selectAll(".timeLabel")
+     //          	.data(time_index_obj)
+     //          	.enter().append("text")
+     //            .text(function(d) { return d.time.slice(11,16); })
+     //            .attr("x", function(d) {
+					// return d.index * 25; })
+     //            .attr("y",  function(d) {
+					// return 25;})
+     //            .style("text-anchor", "middle")
+     //            .attr("transform", "translate(11, -6)")
+     //            .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
+                  
+                  svg.call(tip);
+
+                
+				var rectangles = svg.selectAll("rect")
+				.data(pattern)
+				.enter().append("rect");
+
+				rectangles.attr("x", function(d) {
+					return d.index_x * 17;})
+				.attr("y", function(d) {
+					return d.index_y * 17;})
+				.attr("width", 15)
+				.attr("height", 15).
+				style("fill", function(d) {
+					return colorScale(d.index_x);})
+				.on('mouseover', tip.show)
+				.on('mouseout', tip.hide)
+			}
+		});
+	}
 });
