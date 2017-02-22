@@ -3,6 +3,7 @@ function sendViaAlertMonitor(data){
 	$("#edit-btn-ewi-amd").attr('class', 'btn btn-warning');
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
+	$('#event_details').val(JSON.stringify(data));
 	$.ajax({
 		type: "GET",
 		url: "../chatterbox/getewi",             	
@@ -779,12 +780,13 @@ $(document).ready(function() {
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
 				updateMessages(temp_msg_holder);
+				var current_timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 				if (tag != "") {
 					for (var i = 0; i < msg["data"].length; i++) {
 					gintags = {
 						'tag_name': tag,
 						'tag_description': "communications",
-						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+						'timestamp': current_timestamp,
 						'tagger': tagger_user_id,
 						'remarks': msg["data"][i][0],
 						'table_used': "smsoutbox"
@@ -793,13 +795,29 @@ $(document).ready(function() {
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
-					console.log(JSON.parse(response));
+					var event_details = JSON.parse($('#event_details').val());
+					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+						var narrative_details = {
+							'event_id': event_details.event_id,
+							'site_id': event_details.site_id,
+							'municipality': event_details.municipality,
+							'province': event_details.province,
+							'barangay': event_details.barangay,
+							'sition': event_details.sition,
+							'ewi_sms_timestamp': current_timestamp,
+							'narrative_template': "Sent Early Warning Information."
+						}
+						
+						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+						.done(function(response) {
+							console.log(response);
+						});
+					} 
 				});
 				}
 			} else {
 
 				var numbers = /^[0-9]+$/; 
-				console.log(msg);
 				if (msg.type == "ackgsm") {
 					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
@@ -1630,8 +1648,6 @@ $(document).ready(function() {
 						'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
 						'ewi_tag': false
 					};
-
-					console.log(msg);
 
 					conn.send(JSON.stringify(temp_msg_holder));
 
