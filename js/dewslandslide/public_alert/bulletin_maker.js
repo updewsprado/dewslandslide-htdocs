@@ -6,6 +6,7 @@
  *	
 ****/
 
+var webPage = require('webpage');
 var args = require('system').args;
 var page = require('webpage').create();
 
@@ -26,11 +27,42 @@ page.onError = function (msg, trace) {
     });
 };
 
+page.onConsoleMessage = function(msg, lineNum, sourceId) {
+  console.log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+};
+
+phantom.onError = function(msg, trace) {
+  var msgStack = ['PHANTOM ERROR: ' + msg];
+  if (trace && trace.length) {
+    msgStack.push('TRACE:');
+    trace.forEach(function(t) {
+      msgStack.push(' -> ' + (t.file || t.sourceURL) + ': ' + t.line + (t.function ? ' (in function ' + t.function +')' : ''));
+    });
+  }
+  console.error(msgStack.join('\n'));
+  phantom.exit(1);
+};
+
 page.open( args[1], function(status) {
+
+	var line = args[1];
 
 	if (status === 'success') {
 
 		console.log("Page " + args[1] + " loaded...");
+
+		var substring = "edit";
+		if( line.indexOf(substring) !== -1 ) {
+			page.evaluate(function (line) {
+				var params = line.split("/");
+				var edits = decodeURIComponent(params[7]).split("|");
+				document.getElementById("bulletin_number").innerText = edits[0];
+				document.getElementById("alert_description").innerText = edits[1];
+				document.getElementById("validity").innerText = edits[2];
+				document.getElementById("next_reporting").innerText = edits[3];
+				document.getElementById("next_bulletin").innerText = edits[4];
+			}, line);
+		};
 
 		window.setTimeout(function () {
 			// use ./../filename.pdf for relative paths
@@ -39,7 +71,7 @@ page.open( args[1], function(status) {
 			console.log("Exiting...");
 			console.log("Success.");
 			phantom.exit();
-		}, 10000);
+		}, 8000);
 		
 	} else {
 
