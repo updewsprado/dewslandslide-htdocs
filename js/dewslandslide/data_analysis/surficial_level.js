@@ -410,137 +410,137 @@ $(document).ready(function(e) {
 			}
 			
 		});	
-}
-function surficialGraph(dataTableSubmit) {  
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/GroundDataFromLEWS/"+dataTableSubmit.site,  success: function(data_result) {
-			var result = JSON.parse(data_result)
-			var slice =[0];
-			var data1 =[];
-			var data =[];
-			var opts = $('#crackgeneral')[0].options;
+	}
+	function surficialGraph(dataTableSubmit) {  
+		$.ajax({ 
+			dataType: "json",
+			url: "/api/GroundDataFromLEWS/"+dataTableSubmit.site,  success: function(data_result) {
+				var result = JSON.parse(data_result)
+				var slice =[0];
+				var data1 =[];
+				var data =[];
+				var opts = $('#crackgeneral')[0].options;
 
-			var array = $.map(opts, function(elem) {
-				return (elem.value || elem.text);
-			});
-			array.shift()
-			var crack_name = array
-			for (var a = 0; a < crack_name.length; a++) {
-				var all = []
-				for (var i = 0; i < result.length; i++) {
-					if(crack_name[a] == result[i].crack_id){
-						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
+				var array = $.map(opts, function(elem) {
+					return (elem.value || elem.text);
+				});
+				array.shift()
+				var crack_name = array
+				for (var a = 0; a < crack_name.length; a++) {
+					var all = []
+					for (var i = 0; i < result.length; i++) {
+						if(crack_name[a] == result[i].crack_id){
+							data1.push(crack_name[a]);
+							data.push([Date.parse(result[i].ts) , result[i].meas] );
+						}
 					}
 				}
-			}
-			for(var a = 0; a < data1.length; a++){
-				if(data1[a]!= data1[a+1]){
-					slice.push(a+1)
+				for(var a = 0; a < data1.length; a++){
+					if(data1[a]!= data1[a+1]){
+						slice.push(a+1)
+					}
 				}
-			}
-			var series_data=[]
+				var series_data=[]
 
 
-			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
+				for(var a = 0; a < crack_name.length; a++){
+					series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
+				}
+				chartProcess2('ground_graph',series_data,'Superimpose Surficial Graph')
 			}
-			chartProcess2('ground_graph',series_data,'Superimpose Surficial Graph')
-		}
-	});	
-}
-function surficialAnalysis(site,crack_id) {  
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/GroundVelocityDisplacementData/"+site+"/"+crack_id,success: function(result) {
-			var ground_analysis_data = JSON.parse(result)
-			var dvt = [];
-			var vGraph =[] ;
-			var dvtgnd = [];
-			var dvtdata = ground_analysis_data["dvt"];
-			var catdata= [];
-			var up =[];
-			var down =[];
-			var line = [];
-			var series_data_vel =[];
-			var series_data_dis =[];
-			for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
-				dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
-				catdata.push(i);
-			}
-			for(var i = 0; i < dvtdata.interp["surfdisp"].length; i++){
-				dvt.push([dvtdata.interp["ts"][i],dvtdata.interp["surfdisp"][i]]);
-			}
-			var last =[];
-			for(var i = 0; i < ground_analysis_data["av"].v.length; i++){
-				var data = [];
-				data.push( ground_analysis_data["av"].v[i] , ground_analysis_data["av"].a[i]);
-				vGraph.push(data);
-			}
+		});	
+	}
+	function surficialAnalysis(site,crack_id) {  
+		$.ajax({ 
+			dataType: "json",
+			url: "/api/GroundVelocityDisplacementData/"+site+"/"+crack_id,success: function(result) {
+				var ground_analysis_data = JSON.parse(result)
+				var dvt = [];
+				var vGraph =[] ;
+				var dvtgnd = [];
+				var dvtdata = ground_analysis_data["dvt"];
+				var catdata= [];
+				var up =[];
+				var down =[];
+				var line = [];
+				var series_data_vel =[];
+				var series_data_dis =[];
+				for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
+					dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
+					catdata.push(i);
+				}
+				for(var i = 0; i < dvtdata.interp["surfdisp"].length; i++){
+					dvt.push([dvtdata.interp["ts"][i],dvtdata.interp["surfdisp"][i]]);
+				}
+				var last =[];
+				for(var i = 0; i < ground_analysis_data["av"].v.length; i++){
+					var data = [];
+					data.push( ground_analysis_data["av"].v[i] , ground_analysis_data["av"].a[i]);
+					vGraph.push(data);
+				}
 
-			for(var i = ground_analysis_data["av"].v.length-1; i < ground_analysis_data["av"].v.length; i++){
-				last.push([ground_analysis_data["av"].v[i],ground_analysis_data["av"].a[i]]);
+				for(var i = ground_analysis_data["av"].v.length-1; i < ground_analysis_data["av"].v.length; i++){
+					last.push([ground_analysis_data["av"].v[i],ground_analysis_data["av"].a[i]]);
+				}
+
+				for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
+					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
+					down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
+					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
+				}
+
+				var series_data_name_vel =[vGraph,up,down,line,last];
+				var series_name =["Data","TU","TD","TL","LPoint"];
+				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
+				series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
+				series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
+					marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
+				for(var i = 1; i < series_data_name_vel.length-2; i++){
+					series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
+				}
+				chartProcess('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
+
+				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
+				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
+				chartProcess('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
 			}
+		});	
+	}
 
-			for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
-				up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
-				down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
-				line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
-			}
+	function piezometer(dataSubmit){
+		$("#graphS4").append('<div id="fred_div"></div>');
+		$("#graphS4").append('<div id="temp_div"></div>');
+		$.ajax({
+			dataType: "json",
+			url: "/api/PiezometerAllData/ltesapzpz",success: function(result) { 
+				var freq_data=[] , temp_data =[];
+				var freqDataseries =[] ,tempDataseries =[];
+				for(var i = 0; i < result.length; i++){
+					var time = Date.parse(result[i].timestamp)
+					var freq = [time,parseFloat(result[i].freq)]
+					var temp = [time,parseFloat(result[i].temp)]
+					freq_data.push(freq)
+					temp_data.push(temp)
+				}
 
-			var series_data_name_vel =[vGraph,up,down,line,last];
-			var series_name =["Data","TU","TD","TL","LPoint"];
-			series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
-			series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
-			series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
-				marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
-			for(var i = 1; i < series_data_name_vel.length-2; i++){
-				series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
-			}
-			chartProcess('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
+				freqDataseries.push({name:'frequency',data:freq_data})
+				tempDataseries.push({name:'Temperature',data:temp_data})
+				chartProcess('fred_div',freqDataseries,'Piezometer frequency')
+				chartProcess('temp_div',tempDataseries,'Piezometer Temperature')
+			} 
+		});	
+	}
 
-			series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
-			series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
-			chartProcess('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
-		}
-	});	
-}
-
-function piezometer(dataSubmit){
-	$("#graphS4").append('<div id="fred_div"></div>');
-	$("#graphS4").append('<div id="temp_div"></div>');
-	$.ajax({
-		dataType: "json",
-		url: "/api/PiezometerAllData/ltesapzpz",success: function(result) { 
-			var freq_data=[] , temp_data =[];
-			var freqDataseries =[] ,tempDataseries =[];
-			for(var i = 0; i < result.length; i++){
-				var time = Date.parse(result[i].timestamp)
-				var freq = [time,parseFloat(result[i].freq)]
-				var temp = [time,parseFloat(result[i].temp)]
-				freq_data.push(freq)
-				temp_data.push(temp)
-			}
-			
-			freqDataseries.push({name:'frequency',data:freq_data})
-			tempDataseries.push({name:'Temperature',data:temp_data})
-			chartProcess('fred_div',freqDataseries,'Piezometer frequency')
-			chartProcess('temp_div',tempDataseries,'Piezometer Temperature')
-		} 
-	});	
-}
-
-function chartProcess(id,data_series,name){
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
+	function chartProcess(id,data_series,name){
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'spline',
+				zoomType: 'x',
 				// height: 800,
 				width:750
 			},
@@ -574,56 +574,53 @@ function chartProcess(id,data_series,name){
 			},
 			series:data_series
 		});
-}
+	}
 
 
 
-function chartProcess2(id,data_series,name){
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			height: 800,
-			width:1100
-		},
-		title: {
-			text: name,
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b',
-				year: '%b'
+	function chartProcess2(id,data_series,name){
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'spline',
+				zoomType: 'x',
+				height: 800,
+				width:1100
 			},
 			title: {
-				text: 'Date'
+				text: name,
 			},
-		},
-		tooltip: {
-			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true
-		},
-		plotOptions: {
-			spline: {
-				marker: {
-					enabled: true
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+				shared: true,
+				crosshairs: true
+			},
+			plotOptions: {
+				spline: {
+					marker: {
+						enabled: true
+					}
 				}
-			}
-		},
-		credits: {
-			enabled: false
-		},
-		series:data_series
-	});
-}
-
-
-
+			},
+			credits: {
+				enabled: false
+			},
+			series:data_series
+		});
+	}
 });
 
