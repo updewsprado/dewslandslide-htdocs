@@ -16,6 +16,22 @@ body {
   background-color: #fff;
 }
 
+#testing-site-indicator {
+  background-color: red;
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  z-index: 1031;
+}
+
+
+.tagged {
+  border-style: solid;
+  border-color: #90dea6;
+  border-width: 10px;
+  border-radius: 5px;
+}
+
 #main-container {
   width: 97.2%;
   min-width: 75%;
@@ -152,6 +168,10 @@ body {
 
 #confirm-ewi-recipients{
   width: 100%;
+}
+
+#submit-gintag {
+  margin-top: 10px;
 }
 
 .inbox-tab {
