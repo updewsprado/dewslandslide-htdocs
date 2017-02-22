@@ -3,6 +3,10 @@ function sendViaAlertMonitor(data){
 	$("#edit-btn-ewi-amd").attr('class', 'btn btn-warning');
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
+
+	console.log(data);
+
+
 	$.ajax({
 		type: "GET",
 		url: "../chatterbox/getewi",             	
@@ -683,13 +687,15 @@ $(document).ready(function() {
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		//Base url and Ws indicator.
-		if (window.location.host == "dewslandslide.com") {
-			$('#testing-site-indicator').hide();
-		} else {
-			$('#testing-site-indicator span').html("TEST SITE: "+window.location.host);
+		if (window.location.host == "localhost" || window.location.host == "swatqa") {
 			$('#testing-site-indicator').show();
+			$('#testing-site-indicator span').html("TEST SITE: "+window.location.host);
+			socket = "ws://localhost:5050";
+		} else {
+			$('#testing-site-indicator').hide();
+			socket = "ws://www.dewslandslide.com:5050";
 		}
-		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
+		var tempConn = new WebSocket(socket);
 
 		tempConn.onopen = function(e) {
 			console.log("Connection established!");
@@ -771,10 +777,8 @@ $(document).ready(function() {
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
 					tag = "#EwiMessage";
-					$("#messages li").last().addClass("tagged");
 				} else if ($('#edit-btn-ewi-amd').val() === "undo"){
-					tag = "#AlteredEWI";
-					$("#messages li").last().addClass("tagged");
+					tag = "#AlteredEWI"
 				}
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
@@ -793,7 +797,6 @@ $(document).ready(function() {
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
-					// console.log(JSON.parse(response));
 				});
 				}
 			} else {
@@ -2816,8 +2819,7 @@ $(document).ready(function() {
 	function getGintagService(data){
 		$('#gintags').val('');
 		$('#gintags').tagsinput("removeAll");
-		console.log(data);
-		$.post( "../generalinformation/getGinTagsViaTableElement/", {gintags: JSON.stringify(data)})
+		$.post( "../generalinformation/getGinTags/", {gintags: JSON.stringify(data)})
 		.done(function(response) {
 			var data = JSON.parse(response);
 			for (var i = 0; i < data.length; i++) {

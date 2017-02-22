@@ -183,3 +183,7 @@ label.error {
     font-style: italic;
     margin: 10px 0 0 10px;
 }
+
+h3.popover-title { font-weight: bold; font-size: 16px!important; background: #C0C0C0; }
+.popover-content { background: #A9A9A9; }
+#reminder { font-size: 13px; color: red; font-weight: bold; }
