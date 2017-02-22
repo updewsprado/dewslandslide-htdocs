@@ -793,7 +793,7 @@ $(document).ready(function() {
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
 				.done(function(response) {
-					console.log(JSON.parse(response));
+					// console.log(JSON.parse(response));
 				});
 				}
 			} else {
