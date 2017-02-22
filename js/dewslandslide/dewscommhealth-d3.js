@@ -167,7 +167,7 @@ var comm_tip = d3.tip()
 	}
 );
 	
-function showCommHealthPlotGeneral()
+function showCommHealthPlotGeneral(curSite,div_ID)
 {
 	comm_opacity1 = 0,
 	comm_opacity2 = 0,
@@ -180,24 +180,20 @@ function showCommHealthPlotGeneral()
 	comm_target5.style.visibility = "hidden";
 	
 	d3.selectAll("#svg-commhealth").remove();
-
-	var comm_target1 = document.getElementById('healthbars-canvas');
-	var comm_spinner = new Spinner(comm_opts).spin();
-		comm_target1.appendChild(comm_spinner.el);	
-			 
+		 
 	var comm_bars = 3;
 		
-	var comm_url = "/test/commhealth/" + curSite + "/" + dataBase;
+	var comm_url = "/test/commhealth/" + curSite ;
 		//console.log(comm_url);
 	
-		comm_cWidth = document.getElementById('healthbars-canvas').clientWidth;
-		comm_cHeight = document.getElementById('healthbars-canvas').clientHeight;
+		comm_cWidth = document.getElementById(div_ID).clientWidth;
+		comm_cHeight = document.getElementById(div_ID).clientHeight;
 
 	var comm_margin = {top: comm_cHeight * 0.001, right: comm_cWidth * 0.005, bottom: comm_cWidth * 0.05, left: comm_cHeight * 0.125},
 		comm_width = comm_cWidth - comm_margin.left - comm_margin.right,
 		comm_height = comm_cHeight - comm_margin.top - comm_margin.bottom;
 
-	var comm_svg = d3.select("#healthbars-canvas").append("svg")
+	var comm_svg = d3.select("#"+div_ID).append("svg")
 			.attr("id", "svg-commhealth")
 			.attr("width", comm_width + comm_margin.left + comm_margin.right)
 			.attr("height", comm_height + comm_margin.top + comm_margin.bottom)
@@ -321,7 +317,7 @@ function showCommHealthPlotGeneral()
 				.style("font-size", "11px")
 				.text("Node Number");
 			
-				  	comm_spinner.stop();
+				  	
 					comm_legendactive = 1;
 		
 	});
