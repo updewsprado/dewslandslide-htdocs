@@ -1,8 +1,25 @@
-#healthbars-canvas {
+#healthbars-canvas0 {
 	margin-left: auto;
 	margin-right: auto;
 	min-width: 90%;
-	/*height: auto;*/
+	height: 400px;
+}
+#healthbars-canvas1 {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 90%;
+	height: 400px;
+}
+#healthbars-canvas2 {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 90%;
+	height: 400px;
+}
+#healthbars-canvas3 {
+	margin-left: auto;
+	margin-right: auto;
+	min-width: 90%;
 	height: 400px;
 }
 

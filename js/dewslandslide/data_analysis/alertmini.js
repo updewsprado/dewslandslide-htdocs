@@ -4,49 +4,7 @@ var nodeAlertJSON = 0;
 var nodeStatusJSON = 0;
 var maxNodesJSON = 0;
 
-function JSON2CSV(objArray) {
-	var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
 
-	var str = '';
-	var line = '';
-
-	if ($("#labels").is(':checked')) {
-		var head = array[0];
-		if ($("#quote").is(':checked')) {
-			for (var index in array[0]) {
-				var value = index + "";
-				line += '"' + value.replace(/"/g, '""') + '",';
-			}
-		} else {
-			for (var index in array[0]) {
-				line += index + ',';
-			}
-		}
-
-		line = line.slice(0, -1);
-		str += line + '\r\n';
-	}
-
-	for (var i = 0; i < array.length; i++) {
-		var line = '';
-
-		if ($("#quote").is(':checked')) {
-			for (var index in array[i]) {
-				var value = array[i][index] + "";
-				line += '"' + value.replace(/"/g, '""') + '",';
-			}
-		} else {
-			for (var index in array[i]) {
-				line += array[i][index] + ',';
-			}
-		}
-
-		line = line.slice(0, -1);
-		str += line + '\r\n';
-	}
-	return str;
-	
-}
 
 // Set the dimensions of the canvas / graph
 var cWidth = 0;
@@ -116,32 +74,27 @@ var tip = d3.tip()
   });
 
 //initialize dimensions
-function init_dims() {
-	cWidth = document.getElementById('mini-alert-canvas').clientWidth * .95;
-	//cHeight = document.getElementById('minialertcanvas').offsetHeight;
-	cHeight = document.getElementById('mini-alert-canvas').clientHeight * 1.5;
-	
-	//margin = {top: cHeight * 0.10, right: cWidth * 0.015, bottom: cHeight * 0.10, left: cWidth * 0.065};
+function init_dims(divID) {
+	cWidth = document.getElementById(divID).clientWidth * 1.2;
+	cHeight = document.getElementById(divID).clientHeight * 1.5;
+
 	margin = {top: 0, right: 0, bottom: 0, left: 0};
 	width = cWidth - margin.left - margin.right;
 	height = cHeight - margin.top - margin.bottom;
-	
 	graphDim = {gWidth: width, gHeight: height};	
 	
 	// Set the ranges
 	x = d3.scale.linear().range([0, graphDim.gWidth]);
 	y = d3.scale.linear().range([graphDim.gHeight, 0]);
-	yOrd = d3.scale.ordinal()
-					.rangeRoundBands([graphDim.gHeight, 0], .1);
+	yOrd = d3.scale.ordinal().rangeRoundBands([graphDim.gHeight, 0], .1);
 					
 	// Define the line
 	yvalline = d3.svg.line()	
-		//.interpolate("monotone")
 	    .x(function(d) { return x(d.xval); })
 	    .y(function(d) { return y(d.yval); });
 	    
 	// Adds the svg canvas
-	svg = d3.select("#mini-alert-canvas")
+	svg = d3.select("#"+divID)
 		.append("svg")
         .attr("id", "svg-alertmini") 	
 	        .attr("width", width + margin.left + margin.right)
@@ -197,19 +150,16 @@ var siteMaxNodes = [];
 var maxNode;
 var tester = [];
 
-function getSiteMaxNodes(xOffset) {
-	//url = "../temp/getSiteMaxNodes.php";
-	//maxNodesJSON = <?php echo $siteMaxNodes; ?>;
-	
+function getSiteMaxNodes(xOffset,maxNodesJSON) {
 	var delay = 500;
 	var data = maxNodesJSON;
 	
 	siteMaxNodes = data;
-	
 	//add node links to nodes with normal status
 	var urlBase = "http://" + window.location.hostname + "/";
-	var urlNodeExt = "gold/node/";		
-	
+	var urlNodeExt = "data_analysis/node/";		
+	var start = moment().subtract(7, 'days').format('YYYY-MM-DD'); 
+	var end = moment().add(1, 'days').format('YYYY-MM-DD');
 	maxNode = d3.max(data, function(d) { return parseFloat(d.maxall); });
 	
 	// Scale the range of the data
@@ -219,17 +169,14 @@ function getSiteMaxNodes(xOffset) {
 	var cellw = (graphDim.gWidth / maxNode) * 0.9;
 	var cellh = yOrd.rangeBand(); //9;
 	
-	for (i = 0; i < siteMaxNodes.length; i++) {
-		
-		for (j = 1; j <= siteMaxNodes[i].nodes; j++) {
+		for (j = 1; j <= siteMaxNodes[0].nodes; j++) {
 			tester.push(
-				{site: siteMaxNodes[i].site, node: j }
+				{site: siteMaxNodes[0].site, node: j }
 			);
 		}
-	}
-	
+	var data_svg = tester.slice((tester.length-siteMaxNodes[0].nodes),tester.length)
 	svg.selectAll(".cell_default")
-		.data(tester)
+		.data(data_svg)
 	.enter().append("rect")
 		.attr("class", "cell_default")
 		.attr('x', function(d){
@@ -244,14 +191,12 @@ function getSiteMaxNodes(xOffset) {
 		.on('mouseover', tip.show)
 		.on('mouseout', tip.hide)
 		.on("click", function(d){
-	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+	        document.location.href = urlBase+urlNodeExt+d.site+'/'+ d.node+'/'+start+'/'+end;
 	    });	
 }
 
 var nodeStatuses = [];
-function getNodeStatus(xOffset) {
-	//nodeStatusJSON = <?php echo $nodeStatus; ?>;
-	
+function getNodeStatus(xOffset,nodeStatusJSON) {
 		var data = nodeStatusJSON;
 		
 		nodeStatuses = data;
@@ -291,10 +236,10 @@ function getNodeStatus(xOffset) {
 }
 
 var alertdata = [];
-function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
+function generateAlertPlot(url, title, xOffset, isLegends, graphNum,maxNodesJSON,nodeStatusJSON,data) {
 	// Get the data
 	var jsondata = [];
-	getSiteMaxNodes(xOffset);
+	getSiteMaxNodes(xOffset,maxNodesJSON,data);
 	
 	var delay1 = 1000;//1 second
 
@@ -321,14 +266,13 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
  
 			var textMOut = function() {
 				var text = d3.select(this);
-				//text.attr("color", "black" );
 				text.attr("text-transform", "lowercase" );
 			};
 	
 			// Add hyperlinks to Y Axis ticks
 			var urlBase = "http://" + window.location.hostname + "/";
-			var urlExt = "gold/site/";	
-			var urlNodeExt = "gold/node/";		
+			var urlExt = "data_analysis/site/";	
+			var urlNodeExt = "data_analysis/node/";		
 			
 			d3.selectAll("text")
 			    .filter(function(d){ return typeof(d) == "string"; })
@@ -481,22 +425,20 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			}				
 	
 	//Draw the node status symbol
-	getNodeStatus(xOffset);	
+	getNodeStatus(xOffset,nodeStatusJSON);	
 
 }
 		
-function showData() {
-	//nodeAlertJSON = <?php echo $nodeAlerts; ?>;
-	
-	generateAlertPlot(nodeAlertJSON, "Accelerometer Movement Alert Map", 0, false, 1);
+function showData(nodeAlertJSON,maxNodesJSON,nodeStatusJSON) {
+	generateAlertPlot(nodeAlertJSON, "Accelerometer Movement Alert Map", 0, false, 1,maxNodesJSON,nodeStatusJSON);
 }
 
-function initAlertPlot() {
-	init_dims();
-	showData();
+function initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,divID) {
+	init_dims(divID);
+	showData(nodeAlertJSON,maxNodesJSON,nodeStatusJSON);
 }
 
-//window.onload = initPosPlot();
+
 
 
 
