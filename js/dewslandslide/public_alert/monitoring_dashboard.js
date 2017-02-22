@@ -88,7 +88,7 @@ $(document).ready( function() {
 		        	},
 		        	{
 		        		"render": function (data, type, full) {
-		            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "'></span></a>";
+		            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' event-id='" + full.event_id + "'></span></a>";
 		            	}
 		        	}
 		    	],
@@ -129,7 +129,7 @@ $(document).ready( function() {
 	            {
 	            	data: "name", 
 	            	"render": function (data, type, full) {
-	            		return "<b><a href='../monitoring_events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
 	            	},
 	        		"name": 'name',
 	            },
@@ -174,9 +174,11 @@ $(document).ready( function() {
 		    {
 	            switch(data.day)
 	            {
+	            	case 0: 
 	            	case 1: $(row).addClass("day-one"); break;
 	                case 2: $(row).addClass("day-two"); break;
 	                case 3: $(row).addClass("day-three"); break;
+	                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
 	            }
 		  	}
 	    });
@@ -264,6 +266,11 @@ $(document).ready( function() {
 	{
 		if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
 	    {
+	    	if( table == "candidate" && candidate == null ) {
+	    		reposition("#errorModal");
+			    $("#errorModal").modal("show");
+	    	}
+
 	        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
 	        $("#" + table + " thead").remove();
 	    }
@@ -330,7 +337,9 @@ $(document).ready( function() {
 
 	$("#latest, #extended").on( "click", 'tbody tr .glyphicon-envelope', function(x) {
 		id = $(this).prop('id');
-		loadBulletin(id);
+		let event_id = $(this).attr('event-id')
+		console.log("event", event_id)
+		loadBulletin(id, event_id);
 	});
 
 	$("#send").click(function () {
@@ -486,7 +495,7 @@ $(document).ready( function() {
 		table.clear();
 	    table.rows.add(data).draw();
 
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table); });
 	}
 
 	let modalForm = null, entry = {};
@@ -554,7 +563,7 @@ $(document).ready( function() {
 
 	});
 
-	let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "e1":["eq","eq","E"] };
+	let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
 
 	function showModalTriggers(list, latest) 
 	{
@@ -566,11 +575,13 @@ $(document).ready( function() {
 			}
 		});
 
-		["r1","e1","l2","l3","L2","L3"].forEach(function (x) {
+		["r1","e1","l2","l3","L2","L3","d1","e1"].forEach(function (x) {
 			let y = lookup[x];
 			$("#" + y[0] + "_area").hide();
 			$("#trigger_" + y[1]).val("").prop({readonly:false, disabled:true});
 			$("#trigger_" + y[1] + "_info").val("").prop("disabled", true);
+			if( x == "d1" ) $(".od_group, #reason").prop("disabled", true);
+			else if( x == "e1" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", true);
 		});
 
 		let retriggers = [];
@@ -579,6 +590,8 @@ $(document).ready( function() {
 			$("#" + y[0] + "_area").show();
 			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
 			$("#trigger_" + y[1] + "_info").val("").prop("disabled", false);
+			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
+			else if( y[2] == "E" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", false);
 			retriggers.push(y[2]);
 		});
 
@@ -592,6 +605,14 @@ $(document).ready( function() {
 	        else return true;
 	    }, "");
 
+	jQuery.validator.addMethod("at_least_one", function(value, element, options) {
+        if( $(".od_group[value=llmc]").is(":checked") || $(".od_group[value=lgu]").is(":checked") )
+        	return true;
+        else return false;
+    }, "Choose at least one of the two groups as requester.");
+
+    jQuery.validator.addClassRules({od_group: {"at_least_one": true}});
+
 	modalForm = $("#modalForm").validate(
 	{
 	    debug: true,
@@ -601,12 +622,14 @@ $(document).ready( function() {
 	        release_time: "required",
 	        trigger_rain: "required",
 	        trigger_eq: "required",
+	        trigger_od: "required",
 	        trigger_ground_1: "required",
 	        trigger_ground_2: "required",
 	        trigger_sensor_1: "required",
 	       	trigger_sensor_2: "required",
 	        trigger_rain_info: "required",
 	        trigger_eq_info: "required",
+	        trigger_od_info: "required",
 	        trigger_ground_1_info: "required",
 	        trigger_ground_2_info: "required",
 	        trigger_sensor_1_info: "required",
@@ -614,7 +637,20 @@ $(document).ready( function() {
 	        reporter_2: "required",
 	        comments: {
 	        	"isInvalid": true
-	        }
+	        },
+	        magnitude: {
+                required: true,
+                step: false
+            },
+            latitude: {
+                required: true,
+                step: false
+            },
+            longitude: {
+                required: true,
+                step: false
+            },
+            reason: "required"
 	    },
 	    messages: {
 	    	comments: "Provide a reason to invalidate this event. If the event is not invalid and is really an end of event EWI, release it on the indicated end of validity."
@@ -637,11 +673,14 @@ $(document).ready( function() {
 	        element.parents( ".form-group" ).addClass( "has-feedback" );
 
 	        // Add the span element, if doesn't exists, and apply the icon classes to it.
-	        if ( !element.next( "span" )[ 0 ] ) { 
-	            $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
-	            if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-	            if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
-	        }
+	        if ( !element.next( "span" )[ 0 ] ) {
+                if( !element.is("[type=checkbox]") )
+                    $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:18px; right:22px;'></span>" ).insertAfter( element );
+                if(element.parent().is(".datetime")) element.next("span").css("right", "15px");
+                if(element.is("input[type=number]")) element.next("span").css({"top": "24px", "right": "20px"});
+                if(element.is("textarea") || element.is("select")) element.next("span").css({"top": "24px", "right": "22px"});
+                if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
+            }
 	    },
 	    success: function ( label, element ) {
 	        // Add the span element, if doesn't exists, and apply the icon classes to it.
@@ -667,6 +706,7 @@ $(document).ready( function() {
 	    },
 	    submitHandler: function (form) 
 	    {
+	    	$("#releaseModal").modal('hide');
 	    	let data = $( "#modalForm" ).serializeArray();
 	        let temp = {};
 	        data.forEach(function (value) { temp[value.name] = value.value == "" ? null : value.value; });
@@ -674,7 +714,19 @@ $(document).ready( function() {
 	        temp.public_alert_level = aX == "ND" ? "A1" : aX;
 	        temp.status = entry.status;
 	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
-	        temp.reporter_1 = "<?php echo $user_id; ?>";
+	        temp.reporter_1 = $("#reporter_1").attr("value-id");
+
+	        if( temp.trigger_list.indexOf("D") > -1 )
+	        {
+	    		if($(".od_group[value=llmc]").is(":checked")) temp.is_llmc = true;
+	    		if($(".od_group[value=lgu]").is(":checked")) temp.is_lgu = true;
+	    		temp.reason = $("#reason").val();
+	        } else if( temp.trigger_list.indexOf("E") > -1 )
+	        {
+	    		temp.magnitude = $("#magnitude").val();
+	    		temp.latitude = $("#latitude").val();
+	    		temp.longitude = $("#longitude").val();
+	        }
 
 	        if (entry.status == "new")
 	        {
@@ -702,14 +754,18 @@ $(document).ready( function() {
 	            data : temp,
 	            success: function(result, textStatus, jqXHR)
 	            {
-	                $("#releaseModal").modal('hide');
 	                console.log(result);
 
 	                let f2 = getOnGoingAndExtended();
 	                $.when(f2)
 					.done(function (a) 
 					{
-						candidate = checkCandidateTriggers(realtime_cache);
+						try {
+							candidate = checkCandidateTriggers(realtime_cache);
+						} catch (err) {
+							console.log(err);
+							candidate = null;
+						}
 
 						reloadTable(latest_table, ongoing.latest);
 						reloadTable(extended_table, ongoing.extended);
@@ -770,8 +826,13 @@ $(document).ready( function() {
 		$.when(f2)
 		.done(function (a) 
 		{
-			candidate = checkCandidateTriggers(realtime_cache);
-			console.log("CANDI", candidate);
+			try {
+				candidate = checkCandidateTriggers(realtime_cache);
+				console.log("CANDI", candidate);
+			} catch (err) {
+				console.log(err);
+				candidate = null;
+			}
 
 			if(isTableInitialized) 
 			{

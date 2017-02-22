@@ -105,8 +105,8 @@ $(document).ready(function()
             $.get( "../pubrelease/getSentRoutine", {timestamp: timestamp}, 
             function( data ) 
             {
-                if( data.length == 0 ) $("input[name='routine_sites[]']:checked").prop("disabled", false).prop("checked", false);
-                else data.forEach(function (a) { $("input[name='routine_sites[]'][value=" + a.site_id + "]").prop("checked", true).prop("disabled", true); })
+                if( data.length == 0 ) $("input.routine-checkboxes:checked").prop("disabled", false).prop("checked", false);
+                else data.forEach(function (a) { $("input.routine-checkboxes[value=" + a.site_id + "]").prop("checked", true).prop("disabled", true); })
             }, "json" )
             .done(function () {
                 $("#sites_area .panel-body").slideDown();
@@ -172,7 +172,7 @@ $(document).ready(function()
         }
 
         // Prevent entering of NO DATA trigger on NEW ON-GOING ENTRIES
-        if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
+        // if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
 
 
         $(".cbox_trigger_switch").trigger("change");
@@ -291,7 +291,8 @@ $(document).ready(function()
             if( x>y ) return -1; else return 1;
         });
 
-        let alert = trigger_list.length > 0 ? $("#public_alert_level").val() + "-" + trigger_list.join("") : $("#public_alert_level").val();
+        let alert_level = $(".cbox_nd[value=ND]").is(":checked") ? "ND" : $("#public_alert_level").val();
+        let alert = trigger_list.length > 0 ? alert_level + "-" + trigger_list.join("") : alert_level;
         alert = $("#public_alert_level").val() == "A0" ? "A0" : alert;
         $("#internal_alert_level").val(alert);
     });
@@ -720,7 +721,7 @@ $(document).ready(function()
                 if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
                 if(element.is("select") || element.is("textarea")) element.next("span").css({"top": "25px", "right": "25px"});
                 if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
-                if(element.is("input[type=number]")) element.next("span").css({"top": "18px", "right": "13px"});
+                if(element.is("input[type=number]")) element.next("span").css({"top": "24px", "right": "0px"});
             }
         },
         success: function ( label, element ) {
@@ -778,7 +779,7 @@ $(document).ready(function()
                 // If A0, check if legit lowered or invalid
                 else if( temp.public_alert_level == "A0")
                 {
-                    if( moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
+                    if( moment(current_event.validity).isSameOrAfter(moment(temp.timestamp_entry).add(30, 'minutes')) )
                         temp.status = "extended";
                     else
                         temp.status = "invalid";
