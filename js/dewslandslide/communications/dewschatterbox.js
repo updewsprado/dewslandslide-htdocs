@@ -794,7 +794,7 @@ $(document).ready(function() {
 					}
 					gintags_collection.push(gintags)
 				}
-				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
 					var event_details = JSON.parse($('#event_details').val());
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
@@ -811,7 +811,7 @@ $(document).ready(function() {
 						
 						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
 						.done(function(response) {
-							console.log(response);
+							// console.log(response);
 						});
 					} 
 				});
@@ -2786,7 +2786,7 @@ $(document).ready(function() {
 						'remarks': "" // Leave it blank for now.
 					}
 					gintags_collection.push(gintags);
-					$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
+					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
 						console.log(response);
 					});
@@ -2806,7 +2806,7 @@ $(document).ready(function() {
 					'remarks': "" //Leave it blank for now.
 				}
 				gintags_collection.push(gintags);
-				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
 					console.log(response);
 				});
@@ -2824,8 +2824,18 @@ $(document).ready(function() {
 				for (var counter = 0; counter < events.length; counter++) {
 					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 						if (events[counter].site_id == siteids[siteid_counter].id) {
-							console.log("EVENT ID: "+ events[counter].event_id);
-							console.log("SITE ID: "+ siteids[siteid_counter].id);
+							var narrative_details = {
+								'event_id': events[counter].event_id,
+								'site_id': siteids[siteid_counter].id,
+								'ewi_sms_timestamp': gintags_msg_details[2],
+								'narrative_template': "Sent Early Warning Information."
+							}
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+							.done(function(response) {
+								console.log(response);
+						});
+
 						}
 					}
 				}
@@ -2856,7 +2866,7 @@ $(document).ready(function() {
 						gintags_collection.push(gintags);
 					}
 				}
-				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
+				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
 					console.log("Tagged success!");
 				});
@@ -2867,14 +2877,11 @@ $(document).ready(function() {
 	function getGintagService(data){
 		$('#gintags').val('');
 		$('#gintags').tagsinput("removeAll");
-		console.log(data);
-		$.post( "../generalinformation/getGinTagsViaTableElement/", {gintags: JSON.stringify(data)})
-		.done(function(response) {
-			var data = JSON.parse(response);
-			for (var i = 0; i < data.length; i++) {
-				$('#gintags').tagsinput('add',data[i].tag_name);
-			}
-		});
+		$.get("/../../gintagshelper/getGinTagsViaTableElement/" + data, function(response) {
+				for (var i = 0; i < response.length; i++) {
+					$('#gintags').tagsinput('add',response[i].tag_name);
+				}
+		}, "json")
 	}
 
 	function updateContactService(data,wrapper){
