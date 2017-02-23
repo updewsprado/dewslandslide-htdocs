@@ -15,6 +15,9 @@ body {
 .bg-white {
   background-color: #fff;
 }
+.search-opt {
+  margin-bottom: 10px;
+}
 
 #testing-site-indicator {
   background-color: red;
