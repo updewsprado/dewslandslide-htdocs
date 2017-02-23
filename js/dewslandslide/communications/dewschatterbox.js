@@ -788,8 +788,9 @@ $(document).ready(function() {
 						'tag_description': "communications",
 						'timestamp': current_timestamp,
 						'tagger': tagger_user_id,
-						'remarks': msg["data"][i][0],
-						'table_used': "smsoutbox"
+						'table_element_id': msg["data"][i][0],
+						'table_used': "smsoutbox",
+						'remarks': "" // Leave it blank for now
 					}
 					gintags_collection.push(gintags)
 				}
@@ -2737,7 +2738,6 @@ $(document).ready(function() {
 	});
 
 	function insertGintagService(data){
-
 		var tags = $('#gintags').val();
 		var gintags;
 		var gintags_collection = [];
@@ -2760,7 +2760,19 @@ $(document).ready(function() {
 					"site": tagSitenames,
 					"data": data 
 				};
+
 				getGintagGroupContacts(gintag_details);
+
+				for (var counter = 0; counter < tags.length;counter++) {
+					if (tags[counter] === "#EwiMessage") {
+						for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+							getOngoingEvents(tagSitenames[tag_counter]);
+						}
+						break;
+					}
+					console.log(counter);
+				}
+
 			} else {
 				for (var i = 0; i < tags.length;i++) {
 					gintags_collection = [];
@@ -2769,8 +2781,9 @@ $(document).ready(function() {
 						'tag_description': "communications",
 						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 						'tagger': tagger_user_id,
-						'remarks': data[5],
-						'table_used': data[6]
+						'table_element_id': data[5],
+						'table_used': data[6],
+						'remarks': "" // Leave it blank for now.
 					}
 					gintags_collection.push(gintags);
 					$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
@@ -2779,6 +2792,7 @@ $(document).ready(function() {
 					});
 				}
 			}
+
 		} else {
 			for (var i = 0; i < tags.length;i++) {
 				gintags_collection = [];
@@ -2787,8 +2801,9 @@ $(document).ready(function() {
 					'tag_description': "communications",
 					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 					'tagger': tagger_user_id,
-					'remarks': data[5],
-					'table_used': data[6]
+					'table_element_id': data[5],
+					'table_used': data[6],
+					'remarks': "" //Leave it blank for now.
 				}
 				gintags_collection.push(gintags);
 				$.post( "../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)})
@@ -2797,6 +2812,25 @@ $(document).ready(function() {
 				});
 			}
 		}
+	}
+
+	function getOngoingEvents(sites){
+		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+			var events = JSON.parse(data);
+			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+			.done(function(response) {
+				siteids = JSON.parse(response);
+				console.log(siteids);
+				for (var counter = 0; counter < events.length; counter++) {
+					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+						if (events[counter].site_id == siteids[siteid_counter].id) {
+							console.log("EVENT ID: "+ events[counter].event_id);
+							console.log("SITE ID: "+ siteids[siteid_counter].id);
+						}
+					}
+				}
+			});
+		});
 	}
 
 	function getGintagGroupContacts(gintag_details){
@@ -2815,8 +2849,9 @@ $(document).ready(function() {
 							'tag_description': "communications",
 							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 							'tagger': tagger_user_id,
-							'remarks': data[x][y].sms_id,					
-							'table_used': "smsoutbox"
+							'table_element_id': data[x][y].sms_id,					
+							'table_used': "smsoutbox",
+							'remarks': "" // Leave it blank for now
 						}
 						gintags_collection.push(gintags);
 					}
