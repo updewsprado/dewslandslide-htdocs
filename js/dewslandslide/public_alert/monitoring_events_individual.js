@@ -50,7 +50,7 @@ $(document).ready(function()
 
     setTimeout(function (a) {
         let to_highlight = $("#to_highlight").attr("value");
-        if(to_highlight != "") $(".timeline-panel#" + to_highlight).focus()
+        if(to_highlight != "") $(".timeline-panel.highlight").focus()
     }, 1000)
 
     let event_id = window.location.pathname.split("/")[3];

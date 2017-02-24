@@ -343,7 +343,6 @@ $(document).ready( function() {
 	});
 
 	$("#send").click(function () {
-		$('#bulletinModal').modal('hide');
 		$.when(renderPDF(id))
         .then(function (x) {
             if( x == "Success.")
@@ -467,7 +466,6 @@ $(document).ready( function() {
 							x.trigger = "No new triggers";
 						}
 					}
-					
 				}
 
 				if(k) final.push(x);
@@ -479,7 +477,7 @@ $(document).ready( function() {
 			{
 				let index = no_alerts.map( x => x.site ).indexOf(a.name);
 				let x = no_alerts[index];
-				console.log(x);
+				//console.log(x);
 
 				x.latest_trigger_timestamp = null;
 				x.trigger = "No new triggers";
@@ -540,8 +538,7 @@ $(document).ready( function() {
 		}
 		else
 		{
-			console.log("NEW EVENT");
-
+			//console.log("NEW EVENT");
 			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
 			if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 
@@ -559,7 +556,7 @@ $(document).ready( function() {
 		$("#comments").val("");
 		$("#releaseModal").modal("show");
 		
-		console.log(entry);
+		//console.log(entry);
 
 	});
 
@@ -813,9 +810,8 @@ $(document).ready( function() {
 			.then(
 				function (a) {
 					console.log("DONE", a);
-					console.log("Cache", realtime_cache);
+					//console.log("Cache", realtime_cache);
 				},
-
 				function (a) {
 					console.log("FAIL", a);
 				}
@@ -828,7 +824,7 @@ $(document).ready( function() {
 		{
 			try {
 				candidate = checkCandidateTriggers(realtime_cache);
-				console.log("CANDI", candidate);
+				//console.log("CANDI", candidate);
 			} catch (err) {
 				console.log(err);
 				candidate = null;
@@ -865,15 +861,12 @@ $(document).ready( function() {
 		
 			if( second == 0 || toRefresh )
 			{
-				if(toRefresh) console.log("TOREFRESH")
 				switch(minute)
 				{
 					case 15: case 25:
 					case 45: case 51:
-					console.log("MINUTES", minute);
 					main(toRefresh); break;
 					default: if(toRefresh) main(toRefresh);
-					console.log("Not yet time");
 				} 
 			}
 		});
