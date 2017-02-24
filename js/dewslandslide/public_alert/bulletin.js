@@ -9,6 +9,7 @@
 
 let onEdit = null;
 let release_id = null, event_id = null;
+let editableOrigValue = [];
 
 function loadBulletin(id1, id2) {
     release_id = id1;
@@ -34,18 +35,23 @@ function renderPDF(id)
 {
     console.log("ID", id, "OnEdit", onEdit);
     let isEdited = onEdit === true ? 1 : 0;
+    let edits = [], editableEditedValue = [];
 
-    let edits = [];
     if(isEdited)
     {
         $(".editable").each(function (i) {
+            editableEditedValue.push([$(this).prop('id'), $(this).val()]);
             let temp = encodeURIComponent($(this).val());
             edits.push(temp);
-        })
-        console.log(edits.join("/"));
+        });
+
+        console.log(editableOrigValue, editableEditedValue);
+
+        tagBulletin(release_id, editableEditedValue, editableOrigValue);
     }
 
     $('#bulletinModal').modal('hide');
+
     $('#bulletinLoadingModal .progress-bar').text('Rendering Bulletin PDF...');
     reposition('#bulletinLoadingModal');
     $('#bulletinLoadingModal').modal({ backdrop: 'static', show: 'true'});
@@ -66,6 +72,41 @@ function renderPDF(id)
     .fail(function (a) {
         console.log("Error rendering:", a);
     });
+}
+
+function tagBulletin(release_id, editableEditedValue, editableOrigValue) {
+    $.get("/../../gintagshelper/getGinTagsViaTableElement/" + release_id,
+    function(x) {
+        if(x.length == 0) 
+        {
+            let remarks_str = [];
+            for(let i = 0; i < editableEditedValue.length; i++)
+            {
+                if( editableEditedValue[i][1] !== editableOrigValue[i][1] )
+                {   
+                    let str = 'Edited "' + editableOrigValue[i][0] + '"';
+                    str += '(from "' + editableOrigValue[i][1] + '" to "' + editableEditedValue[i][1] + '")';
+                    remarks_str.push(str);
+                }
+            }
+
+            if( remarks_str.length != 0 )
+            {
+                console.log("TAGGING");
+                let gintags_collection = [{
+                    tag_name: "#AlteredBulletin",
+                    tag_description: 'monitoring',
+                    timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    tagger: $('#current_user_id').val(),
+                    table_element_id: release_id,
+                    remarks: remarks_str.join("; "),
+                    table_used: 'public_alert_event/release'
+                }];
+
+                $.post( "/../../generalinformation/insertGinTags/", {gintags: JSON.stringify(gintags_collection)} );
+            }
+        }
+    }, "json");
 }
 
 function sendMail(text, subject, filename) {
@@ -94,6 +135,17 @@ function sendMail(text, subject, filename) {
                 if(data == "Sent.")
                 {
                     console.log('Email sent');
+                    let narratives = [{ 
+                        event_id: event_id,
+                        timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
+                        narrative: "Sent EWI Bulletin to recipients"
+                    }];
+
+                    $.post("/../../accomplishment/insertNarratives", {narratives: narratives} )
+                    .fail(function (x, y) {
+                        console.log(y);
+                    });
+
                     $("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!</p>');
                     $("#resultModal").modal('show');
                 }
@@ -125,6 +177,7 @@ function edit(onEdit) {
         $("#cancel, #bulletinModal .close").hide();
 
         $(".editable").each(function () {
+            editableOrigValue.push([$(this).prop('id'), $(this).text()]);
             $(this).replaceWith("<input class='editable' id='" + $(this).prop('id') + "' value='" + $(this).text() + "'>");
         });
 
@@ -144,6 +197,7 @@ function edit(onEdit) {
         $("#edit-reminder").hide();
         $("#cancel, #bulletinModal .close").show();
         $(".edit-event-page").popover('destroy');
+        editableOrigValue = [];
         $(".editable").each(function () {
             $(this).replaceWith("<span class='editable' id='" + $(this).prop('id') + "'>" + $(this).val() + "</span>"  );
         });
