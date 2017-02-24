@@ -43,10 +43,10 @@
 #header { background-color: white; z-index: 1; }
 
 .highlight {
-    border: 3px solid black !important;
+    border: 8px solid black !important;
     outline: none !important;
-    border-color: #0d89eb !important;
-    box-shadow: 0 0 25px #0d89eb !important;
+    border-color: #0577ff !important;
+    box-shadow: 0 0 15px #0d49eb !important;
 }
 
 hr { margin: 10px 0 10px; }
