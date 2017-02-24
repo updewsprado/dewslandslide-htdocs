@@ -4,36 +4,15 @@
 // $(document).ajaxStop(function () {
 // 	$('#loading').modal('toggle');
 // });
+$(document).ready(function(){
+	$("body").tooltip({ selector: '[data-toggle=tooltip]' });   
+	$("body").tooltip({ selector: '[data-toggle=popover]' });   
 
+});
 $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	$('#sitegeneral').selectpicker();
-	$('.col_level_checkbox').prop('disabled', true);
-	$('.site_level_checkbox').prop('disabled', true);
-	var start = moment().subtract(2, 'days'); 
-	var end = moment().add(1, 'days');
-
-	$('#reportrange').daterangepicker({
-		maxDate: new Date(),
-		autoUpdateInput: true,
-		cancelLabel: 'Clear',
-		startDate: start,
-		endDate: end,
-		opens: "right",
-		ranges: {
-			'Today': [moment(), moment()],
-			'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-		}
-	}, cb);
-
-	cb(start, end);
-
-	function cb(start, end) {
-		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' / ' + end.format('YYYY-MM-DD'));   
-	}
-
+	$('.checkbox').prop('disabled', true);
 	$.get("../site_level_page/getAllSiteNames").done(function(data){
 		var per_site = JSON.parse(data);
 		for (a = 0; a <  per_site.length; a++) {
@@ -43,11 +22,35 @@ $(document).ready(function(e) {
 
 	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selecte_site = $(this).find('option').eq(clickedIndex).text();
-		$('.site_level_checkbox').prop('disabled', false);
+
+		var start = moment().subtract(2, 'days'); 
+		var end = moment().add(1, 'days');
+
+		$('input[name="datefilter"]').daterangepicker({
+			autoUpdateInput: false,
+			maxDate: new Date(),
+			opens: "right",
+			startDate: start,
+			endDate: end,
+			locale: {
+				cancelLabel: 'Clear'
+			}
+		});
+
+		$('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
+			var time = $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+			alert(time.context.value)
+		});
+
+		$('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
+			$(this).val('Select Date');
+		});
+
 		$('.columngeneral').empty();
 		$('.crackgeneral').empty();
 		$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
-		$('.crackgeneral').append('<label for="columngeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+		$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true" ></select>');
+		$('#crackgeneral').attr('disabled',true)
 		$('#columngeneral').selectpicker();
 		$('#crackgeneral').selectpicker();
 		$('#columngeneral').append('<option >Select Column</option>');
@@ -71,7 +74,7 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 function mapGenerator(site) {
 	$.ajax({url: "/api/SiteDetails/"+site , dataType: "json",success: function(result){
 		var map = new google.maps.Map(document.getElementById('map-canvas'), {
-			zoom: 10,
+			zoom: 7,
 			center: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
@@ -86,44 +89,54 @@ function mapGenerator(site) {
 function SelectedColumn(selecte_site) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		$( "#analysis_panel_body").empty();
+		$(".ground_table").empty()
 		var selecte_column = $(this).find('option').eq(clickedIndex).text();
-		$('.col_level_checkbox').prop('disabled', false);
+		CheckBoxSiteLevel(selecte_site,selecte_column);
+		$('.checkbox').prop('disabled', false);
 		$('#ground_measurement_checkbox').prop('checked', true);
 		$('#data_presence_checkbox').prop('checked', true);
+		$('#communication_health_checkbox').prop('checked', true);
+		$('#node_summary_checkbox').prop('checked', true);
+		$(".ground_table").append(' <table id="ground_table" class="display table" cellspacing="0"></table>')
 		$( "#analysis_panel_body").append('<small id="small_header"><b>&nbsp;&nbsp;&nbsp;'+selecte_site.toUpperCase()+'&nbsp;&nbsp;&nbsp;>&nbsp;&nbsp;&nbsp;'
-			+selecte_column.toUpperCase()+'</b></small><div class="panel panel-default "><div class="panel-body"><div id="divData"></div> </div></div>');
+			+selecte_column.toUpperCase()+'</b></small><div class="panel panel-default "><div class="panel-body"><div class="col-md-12" id="divData"></div> </div></div>');
 		$("#divData").append('<h1 id="site_info"></h1>')
 		$("#divData").append('<h3 id="site_info_sub"></h3>')
 		$("#divData").append('<h4 id="site_info_sub_sub"></h4><hr>')
-		$("#divData").append('<div class = "col-md-3 map-canvas" id="map-canvas"></div>')
-		$("#divData").append('<div class="col-md-8 " id="data_presence"><div id="data_presence_div"><h4><span class="glyphicon glyphicon-chevron-down"></span><b> Data Presence</b></h4></div></div>')
-		$("#divData").append('<br><br><br><div class="col-md-8" ><div id="surficial_graph"><h4><span class="glyphicon glyphicon-chevron-down"></span><b>Superimpose Surficial Graph</b></h4><br><div id="ground_graph"></div><div>')
-		// $("#divData").append('<div class="col-md-8 divData-colmd8"><ul class="nav nav-tabs" id="divData-ul"><li id="site_details_li" class="active"><a data-toggle="tab" href="#site_details">Site Details</a></li>'+
-		// 	'<li id="site_maintenance_li" class=""><a data-toggle="tab" href="#site_maintenance">Site Maintenance</a></li></ul>'+
-		// 	'<div class="tab-content  id="divData-tab-content"><div id="site_details" class="tab-pane fade in active"></div><div id="site_maintenance" class="tab-pane fade "></div></div></div>')
-		
+		var panel_div_name =["site","column","node"];
+		var panel_name=["Site","Column","Node"]
+		for(var a = 0; a < panel_div_name.length; a++){
+			$("#divData").append('<div class="panel panel-default"><div class="panel-heading"><h2 class="header_right_level"><a data-toggle="collapse"  href="#'+panel_div_name[a]+'_collapse">'+panel_name[a]+' Level Overview</a></h2>'+
+				'</div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level panel-collapse collapse in"></div></div>')
+		}
+		$(".site_level").append('<div class = "col-md-3 map-canvas" id="map-canvas"></div>')
+		$(".site_level").append('<div class="col-md-8 " id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
+		$(".site_level").append('<br><br><br><div class="col-md-8" ><div id="surficial_graph"><h4><span class="glyphicon "></span><b>Superimpose Surficial Graph</b>'+
+			'&nbsp;<a id="tooltip_surficial" data-toggle="tooltip" data-placement="right" title="Surficial Measurement Data Table"><span class="glyphicon glyphicon-calendar" aria-hidden="true" data-toggle="modal" data-target="#groundModal"></span></a>'+
+			'</h4><br><div id="alert_div"></div><div id="ground_graph"></div><div>')
+
 		SiteInfo(selecte_column)
 		DataPresence(selecte_column,'data_presence_div')
-		// NodeSumary(selecte_column,'node_summary_div')
+		NodeSumary(selecte_column,'node_summary_div')
 		mapGenerator(selecte_column)
 		// siteMaintenance(selecte_column)
-		// showCommHealthPlotGeneral(selecte_column,'healthbars')
-		CheckBoxSiteLevel(selecte_site,selecte_column);
+		showCommHealthPlotGeneral(selecte_column,'healthbars')
+		
 		$('.nodegeneral').empty();
 		$('.nodegeneral').append('<label for="nodegeneral">Node</label><select class="selectpicker"  id="nodegeneral" multiple data-live-search="true"></select>');
 		$('#nodegeneral').selectpicker();
-		let dataSubmit = {site : selecte_site}
+		let dataSubmit = {
+			site : selecte_site
+		}
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){ // <----------------- Data for crack name
 			var result= JSON.parse(data_result)
 			var crack_name= [];
 			for (i = 0; i <  result.length; i++) {
 				dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
+				crack_name.push(result[i].crack_id)
 			}
 			dataTableProcess(dataSubmit,crack_name)
-			$("#crackgeneral").change(function () {
-				var current_crack = $(this).find("option:selected").text();
-				surficialAnalysis(curSite,current_crack)
-			});
+			
 		});
 		$.ajax({url: "/api/NodeNumberPerSite/"+selecte_column , dataType: "json",success: function(result){
 			for (c = 0; c <  result.length; c++) {
@@ -137,9 +150,90 @@ function SelectedColumn(selecte_site) {
 	});
 }
 
+function CheckBoxSiteLevel(selecte_site,selecte_column){
+	$('.checkbox').empty()
+	var list_checkbox =["data_presence","ground_measurement","rain_graph","surficial_velocity",
+	"piezo","sub_surface_analysis","communication_health","node_summary","x_accel","y_accel",
+	"z_accel","soms_raw","soms_cal","batt"];
+	var name_checkbox =["Data Presence","Surficial Measurement Graph/Data Table","Rainfall Graph","Surficial Analysis Graph",
+	"Piezometer Graph","SubSurface Analysis Graph","Communication Health","Node Summary","X Accel Graph","Y Accel Graph",
+	"Z Accel Graph","Soms Raw Graph","Soms Cal Graph","Battery Graph"]
+	for (a = 0; a <  list_checkbox.length; a++) {
+		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
+	}
+	
+	$('input[id="'+list_checkbox[0]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
+			$('#data_presence').show()
+		}else{
+			$('#data_presence').hide()
+		}
+	});
+	$('input[id="'+list_checkbox[1]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[1]+'_checkbox').is(':checked')) {
+			$('#surficial_graph').show()
+		}else{
+			$('#surficial_graph').hide()
+		}
+	});
+	$('input[id="'+list_checkbox[6]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[6]+'_checkbox').is(':checked')) {
+			$('#commhealth_div').show()
+		}else{
+			$('#commhealth_div').hide()
+		}
+	});
+	$('input[id="'+list_checkbox[7]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[7]+'_checkbox').is(':checked')) {
+			$('#node_summary_div').show()
+		}else{
+			$('#node_summary_div').hide()
+		}
+	});
+	$('input[id="'+list_checkbox[2]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[2]+'_checkbox').is(':checked')) {
+			$(".site_level").append('<div class="col-md-12" id="raincharts"></div>')
+			$("#raincharts").empty()
+			RainFallProcess(selecte_site)
+		}else{
+			$("#raincharts").empty()
+		}
+	});	
+	$('input[id="'+list_checkbox[3]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
+			$('#crackgeneral').attr('disabled',false)
+			$('#crackgeneral').selectpicker('refresh')
+			$(".site_level").append('<div class="col-md-12" id="surficial_graphs_VD"></div>')
+			$("#crackgeneral").change(function () {
+				var current_crack = $(this).find("option:selected").text();
+				surficialAnalysis(selecte_site,current_crack)
+			});
+			$("#surficial_graphs_VD").empty()
+			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b></h4><ol class="breadcrumb surficial-breadcrumb" id="surficial-breadcrumb"></ol>')
+		}else{
+			$("#surficial_graphs_VD").empty()
+			$("#crackgeneral").prop('selectedIndex',0);
+			$('#crackgeneral').selectpicker('refresh')
+			$('#crackgeneral').attr('disabled',true)
+			$('#crackgeneral').selectpicker('refresh')
+		}
+	});
+	$('input[id="'+list_checkbox[4]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
+			$(".site_level").append('<div class="col-md-12" id="piezometer_div"></div>')
+			$("#piezometer_div").empty()
+			$("#piezometer_div").append('<br><h4><span class=""></span><b>Piezometer Graph </b></h4><ol class="breadcrumb piezo-breadcrumb" id="piezo-breadcrumb"></ol>')
+			piezometer(selecte_column)
+		}else{
+			$("#piezometer_div").empty()
+		}
+	});	
+
+}
+
 function siteMaintenance(curSite) {
 	let dataSubmit = {site : curSite}
-	$("#site_maintenance").append('<br><h4><span class="glyphicon glyphicon-chevron-down"></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
+	$("#site_maintenance").append('<br><h4><span class=""></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
 		'<thead><tr><th>ID</th><th>Site Name</th>th>Start Date</th><th>End Date</th><th>Personel</th><th>Activity</th><th>Object(s)</th><th>Remarks</th></tr> </thead><tbody> </tbody></table>')
 	$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
@@ -158,12 +252,12 @@ function siteMaintenance(curSite) {
 
 function NodeSumary(site,siteDiv){ 
 	let dataSubmit = { site:site}
-	$("#site_details").append('<hr><div  id="node_summary_div"><h4><span class="glyphicon glyphicon-chevron-down"></span><b> Node Summary</b></h4></div>')
-	$("#site_details").append('<h4><span class="glyphicon glyphicon-chevron-down"></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div width="250px" id="legends" style="visibility:hidden; display:none;">'+
+	$(".node_level").append('<div class="col-md-9"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
+	$(".column_level").append('<div class="col-md-12 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
 		'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
 		'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
 		'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
-		'</div><div class="row" id="healthbars" style=" height: 300px;width:500px"></div>')
+		'</div><div class="row" id="healthbars" style=" height: 300px;width:auto"></div></div>')
 	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
 		nodeAlertJSON = JSON.parse(result.nodeAlerts)
@@ -176,8 +270,8 @@ function NodeSumary(site,siteDiv){
 function SiteInfo(site){ 
 	let dataSubmit = { site:site}
 	$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){
-		var result = JSON.parse(data);
-		$("#site_info").append("Site Overview")
+		var result = JSON.parse(data); 
+		$("#site_info").append("Overview")
 		$("#site_info_sub").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase()+")")
 		$("#site_info_sub_sub").append("Date install("+result[0].date_install +") / Date Activation("+result[0].date_activation+")")
 	});
@@ -207,7 +301,7 @@ function DataPresence(site,siteDiv){
 				}
 			}
 
-			colors = [ "blue", "#222"]
+			colors = [ "#222", "#222"]
 			for (e = 0; e < time_data.length; e++) {
 				pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
 			}
@@ -255,55 +349,9 @@ function SelectedNodes(selecte_site,selecte_column){
 		var selectedText = $(this).find('option').eq(clickedIndex).text();
 	});
 }
-function CheckBoxSiteLevel(selecte_site,selecte_column){
-	// $("#divData").append('<h1 class="header_level col-sm-12">Site Level Overview</h1><hr>')
-	// $("#divData").append('<div class="col-sm-12" id="site_level"></div>')
-	// $("#divData").append('<h1 class="header_level col-sm-12">Column Level Overview</h1><hr>')
-	// $("#divData").append('<div class="col-sm-12" id="column_level"></div>')
-	$("#divData").append('<br><br><div class="col-md-12" id="raincharts"><h4><span class="glyphicon glyphicon-chevron-down"></span><b>Rainfall Graphs</b></h4><div id="rain_arq" >'+
-		'</div><br><div id="rain_senslope"></div><br><div id="rain1"></div><br><div id="rain2" ></div><br><div id="rain3"></div></div><br>')
-	$('input').on('click',function () {
-		if ($('#rain_graph_checkbox').is(':checked')) {
-			RainFallProcess(selecte_site)
-			$("#raincharts").show()
-		}else{
-			$("#raincharts").hide()
-		}
-		if ($('#ground_measurement_checkbox').is(':checked')) {
-			$('#surficial_graph').show()
-		}else{
-			$('#surficial_graph').hide()
-		}
-		if ($('#data_presence_checkbox').is(':checked')) {
-			$('#data_presence').show()
-		}else{
-			$('#data_presence').hide()
-		}
-		if ($('#surficial_velocity_checkbox').is(':checked')) {
-			 // RainFallProcess(selecte_site)
-			 // $("#raincharts").show()
-			}else{
-			// $("#raincharts").hide()
-		}
-		if ($('#surficial_displacement_checkbox').is(':checked')) {
-			 // RainFallProcess(selecte_site)
-			 // $("#raincharts").show()
-			}else{
-			// $("#raincharts").hide()
-		}
-		var data_presence_hid  = $('#data_presence_graph').is(':hidden');
-		var surficial_graph_hid  = $('#surficial_graph').is(':hidden');
-		if(data_presence_hid == true || surficial_graph_hid == true){
-			if(surficial_graph_hid == true || data_presence_hid == true){
-			$( "#map-canvas" ).switchClass( "col-md-3", "col-md-12", 1000 );
-			}
-		}
-	});
 
-
-}
 function RainFallProcess(curSite){
-	
+	$("#raincharts").append('<br><h4><span class=""></span><b>Rain Fall Graph</b></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol>')
 	// var fromDate =  $('#reportrange span').html().slice(0,10)
 	// var toDate =  $('#reportrange span').html().slice(13,23)
 	var fromDate =  '2016-10-10'
@@ -341,44 +389,51 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 			success: function(data)
 			{
 				var jsonRespo =JSON.parse(data);
-				var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-				var max = max_rain;
-				var colors= ["#EBF5FB","#82b1ff","#448aff"]
-				for (i = 0; i < jsonRespo.length; i++) {
-					var Data24h=[] ,Datarain=[] ,Data72h=[];
-					var time =  Date.parse(jsonRespo[i].ts);
-					Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-					Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-					Datarain.push(time, parseFloat(jsonRespo[i].rval));
-					DataSeries72h.push(Data72h);
-					DataSeries24h.push(Data24h);
-					DataSeriesRain.push(Datarain);
-					if(jsonRespo[i].hrs24 == null){
-						if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							nval.push(i);
-						}
-						if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							nval.push(i);
+				if(jsonRespo.length != 0){
+					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+					$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div></div>')
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var colors= ["#EBF5FB","#82b1ff","#448aff"]
+					for (i = 0; i < jsonRespo.length; i++) {
+						var Data24h=[] ,Datarain=[] ,Data72h=[];
+						var time =  Date.parse(jsonRespo[i].ts);
+						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+						Datarain.push(time, parseFloat(jsonRespo[i].rval));
+						DataSeries72h.push(Data72h);
+						DataSeries24h.push(Data24h);
+						DataSeriesRain.push(Datarain);
+						if(jsonRespo[i].hrs24 == null){
+							if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								nval.push(i);
+							}
+							if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								nval.push(i);
 
-						}else{
-							nval.push(i);
-							break;
+							}else{
+								nval.push(i);
+								break;
+							}
 						}
 					}
+					for (var i = 0; i < nval.length; i=i+2) {
+						var n = nval[i];
+						var n2 = nval[i+1];
+						negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+					}
+					var divname =["15mins","24hrs" ,"72hrs"];
+					var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
+					var color =["red","blue","green"];
+					var series_data = [];
+					for (i = 0; i < divname.length; i++) {
+						series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+					}
+					chartProcessRain(series_data,id,'Senslope',site,max_rain,negative );
+				}else{
+					$('#'+id).hide()
+					
 				}
-				for (var i = 0; i < nval.length; i=i+2) {
-					var n = nval[i];
-					var n2 = nval[i+1];
-					negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-				}
-				var divname =["15mins","24hrs" ,"72hrs"];
-				var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
-				var color =["red","blue","green"];
-				var series_data = [];
-				for (i = 0; i < divname.length; i++) {
-					series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
-				}
-				chartProcessRain(series_data,id,'Senslope',site,max_rain,negative );
 			}
 		})
 		
@@ -393,33 +448,39 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 			success: function(data)
 			{
 				var jsonRespo =JSON.parse(data);
-				var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-				var max = max_rain;
-				var colors= ["#EBF5FB","#82b1ff","#448aff"]
-				for (i = 0; i < jsonRespo.length; i++) {
-					var Data24h=[] ,Datarain=[] ,Data72h=[];
-					var time =  Date.parse(jsonRespo[i].ts);
-					Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-					Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-					Datarain.push(time, parseFloat(jsonRespo[i].rval));
-					DataSeries72h.push(Data72h);
-					DataSeries24h.push(Data24h);
-					DataSeriesRain.push(Datarain);
+				if(jsonRespo.length != 0){
+					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+					$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div></div>')
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var colors= ["#EBF5FB","#82b1ff","#448aff"]
+					for (i = 0; i < jsonRespo.length; i++) {
+						var Data24h=[] ,Datarain=[] ,Data72h=[];
+						var time =  Date.parse(jsonRespo[i].ts);
+						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+						Datarain.push(time, parseFloat(jsonRespo[i].rval));
+						DataSeries72h.push(Data72h);
+						DataSeries24h.push(Data24h);
+						DataSeriesRain.push(Datarain);
+					}
+					for (var i = 0; i < nval.length; i=i+2) {
+						var n = nval[i];
+						var n2 = nval[i+1];
+						negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+					}
+					var divname =["15mins","24hrs" ,"72hrs"];
+					var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
+					var color =["red","blue","green"];
+					var series_data = [];
+					for (i = 0; i < divname.length; i++) {
+						series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+					}
+					chartProcessRain(series_data,id,'ARQ',site,max_rain,negative );
+				}else{
+					$('#'+id).hide()
+					
 				}
-				for (var i = 0; i < nval.length; i=i+2) {
-					var n = nval[i];
-					var n2 = nval[i+1];
-					negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-				}
-				var divname =["15mins","24hrs" ,"72hrs"];
-				var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
-				var color =["red","blue","green"];
-				var series_data = [];
-				for (i = 0; i < divname.length; i++) {
-					series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
-				}
-				chartProcessRain(series_data,id,'ARQ',site,max_rain,negative );
-
 			}
 		})
 	}
@@ -427,47 +488,54 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 
 function getRainNoah(site,fdate,tdate,max_rain,id) {
 	if(site != null){
-		var rain_noah_numeber = site.slice(10,20)
+		var rain_noah_number = site.slice(10,20)
 		$.ajax({
-			url:"/api/RainNoah/"+rain_noah_numeber+"/"+fdate+"/"+tdate,
+			url:"/api/RainNoah/"+rain_noah_number+"/"+fdate+"/"+tdate,
 			dataType: "json",
 			success: function(data)
 			{
 				var jsonRespo = JSON.parse(data);
-				var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-				var max = max_rain;
-				var colors= ["#EBF5FB","#82b1ff","#448aff"]
-				for (i = 0; i < jsonRespo.length; i++) {
-					var Data24h=[] ,Datarain=[] ,Data72h=[];
-					var time =  Date.parse(jsonRespo[i].ts);
-					Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-					Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-					Datarain.push(time, parseFloat(jsonRespo[i].rval));
-					DataSeries72h.push(Data72h);
-					DataSeries24h.push(Data24h);
-					DataSeriesRain.push(Datarain);
-					if(jsonRespo[i].hrs24 == null){
-						if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							nval.push(i);
-						}
-						if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							nval.push(i);
+				if(jsonRespo.length != 0){
+					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+					$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div><div>')
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var colors= ["#EBF5FB","#82b1ff","#448aff"]
+					for (i = 0; i < jsonRespo.length; i++) {
+						var Data24h=[] ,Datarain=[] ,Data72h=[];
+						var time =  Date.parse(jsonRespo[i].ts);
+						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+						Datarain.push(time, parseFloat(jsonRespo[i].rval));
+						DataSeries72h.push(Data72h);
+						DataSeries24h.push(Data24h);
+						DataSeriesRain.push(Datarain);
+						if(jsonRespo[i].hrs24 == null){
+							if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								nval.push(i);
+							}
+							if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								nval.push(i);
+							}
 						}
 					}
+					for (var i = 0; i < nval.length; i=i+2) {
+						var n = nval[i];
+						var n2 = nval[i+1];
+						negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+					}
+					var divname =["15mins","24hrs" ,"72hrs"];
+					var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
+					var color =["red","blue","green"];
+					var series_data = [];
+					for (i = 0; i < divname.length; i++) {
+						series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+					}
+					chartProcessRain(series_data,id,'Noah',site,max_rain,negative );
+				}else{
+					$('#'+id).hide()
+					
 				}
-				for (var i = 0; i < nval.length; i=i+2) {
-					var n = nval[i];
-					var n2 = nval[i+1];
-					negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-				}
-				var divname =["15mins","24hrs" ,"72hrs"];
-				var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
-				var color =["red","blue","green"];
-				var series_data = [];
-				for (i = 0; i < divname.length; i++) {
-					series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
-				}
-				chartProcessRain(series_data,id,'Noah',site,max_rain,negative );
 			}
 		})
 	}
@@ -487,6 +555,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 			type: 'area',
 			zoomType: 'x',
 			height: 300,
+			width:$(".breadcrumb").width(),
 			backgroundColor: {
 				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
 				stops: [
@@ -628,6 +697,7 @@ function removeDuplicates(num) {
 }
 
 function dataTableProcess(dataSubmit,crack_name) {  
+	$('#tooltip_surficial').tooltip('show')
 	$.post("../surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
 		var result= JSON.parse(data_result);
 		var last_goodData =[];
@@ -674,7 +744,6 @@ function surficialMeasurement(dataSubmit) {
 				columns_date.push({title:'<center><span id="show-option"  style='+color+' aria-hidden="true" title="'+dataSubmit.all_data_last[i-1].weather+"/"
 					+dataSubmit.all_data_last[i-1].meas_type+'">'+moment(dataSubmit.last[i-1]).format('D MMM YYYY HH:mm')+'</span></center>'});
 			}
-
 			var dataTable_process_1 = []
 			var dataTable_process_1result =[]
 			var dataTable_process_1result_time =[]
@@ -700,6 +769,7 @@ function surficialMeasurement(dataSubmit) {
 				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
 			}		
 			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
+
 
 		});
 }
@@ -740,7 +810,6 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 				}
 				organize_ground_data.push(no_Data_meas)
 			}
-
 			var slice_num_meas=[]
 
 			for(var e = 0; e < allgather_ground_data.length; e++){
@@ -978,4 +1047,177 @@ function chartProcessSurficial(id,data_series,name){
 		},
 		series:data_series
 	});
+}
+function surficialAnalysis(site,crack_id) {  
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/GroundVelocityDisplacementData/"+site+"/"+crack_id,success: function(result) {
+			$("#surficial-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#analysisVelocity">Surficial Velocity</b></li>'+
+				'<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#analysisDisplacement">Surficial Displacement</b></li>')
+			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div> ')
+			var ground_analysis_data = JSON.parse(result)
+			var dvt = [];
+			var vGraph =[] ;
+			var dvtgnd = [];
+			var dvtdata = ground_analysis_data["dvt"];
+			var catdata= [];
+			var up =[];
+			var down =[];
+			var line = [];
+			var series_data_vel =[];
+			var series_data_dis =[];
+			for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
+				dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
+				catdata.push(i);
+			}
+			for(var i = 0; i < dvtdata.interp["surfdisp"].length; i++){
+				dvt.push([dvtdata.interp["ts"][i],dvtdata.interp["surfdisp"][i]]);
+			}
+			var last =[];
+			for(var i = 0; i < ground_analysis_data["av"].v.length; i++){
+				var data = [];
+				data.push( ground_analysis_data["av"].v[i] , ground_analysis_data["av"].a[i]);
+				vGraph.push(data);
+			}
+
+			for(var i = ground_analysis_data["av"].v.length-1; i < ground_analysis_data["av"].v.length; i++){
+				last.push([ground_analysis_data["av"].v[i],ground_analysis_data["av"].a[i]]);
+			}
+
+			for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
+				up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
+				down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
+				line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
+			}
+
+			var series_data_name_vel =[vGraph,up,down,line,last];
+			var series_name =["Data","TU","TD","TL","LPoint"];
+			series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
+			series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
+			series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
+				marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
+			for(var i = 1; i < series_data_name_vel.length-2; i++){
+				series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
+			}
+			chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
+
+			series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
+			series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
+			chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
+		}
+	});	
+}
+
+function chartProcessSurficialAnalysis(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			spline: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+}
+
+function piezometer(curSite){
+	$("#piezo-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#freq_div">Frequency</b></li>'+
+		'<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#temp_div">Temperature</b></li>')
+	$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"></div></div></div><div class="col-md-12"><div id="temp_div"></div></div></div>')
+	$.ajax({
+		dataType: "json",
+		url: "/api/PiezometerAllData/"+curSite+"pzpz",success: function(result) { 
+			console.log(result.length)
+			var freq_data=[] , temp_data =[];
+			var freqDataseries =[] ,tempDataseries =[];
+			for(var i = 0; i < result.length; i++){
+				var time = Date.parse(result[i].timestamp)
+				var freq = [time,parseFloat(result[i].freq)]
+				var temp = [time,parseFloat(result[i].temp)]
+				freq_data.push(freq)
+				temp_data.push(temp)
+			}
+
+			freqDataseries.push({name:'frequency',data:freq_data})
+			tempDataseries.push({name:'Temperature',data:temp_data})
+			chartProcessPiezo('freq_div',freqDataseries,'Piezometer frequency')
+			chartProcessPiezo('temp_div',tempDataseries,'Piezometer Temperature')
+		} 
+	});	
+}
+function chartProcessPiezo(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+				// height: 800,
+				width:750
+			},
+			title: {
+				text: name,
+			},
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+				shared: true,
+				crosshairs: true
+			},
+			plotOptions: {
+				spline: {
+					marker: {
+						enabled: true
+					}
+				}
+			},
+			credits: {
+				enabled: false
+			},
+			series:data_series
+		});
 }
