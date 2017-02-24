@@ -48,11 +48,6 @@ $(document).ready(function()
     reposition("#outcome");
     reposition("#bulletinLoadingModal");
 
-    setTimeout(function (a) {
-        let to_highlight = $("#to_highlight").attr("value");
-        if(to_highlight != "") $(".timeline-panel.highlight").focus()
-    }, 1000)
-
     let event_id = window.location.pathname.split("/")[3];
     let event = null;
     let latitude = null, longitude = null, site_code = null, address = null;
@@ -65,6 +60,9 @@ $(document).ready(function()
         site_code = name.toUpperCase();
         address = event.barangay + ", " + event.municipality + ", " + event.province;
         initialize_map();
+
+        let to_highlight = $("#to_highlight").attr("value");
+        if(to_highlight != "") $(".timeline-panel.highlight").focus();
     });
 
     let current_release = {};
