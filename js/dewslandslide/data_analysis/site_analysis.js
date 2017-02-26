@@ -37,15 +37,7 @@ $(document).ready(function(e) {
 			}
 		});
 
-		$('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
-			var time = $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
-			alert(time.context.value)
-		});
-
-		$('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
-			$(this).val('Select Date');
-		});
-
+		
 		$('.columngeneral').empty();
 		$('.crackgeneral').empty();
 		$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
@@ -161,7 +153,27 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 	for (a = 0; a <  list_checkbox.length; a++) {
 		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
+	$('#'+list_checkbox[5]+'_checkbox').prop('disabled', true);
+	for (a = 8; a <  list_checkbox.length; a++) {
+		$('#'+list_checkbox[a]+'_checkbox').prop('disabled', true);
+	}
 	
+	$('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
+		var time = $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+		CheckBoxTimeProcess(selecte_column,selecte_column,time.context.value,list_checkbox)
+		$('#'+list_checkbox[5]+'_checkbox').prop('disabled', false);
+		for (a = 8; a <  list_checkbox.length; a++) {
+			$('#'+list_checkbox[a]+'_checkbox').prop('disabled', false);
+		}
+
+	});
+
+	$('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
+		$(this).val('Select Date');
+
+	});
+
+
 	$('input[id="'+list_checkbox[0]+'_checkbox"]').on('click',function () {
 		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
 			$('#data_presence').show()
@@ -196,9 +208,11 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 			$("#raincharts").empty()
 			RainFallProcess(selecte_site)
 		}else{
+			
 			$("#raincharts").empty()
 		}
 	});	
+	
 	$('input[id="'+list_checkbox[3]+'_checkbox"]').on('click',function () {
 		if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
 			$('#crackgeneral').attr('disabled',false)
@@ -229,6 +243,21 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 		}
 	});	
 
+}
+
+function CheckBoxTimeProcess(site_column,column,time,list_checkbox){
+	var fdate = time.slice(0,10);
+	var tdate = time.slice(13,23);
+	console.log(fdate,tdate)
+	$('input[id="'+list_checkbox[5]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
+			$(".column_level").append('<div class="col-md-12" id="subsurface_analysis_div"></div>')
+			$("#subsurface_analysis_div").append('<br><h4><span class=""></span><b>Sub-Surface Analysis Graph </b></h4><ol class="breadcrumb subsurface-breadcrumb" id="subsurface-breadcrumb"></ol>')
+			allSensorPosition(site_column,fdate,tdate)
+		}else{
+			$("#subsurface_analysis_div").empty()
+		}
+	});
 }
 
 function siteMaintenance(curSite) {
@@ -1220,4 +1249,379 @@ function chartProcessPiezo(id,data_series,name){
 			},
 			series:data_series
 		});
+}
+
+function allSensorPosition(site,fdate,tdate) {
+	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
+		dataType: "json",
+		success: function(result){
+			
+			var data = JSON.parse(result);
+			columnPosition(data[0].c)
+			displacementPosition(data[0].d,data[0].v)
+		}
+	});
+}
+function columnPosition(data_result) {
+	if(data_result!= "error"){
+		$("#subsurface-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#column_sub">Column Position</b></li>')
+		$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="column_sub" class="collapse">'+
+			'<div class="col-md-6"><div id="colspangraph"></div></div><div class="col-md-6"><div id="colspangraph2"></div></div></div>')
+		var data = data_result;
+		var AlllistId = [] ,  AlllistDate = [];
+		var listId = [] , listDate = [];
+		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
+		var fseries2=[] , fdatalat= [],fAlllat =[] ;
+		for(var i = 0; i < data.length; i++){
+			AlllistId.push(data[i].id);
+		}
+		for(var i = 0; i < data.length; i++){
+			AlllistDate.push(data[i].ts);
+			if(data[i].id == data[i+1].id){
+				listDate.push(data[i].ts)
+			}else{
+				listDate.push(data[i].ts)
+				break;
+			}
+		}
+		for(var i = 0; i < AlllistId.length; i++){
+			if(AlllistId[i] != AlllistId[i+1]){
+				listId.push(AlllistId[i])
+			}
+		}
+		for(var i = 0; i < listDate.length; i++){
+			for(var a = 0; a < data.length; a++){
+				if(listDate[i] == data[a].ts){
+					fdatadown.push([data[a].downslope,data[a].depth])
+					fdatalat.push([data[a].latslope,data[a].depth])
+				}
+			}
+		}
+
+		for(var a = 0; a < fdatadown.length; a++){
+			var num = fdatadown.length-(listId.length*a);
+			if(num >= 0 ){
+				fnum.push(num);
+			}
+		}
+		for(var a = fnum.length-1; a >= 0; a--){
+			if(fnum[a+1] != undefined){
+				fAlldown.push(fdatadown.slice(fnum[a+1],fnum[a]))
+				fAlllat.push(fdatalat.slice(fnum[a+1],fnum[a]))
+			}
+		}
+		for(var a = 0; a < fAlldown.length; a++){
+			fseries.push({name:listDate[a], data:fAlldown[a]})
+			fseries2.push({name:listDate[a],  data:fAlllat[a]})
+		}
+		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
+	}     
+}
+
+function displacementPosition(data_result,data_result_v) {
+	if(data_result != "error"){
+		$("#subsurface-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#dis_sub">Displacement Position</b></li>')
+		$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="dis_sub" class="collapse">'+
+			'<div class="col-md-6"><div id="dis1"></div></div><div class="col-md-6"><div id="dis2"></div></div></div>')
+		var data = data_result;
+		var totalId =[] , listid = [0] ,allTime=[] ,allId=[] , totId = [];
+		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
+		var disData1 = [] , disData2 = [];
+		var fseries = [], fseries2 = [];
+		var d1= [] , d2 =[];
+		for(var i = 0; i < data.length; i++){
+			if(data[i].ts == data[i+1].ts ){
+				totalId.push(data[i]);
+			}else{
+				totalId.push(data[i]);
+				break;
+			}
+		}
+		for(var i = 1; i < totalId.length +1 ; i++){
+			for(var a = 0; a < data.length; a++){
+				if(i == data[a].id){
+					fixedId.push(data[a]);
+				}
+			}
+		}
+		for(var i = 1; i < fixedId.length-1; i++){
+			if(fixedId[i].id != fixedId[i+1].id){
+				allIdData.push(i)
+			}
+			if(fixedId[i-1].id == fixedId[i].id){
+				totId.push(fixedId[i].id)
+			}else{
+				totId.push(fixedId[i].id)
+				break;
+			}
+		}
+
+		for(var i = fixedId.length - 1; i >= 0 ; i--){
+			var num = fixedId.length-(totId.length*i);
+			if(num >= 0 ){
+				listid.push(num);
+			}
+		}
+
+		for(var a = 1; a < (listid.length-1); a++){
+			if(listid[a] != undefined){
+				disData1.push(fixedId.slice(listid[a],listid[a+1]));
+				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
+			}
+		}
+		for(var a = 0; a < disData1.length; a++){
+			for(var i = 0; i < disData1[0].length; i++){
+				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope])
+				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope])
+			}
+		}
+		for(var a = 1; a < disData1.length+1; a++){
+			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
+			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+		}
+		velocityPosition(data_result_v,totalId.length,disData1[0]); 
+		chartProcessDis("dis1",fseries,"Displacement, downslope")
+		chartProcessDis("dis2",fseries2,"Displacement , across slope")
+
+	}     
+
+}
+function velocityPosition(data_result,id,date) {
+	if(data_result != "error"){
+		$("#subsurface-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#velocity_sub">Velocity Position</b></li>')
+		$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="velocity_sub" class="collapse">'+
+			'<div class="col-md-6"><div id="velocity1"></div></div><div class="col-md-6"><div id="velocity2"></div></div></div>')
+		var data = data_result;
+		var allTime = [] , dataset= [] , sliceData =[];
+		var fseries = [], fseries2 = [] ;
+		var l2 =[] , l3=[] , alldataNotSlice=[];
+
+		if(data[0].L2.length != 0){
+			var catNum=[1];
+			for(var a = 0; a < data[0].L2.length; a++){
+				allTime.push(data[0].L2[a].ts)
+				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
+			}
+			var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
+			for(var a = 0; a < data[0].L2.length; a++){
+				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
+				fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
+			}
+			for(var a = 0; a < data[0].L3.length; a++){
+				allTime.push(data[0].L3[a].ts)
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+			}
+			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
+			for(var a = 0; a < data[0].L3.length; a++){
+				fseries.push({ type: 'scatter', zIndex:5 , name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
+				fseries2.push({type: 'scatter', zIndex:5,name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
+			}
+			for(var i = 0; i < id; i++){
+				for(var a = 0; a < allTime.length; a++){
+					dataset.push([Date.parse(allTime[a]) , i+1])
+				}
+			}
+			for(var a = 0; a < dataset.length; a++){
+				for(var i = 0; i < id; i++){
+					if(dataset[a][1] == i){
+						alldataNotSlice.push(dataset[a])
+					}
+				}
+			}
+
+			for(var i = alldataNotSlice.length - 1; i >= 0 ; i--){
+				var num = alldataNotSlice.length-(allTime.length*i);
+				if(num >= 0 ){
+					sliceData.push(num);
+				}
+			}
+			for(var a = 0; a < sliceData.length; a++){
+				catNum.push((sliceData.length-1)-(a+1)+2)
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+			}
+		}else{
+			var catNum=[];
+			for(var a = 0; a < id ; a++){
+				for(var i = 0; i < date.length; i++){
+					dataset.push([Date.parse(date[i].ts),a]);
+				}
+			}
+
+			for(var i = dataset.length - 1; i >= 0 ; i--){
+				var num = dataset.length-(date.length*i);
+				if(num >= 0 ){
+					sliceData.push(num);
+				}
+			}
+
+			for(var a = 0; a < sliceData.length-1; a++){
+				catNum.push((sliceData.length-2)-(a+1)+2)
+				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+			}					
+		}
+		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
+		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
+	}  
+}
+function chartProcessDis(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 800,
+			width:375
+		},
+		title: {
+			text: name,
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			spline: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#0000'
+			},
+			itemHoverStyle: {
+				color: '#0000'
+			},
+			itemHiddenStyle: {
+				color: '#222'
+			}
+		},
+		series:data_series
+	});
+}
+
+function chartProcessInverted(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			height: 600,
+			width: 375
+		},
+		title: {
+			text: name,
+		},
+		tooltip: {
+			crosshairs: true
+		},
+		plotOptions: {
+			spline: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#222'
+			},
+			itemHoverStyle: {
+				color: '#E0E0E3'
+			},
+			itemHiddenStyle: {
+				color: '#606063'
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+}
+
+function chartProcessbase(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 500,
+			width: 375
+		},
+		title: {
+			text: name
+		},
+
+		tooltip: {
+			headerFormat: '{point.key}',
+			pointFormat: ' ',
+			crosshairs: true
+		},
+
+		credits: {
+			enabled: false
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			}
+		},
+		legend: {
+			enabled: false
+		},
+		yAxis: {
+			title: {
+				text: 'Values'
+			},
+
+		},
+		series:data_series
+	});
 }
