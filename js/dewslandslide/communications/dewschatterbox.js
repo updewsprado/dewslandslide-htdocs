@@ -1059,7 +1059,14 @@ $(document).ready(function() {
 	});
 
 	$('#btn-search-global').click(function(){
-		searchMessageGlobal($('#search-global-keyword').val());
+		switch($('.search-opt input[name="optradio"]:checked').val()) {
+			case "gintag-search":
+				searchGintagMessages($('#search-global-keyword').val());
+			break;
+			case "global-search":
+				searchMessageGlobal($('#search-global-keyword').val());
+			break;
+		}
 	});
 
 	function searchMessage(){
@@ -1138,6 +1145,16 @@ $(document).ready(function() {
 		}
 		conn.send(JSON.stringify(request));
 		$('#loading').modal('toggle');
+	}
+
+	function searchGintagMessages(searchKey){
+		console.log(searchKey);
+		request = {
+			'type': "searchGintagMessages",
+			'searchKey': searchKey
+		}
+		conn.send(JSON.stringify(request));
+		// $('#loading').modal('toggle');
 	}
 
 	var coloredTimestamp;
