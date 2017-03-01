@@ -15,6 +15,9 @@ body {
 .bg-white {
   background-color: #fff;
 }
+.search-opt {
+  margin-bottom: 10px;
+}
 
 #testing-site-indicator {
   background-color: red;
@@ -220,6 +223,8 @@ body {
   max-height: 400px;
   overflow-y: scroll;
   padding-right: 10px;
+  padding-left: 0px;
+  margin-top: 10px;
 }
 
 #response-contact-container_wrapper {
