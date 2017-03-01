@@ -109,14 +109,15 @@ function tagBulletin(release_id, editableEditedValue, editableOrigValue) {
     }, "json");
 }
 
-function sendMail(text, subject, filename) {
+function sendMail(text, subject, filename, recipients) {
 
     $('#bulletinLoadingModal .progress-bar').text('Sending EWI and Bulletin...');
 
     let form = {
         text: text,
         subject: subject,
-        filename: filename
+        filename: filename,
+        recipients: recipients
     };
 
     console.log("Sent", text, subject, filename);
@@ -146,13 +147,13 @@ function sendMail(text, subject, filename) {
                         console.log(y);
                     });
 
-                    $("#resultModal .modal-body").html('<p><strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!</p>');
+                    $("#resultModal .modal-body").html('<strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!');
                     $("#resultModal").modal('show');
                 }
                 else
                 {
                     console.log('EMAIL SENDING FAILED', data);
-                    $("#resultModal .modal-body").html('<p><strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!</p>');
+                    $("#resultModal .modal-body").html('<strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!<br/><br/><i>' + data + "</i>");
                     $("#resultModal").modal('show');
                 }   
             }, 500);
@@ -171,7 +172,7 @@ function edit(onEdit) {
     if(onEdit) {
         $(".edit-event-page").css({"background-color": "#FFFF00"});    
         $("#edit-bulletin").text("Exit Edit");
-        $("#send").text("Send Edit to Mail");
+        $("#send_to_mail").text("Send Edit to Mail");
         $("#download").text("Download Edit");
         $("#edit-reminder").show();
         $("#cancel, #bulletinModal .close").hide();
@@ -192,7 +193,7 @@ function edit(onEdit) {
     else {
         $(".edit-event-page").css({"background-color": "#fffff"});
         $("#edit-bulletin").text("Edit");
-        $("#send").text("Send to Mail");
+        $("#send_to_mail").text("Send to Mail");
         $("#download").text("Download");
         $("#edit-reminder").hide();
         $("#cancel, #bulletinModal .close").show();

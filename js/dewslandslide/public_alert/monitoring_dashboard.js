@@ -342,19 +342,30 @@ $(document).ready( function() {
 		loadBulletin(id, event_id);
 	});
 
-	$("#send").click(function () {
-		$.when(renderPDF(id))
+	$("#send_to_mail").click(function () {
+        reposition("#recipientsModal");
+        $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
+        $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
+        $("#recipientsModal").modal("show");
+    });
+
+    $("#send").click(function () {
+        $("#recipientsModal").modal("hide");
+        $.when(renderPDF(id))
         .then(function (x) {
             if( x == "Success.")
             {
-            	$('#bulletinLoadingModal .progress-bar').text('Sending EWI and Bulletin...');
+                let recipients = $("#recipients").tagsinput("items");
+                console.log(recipients);
+
                 text = $("#info").html();
                 subject = $("#subject").text();
                 filename = $("#filename").text();
-                sendMail(text, subject, filename);
+                sendMail(text, subject, filename, recipients);
             }
-        });
-	});
+        })
+    });
+ 
 
 	/********** END OF AUTOMATED PDF SENDING **********/ 
 
