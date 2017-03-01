@@ -1158,7 +1158,7 @@ $(document).ready(function() {
 			'searchKey': searchKey
 		}
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('toggle');
 	}
 
 	var coloredTimestamp;
@@ -1854,6 +1854,7 @@ $(document).ready(function() {
 			}
 		}
 	});
+
 	$('#btn-contact-settings').click(function() {
 
 		$('#employee-contact-wrapper').prop('hidden', true);
@@ -2332,7 +2333,7 @@ $(document).ready(function() {
 		var msg = {
 			'type': 'smsloadquickinboxrequest'
 		};
-		$('#loading').modal('toggle');
+		$('#loading').modal('show');
 		conn.send(JSON.stringify(msg));
 	}
 
@@ -2532,7 +2533,6 @@ $(document).ready(function() {
 				$('tfoot tr').append( $('<th />', {text : 'Group Tags'}));
 
 				for (var i = 0; i < data.length; i++) {
-					console.log(data[i].numbers);
 					var newContent = "<tr><td style='display:none;'>"+data[i].eid+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].nickname+"</td><td>"+data[i].birthday+"</td><td>"+data[i].email+"</td><td>"+data[i].numbers+"</td><td>"+data[i].grouptags+"</td></tr>";
 					$("#response-contact-container tbody").append(newContent);
 				}
