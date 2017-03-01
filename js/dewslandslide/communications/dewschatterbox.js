@@ -47,7 +47,9 @@ function sendViaAlertMonitor(data){
 					break;
 					case 2:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
-				}
+					default:
+					return;
+				}	
 				var ext_month = moment().add(1, 'days').format("MM");
 				var ext_day = moment().add(1, 'days').format("DD");
 				var ext_year = moment().add(1, 'days').format("YYYY");
