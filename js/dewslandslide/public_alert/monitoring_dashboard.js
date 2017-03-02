@@ -7,12 +7,17 @@
  *	
 ****/
 
+let realtime_cache = [], ongoing = [], candidate_triggers = [];
+let isTableInitialized = false;
+let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
+let modalForm = null, entry = {};
+
+let setElementHeight = function () {
+    let col_height = $("#column_2").height();
+    $('#map-canvas').css('min-height', col_height-20);
+};
+
 $(document).ready( function() {
-	
-	let setElementHeight = function () {
-	    let col_height = $("#column_2").height();
-	    $('#map-canvas').css('min-height', col_height-20);
-	};
 
 	$(window).on("resize", function () {
 	    setElementHeight();
@@ -21,308 +26,7 @@ $(document).ready( function() {
 	$(window).on("resize", function () {
 	    $('#page-wrapper').css('min-height', ($(window).height()));
 	}).resize();
-
-
-	/*****************************************
-	 * 
-	 * 		BUILD THREE TABLES AVAILABLE
-	 * 
-	******************************************/
-
-	let isTableInitialized = false;
-	let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
-
-	function buildTable( latest, extended, overdue, candidate ) 
-	{
-		function buildLatestAndOverdue (table, dataX)
-		{
-			return $('#' + table).DataTable({
-				"data": dataX,
-				"columnDefs": [
-					{ className: "text-left", "targets": [ 0, 3 ] },
-			 		{ className: "text-right", "targets": [ 1, 2, 4, 5 ] },
-			 		{ className: "text-center", "targets": [6] }
-				],
-				"columns": [
-		            {
-		            	data: "name", 
-		            	"render": function (data, type, full) {
-		            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
-		            	},
-		        		"name": 'name',
-		            },
-		            { 
-		            	"data": "event_start",
-		            	"render": function (data, type, full) {
-		            		return moment(full.event_start).format("DD MMMM YYYY HH:mm");
-		            	},
-		            	"name": "event_start"
-		        	},
-		        	{
-		        		"data": "trigger_timestamp",
-		            	"render": function (data, type, full) {
-		            		return moment(full.trigger_timestamp).format("DD MMMM YYYY HH:mm");
-		            	},
-		            	"name": "trigger_timestamp"
-		        	},
-		            { 
-		            	"data": "internal_alert_level",
-		            	"render": function (data, type, full) {
-		            		return full.internal_alert_level;
-		            	},
-		            	"name": "internal_alert_level",
-		            },
-		            { 
-		            	"data": "validity",
-		            	"render": function (data, type, full) {
-		            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
-		            	},
-		            	"name": "validity"
-		        	},
-		        	{ 
-		            	"data": "release_time",
-		            	"render": function (data, type, full) {
-		            		return full.release_time;
-		            	},
-		            	"name": "release_time"
-		        	},
-		        	{
-		        		"render": function (data, type, full) {
-		            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' event-id='" + full.event_id + "'></span></a>";
-		            	}
-		        	}
-		    	],
-		    	"order" : [[4, "asc"]],
-		    	"processing": true,
-		    	"filter": false,
-		    	"info": false,
-		    	"paginate": false,
-		    	"autoWidth": false,
-		    	"language": 
-		    	{
-			        "emptyTable": "There are no sites under monitoring at the moment."
-			    },
-			    "rowCallback": function( row, data, index ) 
-			    {
-	                switch(data.internal_alert_level.slice(0,2))
-	                {
-	                	case 'A2': $(row).addClass("alert_2"); break;
-	                	case 'A1': case 'ND': $(row).addClass("alert_1"); break;
-	                    case 'A3': $(row).addClass("alert_3"); break;
-	                }
-			  	}
-		    });
-		};
-
-		latest_table = buildLatestAndOverdue("latest", latest);
-		overdue_table = buildLatestAndOverdue("overdue", overdue);
-		overdue_table.column(6).visible(false);
-
-	    extended_table = $('#extended').DataTable({
-	    	"data": extended,
-			"columnDefs": [
-				{ className: "text-left", "targets": [ 0 ] },
-		 		{ className: "text-right", "targets": [ 1, 2, 3 ] },
-		 		{ className: "text-center", "targets": [4] }
-			],
-			"columns": [
-	            {
-	            	data: "name", 
-	            	"render": function (data, type, full) {
-	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
-	            	},
-	        		"name": 'name',
-	            },
-	            { 
-	            	"data": "validity",
-	            	"render": function (data, type, full) {
-	            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "validity"
-	        	},
-	        	{
-	            	"data": "start",
-	            	"render": function (data, type, full) {
-	            		return moment.unix(full.start).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "start"
-	        	},
-	        	{ 
-	            	"data": "end",
-	            	"render": function (data, type, full) {
-	            		return moment.unix(full.end).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "end"
-	        	},
-	        	{
-	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "'></span></a>";
-	            	}
-	        	}
-			],
-	    	"order" : [[3, "asc"]],
-	    	"processing": true,
-	    	"filter": false,
-	    	"info": false,
-	    	"paginate": false,
-	    	"autoWidth": false,
-	    	"language": 
-	    	{
-		        "emptyTable": "There are no sites under 3-day extended monitoring."
-		    },
-		    "rowCallback": function( row, data, index ) 
-		    {
-	            switch(data.day)
-	            {
-	            	case 0: 
-	            	case 1: $(row).addClass("day-one"); break;
-	                case 2: $(row).addClass("day-two"); break;
-	                case 3: $(row).addClass("day-three"); break;
-	                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
-	            }
-		  	}
-	    });
-
-	    candidate_table = $('#candidate').DataTable({
-	    	"data": candidate,
-			"columnDefs": [
-				{ className: "text-left", "targets": [ 0, 3 ] },
-		 		{ className: "text-right", "targets": [ 1, 2, 4 ] },
-		 		{ className: "text-center", "targets": [ 5 ] }
-			],
-			"columns": [
-	            {
-	            	data: "site", 
-	            	"render": function (data, type, full) {
-	            		return "<b>" + full.site.toUpperCase() + "</b>";
-	            	},
-	        		"name": 'site',
-	            },
-	            { 
-	            	"data": "data_timestamp",
-	            	"render": function (data, type, full) {
-	 					if( full.timestamp == null )	return "No new triggers";
-	            		else return moment(full.timestamp).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "data_timestamp"
-	        	},
-	            { 
-	            	"data": "latest_trigger_timestamp",
-	            	"render": function (data, type, full) {
-	 					if( full.latest_trigger_timestamp == null )	return "No new triggers";
-	            		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "latest_trigger_timestamp"
-	        	},
-	        	{ 
-	            	"data": "trigger",
-	            	"render": function (data, type, full) {
-	            		if( full.trigger == "No new triggers" ) return full.trigger;
-	            		return full.trigger.toUpperCase();
-	            	},
-	            	"name": "trigger",
-		        },
-	            { 
-	            	"data": "validity",
-	            	"render": function (data, type, full) {
-	            		if ( full.validity == null ) return "END OF VALIDITY"
-	            		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
-	            	},
-	            	"name": "validity"
-	        	},
-	        	{
-	        		"render": function (data, type, full) {
-	            		return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
-	            	}
-	        	}
-			],
-	    	"order" : [[3, "asc"]],
-	    	"processing": true,
-	    	"filter": false,
-	    	"info": false,
-	    	"paginate": false,
-	    	"autoWidth": false,
-	    	"language": 
-	    	{
-		        "emptyTable": "There are no current candidate triggers."
-		    },
-		   //  "rowCallback": function( row, data, index ) 
-		   //  {
-	 //            switch(data.day)
-	 //            {
-	 //            	case 1: $(row).addClass("day-one"); break;
-	 //                case 2: $(row).addClass("day-two"); break;
-	 //                case 3: $(row).addClass("day-three"); break;
-	 //            }
-		  	// }
-	    });
-
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
-
-	    isTableInitialized = true;
-	}
-
-	function tableCSSifEmpty( table ) 
-	{
-		if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
-	    {
-	    	if( table == "candidate" && candidate == null ) {
-	    		reposition("#errorModal");
-			    $("#errorModal").modal("show");
-	    	}
-
-	        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
-	        $("#" + table + " thead").remove();
-	    }
-	}
-
-	/********** END OF TABLE BUILDING **********/
-
-
-	/*****************************************
-	 * 
-	 * 		GOOGLE MAP INITIALIZATION
-	 * 
-	******************************************/
-
-	function initialize_map() 
-	{
-			let latlng = new google.maps.LatLng(12.867031,121.766552);
-
-			let mapOptions = {
-			center: latlng,
-			zoom: 5
-		};
-
-		let map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-		let markerList = ongoing.markers;
-
-		if ( markerList != null ) 
-		{
-			for (let i = 0; i < markerList.length; i++) {
-				latlng = new google.maps.LatLng(markerList[i]['lat'],markerList[i]['lon']);
-
-				let marker = new google.maps.Marker({
-		  			position: latlng,
-		  			map: map,
-		  			title: markerList[i]['name'].toUpperCase() + '\n'
-		      			+ markerList[i]['address']
-					});
-
-				let siteName = markerList[i]['name'].toUpperCase();
-				let mark = marker;
-				google.maps.event.addListener(mark, 'click', (function(name) {
-			        return function(){
-			            alert(name);
-			        };
-				})(siteName));
-			}
-		}
-
-		setElementHeight();
-	}
-
-	/********** END OF MAP INITIALIZATION **********/ 
+ 
 
 	/*****************************************
 	 * 
@@ -369,145 +73,7 @@ $(document).ready( function() {
 
 	/********** END OF AUTOMATED PDF SENDING **********/ 
 
-
-	/*****************************************
-	 * 
-	 * 		AUTOMATED EWI SITE RELEASE
-	 * 
-	******************************************/
 	reposition("#releaseModal");
-
-	let realtime_cache = [],
-		ongoing = [], candidate_triggers = [];
-
-	function getRealtimeAlerts() {
-		return $.ajax ({
-		    url: "../temp/data/PublicAlert.json",
-		    type: "GET",
-		    dataType: "json",
-		    cache: false
-		})
-		.then(function (data) {
-			if( realtime_cache.length == 0 || ( typeof realtime_cache.alerts !== 'undefined' && realtime_cache.alerts[0].timestamp !== data[0].alerts[0].timestamp))
-			{
-				realtime_cache = data.slice(0).pop();
-				
-				// Save sites with no alerts
-				realtime_cache.no_alerts = realtime_cache.alerts.filter(function (x) {
-					return x.alert == "A0";
-				});
-
-				// Get only alerts with alerts
-				realtime_cache.alerts = realtime_cache.alerts.filter(function (x) {
-					return x.alert != "A0";
-				});
-
-				return realtime_cache;
-			}
-			else {
-				return $.Deferred().reject("No new data.").promise();
-			}
-		});
-	}
-
-	function getOnGoingAndExtended() {
-		return $.ajax ({
-		    url: "../monitoring/getOnGoingAndExtended",
-		    type: "GET",
-		    dataType: "json",
-		    cache: false
-		})
-		.done(function (data) {
-			ongoing = jQuery.extend(true, {}, data);
-			return data;
-		})
-		.fail(function (x) {
-			console.log(x.responseText);
-		});
-	};
-
-	function checkCandidateTriggers(cache) {
-		let alerts = cache.alerts,
-			invalids = cache.invalids,
-			no_alerts = cache.no_alerts,
-			final = [];
-
-		// Get all the latest and overdue releases on site
-		let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
-
-		alerts.forEach( function (x) {
-			let index = invalids.map( y => y.site ).indexOf(x.site);
-			if(index > -1)
-			{
-				console.log("INVALID", x.site);
-				// Check sites if it is in invalid list yet
-				// have legitimate alerts
-			}
-			else 
-			{	
-				let obj = x.retriggerTS;
-				let maxDate = moment( Math.max.apply(null, obj.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
-				let max = null;
-				for (let i = 0; i < obj.length; i++) {
-					if(obj[i].timestamp === maxDate) { max = obj[i]; break; }
-				}
-				//console.log(max, obj);
-				x.latest_trigger_timestamp = max.timestamp;
-				x.trigger = max.retrigger;
-
-				// Check if alert entry is already updated on latest/overdue table
-				let k = true;
-				for (let i = 0; i < merged_arr.length; i++) 
-				{
-					//console.log(merged_arr[i]);
-					if( merged_arr[i].name == x.site )
-					{
-						// Tag the site on merged_arr as cleared
-						// else if not, it is candidate for lowering already
-						merged_arr[i].checked = true;
-
-						if( moment(merged_arr[i].data_timestamp).isSame(x.timestamp) )
-						{
-							k = false; break;
-						}
-
-						if ( moment(merged_arr[i].trigger_timestamp).isSame(x.latest_trigger_timestamp) )
-						{
-							x.latest_trigger_timestamp = null;
-							x.trigger = "No new triggers";
-						}
-					}
-				}
-
-				if(k) final.push(x);
-			}
-		});
-
-		merged_arr.forEach(function (a) {
-			if ( typeof a.checked == "undefined" )
-			{
-				let index = no_alerts.map( x => x.site ).indexOf(a.name);
-				let x = no_alerts[index];
-				//console.log(x);
-
-				x.latest_trigger_timestamp = null;
-				x.trigger = "No new triggers";
-				x.validity = null;
-				final.push(x);
-			}
-		});
-
-		return final;
-	}
-
-	function reloadTable(table, data) {
-		table.clear();
-	    table.rows.add(data).draw();
-
-	    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table); });
-	}
-
-	let modalForm = null, entry = {};
 
 	setInterval( function () { $("#release_time").val(moment().format("HH:mm:00")); }, 1000);
 
@@ -764,24 +330,7 @@ $(document).ready( function() {
 	            {
 	                console.log(result);
 
-	                let f2 = getOnGoingAndExtended();
-	                $.when(f2)
-					.done(function (a) 
-					{
-						try {
-							candidate = checkCandidateTriggers(realtime_cache);
-						} catch (err) {
-							console.log(err);
-							candidate = null;
-						}
-
-						reloadTable(latest_table, ongoing.latest);
-						reloadTable(extended_table, ongoing.extended);
-						reloadTable(overdue_table, ongoing.overdue);
-						reloadTable(candidate_table, candidate);
-
-						initialize_map();
-					});
+	                doSend("getOnGoingAndExtended");
 
 	                setTimeout(function () 
 	                {
@@ -798,90 +347,443 @@ $(document).ready( function() {
 	        });
 	    }
 	});
-
-	// Contains last release id for refreshing test
-	let last_id = null;
-
-	function getLastRelease() {
-		return $.get( "../monitoring/getLastRelease", function( data ) {}, "json");
-	}
-
-	function main(toRefresh)
-	{
-		getLastRelease().done( function (x) {
-			last_id = x.release_id;
-		});
-
-		let f1 = getRealtimeAlerts(),
-			f2 = getOnGoingAndExtended();
-
-		if( toRefresh )
-		{
-			$.when(f1)
-			.then(
-				function (a) {
-					console.log("DONE", a);
-					//console.log("Cache", realtime_cache);
-				},
-				function (a) {
-					console.log("FAIL", a);
-				}
-			);
-		}
-		
-		setTimeout( () =>
-		$.when(f2)
-		.done(function (a) 
-		{
-			try {
-				candidate = checkCandidateTriggers(realtime_cache);
-				//console.log("CANDI", candidate);
-			} catch (err) {
-				console.log(err);
-				candidate = null;
-			}
-
-			if(isTableInitialized) 
-			{
-				reloadTable(latest_table, ongoing.latest);
-				reloadTable(extended_table, ongoing.extended);
-				reloadTable(overdue_table, ongoing.overdue);
-				reloadTable(candidate_table, candidate);
-			}
-			else buildTable(ongoing.latest, ongoing.extended, ongoing.overdue, candidate);
-
-			initialize_map();
-		}), 1000);
-	}
-
-	main(true);
-	setInterval(function () 
-	{
-		let second = moment().second();
-		let minute = moment().minute();
-		let toRefresh = false;
-
-		getLastRelease().done(function (data) 
-		{ 
-			let x = data.release_id;
-			if(x > last_id) {
-				toRefresh = true;
-				last_id = x;
-			}
-			//console.log(toRefresh);
-		
-			if( second == 0 || toRefresh )
-			{
-				switch(minute)
-				{
-					case 15: case 25:
-					case 45: case 51:
-					main(toRefresh); break;
-					default: if(toRefresh) main(toRefresh);
-				} 
-			}
-		});
-
-	}, 1000);
-
 });
+
+
+/*****************************************
+ * 
+ * 		BUILD THREE TABLES AVAILABLE
+ * 
+******************************************/
+
+function buildTable( latest, extended, overdue, candidate ) 
+{
+	function buildLatestAndOverdue (table, dataX)
+	{
+		return $('#' + table).DataTable({
+			"data": dataX,
+			"columnDefs": [
+				{ className: "text-left", "targets": [ 0, 3 ] },
+		 		{ className: "text-right", "targets": [ 1, 2, 4, 5 ] },
+		 		{ className: "text-center", "targets": [6] }
+			],
+			"columns": [
+	            {
+	            	data: "name", 
+	            	"render": function (data, type, full) {
+	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+	            	},
+	        		"name": 'name',
+	            },
+	            { 
+	            	"data": "event_start",
+	            	"render": function (data, type, full) {
+	            		return moment(full.event_start).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "event_start"
+	        	},
+	        	{
+	        		"data": "trigger_timestamp",
+	            	"render": function (data, type, full) {
+	            		return moment(full.trigger_timestamp).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "trigger_timestamp"
+	        	},
+	            { 
+	            	"data": "internal_alert_level",
+	            	"render": function (data, type, full) {
+	            		return full.internal_alert_level;
+	            	},
+	            	"name": "internal_alert_level",
+	            },
+	            { 
+	            	"data": "validity",
+	            	"render": function (data, type, full) {
+	            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "validity"
+	        	},
+	        	{ 
+	            	"data": "release_time",
+	            	"render": function (data, type, full) {
+	            		return full.release_time;
+	            	},
+	            	"name": "release_time"
+	        	},
+	        	{
+	        		"render": function (data, type, full) {
+	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' event-id='" + full.event_id + "'></span></a>";
+	            	}
+	        	}
+	    	],
+	    	"order" : [[4, "asc"]],
+	    	"processing": true,
+	    	"filter": false,
+	    	"info": false,
+	    	"paginate": false,
+	    	"autoWidth": false,
+	    	"language": 
+	    	{
+		        "emptyTable": "There are no sites under monitoring at the moment."
+		    },
+		    "rowCallback": function( row, data, index ) 
+		    {
+                switch(data.internal_alert_level.slice(0,2))
+                {
+                	case 'A2': $(row).addClass("alert_2"); break;
+                	case 'A1': case 'ND': $(row).addClass("alert_1"); break;
+                    case 'A3': $(row).addClass("alert_3"); break;
+                }
+		  	}
+	    });
+	};
+
+	latest_table = buildLatestAndOverdue("latest", latest);
+	overdue_table = buildLatestAndOverdue("overdue", overdue);
+	overdue_table.column(6).visible(false);
+
+    extended_table = $('#extended').DataTable({
+    	"data": extended,
+		"columnDefs": [
+			{ className: "text-left", "targets": [ 0 ] },
+	 		{ className: "text-right", "targets": [ 1, 2, 3 ] },
+	 		{ className: "text-center", "targets": [4] }
+		],
+		"columns": [
+            {
+            	data: "name", 
+            	"render": function (data, type, full) {
+            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+            	},
+        		"name": 'name',
+            },
+            { 
+            	"data": "validity",
+            	"render": function (data, type, full) {
+            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "validity"
+        	},
+        	{
+            	"data": "start",
+            	"render": function (data, type, full) {
+            		return moment.unix(full.start).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "start"
+        	},
+        	{ 
+            	"data": "end",
+            	"render": function (data, type, full) {
+            		return moment.unix(full.end).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "end"
+        	},
+        	{
+        		"render": function (data, type, full) {
+            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "'></span></a>";
+            	}
+        	}
+		],
+    	"order" : [[3, "asc"]],
+    	"processing": true,
+    	"filter": false,
+    	"info": false,
+    	"paginate": false,
+    	"autoWidth": false,
+    	"language": 
+    	{
+	        "emptyTable": "There are no sites under 3-day extended monitoring."
+	    },
+	    "rowCallback": function( row, data, index ) 
+	    {
+            switch(data.day)
+            {
+            	case 0: 
+            	case 1: $(row).addClass("day-one"); break;
+                case 2: $(row).addClass("day-two"); break;
+                case 3: $(row).addClass("day-three"); break;
+                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
+            }
+	  	}
+    });
+
+    candidate_table = $('#candidate').DataTable({
+    	"data": candidate,
+		"columnDefs": [
+			{ className: "text-left", "targets": [ 0, 3 ] },
+	 		{ className: "text-right", "targets": [ 1, 2, 4 ] },
+	 		{ className: "text-center", "targets": [ 5 ] }
+		],
+		"columns": [
+            {
+            	data: "site", 
+            	"render": function (data, type, full) {
+            		return "<b>" + full.site.toUpperCase() + "</b>";
+            	},
+        		"name": 'site',
+            },
+            { 
+            	"data": "data_timestamp",
+            	"render": function (data, type, full) {
+ 					if( full.timestamp == null )	return "No new triggers";
+            		else return moment(full.timestamp).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "data_timestamp"
+        	},
+            { 
+            	"data": "latest_trigger_timestamp",
+            	"render": function (data, type, full) {
+ 					if( full.latest_trigger_timestamp == null )	return "No new triggers";
+            		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "latest_trigger_timestamp"
+        	},
+        	{ 
+            	"data": "trigger",
+            	"render": function (data, type, full) {
+            		if( full.trigger == "No new triggers" ) return full.trigger;
+            		return full.trigger.toUpperCase();
+            	},
+            	"name": "trigger",
+	        },
+            { 
+            	"data": "validity",
+            	"render": function (data, type, full) {
+            		if ( full.validity == null ) return "END OF VALIDITY"
+            		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
+            	},
+            	"name": "validity"
+        	},
+        	{
+        		"render": function (data, type, full) {
+            		return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
+            	}
+        	}
+		],
+    	"order" : [[3, "asc"]],
+    	"processing": true,
+    	"filter": false,
+    	"info": false,
+    	"paginate": false,
+    	"autoWidth": false,
+    	"language": 
+    	{
+	        "emptyTable": "There are no current candidate triggers."
+	    },
+	   //  "rowCallback": function( row, data, index ) 
+	   //  {
+ //            switch(data.day)
+ //            {
+ //            	case 1: $(row).addClass("day-one"); break;
+ //                case 2: $(row).addClass("day-two"); break;
+ //                case 3: $(row).addClass("day-three"); break;
+ //            }
+	  	// }
+    });
+
+    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
+
+    isTableInitialized = true;
+    $("#loading").modal("hide");
+}
+
+function tableCSSifEmpty( table ) 
+{
+	if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
+    {
+    	if( table == "candidate" && candidate == null ) {
+    		reposition("#errorModal");
+		    $("#errorModal").modal("show");
+    	}
+
+        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
+    }
+}
+
+/********** END OF TABLE BUILDING **********/
+
+
+function reloadTable(table, data) {
+	table.clear();
+    table.rows.add(data).draw();
+
+    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table); });
+}
+
+/*****************************************
+ * 
+ * 		GOOGLE MAP INITIALIZATION
+ * 
+******************************************/
+
+function initialize_map() 
+{
+		let latlng = new google.maps.LatLng(12.867031,121.766552);
+
+		let mapOptions = {
+		center: latlng,
+		zoom: 5
+	};
+
+	let map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+	let markerList = ongoing.markers;
+
+	if ( markerList != null ) 
+	{
+		for (let i = 0; i < markerList.length; i++) {
+			latlng = new google.maps.LatLng(markerList[i]['lat'],markerList[i]['lon']);
+
+			let marker = new google.maps.Marker({
+	  			position: latlng,
+	  			map: map,
+	  			title: markerList[i]['name'].toUpperCase() + '\n'
+	      			+ markerList[i]['address']
+				});
+
+			let siteName = markerList[i]['name'].toUpperCase();
+			let mark = marker;
+			google.maps.event.addListener(mark, 'click', (function(name) {
+		        return function(){
+		            alert(name);
+		        };
+			})(siteName));
+		}
+	}
+
+	setElementHeight();
+}
+
+/********** END OF MAP INITIALIZATION **********/
+
+
+/*****************************************
+ * 
+ * 		AUTOMATED EWI SITE RELEASE
+ * 
+******************************************/
+
+function getRealtimeAlerts(data)
+{
+	let json = jQuery.extend(true, {}, data);	
+	if(typeof json.is_bad != 'undefined')
+	{
+		console.log(json.is_bad);
+	}
+	else {
+		let cache = json.alert_json.pop();
+		ongoing = jQuery.extend(true, {}, json.ongoing);
+
+		if( realtime_cache.length == 0 || ( typeof realtime_cache.alerts !== 'undefined' && realtime_cache.alerts[0].timestamp !== cache.alerts[0].timestamp))
+		{	
+			realtime_cache.no_alerts = cache.alerts.filter(function (x) {
+				return x.alert == "A0";
+			});
+
+			// Get only alerts with alerts
+			realtime_cache.alerts = cache.alerts.filter(function (x) {
+				return x.alert != "A0";
+			});
+
+
+			realtime_cache.invalids = cache.invalids.slice(0);
+		}
+		else {
+			console.log("No new data.");
+		}
+	}
+}
+
+function getOnGoingAndExtended(data) {
+	ongoing = jQuery.extend(true, {}, data.ongoing);
+
+	try {
+		candidate = checkCandidateTriggers(realtime_cache);
+	} catch (err) {
+		console.log(err);
+		candidate = null;
+	}
+
+	if(isTableInitialized) 
+	{
+		reloadTable(latest_table, ongoing.latest);
+		reloadTable(extended_table, ongoing.extended);
+		reloadTable(overdue_table, ongoing.overdue);
+		reloadTable(candidate_table, candidate);
+	}
+	else buildTable(ongoing.latest, ongoing.extended, ongoing.overdue, candidate);
+	initialize_map();
+}
+
+function checkCandidateTriggers(cache) {
+	let alerts = cache.alerts,
+		invalids = cache.invalids,
+		no_alerts = cache.no_alerts,
+		final = [];
+
+	// Get all the latest and overdue releases on site
+	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
+
+	alerts.forEach( function (x) {
+		let index = invalids.map( y => y.site ).indexOf(x.site);
+		if(index > -1)
+		{
+			// console.log("INVALID", x.site);
+			// Check sites if it is in invalid list yet
+			// have legitimate alerts
+		}
+		else 
+		{	
+			let obj = x.retriggerTS;
+			let maxDate = moment( Math.max.apply(null, obj.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
+			let max = null;
+			for (let i = 0; i < obj.length; i++) {
+				if(obj[i].timestamp === maxDate) { max = obj[i]; break; }
+			}
+			//console.log(max, obj);
+			x.latest_trigger_timestamp = max.timestamp;
+			x.trigger = max.retrigger;
+
+			// Check if alert entry is already updated on latest/overdue table
+			let k = true;
+			for (let i = 0; i < merged_arr.length; i++) 
+			{
+				//console.log(merged_arr[i]);
+				if( merged_arr[i].name == x.site )
+				{
+					// Tag the site on merged_arr as cleared
+					// else if not, it is candidate for lowering already
+					merged_arr[i].checked = true;
+
+					if( moment(merged_arr[i].data_timestamp).isSame(x.timestamp) )
+					{
+						k = false; break;
+					}
+
+					if ( moment(merged_arr[i].trigger_timestamp).isSame(x.latest_trigger_timestamp) )
+					{
+						x.latest_trigger_timestamp = null;
+						x.trigger = "No new triggers";
+					}
+				}
+			}
+
+			if(k) final.push(x);
+		}
+	});
+
+	merged_arr.forEach(function (a) {
+		if ( typeof a.checked == "undefined" )
+		{
+			let index = no_alerts.map( x => x.site ).indexOf(a.name);
+			let x = no_alerts[index];
+			//console.log(x);
+
+			x.latest_trigger_timestamp = null;
+			x.trigger = "No new triggers";
+			x.validity = null;
+			final.push(x);
+		}
+	});
+
+	return final;
+}
