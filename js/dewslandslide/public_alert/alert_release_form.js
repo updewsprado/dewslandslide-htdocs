@@ -839,6 +839,9 @@ $(document).ready(function()
                         reposition("#view_modal");
                         $('#view_modal').modal('show');
                     }, 1000);
+
+                    // Send to websocket to refresh all dashboards
+                    doSend("getOnGoingAndExtended");
                 },
                 error: function(xhr, status, error) {
                   var err = eval("(" + xhr.responseText + ")");
