@@ -2174,6 +2174,10 @@ $(document).ready(function() {
 		temp_ewi_template_holder = $("#constructed-ewi-amd").val();
 	});
 
+	$('#btn-ewi').on('click',function(){
+		$('#early-warning-modal').modal('toggle');
+	});
+
 	$('#send-btn-ewi-amd').click(function(){
 		ewiFlagger = true;
 		var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
@@ -2906,6 +2910,12 @@ $(document).ready(function() {
 			}
 		});
 	}
+
+	$('#reset-gintags').on('click',function(){
+		$('#gintags').val('');
+		$('#gintags').tagsinput("removeAll");
+		getGintagService(gintags_msg_details[5]);
+	});
 
 	function getGintagService(data){
 		$('#gintags').val('');
