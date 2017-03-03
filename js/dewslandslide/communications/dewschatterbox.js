@@ -1816,8 +1816,12 @@ $(document).ready(function() {
 			$('#sitename_cc').val(data[5]);
 			$('#numbers_cc').val(data[6]);
 			$('#rel_cc').val(data[7]);
-			$('#ewirecipient').val(data[8].charAt(0))
-
+			if (data[8] == "Yes") {
+				$('#ewirecipient').val(1);
+			} else {
+				$('#ewirecipient').val(0);
+			}
+			
 			var numbers = data[6].split(',');
 
 			for(x = 0; x < numbers.length; x++) {
@@ -2553,7 +2557,7 @@ $(document).ready(function() {
 				$('tfoot tr').append( $('<th />', {text : 'Group Tags'}));
 
 				for (var i = 0; i < data.length; i++) {
-					var newContent = "<tr><td style='display:none;'>"+data[i].eid+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].nickname+"</td><td>"+data[i].birthday+"</td><td>"+data[i].email+"</td><td>"+data[i].numbers+"</td><td>"+data[i].grouptags+"</td></tr>";
+					var newContent = "<tr><td style='display:none;'>e_"+data[i].eid+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].nickname+"</td><td>"+data[i].birthday+"</td><td>"+data[i].email+"</td><td>"+data[i].numbers+"</td><td>"+data[i].grouptags+"</td></tr>";
 					$("#response-contact-container tbody").append(newContent);
 				}
 
@@ -2603,10 +2607,10 @@ $(document).ready(function() {
 					'sitename': $site,
 					'number': $('#numbers_cc').val(),
 					'rel': $('#rel').val(),
-					'ewirecipient': ($('#ewirecipient').val() == "Y" ? true : false)
+					'ewirecipient': ($('#ewirecipient').val() == 1 ? true : false)
 				};
 
-				$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
+				$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
 				.done(function(response) {
 					if (response == true) {
 						$('#contact-result').remove();
@@ -2700,8 +2704,9 @@ $(document).ready(function() {
 					'numbers': $('#numbers_ec').val(),
 					'grouptags': $('#grouptags_ec').val()
 				};
-				$.post( "../chatterbox/addcontacts", {contact: JSON.stringify(data)})
+				$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
 				.done(function(response) {
+					console.log(response);
 					if (response == true) {
 						$('#contact-result').remove();
 						var container = document.getElementById('employee-contact-wrapper');
