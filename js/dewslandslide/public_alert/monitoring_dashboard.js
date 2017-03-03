@@ -596,7 +596,7 @@ function tableCSSifEmpty( table )
 		    $("#errorModal").modal("show");
     	}
 
-        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
+        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "30px 15px 10px 15px", "width": "600px"})
     }
 }
 
