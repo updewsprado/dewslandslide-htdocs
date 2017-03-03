@@ -2773,11 +2773,41 @@ $(document).ready(function() {
 
 
 	$('#confirm-gintags').click(function(){
-		insertGintagService(gintags_msg_details);
 		if ($('#gintags').val() != "") {
+			insertGintagService(gintags_msg_details);
 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
+		} else {
+			removeGintagService(gintags_msg_details);
+			$( "#messages li" ).eq(message_li_index).removeClass("tagged");
 		}
 	});
+
+	function removeGintagService(data){
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+
+		if (tagOffices.length != 0 && tagSitenames.length != 0) {
+			if (data[1] == "You") {
+				var gintag_details = {
+					"office" : tagOffices,
+					"site": tagSitenames,
+					"data": data,
+					"cmd": "delete"
+				};
+				getGintagGroupContacts(gintag_details);
+			} else {
+
+			}
+		}
+
+	}
 
 	function insertGintagService(data){
 		var tags = $('#gintags').val();
@@ -2800,7 +2830,8 @@ $(document).ready(function() {
 				var gintag_details = {
 					"office" : tagOffices,
 					"site": tagSitenames,
-					"data": data 
+					"data": data,
+					"cmd": "insert"
 				};
 
 				getGintagGroupContacts(gintag_details);
@@ -2886,34 +2917,51 @@ $(document).ready(function() {
 	}
 
 	function getGintagGroupContacts(gintag_details){
-		$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
-		.done(function(response) {
-			var data = JSON.parse(response);
-			var tags = $('#gintags').val();
-			tags = tags.split(',');
-			console.log(data);
-			for (var i = 0; i < tags.length; i++) {
-				gintags_collection = [];
-				for (var x = 0 ; x < data.length; x++) {
-					for (var y = 0; y < data[x].length; y ++) {
-						gintags = {
-							'tag_name': tags[i],
-							'tag_description': "communications",
-							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-							'tagger': tagger_user_id,
-							'table_element_id': data[x][y].sms_id,					
-							'table_used': "smsoutbox",
-							'remarks': "" // Leave it blank for now
+		if (gintag_details.cmd == "insert") {
+			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+			.done(function(response) {
+				var data = JSON.parse(response);
+				var tags = $('#gintags').val();
+				tags = tags.split(',');
+				for (var i = 0; i < tags.length; i++) {
+					gintags_collection = [];
+					for (var x = 0 ; x < data.length; x++) {
+						for (var y = 0; y < data[x].length; y ++) {
+							gintags = {
+								'tag_name': tags[i],
+								'tag_description': "communications",
+								'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+								'tagger': tagger_user_id,
+								'table_element_id': data[x][y].sms_id,					
+								'table_used': "smsoutbox",
+								'remarks': "" // Leave it blank for now
+							}
+							gintags_collection.push(gintags);
 						}
-						gintags_collection.push(gintags);
 					}
+					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+					.done(function(response) {
+						console.log("Tagged success!");
+					});
 				}
-				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-				.done(function(response) {
-					console.log("Tagged success!");
-				});
-			}
-		});
+			});
+		} else if (gintag_details.cmd == "delete") {
+			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+			.done(function(response) {
+				var data = JSON.parse(response);
+				var doBeRemoved = {	
+					'contact': data,
+					'details': gintag_details
+				}
+					$.post( "../generalinformation/removeGintagsEntry/", {gintags: doBeRemoved})
+					.done(function(response) {
+						console.log(response);
+					});
+
+			});
+		} else {
+			//
+		}
 	}
 
 	$('#reset-gintags').on('click',function(){
