@@ -1,6 +1,5 @@
 $(document).ajaxStart(function () {
 	$('#loading').modal('toggle');
-	$(".selectpicker").selectpicker();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -9,7 +8,7 @@ $(document).ajaxStart(function () {
 	var $sidebar   = $("#sidebar"), 
 	$window    = $(window),
 	offset     = $sidebar.offset(),
-	topPadding = 55;
+	topPadding = 5;
 
 	$window.scroll(function() {
 		if ($window.scrollTop() > offset.top) {
@@ -100,11 +99,15 @@ function SelectedColumn(selecte_site) {
 			$("#divData").append('<div class="panel panel-default"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Level Overview</h1>'+
 				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
 		}
+
 		$(".site_level").append('<div class = "col-md-3 map-canvas" id="map-canvas"></div>')
 		$(".site_level").append('<div class="col-md-8" ><div id="surficial_graph"><h4><span class="glyphicon "></span><b>Superimpose Surficial Graph</b>'+
 			'&nbsp;<a id="tooltip_surficial" data-toggle="tooltip" data-placement="right" title="Surficial Measurement Data Table"><span class="glyphicon glyphicon-calendar" aria-hidden="true" data-toggle="modal" data-target="#groundModal"></span></a>'+
 			'</h4><br><div id="alert_div"></div><div id="ground_graph"></div><div>')
-
+		// // $('#glyphicon glyphicon-calendarl').on('click', function() {
+		// 	$("#groundModal").modal('show')
+			
+		// // })
 		SiteInfo(selecte_column)
 		DataPresence(selecte_column,'data_presence_div')
 		NodeSumary(selecte_column,'node_summary_div')
@@ -145,7 +148,6 @@ function SelectedColumn(selecte_site) {
 function SelectedNode() {
 	$('.nodegeneral').change(function(e) {
 		var selected = $(e.target).val();
-		console.dir(selected);
 		if(selected != null){
 			$('#reportrange').prop('disabled', false);
 		}else{
@@ -164,7 +166,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 	for (a = 0; a <  list_checkbox.length; a++) {
 		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
-	$('#'+list_checkbox[5]+'_checkbox').prop('disabled', true);
+
 	for (a = 8; a <  list_checkbox.length; a++) {
 		$('#'+list_checkbox[a]+'_checkbox').prop('disabled', true);
 	}
@@ -176,7 +178,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 	$('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
 		var time = $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
 		CheckBoxTimeProcess(selecte_column,selecte_site,time.context.value,list_checkbox)
-		$('#'+list_checkbox[5]+'_checkbox').prop('disabled', false);
+
 		for (a = 8; a <  list_checkbox.length; a++) {
 			$('#'+list_checkbox[a]+'_checkbox').prop('disabled', false);
 		}
@@ -429,7 +431,9 @@ function SiteInfo(site){
 	});
 }
 function DataPresence(site,siteDiv){
-	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/2016-04-20/2016-04-21",
+	var start = moment(); 
+	var end = moment().add(1, 'days');
+	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
 		dataType: "json",
 		success: function(result){
 			if(result.length != 0){
@@ -500,7 +504,6 @@ function DataPresence(site,siteDiv){
 }
 
 function RainFallProcess(curSite,fromDate,toDate){
-	console.log(curSite,fromDate,toDate)
 	let dataSubmit = { 
 		site : curSite, 
 		fdate : fromDate,
@@ -707,11 +710,12 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 			timezoneOffset: -8 * 60
 		}
 	});
-
 	$("#"+id).highcharts({
 		chart: {
 			type: 'area',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 300,
 			width:$(".breadcrumb").width(),
 			backgroundColor: {
@@ -1171,6 +1175,8 @@ function chartProcessSurficial(id,data_series,name){
 		chart: {
 			type: 'spline',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 400,
 			width:550
 		},
@@ -1285,6 +1291,8 @@ function chartProcessSurficialAnalysis(id,data_series,name){
 		chart: {
 			type: 'spline',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			width:750
 		},
 		title: {
@@ -1378,6 +1386,8 @@ function chartProcessPiezo(id,data_series,name){
 		chart: {
 			type: 'spline',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 				// height: 800,
 				width:750
 			},
@@ -1642,6 +1652,8 @@ function chartProcessDis(id,data_series,name){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 800,
 			width:375
 		},
@@ -1702,6 +1714,8 @@ function chartProcessInverted(id,data_series,name){
 		chart: {
 			type: 'spline',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 600,
 			width: 375
 		},
@@ -1753,6 +1767,8 @@ function chartProcessbase(id,data_series,name){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 500,
 			width: 375
 		},
@@ -2317,6 +2333,8 @@ function chartProcessAccel(id,data_series,name,color,list){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 300,
 			backgroundColor: {
 				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
@@ -2647,6 +2665,8 @@ function chartProcessbattSoms(id,data_series,name,color,list){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
 			height: 300,
 			backgroundColor: {
 				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
@@ -2753,9 +2773,10 @@ function chartProcessbattSoms(id,data_series,name,color,list){
                     );
 }
 function heatmapProcess(site,tdate,day){
+	// /api/heatmap/imesb/2016-05-01/"+day
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/heatmap/imesb/2016-05-01/"+day,  success: function(data_result) {
+		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
 			$("#heatmap_div").append('<div id="heatmap_container"></div>')
 			var result = JSON.parse(data_result)
 			var all_time =[]
