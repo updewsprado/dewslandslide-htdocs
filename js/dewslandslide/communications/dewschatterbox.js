@@ -2773,16 +2773,30 @@ $(document).ready(function() {
 
 
 	$('#confirm-gintags').click(function(){
-		if ($('#gintags').val() != "") {
+		var tags = holdTags.split(',');
+		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
+		var diff = "";
+		if (tags.length > current_tags.length) {
+			diff = $(tags).not(current_tags).get();
+			console.log(tags+"- PAST");
+			console.log(current_tags+"- PRESENT");
+			removeGintagService(gintags_msg_details,diff);
+			if ($('#gintags').val() == "") {
+				$( "#messages li" ).eq(message_li_index).removeClass("tagged");
+			}
+		} else if (tags.length < current_tags.length){
+			console.log(tags+"- PAST");
+			console.log(current_tags+"- PRESENT");
+			diff = $(tags).not(current_tags).get();
 			insertGintagService(gintags_msg_details);
 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		} else {
-			removeGintagService(gintags_msg_details);
-			$( "#messages li" ).eq(message_li_index).removeClass("tagged");
+			insertGintagService(gintags_msg_details);
+			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
 	});
 
-	function removeGintagService(data){
+	function removeGintagService(data,tags){
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
 			tagOffices.push(this.value);
@@ -2799,14 +2813,14 @@ $(document).ready(function() {
 					"office" : tagOffices,
 					"site": tagSitenames,
 					"data": data,
-					"cmd": "delete"
+					"cmd": "delete",
+					"tags": tags
 				};
 				getGintagGroupContacts(gintag_details);
 			} else {
 
 			}
 		}
-
 	}
 
 	function insertGintagService(data){
@@ -2926,7 +2940,7 @@ $(document).ready(function() {
 				for (var i = 0; i < tags.length; i++) {
 					gintags_collection = [];
 					for (var x = 0 ; x < data.length; x++) {
-						for (var y = 0; y < data[x].length; y ++) {
+						for (var y = 0; y < data[x].length; y++) {
 							gintags = {
 								'tag_name': tags[i],
 								'tag_description': "communications",
@@ -2949,14 +2963,21 @@ $(document).ready(function() {
 			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 			.done(function(response) {
 				var data = JSON.parse(response);
+				var number_collection = [];
+				for (var counter = 0; counter < data.length;counter++){
+					var numbers = data[counter].number.split(',');
+					for (var num_count = 0; num_count < numbers.length;num_count++){
+						number_collection.push(numbers[num_count]);
+					}
+				}
 				var doBeRemoved = {	
-					'contact': data,
+					'contact': number_collection,
 					'details': gintag_details
 				}
-					$.post( "../generalinformation/removeGintagsEntry/", {gintags: doBeRemoved})
-					.done(function(response) {
-						console.log(response);
-					});
+				$.post( "../generalinformation/removeGintagsEntry/", {gintags: doBeRemoved})
+				.done(function(response) {
+					console.log(response);
+				});
 
 			});
 		} else {
@@ -2970,6 +2991,7 @@ $(document).ready(function() {
 		getGintagService(gintags_msg_details[5]);
 	});
 
+	var holdTags;
 	function getGintagService(data){
 		$('#gintags').val('');
 		$('#gintags').tagsinput("removeAll");
@@ -2977,6 +2999,7 @@ $(document).ready(function() {
 				for (var i = 0; i < response.length; i++) {
 					$('#gintags').tagsinput('add',response[i].tag_name);
 				}
+				holdTags = $('#gintags').val();
 		}, "json")
 	}
 
