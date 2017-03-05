@@ -2974,7 +2974,7 @@ $(document).ready(function() {
 					'contact': number_collection,
 					'details': gintag_details
 				}
-				$.post( "../generalinformation/removeGintagsEntry/", {gintags: doBeRemoved})
+				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: doBeRemoved})
 				.done(function(response) {
 					console.log(response);
 				});
