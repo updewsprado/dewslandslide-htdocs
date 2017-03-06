@@ -2191,8 +2191,10 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 				if (data["internal_alert_level"].toUpperCase().length > 4) {
 					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 						var preConstructedEWI = response["A2"];
-					} else {
+					} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 						var preConstructedEWI = response["A3"];
+					} else {
+						var preConstructedEWI = response["A1-RE"];
 					}
 				} else {
 					if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND") {
