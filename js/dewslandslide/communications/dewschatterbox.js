@@ -84,7 +84,7 @@ function sendViaAlertMonitor(data){
 
 			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
 			var currentTime = moment().format("YYYY-MM-DD HH:mm");
-			debugger;
+
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
 				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
@@ -1220,7 +1220,6 @@ $(document).ready(function() {
 			conn.send(JSON.stringify(request));
 
 		} else if (type == "searchMessageGlobal" || type == "searchGintags"){
-			debugger;
 			contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 
 			$("#current-contacts h4").text(user);
