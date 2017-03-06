@@ -27,6 +27,31 @@ body {
   z-index: 1031;
 }
 
+#bg-image-info {
+  min-width: 100%;
+  min-height: 100%;
+  position: relative;
+  opacity: .15;
+}
+
+.notes{
+  position: absolute;
+  margin: 0 7%;
+}
+
+#GenInfo-content{
+  width: 70%;
+  margin-left: 15%;
+  min-height: 300px;
+  min-width: 500px;
+}
+
+.notes h4{
+padding-top: 15px;
+}
+.notes p{
+margin-left: 15px;
+}
 
 .tagged {
   border-style: solid;
