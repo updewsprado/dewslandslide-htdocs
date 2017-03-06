@@ -15,11 +15,16 @@ function sendViaAlertMonitor(data){
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
 			10: "October", 11: "November", 12: "December"};
+			debugger;
+
+			console.log(data);
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
-				} else {
+				} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 					var preConstructedEWI = response["A3"];
+				} else {
+					var preConstructedEWI = response["A1"];
 				}
 			} else {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND" && data['status'] != 'extended') {
