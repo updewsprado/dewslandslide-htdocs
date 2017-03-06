@@ -83,7 +83,8 @@ function sendViaAlertMonitor(data){
 			}
 
 			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
-			var currentTime = moment().locale('en').format("YYYY-MM-DD HH:mm");
+			var currentTime = moment().format("YYYY-MM-DD HH:mm");
+			debugger;
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
 				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
@@ -92,7 +93,7 @@ function sendViaAlertMonitor(data){
 				} else {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
 				}
-			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 7:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
+			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
 				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 11:55")).valueOf()) {
@@ -2773,11 +2774,70 @@ $(document).ready(function() {
 
 
 	$('#confirm-gintags').click(function(){
-		insertGintagService(gintags_msg_details);
-		if ($('#gintags').val() != "") {
+		var tags = holdTags.split(',');
+		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
+		var diff = "";
+		if (tags.length > current_tags.length) {
+			diff = $(tags).not(current_tags).get();
+			removeGintagService(gintags_msg_details,diff);
+			if ($('#gintags').val() == "") {
+				$( "#messages li" ).eq(message_li_index).removeClass("tagged");
+			}
+		} else if (tags.length < current_tags.length){
+			diff = $(tags).not(current_tags).get();
+			insertGintagService(gintags_msg_details);
+			$( "#messages li" ).eq(message_li_index).addClass("tagged");
+		} else {
+			insertGintagService(gintags_msg_details);
 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
 	});
+
+	function removeGintagService(data,tags){
+		var tagOffices = [];
+		$('input[name="offices"]:checked').each(function() {
+			tagOffices.push(this.value);
+		});
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+
+		if (tagOffices.length != 0 && tagSitenames.length != 0) {
+			if (data[1] == "You") {
+				var gintag_details = {
+					"office" : tagOffices,
+					"site": tagSitenames,
+					"data": data,
+					"cmd": "delete",
+					"tags": tags
+				};
+				getGintagGroupContacts(gintag_details);
+			} else {
+				var gintag_details = {
+					"data": data,
+					"cmd": "delete",
+					"tags": tags
+				};
+				getGintagGroupContacts(gintag_details);
+			}
+		} else {
+			var db_used = "";
+			if (data[1] == "You") {
+				db_used = "smsoutbox";
+			} else {
+				db_used = "smsinbox";
+			}
+
+			var gintag_details = {
+				"data": data,
+				"tags": tags,
+				"db_used": db_used
+			};
+			removeIndividualGintag(gintag_details);
+		}
+	}
 
 	function insertGintagService(data){
 		var tags = $('#gintags').val();
@@ -2800,7 +2860,8 @@ $(document).ready(function() {
 				var gintag_details = {
 					"office" : tagOffices,
 					"site": tagSitenames,
-					"data": data 
+					"data": data,
+					"cmd": "insert"
 				};
 
 				getGintagGroupContacts(gintag_details);
@@ -2812,7 +2873,6 @@ $(document).ready(function() {
 						}
 						break;
 					}
-					console.log(counter);
 				}
 
 			} else {
@@ -2885,35 +2945,75 @@ $(document).ready(function() {
 		});
 	}
 
-	function getGintagGroupContacts(gintag_details){
-		$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+	function removeIndividualGintag(gintag_details){
+		$.post("../generalinformation/removeIndividualGintagEntryViaChatterbox", {gintags: gintag_details})
 		.done(function(response) {
-			var data = JSON.parse(response);
-			var tags = $('#gintags').val();
-			tags = tags.split(',');
-			console.log(data);
-			for (var i = 0; i < tags.length; i++) {
-				gintags_collection = [];
-				for (var x = 0 ; x < data.length; x++) {
-					for (var y = 0; y < data[x].length; y ++) {
-						gintags = {
-							'tag_name': tags[i],
-							'tag_description': "communications",
-							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-							'tagger': tagger_user_id,
-							'table_element_id': data[x][y].sms_id,					
-							'table_used': "smsoutbox",
-							'remarks': "" // Leave it blank for now
-						}
-						gintags_collection.push(gintags);
-					}
-				}
-				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-				.done(function(response) {
-					console.log("Tagged success!");
-				});
-			}
+			console.log(response);
 		});
+	}
+
+	function getGintagGroupContacts(gintag_details){
+		if (gintag_details.cmd == "insert") {
+			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+			.done(function(response) {
+				var data = JSON.parse(response);
+				var tags = $('#gintags').val();
+				tags = tags.split(',');
+				for (var i = 0; i < tags.length; i++) {
+					gintags_collection = [];
+					for (var x = 0 ; x < data.length; x++) {
+						for (var y = 0; y < data[x].length; y++) {
+							gintags = {
+								'tag_name': tags[i],
+								'tag_description': "communications",
+								'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+								'tagger': tagger_user_id,
+								'table_element_id': data[x][y].sms_id,					
+								'table_used': "smsoutbox",
+								'remarks': "" // Leave it blank for now
+							}
+							gintags_collection.push(gintags);
+						}
+					}
+					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+					.done(function(response) {
+						console.log("Tagged success!");
+					});
+				}
+			});
+		} else if (gintag_details.cmd == "delete") {
+			if (gintag_details.data[1] == "You") {
+				$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+				.done(function(response) {
+					var data = JSON.parse(response);
+					var number_collection = [];
+					for (var counter = 0; counter < data.length;counter++){
+						var numbers = data[counter].number.split(',');
+						for (var num_count = 0; num_count < numbers.length;num_count++){
+							number_collection.push(numbers[num_count]);
+						}
+					}
+					var toBeRemoved = {	
+						'contact': number_collection,
+						'details': gintag_details
+					}
+					console.log(toBeRemoved);
+					$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
+					.done(function(response) {
+						//TODO: Add notification if successfully removed.
+					});
+				});
+			} else {
+				var toBeRemoved = {
+					'details':gintag_details
+				}
+				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
+				.done(function(response) {
+					//TODO: Add notification if successfully removed.
+				});
+
+			}
+		}
 	}
 
 	$('#reset-gintags').on('click',function(){
@@ -2922,6 +3022,7 @@ $(document).ready(function() {
 		getGintagService(gintags_msg_details[5]);
 	});
 
+	var holdTags;
 	function getGintagService(data){
 		$('#gintags').val('');
 		$('#gintags').tagsinput("removeAll");
@@ -2929,6 +3030,7 @@ $(document).ready(function() {
 				for (var i = 0; i < response.length; i++) {
 					$('#gintags').tagsinput('add',response[i].tag_name);
 				}
+				holdTags = $('#gintags').val();
 		}, "json")
 	}
 
