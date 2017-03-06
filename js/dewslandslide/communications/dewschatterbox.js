@@ -601,7 +601,7 @@ $(document).ready(function() {
 		messages = [];
 
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('toggle');
 	}
 
 	function getOldMessageGroup(){
@@ -648,7 +648,7 @@ $(document).ready(function() {
 		messages = [];
 		contactInfo = "groups";
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('toggle');
 	}
 
 	function initLoadQuickInbox(quickInboxMsg) {
@@ -720,7 +720,7 @@ $(document).ready(function() {
 		};
 
 		tempConn.onmessage = function(e) {
-			// $('#loading').modal('hide');
+			$('#loading').modal('hide');
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
@@ -1104,7 +1104,7 @@ $(document).ready(function() {
 		};
 
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 	}
 
 	function searchMessageGroup(){
@@ -1140,7 +1140,7 @@ $(document).ready(function() {
 		messages = [];
 		contactInfo = "groups";
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 	}
 
 	function searchMessageGlobal(searchKey){
@@ -1149,7 +1149,7 @@ $(document).ready(function() {
 			'searchKey': searchKey
 		}
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 	}
 
 	function searchGintagMessages(searchKey){
@@ -1159,7 +1159,7 @@ $(document).ready(function() {
 			'searchKey': searchKey
 		}
 		conn.send(JSON.stringify(request));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 	}
 
 	var coloredTimestamp;
@@ -1588,7 +1588,7 @@ $(document).ready(function() {
 
 		tempRequest = msgHistory;
 		conn.send(JSON.stringify(msgHistory));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 	}
 	$('#go-chat').click(function() {
 		lastMessageTimeStamp = "";
@@ -1746,7 +1746,7 @@ $(document).ready(function() {
 		messages = [];
 		contactInfo = "groups";
 		conn.send(JSON.stringify(groupTags));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('show');
 		$('#main-container').removeClass('hidden');
 	}
 
@@ -1769,7 +1769,7 @@ $(document).ready(function() {
 			'teams': dynaTags
 		}
 		conn.send(JSON.stringify(requestTag));
-		// $('#loading').modal('toggle');
+		$('#loading').modal('toggle');
 		$('#main-container').removeClass('hidden');
 	}
 
