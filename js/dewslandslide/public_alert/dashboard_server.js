@@ -8,7 +8,6 @@ let json_cache = null;
 let reconnect = 10000, isConnected = false;
 
 $(document).ready(function () {
-
     $("#loading").modal("show");
     init();
 });
@@ -28,6 +27,7 @@ function init() {
         console.log("DASHBOARD SERVER: CONNECTION TO " + wsUri + " has been successfully established");
 
         isConnected = true;
+        $("#loading").modal("hide");
 
         // if (window.timerID) {
         //     window.clearInterval(window.timerID);
