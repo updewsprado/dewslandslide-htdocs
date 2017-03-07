@@ -769,7 +769,10 @@ function checkCandidateTriggers(cache) {
 						let temp = retriggers.map(x => x.retrigger).indexOf(trigger);
 						return temp;
 					};
-					// Check if alert exists on database already
+					
+					// Check if alert exists on database
+					// Mark isInvalid TRUE to prevent being pushed to final
+					// if alert is really invalid and has no active alert
 					if( merged_arr_sites.indexOf(invalid.site) == -1 )
 						{ isInvalid = true; }
 					else if (source == "sensor") {
@@ -803,9 +806,6 @@ function checkCandidateTriggers(cache) {
 					}
 				}
 			});
-
-			// Mark isInvalid TRUE to prevent being pushed to final
-			// if alert is really invalid and has no active alert
 		});	
 		
 		let forUpdating = true;
