@@ -1531,6 +1531,10 @@ $(document).ready(function() {
 		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 	});
 
+	$(document).on("click","#quick-inbox-unknown-display li",function(){
+		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
+	});
+
 	function quickInboxStartChat(fullContact=null) {
 
 		if (fullContact == null) {
