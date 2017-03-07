@@ -2806,25 +2806,22 @@ $(document).ready(function() {
 	    typeahead: {
 	        displayKey: 'text',
 		    source: function (query) {
-	            return $.get('../../../gintagshelper/getAllGinTags', function (data) {
-	            	var data = JSON.parse(data);
-	                var tagname_collection = [];
-	                for (var counter = 0; counter < data.length; counter ++) {
-	                	tagname_collection.push(data[counter].tag_name);
-	                }
-	                return tagname_collection;
-	            });
+		    	 var tagname_collection = [];
+	             $.ajax({
+				   		url : "../../../gintagshelper/getAllGinTags",
+				    	type : "GET",
+				    	async: false,
+					    success : function(data) {
+					       var data = JSON.parse(data);
+						    for (var counter = 0; counter < data.length; counter ++) {
+						    	tagname_collection.push(data[counter].tag_name);
+						    }
+					    }
+			 	});
+	             return tagname_collection;
 	       	}
 	    } 
 	});
-
-	// var testinglangs = ["#AddTag", "#2ndTag", "#BoomTag", "#3rdTag", "#Tagatag", "#Bomboom", "#Hey", "#marcos", "#Padin", "#Tagged", "#Tagagaga", "#AHHA", "#Ei", "#Eyoo", "#a1", "#OK", "#Bol", "#Tagging", "#ThanksMan", "#Tag", "#BAR", "Taggedasd", "ASD", "#Iam", "#Format", "#Inquiry", "#EwiMessage", "#BTO", "#Ban", "#ba", "dsd"];
-	// $('#gintags').tagsinput({
-	//     typeahead: {
-	//         displayKey: 'text',
-	// 	    source: testinglangs
-	//     } 
-	// });
 
 	function removeGintagService(data,tags){
 		var tagOffices = [];
