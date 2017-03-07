@@ -50,15 +50,7 @@ $(document).ready( function() {
 		loadBulletin(id, event_id);
 	});
 
-	$("#send_to_mail").click(function () {
-        reposition("#recipientsModal");
-        $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
-        $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
-        $("#recipientsModal").modal("show");
-    });
-
     $("#send").click(function () {
-        $("#recipientsModal").modal("hide");
         $.when(renderPDF(id))
         .then(function (x) {
             if( x == "Success.")
