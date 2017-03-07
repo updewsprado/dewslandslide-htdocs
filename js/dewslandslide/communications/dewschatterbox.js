@@ -2893,7 +2893,7 @@ $(document).ready(function() {
 					gintags_collection.push(gintags);
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
-						console.log(response);
+						$.notify("GINTAG successfully tagged!","success");
 					});
 				}
 			}
@@ -2951,7 +2951,7 @@ $(document).ready(function() {
 	function removeIndividualGintag(gintag_details){
 		$.post("../generalinformation/removeIndividualGintagEntryViaChatterbox", {gintags: gintag_details})
 		.done(function(response) {
-			console.log(response);
+			$.notify("GINTAG successfully removed!","success");
 		});
 	}
 
