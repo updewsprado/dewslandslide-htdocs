@@ -64,10 +64,11 @@ function onMessage(evt) {
 
     if(data.code == "getJSONandLastRelease")
     {
-        getRealtimeAlerts(data);
-        let temp = data.alert_json.slice(0).pop();
+        let temp = data.alert_json.slice(0);
+        temp = temp.pop();
         if(json_cache == null || json_cache !== JSON.stringify(temp))
         {
+            getRealtimeAlerts(data);
             json_cache = JSON.stringify(temp);
             doSend("getOnGoingAndExtended");
         } else {
