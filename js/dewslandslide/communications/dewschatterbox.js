@@ -1531,6 +1531,10 @@ $(document).ready(function() {
 		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 	});
 
+	$(document).on("click","#quick-inbox-unknown-display li",function(){
+		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
+	});
+
 	function quickInboxStartChat(fullContact=null) {
 
 		if (fullContact == null) {
@@ -2773,7 +2777,9 @@ $(document).ready(function() {
 		reposition('#gintag-modal');
 		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
-	})
+		$('.bootstrap-tagsinput').prop("disabled", true );
+	});
+
 
 
 	$('#confirm-gintags').click(function(){
@@ -2795,6 +2801,30 @@ $(document).ready(function() {
 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
 	});
+
+	$('#gintags').tagsinput({
+	    typeahead: {
+	        displayKey: 'text',
+		    source: function (query) {
+	            return $.get('../../../gintagshelper/getAllGinTags', function (data) {
+	            	var data = JSON.parse(data);
+	                var tagname_collection = [];
+	                for (var counter = 0; counter < data.length; counter ++) {
+	                	tagname_collection.push(data[counter].tag_name);
+	                }
+	                return tagname_collection;
+	            });
+	       	}
+	    } 
+	});
+
+	// var testinglangs = ["#AddTag", "#2ndTag", "#BoomTag", "#3rdTag", "#Tagatag", "#Bomboom", "#Hey", "#marcos", "#Padin", "#Tagged", "#Tagagaga", "#AHHA", "#Ei", "#Eyoo", "#a1", "#OK", "#Bol", "#Tagging", "#ThanksMan", "#Tag", "#BAR", "Taggedasd", "ASD", "#Iam", "#Format", "#Inquiry", "#EwiMessage", "#BTO", "#Ban", "#ba", "dsd"];
+	// $('#gintags').tagsinput({
+	//     typeahead: {
+	//         displayKey: 'text',
+	// 	    source: testinglangs
+	//     } 
+	// });
 
 	function removeGintagService(data,tags){
 		var tagOffices = [];
