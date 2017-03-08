@@ -864,7 +864,7 @@ function checkCandidateTriggers(cache) {
 		{
 			let index = no_alerts.map( x => x.site ).indexOf(a.name);
 			let x = no_alerts[index];
-			console.log(a);
+			//console.log(a);
 
 			x.latest_trigger_timestamp = "end";
 			x.trigger = "No new triggers";
