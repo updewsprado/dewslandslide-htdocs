@@ -455,6 +455,7 @@ function DataPresence(site,siteDiv){
 	var end = moment().add(1, 'days');
 	$.ajax({url: "../site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
 		dataType: "json",
+		async: false,
 		success: function(result){
 			if(result.length != 0){
 				var time_non_moment = []
