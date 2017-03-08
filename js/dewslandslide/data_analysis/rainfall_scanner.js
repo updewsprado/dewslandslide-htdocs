@@ -81,7 +81,7 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
     $(id).selectpicker('refresh'); 
 }
 function region_view(data_result) {
-    $.ajax({url: "/api/AllSiteDetails", dataType: "json",
+    $.ajax({url: "../api/AllSiteDetails", dataType: "json",
         success: function(result){
             var data = result
             var region = []
