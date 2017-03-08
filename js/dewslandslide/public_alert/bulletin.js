@@ -26,6 +26,15 @@ function loadBulletin(id1, id2) {
             let datetime = $("#datetime").text();
             let text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
             $("#info").html(text);
+            if( location.hostname == "www.dewslandslide.com" )
+            {
+                $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
+                $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
+            } else {
+                if($('#recipients_span').html().length == 0) {
+                    $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
+                }   
+            }
             $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
         }
     }); 
