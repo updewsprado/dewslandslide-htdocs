@@ -13,7 +13,6 @@ $(document).ajaxStop(function () {
 
 $(document).ready(function(e) {
  $.ajax({url: "/api/rainfallScanner", dataType: "json",
-    async: false,
     success: function(result){
         var data = JSON.parse(result)
         document.getElementById("rain_header").innerHTML =
