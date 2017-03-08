@@ -15,11 +15,14 @@ function sendViaAlertMonitor(data){
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
 			10: "October", 11: "November", 12: "December"};
+
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
-				} else {
+				} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 					var preConstructedEWI = response["A3"];
+				} else {
+					var preConstructedEWI = response["A1"];
 				}
 			} else {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "ND" && data['status'] != 'extended') {
@@ -835,6 +838,7 @@ $(document).ready(function() {
 				}
 				else {
 					if (msg.type == "smsrcv") {
+						$.notify("New Message Received!","info");
 						updateQuickInbox(msg);
 					}
 
@@ -1524,6 +1528,10 @@ $(document).ready(function() {
 	var qiFullContact = null;
 
 	$(document).on("click","#quick-inbox-display li",function(){
+		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
+	});
+
+	$(document).on("click","#quick-inbox-unknown-display li",function(){
 		quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 	});
 
@@ -2889,7 +2897,7 @@ $(document).ready(function() {
 					gintags_collection.push(gintags);
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
-						console.log(response);
+						$.notify("GINTAG successfully tagged!","success");
 					});
 				}
 			}
@@ -2947,7 +2955,7 @@ $(document).ready(function() {
 	function removeIndividualGintag(gintag_details){
 		$.post("../generalinformation/removeIndividualGintagEntryViaChatterbox", {gintags: gintag_details})
 		.done(function(response) {
-			console.log(response);
+			$.notify("GINTAG successfully removed!","success");
 		});
 	}
 
@@ -2976,7 +2984,7 @@ $(document).ready(function() {
 					}
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
-						console.log("Tagged success!");
+						$.notify("GINTAG successfully tagged!","success");
 					});
 				}
 			});
@@ -2999,7 +3007,8 @@ $(document).ready(function() {
 					console.log(toBeRemoved);
 					$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 					.done(function(response) {
-						//TODO: Add notification if successfully removed.
+						$.notify("GINTAG successfully removed!","success");
+
 					});
 				});
 			} else {
@@ -3008,7 +3017,7 @@ $(document).ready(function() {
 				}
 				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 				.done(function(response) {
-					//TODO: Add notification if successfully removed.
+					$.notify("GINTAG successfully removed!","success");
 				});
 
 			}

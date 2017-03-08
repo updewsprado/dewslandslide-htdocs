@@ -12,6 +12,10 @@ let isTableInitialized = false;
 let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
 let modalForm = null, entry = {};
 
+let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
+let lookup2 = { "rain":["R"], "eq":["E"], "ground":["g","G"], "sensor":["s","S"], "on-demand":["D"]};
+
+
 let setElementHeight = function () {
     let col_height = $("#column_2").height();
     $('#map-canvas').css('min-height', col_height-20);
@@ -46,15 +50,7 @@ $(document).ready( function() {
 		loadBulletin(id, event_id);
 	});
 
-	$("#send_to_mail").click(function () {
-        reposition("#recipientsModal");
-        $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
-        $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
-        $("#recipientsModal").modal("show");
-    });
-
     $("#send").click(function () {
-        $("#recipientsModal").modal("hide");
         $.when(renderPDF(id))
         .then(function (x) {
             if( x == "Success.")
@@ -134,10 +130,13 @@ $(document).ready( function() {
 		$("#releaseModal").modal("show");
 		
 		//console.log(entry);
-
 	});
 
-	let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
+	$("#candidate tbody").on( "click", 'tr .glyphicon-info-sign', function(x) 
+	{
+		reposition("#manualInputModal")
+		$("#manualInputModal").modal("show");
+	});
 
 	function showModalTriggers(list, latest) 
 	{
@@ -533,7 +532,8 @@ function buildTable( latest, extended, overdue, candidate )
             { 
             	"data": "latest_trigger_timestamp",
             	"render": function (data, type, full) {
- 					if( full.latest_trigger_timestamp == null )	return "No new triggers";
+ 					if( full.latest_trigger_timestamp == "end" ) return "No new triggers";
+ 					else if( full.latest_trigger_timestamp == "manual" ) return "---";
             		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
             	},
             	"name": "latest_trigger_timestamp"
@@ -542,6 +542,7 @@ function buildTable( latest, extended, overdue, candidate )
             	"data": "trigger",
             	"render": function (data, type, full) {
             		if( full.trigger == "No new triggers" ) return full.trigger;
+            		else if( full.trigger == "manual" ) return "---";
             		return full.trigger.toUpperCase();
             	},
             	"name": "trigger",
@@ -549,14 +550,16 @@ function buildTable( latest, extended, overdue, candidate )
             { 
             	"data": "validity",
             	"render": function (data, type, full) {
-            		if ( full.validity == null ) return "END OF VALIDITY"
+            		if ( full.validity == "end" ) return "END OF VALIDITY"
+            		else if ( full.validity == "manual" ) return "---";
             		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
             	},
             	"name": "validity"
         	},
         	{
         		"render": function (data, type, full) {
-            		return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
+        			if(typeof full.isManual !== "undefined") return "<a><span class='glyphicon glyphicon-info-sign' title='Info'></span></a>";
+            		else return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
             	}
         	}
 		],
@@ -596,7 +599,7 @@ function tableCSSifEmpty( table )
 		    $("#errorModal").modal("show");
     	}
 
-        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "20px", "width": "600px"})
+        $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "30px 15px 10px 15px", "width": "600px"})
     }
 }
 
@@ -723,64 +726,149 @@ function checkCandidateTriggers(cache) {
 	// Get all the latest and overdue releases on site
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
-	alerts.forEach( function (x) {
-		let index = invalids.map( y => y.site ).indexOf(x.site);
-		if(index > -1)
-		{
-			// console.log("INVALID", x.site);
-			// Check sites if it is in invalid list yet
-			// have legitimate alerts
+	alerts.forEach( function (alert) {
+
+		let retriggers = alert.retriggerTS;
+
+		// Check sites if it is in invalid list 
+		// yet have legitimate alerts
+		function getAllInvalids(arr, val) {
+		    var site_invalids = [], i;
+		    for(i = 0; i < arr.length; i++)
+		        if (arr[i].site === val)
+		            site_invalids.push(arr[i]);
+		    site_invalids.sort(function(a,b) {return (a.alert > b.alert) ? -1 : ((b.alert > a.alert) ? 1 : 0);} );
+		    return site_invalids;
 		}
-		else 
-		{	
-			let obj = x.retriggerTS;
-			let maxDate = moment( Math.max.apply(null, obj.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
-			let max = null;
-			for (let i = 0; i < obj.length; i++) {
-				if(obj[i].timestamp === maxDate) { max = obj[i]; break; }
-			}
-			//console.log(max, obj);
-			x.latest_trigger_timestamp = max.timestamp;
-			x.trigger = max.retrigger;
 
-			// Check if alert entry is already updated on latest/overdue table
-			let k = true;
-			for (let i = 0; i < merged_arr.length; i++) 
-			{
-				//console.log(merged_arr[i]);
-				if( merged_arr[i].name == x.site )
+		let site_invalids = getAllInvalids(invalids, alert.site);
+
+		let isInvalid = false;
+		let isValidButNeedsManual = false;
+		let merged_arr_sites = merged_arr.map(x => x.name);
+		site_invalids.forEach(function (invalid)
+		{
+			//console.log("INVALID", invalid);
+
+			// Get alerts sources from the alerts array and invalids array
+			let invalid_source = invalid.source;
+			let alerts_source = alert.source.split(",");
+
+			alerts_source.forEach(function (source) {
+				if (source == invalid_source)
 				{
-					// Tag the site on merged_arr as cleared
-					// else if not, it is candidate for lowering already
-					merged_arr[i].checked = true;
-
-					if( moment(merged_arr[i].data_timestamp).isSame(x.timestamp) )
-					{
-						k = false; break;
+					function getRetriggerIndex (trigger) {
+						let temp = retriggers.map(x => x.retrigger).indexOf(trigger);
+						return temp;
+					};
+					
+					// Check if alert exists on database
+					// Mark isInvalid TRUE to prevent being pushed to final
+					// if alert is really invalid and has no active alert
+					if( merged_arr_sites.indexOf(invalid.site) == -1 )
+						{ isInvalid = true; }
+					else if (source == "sensor") {
+						let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
+						if(isL2Available > -1 && invalid.alert == "A3") {
+							alert.alert =  "A2";
+							alert.internal_alert = alert.internal_alert.replace(/S0*/g, "s").replace("A3", "A2");
+							alert.retriggerTS.splice(getRetriggerIndex("L3"), 1);
+						} else {
+							alert.alert =  "A1";
+							alert.internal_alert = alert.internal_alert.replace(/[sS]0*/g, "").replace(/A[1-3]/g, "A1");
+							alert.retriggerTS.splice(getRetriggerIndex("L2"), 1);
+						}
 					}
-
-					if ( moment(merged_arr[i].trigger_timestamp).isSame(x.latest_trigger_timestamp) )
+					else if(source == "rain")
 					{
-						x.latest_trigger_timestamp = null;
-						x.trigger = "No new triggers";
+						// Check if alert exists on database already
+						let index_on_database = merged_arr_sites.indexOf(invalid.site);
+						if( index_on_database > -1 
+							&& merged_arr[index_on_database].internal_alert_level.includes("R") == true )
+						{
+							// If already exist and it has rain that became invalid,
+							// recommend manual input
+							isValidButNeedsManual = true;
+						}
+						else {
+							// Rain trigger is plain invalid
+							alert.internal_alert = alert.internal_alert.replace(/R0*/g, "");
+							alert.retriggerTS.splice(getRetriggerIndex("r1"), 1);
+						}
 					}
 				}
-			}
+			});
+		});	
+		
+		let forUpdating = true;
+		retriggers = alert.retriggerTS;
 
-			if(k) final.push(x);
+		if( !isValidButNeedsManual )
+		{
+			let maxDate = moment( Math.max.apply(null, retriggers.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
+			let max = null;
+			for (let i = 0; i < retriggers.length; i++) {
+				if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
+			}
+			//console.log(max, retriggers);
+			alert.latest_trigger_timestamp = max.timestamp;
+			alert.trigger = max.retrigger;
 		}
+
+		// Check if alert entry is already updated on latest/overdue table
+		for (let i = 0; i < merged_arr.length; i++) 
+		{
+			//console.log(merged_arr[i]);
+			if( merged_arr[i].name == alert.site )
+			{
+				// Tag the site on merged_arr as cleared
+				// else if not, it is candidate for lowering already
+				merged_arr[i].checked = true;
+
+				if( moment(merged_arr[i].data_timestamp).isSame(alert.timestamp) )
+				{
+					forUpdating = false; break;
+				}
+
+				if ( moment(merged_arr[i].trigger_timestamp).isSame(alert.latest_trigger_timestamp) )
+				{
+					alert.latest_trigger_timestamp = "end";
+					alert.trigger = "No new triggers";
+				}
+
+				if(isValidButNeedsManual) 
+				{
+					alert.latest_trigger_timestamp = "manual";
+					alert.trigger = "manual";
+					alert.validity = "manual";
+					alert.isManual = true;
+				}
+			}
+		} 
+
+		// else {
+		// 	alert.latest_trigger_timestamp = null;
+		// 	alert.trigger = "No new triggers";
+		// 	alert.validity = null;
+		// 	merged_arr[i].checked = true;
+		// }
+
+		if(forUpdating && !isInvalid) final.push(alert);
+
 	});
 
+	// Tag a site as candidate for lowering if it has alert
+	// on site but already A0 on json
 	merged_arr.forEach(function (a) {
 		if ( typeof a.checked == "undefined" )
 		{
 			let index = no_alerts.map( x => x.site ).indexOf(a.name);
 			let x = no_alerts[index];
-			//console.log(x);
+			//console.log(a);
 
-			x.latest_trigger_timestamp = null;
+			x.latest_trigger_timestamp = "end";
 			x.trigger = "No new triggers";
-			x.validity = null;
+			x.validity = "end";
 			final.push(x);
 		}
 	});
