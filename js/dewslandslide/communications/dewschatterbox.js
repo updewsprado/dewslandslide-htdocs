@@ -2869,6 +2869,35 @@ $(document).ready(function() {
 		}
 	}
 
+
+	$("#confirm-narrative").on('click',function(){
+		var data = JSON.parse($('#gintag_details_container').val());
+		$('#gintags').val(data.tags);
+		getGintagGroupContacts(data);
+	});
+
+	$("#cancel-narrative").on('click',function(){
+		$('#save-narrative-modal').modal('toggle');
+	});
+
+
+	function displayNarrativeConfirmation(gintag_details){
+		$('#save-narrative-modal').modal('toggle');
+		var summary = "";
+		var office = "Office(s): ";
+		var site = "Site(s): ";
+		for (var counter = 0; counter < gintag_details.office.length; counter++) {
+			office = office+gintag_details.office[counter]+" ";
+		}
+
+		for (var counter = 0; counter < gintag_details.site.length; counter++) {
+			site = site+gintag_details.site[counter]+" ";
+		}
+
+		summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
+		$('#ewi-tagged-msg').val(summary);
+	}
+
 	function insertGintagService(data){
 		var tags = $('#gintags').val();
 		var gintags;
@@ -2894,14 +2923,24 @@ $(document).ready(function() {
 					"cmd": "insert"
 				};
 
-				getGintagGroupContacts(gintag_details);
-
-				for (var counter = 0; counter < tags.length;counter++) {
-					if (tags[counter] === "#EwiMessage") {
-						for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-							getOngoingEvents(tagSitenames[tag_counter]);
+				if ($.inArray("#EwiMessage", tags) != -1) {
+					displayNarrativeConfirmation(gintag_details,"EwiMessage");
+					var tags = $('#gintags').val();
+					tags = tags.split(',');
+					tags.splice($.inArray("#EwiMessage", tags),1);
+					$('#gintags').val(tags);
+					getGintagGroupContacts(gintag_details);
+					gintag_details.tags = "#EwiMessage";
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+				} else {
+					getGintagGroupContacts(gintag_details);
+					for (var counter = 0; counter < tags.length;counter++) {
+						if (tags[counter] === "#EwiMessage") {
+							for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+								getOngoingEvents(tagSitenames[tag_counter]);
+							}
+							break;
 						}
-						break;
 					}
 				}
 
@@ -3007,7 +3046,8 @@ $(document).ready(function() {
 					}
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
-						$.notify("GINTAG successfully tagged!","success");
+						console.log(i);
+						$.notify("GINTAG successfully tagged ","success");
 					});
 				}
 			});
