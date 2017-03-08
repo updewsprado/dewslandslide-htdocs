@@ -39,6 +39,8 @@ body {
   margin: 0 7%;
 }
 
+.typeahead { z-index: 1051; }
+
 #GenInfo-content{
   width: 70%;
   margin-left: 15%;

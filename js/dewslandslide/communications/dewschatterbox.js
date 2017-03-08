@@ -2777,7 +2777,9 @@ $(document).ready(function() {
 		reposition('#gintag-modal');
 		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
-	})
+		$('.bootstrap-tagsinput').prop("disabled", true );
+	});
+
 
 
 	$('#confirm-gintags').click(function(){
@@ -2798,6 +2800,27 @@ $(document).ready(function() {
 			insertGintagService(gintags_msg_details);
 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
+	});
+
+	$('#gintags').tagsinput({
+	    typeahead: {
+	        displayKey: 'text',
+		    source: function (query) {
+		    	 var tagname_collection = [];
+	             $.ajax({
+				   		url : "../../../gintagshelper/getAllGinTags",
+				    	type : "GET",
+				    	async: false,
+					    success : function(data) {
+					       var data = JSON.parse(data);
+						    for (var counter = 0; counter < data.length; counter ++) {
+						    	tagname_collection.push(data[counter].tag_name);
+						    }
+					    }
+			 	});
+	             return tagname_collection;
+	       	}
+	    } 
 	});
 
 	function removeGintagService(data,tags){
