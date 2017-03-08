@@ -12,55 +12,55 @@ $(document).ajaxStop(function () {
 });
 
 $(document).ready(function(e) {
- $.ajax({url: "/api/rainfallScanner", dataType: "json",
+   $.ajax({url: "/api/rainfallScanner", dataType: "json",
     success: function(result){
         console.log(result)
         var data = JSON.parse(result)
         document.getElementById("rain_header").innerHTML =
-         "RAINFALL LEVEL PER SITE AS OF "+moment(data[0].ts).format('YYYY MMMM DD HH:mm:ss');
-    var site = [];
-    var day1 =[];
-    var day3 =[];
-    var year2max =[];
-    var year2maxhalf =[];
-    region_view(data)
-    for (i = 0; i <  data.length; i++) {
-        site.push(data[i].site.toUpperCase())
-        day1.push(data[i]["1D cml"])
-        day3.push(data[i]["3D cml"])
-        year2max.push(data[i]["2yr max"])
-        year2maxhalf.push(data[i]["half of 2yr max"])
-    }
-    $("#chart_view").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-        var selected_view = $(this).find('option').eq(clickedIndex).text();
-        $("#operands_value").val("....");
-        $("#operands_value").selectpicker('refresh')
-        $("#criteria").val("....");
-        $("#criteria").selectpicker('refresh')
-        if(selected_view == "All Sites"){
-            $(".region_view").prop('disabled', true);
-            $( "#container_region" ).slideUp()
-            $( "#container" ).show()
-            rainValue(data,"container")
-            percentage_select(data,"container")
-            document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;All Sites";
-        }else if (selected_view == "Region"){
-         $(".region_view").prop('disabled', false);
-         $( "#container" ).hide()
-         $( "#container_region" ).slideDown()
-         document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;Region";
-     }
+        "RAINFALL LEVEL PER SITE AS OF "+moment(data[0].ts).format('YYYY MMMM DD HH:mm:ss');
+        var site = [];
+        var day1 =[];
+        var day3 =[];
+        var year2max =[];
+        var year2maxhalf =[];
+        region_view(data)
+        for (i = 0; i <  data.length; i++) {
+            site.push(data[i].site.toUpperCase())
+            day1.push(data[i]["1D cml"])
+            day3.push(data[i]["3D cml"])
+            year2max.push(data[i]["2yr max"])
+            year2maxhalf.push(data[i]["half of 2yr max"])
+        }
+        $("#chart_view").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+            var selected_view = $(this).find('option').eq(clickedIndex).text();
+            $("#operands_value").val("....");
+            $("#operands_value").selectpicker('refresh')
+            $("#criteria").val("....");
+            $("#criteria").selectpicker('refresh')
+            if(selected_view == "All Sites"){
+                $(".region_view").prop('disabled', true);
+                $( "#container_region" ).slideUp()
+                $( "#container" ).show()
+                rainValue(data,"container")
+                percentage_select(data,"container")
+                document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;All Sites";
+            }else if (selected_view == "Region"){
+               $(".region_view").prop('disabled', false);
+               $( "#container" ).hide()
+               $( "#container_region" ).slideDown()
+               document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;Region";
+           }
 
-     let dataJson = { 
-        sites : site,
-        day1 : day1, 
-        day3 : day3,
-        y2max : year2max,
-        y2maxhalf : year2maxhalf
+           let dataJson = { 
+            sites : site,
+            day1 : day1, 
+            day3 : day3,
+            y2max : year2max,
+            y2maxhalf : year2maxhalf
+        }
+        rainScannerBar(dataJson,"container")
+    });
     }
-    rainScannerBar(dataJson,"container")
-});
-}
 })   
 });
 function removeDuplicates(num) {
@@ -86,19 +86,22 @@ function region_view(data_result) {
         success: function(result){
             var data = result
             var region = []
+
             for (i = 0; i <  data.length; i++) {
-                region.push(data[i].region.trim())
+                if(data[i].region != null){
+                    region.push(data[i].region.trim())
+                }
             }
             var region_filter=removeDuplicates(region)
             region_filter.sort()
             console.log(region_filter)
             $('#region_view').append('<option>....</option>');
             for (i = 0; i <  region_filter.length; i++) {
-               dropdowlistAppendValue(region_filter[i], (region_filter[i]).toUpperCase(),'#region_view');
-           } 
-           region_select(data_result,data,region_filter) 
-       }  
-   });
+             dropdowlistAppendValue(region_filter[i], (region_filter[i]).toUpperCase(),'#region_view');
+         } 
+         region_select(data_result,data,region_filter) 
+     }  
+ });
 }
 function rainValue(data,id) {
     $("#criteria1").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
@@ -119,72 +122,72 @@ function rainValue(data,id) {
                 if(operand == "="){
                     for (i = 0; i <  data.length; i++) {
                         if(value_rain == data[i]["1D cml"] ){
-                         data_filtered_site.push(data[i])
-                        }
-                    }
-                }else if(operand == "< ="){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain <= data[i]["1D cml"] ){
                            data_filtered_site.push(data[i])
                        }
                    }
-               }else if(operand == "<"){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain < data[i]["1D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }else if(operand == "> ="){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain >= data[i]["1D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }else if(operand == ">"){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain <= data[i]["1D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }
-            }else{
-                 if(operand == "="){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain == data[i]["3D cml"] ){
-                         data_filtered_site.push(data[i])
-                        }
-                    }
-                }else if(operand == "< ="){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain <= data[i]["3D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }else if(operand == "<"){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain < data[i]["3D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }else if(operand == "> ="){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain >= data[i]["3D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-               }else if(operand == ">"){
-                    for (i = 0; i <  data.length; i++) {
-                        if(value_rain <= data[i]["3D cml"] ){
-                           data_filtered_site.push(data[i])
-                       }
-                   }
-                }
+               }else if(operand == "< ="){
+                for (i = 0; i <  data.length; i++) {
+                    if(value_rain <= data[i]["1D cml"] ){
+                     data_filtered_site.push(data[i])
+                 }
+             }
+         }else if(operand == "<"){
+            for (i = 0; i <  data.length; i++) {
+                if(value_rain < data[i]["1D cml"] ){
+                 data_filtered_site.push(data[i])
+             }
+         }
+     }else if(operand == "> ="){
+        for (i = 0; i <  data.length; i++) {
+            if(value_rain >= data[i]["1D cml"] ){
+             data_filtered_site.push(data[i])
+         }
+     }
+ }else if(operand == ">"){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain <= data[i]["1D cml"] ){
+         data_filtered_site.push(data[i])
+     }
+ }
+}
+}else{
+   if(operand == "="){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain == data[i]["3D cml"] ){
+           data_filtered_site.push(data[i])
+       }
+   }
+}else if(operand == "< ="){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain <= data[i]["3D cml"] ){
+         data_filtered_site.push(data[i])
+     }
+ }
+}else if(operand == "<"){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain < data[i]["3D cml"] ){
+         data_filtered_site.push(data[i])
+     }
+ }
+}else if(operand == "> ="){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain >= data[i]["3D cml"] ){
+         data_filtered_site.push(data[i])
+     }
+ }
+}else if(operand == ">"){
+    for (i = 0; i <  data.length; i++) {
+        if(value_rain <= data[i]["3D cml"] ){
+         data_filtered_site.push(data[i])
+     }
+ }
+}
 
-            }
-        }
-        console.log(data_filtered_site)
-        criteria_process(data_filtered_site,id)
-    });
+}
+}
+console.log(data_filtered_site)
+criteria_process(data_filtered_site,id)
+});
 }
 function percentage_select(data,id) {
     $('#data-resolution').change(function(){
@@ -196,19 +199,19 @@ function percentage_select(data,id) {
             for (i = 0; i <  data.length; i++) {
                 console.log((data[i]["half of 2yr max"] * (percent/100)) , data[i]["1D cml"])
                 if((data[i]["half of 2yr max"] * (percent/100)) <= data[i]["1D cml"] ){
-                   data_filtered_site.push(data[i])
-               }
-           }
-       }else{
-            for (i = 0; i <  data.length; i++) {
-                console.log((data[i]["2yr max"] * (percent/100)) , data[i]["3D cml"])
-                if((data[i]["2yr max"] * (percent/100)) <= data[i]["3D cml"] ){
-                   data_filtered_site.push(data[i])
-               }
-           }
-       }
-       criteria_process(data_filtered_site,id)
-   })
+                 data_filtered_site.push(data[i])
+             }
+         }
+     }else{
+        for (i = 0; i <  data.length; i++) {
+            console.log((data[i]["2yr max"] * (percent/100)) , data[i]["3D cml"])
+            if((data[i]["2yr max"] * (percent/100)) <= data[i]["3D cml"] ){
+             data_filtered_site.push(data[i])
+         }
+     }
+ }
+ criteria_process(data_filtered_site,id)
+})
 }
 function criteria_process(data,id) {
     var site = [];
@@ -302,7 +305,7 @@ function rainScannerBar(data,id) {
                 text: 'Rainfall Scanner',
                 align: 'high'
             },
-        
+
         },
         tooltip: {
             valueSuffix: 'cummulative'
@@ -328,9 +331,9 @@ function rainScannerBar(data,id) {
             name: '2 year max half',
             data: data.y2maxhalf
         },{
-           name: '2 year max ',
-           data: data.y2max
-       }]
-   });
+         name: '2 year max ',
+         data: data.y2max
+     }]
+ });
 
 }
