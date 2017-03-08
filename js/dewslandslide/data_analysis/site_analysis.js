@@ -453,7 +453,7 @@ function SiteInfo(site){
 function DataPresence(site,siteDiv){
 	var start = moment(); 
 	var end = moment().add(1, 'days');
-	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
+	$.ajax({url: "../site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
 		dataType: "json",
 		success: function(result){
 			if(result.length != 0){
