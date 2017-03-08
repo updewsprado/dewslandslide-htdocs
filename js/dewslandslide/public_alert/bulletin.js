@@ -31,7 +31,9 @@ function loadBulletin(id1, id2) {
                 $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
                 $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
             } else {
-                $("#recipients_div").append("&emsp;<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")    
+                if($('#recipients_span').html().length == 0) {
+                    $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
+                }   
             }
             $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
         }
