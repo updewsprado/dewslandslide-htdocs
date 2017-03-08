@@ -14,6 +14,7 @@ $(document).ajaxStop(function () {
 $(document).ready(function(e) {
  $.ajax({url: "/api/rainfallScanner", dataType: "json",
     success: function(result){
+        console.log(result)
         var data = JSON.parse(result)
         document.getElementById("rain_header").innerHTML =
          "RAINFALL LEVEL PER SITE AS OF "+moment(data[0].ts).format('YYYY MMMM DD HH:mm:ss');
