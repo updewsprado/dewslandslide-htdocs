@@ -50,15 +50,7 @@ $(document).ready( function() {
 		loadBulletin(id, event_id);
 	});
 
-	$("#send_to_mail").click(function () {
-        reposition("#recipientsModal");
-        $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
-        $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
-        $("#recipientsModal").modal("show");
-    });
-
     $("#send").click(function () {
-        $("#recipientsModal").modal("hide");
         $.when(renderPDF(id))
         .then(function (x) {
             if( x == "Success.")
@@ -783,7 +775,12 @@ function checkCandidateTriggers(cache) {
 							alert.retriggerTS.splice(getRetriggerIndex("L3"), 1);
 						} else {
 							alert.alert =  "A1";
-							alert.internal_alert = alert.internal_alert.replace(/[sS]0*/g, "").replace(/A[1-3]/g, "A1");
+							alert.internal_alert = alert.internal_alert.replace(/[sS]0*/g, "");
+
+							let hasSensorData = alert.sensor_alert.filter( x => x.alert != "ND" );
+							if ( hasSensorData == 0 && alert.ground_alert == "g0" ) alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "ND");
+							else alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "A1");
+							
 							alert.retriggerTS.splice(getRetriggerIndex("L2"), 1);
 						}
 					}
@@ -854,13 +851,6 @@ function checkCandidateTriggers(cache) {
 			}
 		} 
 
-		// else {
-		// 	alert.latest_trigger_timestamp = null;
-		// 	alert.trigger = "No new triggers";
-		// 	alert.validity = null;
-		// 	merged_arr[i].checked = true;
-		// }
-
 		if(forUpdating && !isInvalid) final.push(alert);
 
 	});
@@ -872,7 +862,7 @@ function checkCandidateTriggers(cache) {
 		{
 			let index = no_alerts.map( x => x.site ).indexOf(a.name);
 			let x = no_alerts[index];
-			console.log(a);
+			//console.log(a);
 
 			x.latest_trigger_timestamp = "end";
 			x.trigger = "No new triggers";
