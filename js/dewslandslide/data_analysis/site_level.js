@@ -210,7 +210,7 @@ $(document).ready(function(e) {
 					chartProcess(series_data,id,'Senslope',site,max_rain,negative );
 				}
 			})
-		
+
 		}
 	}
 
@@ -243,22 +243,22 @@ $(document).ready(function(e) {
 						// 	}
 						// }
 					}
-			for (var i = 0; i < nval.length; i=i+2) {
-				var n = nval[i];
-				var n2 = nval[i+1];
-				negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-			}
-			var divname =["15mins","24hrs" ,"72hrs"];
-			var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
-			var color =["red","blue","green"];
-			var series_data = [];
-			for (i = 0; i < divname.length; i++) {
-				series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
-			}
-			chartProcess(series_data,id,'ARQ',site,max_rain,negative );
+					for (var i = 0; i < nval.length; i=i+2) {
+						var n = nval[i];
+						var n2 = nval[i+1];
+						negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+					}
+					var divname =["15mins","24hrs" ,"72hrs"];
+					var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
+					var color =["red","blue","green"];
+					var series_data = [];
+					for (i = 0; i < divname.length; i++) {
+						series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+					}
+					chartProcess(series_data,id,'ARQ',site,max_rain,negative );
 
-		}
-	})
+				}
+			})
 		}
 	}
 
@@ -342,112 +342,110 @@ $(document).ready(function(e) {
 			xAxis: {
 				plotBands: negative,
 				type: 'datetime',
-                                    dateTimeLabelFormats: { // don't display the dummy year
-                                    month: '%e. %b',
-                                    year: '%b'
-                                },
-                                title: {
-                                	text: 'Date'
-                                },
-                                labels: {
-                                	style:{
-                                		color: 'white'
-                                	}
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+				labels: {
+					style:{
+						color: 'white'
+					}
 
-                                },
-                                title: {
-                                	text: 'Date',
-                                	style:{
-                                		color: 'white'
-                                	}
-                                }
-                            },
+				},
+				title: {
+					text: 'Date',
+					style:{
+						color: 'white'
+					}
+				}
+			},
 
-                            yAxis:{
-                 plotBands: [{ // visualize the weekend
-                 	value: max/2,
-                 	color: colors[1],
-                 	dashStyle: 'shortdash',
-                 	width: 2,
-                 	label: {
-                 		text: '24hrs threshold (' + max/2 +')',
-                 		style: { color: '#fff',}
-                 	}
-                 },{
-                 	value: max,
-                 	color: colors[2],
-                 	dashStyle: 'shortdash',
-                 	width: 2,
-                 	label: {
-                 		text: '72hrs threshold (' + max +')',
-                 		style: { color: '#fff',}
-                 	}
-                 }]
+			yAxis:{
+				plotBands: [{ 
+					value: max/2,
+					color: colors[1],
+					dashStyle: 'shortdash',
+					width: 2,
+					label: {
+						text: '24hrs threshold (' + max/2 +')',
+						style: { color: '#fff',}
+					}
+				},{
+					value: max,
+					color: colors[2],
+					dashStyle: 'shortdash',
+					width: 2,
+					label: {
+						text: '72hrs threshold (' + max +')',
+						style: { color: '#fff',}
+					}
+				}]
+			},
+			tooltip: {
+				shared: true,
+				crosshairs: true
+			},
 
-             },
+			plotOptions: {
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name =="Comment"){
 
-             tooltip: {
-             	shared: true,
-             	crosshairs: true
-             },
+									$("#anModal").modal("show");
+									$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
+								}else if(this.series.name =="Alert" ){
 
-             plotOptions: {
-             	series: {
-             		marker: {
-             			radius: 3
-             		},
-             		cursor: 'pointer',
-             		point: {
-             			events: {
-             				click: function () {
-             					if(this.series.name =="Comment"){
+									$("#anModal").modal("show");
+									$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
 
-             						$("#anModal").modal("show");
-             						$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-             					}else if(this.series.name =="Alert" ){
+								}else if(this.series.name =="Maintenace"){
 
-             						$("#anModal").modal("show");
-             						$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+									$("#anModal").modal("show");
+									$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
 
-             					}else if(this.series.name =="Maintenace"){
+								}
+								else {
+									$("#annModal").modal("show");
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+								}
+							}
+						}
+					}
+				},
+				area: {
+					marker: {
+						lineWidth: 3,
+						lineColor: null 
+					}
+				}
 
-             						$("#anModal").modal("show");
-             						$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-             					}
-             					else {
-             						$("#annModal").modal("show");
-             						$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-             					}
-             				}
-             			}
-             		}
-             	},
-             	area: {
-             		marker: {
-             			lineWidth: 3,
-                                        lineColor: null // inherit from series
-                                    }
-                                }
-
-                            },
-                            legend: {
-                            	layout: 'vertical',
-                            	align: 'right',
-                            	verticalAlign: 'middle',
-                            	borderWidth: 0,
-                            	itemStyle: {
-                            		color: '#E0E0E3'
-                            	},
-                            	itemHoverStyle: {
-                            		color: '#FFF'
-                            	},
-                            	itemHiddenStyle: {
-                            		color: '#606063'
-                            	}
-                            },
-                            series:series_data
-                        });
+			},
+			legend: {
+				layout: 'vertical',
+				align: 'right',
+				verticalAlign: 'middle',
+				borderWidth: 0,
+				itemStyle: {
+					color: '#E0E0E3'
+				},
+				itemHoverStyle: {
+					color: '#FFF'
+				},
+				itemHiddenStyle: {
+					color: '#606063'
+				}
+			},
+			series:series_data
+		});
 	}
 
 
