@@ -1,0 +1,22 @@
+.input-group-addon{
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .slider.slider-horizontal{
+    width:200px ;
+    height:20px
+  }
+ .container_all{
+    min-width: 310px;
+    height: 1250px;
+    margin: 0 auto
+  }
+  .container_region{
+    min-width: 310px;
+    height: 500px;
+    margin: 0 auto
+  }
+  .inlineDiv {
+    display:inline-block;
+    width:auto;
+  }
