@@ -2907,19 +2907,29 @@ $(document).ready(function() {
 
 	function displayNarrativeConfirmation(gintag_details){
 		$('#save-narrative-modal').modal('toggle');
-		var summary = "";
-		var office = "Office(s): ";
-		var site = "Site(s): ";
-		for (var counter = 0; counter < gintag_details.office.length; counter++) {
-			office = office+gintag_details.office[counter]+" ";
-		}
+		if (gintag_details.data[1] === "You") {
+			var summary = "";
+			var office = "Office(s): ";
+			var site = "Site(s): ";
+			for (var counter = 0; counter < gintag_details.office.length; counter++) {
+				office = office+gintag_details.office[counter]+" ";
+			}
 
-		for (var counter = 0; counter < gintag_details.site.length; counter++) {
-			site = site+gintag_details.site[counter]+" ";
-		}
+			for (var counter = 0; counter < gintag_details.site.length; counter++) {
+				site = site+gintag_details.site[counter]+" ";
+			}
 
-		summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
-		$('#ewi-tagged-msg').val(summary);
+			summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
+			$('#save-narrative-content p').text("Saving an #EwiMessage tagged message will be permanently save to narratives.");
+			$('#ewi-tagged-msg').val(summary);
+		} else {
+			console.log(gintag_details);
+			var summary = "";
+			var sender = "Sender(s): "+gintag_details.data[1];
+			summary = sender+"\n\n"+gintag_details.data[4];
+			$('#save-narrative-content p').text("Saving an #EwiResponse tagged message will be permanently save to narratives.");
+			$('#ewi-tagged-msg').val(summary);
+		}
 	}
 
 	function insertGintagService(data){
@@ -2947,7 +2957,7 @@ $(document).ready(function() {
 				};
 
 				if ($.inArray("#EwiMessage", tags) != -1) {
-					displayNarrativeConfirmation(gintag_details,"EwiMessage");
+					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiMessage", tags),1);
@@ -2960,23 +2970,57 @@ $(document).ready(function() {
 				}
 
 			} else {
-				for (var i = 0; i < tags.length;i++) {
-					gintags_collection = [];
-					gintags = {
-						'tag_name': tags[i],
-						'tag_description': "communications",
-						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-						'tagger': tagger_user_id,
-						'table_element_id': data[5],
-						'table_used': data[6],
-						'remarks': "" // Leave it blank for now.
+				if ($.inArray("#EwiResponse",tags) != -1) {
+					var gintag_details = {
+						"data": data,
+						"cmd": "insert"
+					};
+					displayNarrativeConfirmation(gintag_details);
+					var tags = $('#gintags').val();
+					tags = tags.split(',');
+					tags.splice($.inArray("#EwiResponse", tags),1);
+					$('#gintags').val(tags);
+					gintag_details.tags = "#EwiResponse";
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					if (tags[1] != "") {
+						for (var i = 0; i < tags.length;i++) {
+							gintags_collection = [];
+							gintags = {
+								'tag_name': tags[i],
+								'tag_description': "communications",
+								'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+								'tagger': tagger_user_id,
+								'table_element_id': data[5],
+								'table_used': data[6],
+								'remarks': "" // Leave it blank for now.
+							}
+							gintags_collection.push(gintags);
+							$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+							.done(function(response) {
+								$.notify("GINTAG successfully tagged!","success");
+								$( "#messages li" ).eq(message_li_index).addClass("tagged");
+							});
+						}
 					}
-					gintags_collection.push(gintags);
-					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-					.done(function(response) {
-						$.notify("GINTAG successfully tagged!","success");
-						$( "#messages li" ).eq(message_li_index).addClass("tagged");
-					});
+				} else {
+					for (var i = 0; i < tags.length;i++) {
+						gintags_collection = [];
+						gintags = {
+							'tag_name': tags[i],
+							'tag_description': "communications",
+							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+							'tagger': tagger_user_id,
+							'table_element_id': data[5],
+							'table_used': data[6],
+							'remarks': "" // Leave it blank for now.
+						}
+						gintags_collection.push(gintags);
+						$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+						.done(function(response) {
+							$.notify("GINTAG successfully tagged!","success");
+							$( "#messages li" ).eq(message_li_index).addClass("tagged");
+						});
+					}
 				}
 			}
 
