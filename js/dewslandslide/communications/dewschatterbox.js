@@ -2777,7 +2777,9 @@ $(document).ready(function() {
 		reposition('#gintag-modal');
 		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
-	})
+		$('.bootstrap-tagsinput').prop("disabled", true );
+	});
+
 
 
 	$('#confirm-gintags').click(function(){
@@ -2787,17 +2789,33 @@ $(document).ready(function() {
 		if (tags.length > current_tags.length) {
 			diff = $(tags).not(current_tags).get();
 			removeGintagService(gintags_msg_details,diff);
-			if ($('#gintags').val() == "") {
-				$( "#messages li" ).eq(message_li_index).removeClass("tagged");
-			}
 		} else if (tags.length < current_tags.length){
 			diff = $(tags).not(current_tags).get();
 			insertGintagService(gintags_msg_details);
-			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		} else {
 			insertGintagService(gintags_msg_details);
-			$( "#messages li" ).eq(message_li_index).addClass("tagged");
 		}
+	});
+
+	$('#gintags').tagsinput({
+	    typeahead: {
+	        displayKey: 'text',
+		    source: function (query) {
+		    	 var tagname_collection = [];
+	             $.ajax({
+				   		url : "../../../gintagshelper/getAllGinTags",
+				    	type : "GET",
+				    	async: false,
+					    success : function(data) {
+					       var data = JSON.parse(data);
+						    for (var counter = 0; counter < data.length; counter ++) {
+						    	tagname_collection.push(data[counter].tag_name);
+						    }
+					    }
+			 	});
+	             return tagname_collection;
+	       	}
+	    } 
 	});
 
 	function removeGintagService(data,tags){
@@ -2846,6 +2864,35 @@ $(document).ready(function() {
 		}
 	}
 
+
+	$("#confirm-narrative").on('click',function(){
+		var data = JSON.parse($('#gintag_details_container').val());
+		$('#gintags').val(data.tags);
+		getGintagGroupContacts(data);
+	});
+
+	$("#cancel-narrative").on('click',function(){
+		$('#save-narrative-modal').modal('toggle');
+	});
+
+
+	function displayNarrativeConfirmation(gintag_details){
+		$('#save-narrative-modal').modal('toggle');
+		var summary = "";
+		var office = "Office(s): ";
+		var site = "Site(s): ";
+		for (var counter = 0; counter < gintag_details.office.length; counter++) {
+			office = office+gintag_details.office[counter]+" ";
+		}
+
+		for (var counter = 0; counter < gintag_details.site.length; counter++) {
+			site = site+gintag_details.site[counter]+" ";
+		}
+
+		summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
+		$('#ewi-tagged-msg').val(summary);
+	}
+
 	function insertGintagService(data){
 		var tags = $('#gintags').val();
 		var gintags;
@@ -2861,7 +2908,6 @@ $(document).ready(function() {
 		$('input[name="sitenames"]:checked').each(function() {
 			tagSitenames.push(this.value);
 		});
-
 		if (tagOffices.length != 0 && tagSitenames.length != 0) {
 			if (data[1] == "You") {
 				var gintag_details = {
@@ -2871,14 +2917,24 @@ $(document).ready(function() {
 					"cmd": "insert"
 				};
 
-				getGintagGroupContacts(gintag_details);
-
-				for (var counter = 0; counter < tags.length;counter++) {
-					if (tags[counter] === "#EwiMessage") {
-						for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-							getOngoingEvents(tagSitenames[tag_counter]);
+				if ($.inArray("#EwiMessage", tags) != -1) {
+					displayNarrativeConfirmation(gintag_details,"EwiMessage");
+					var tags = $('#gintags').val();
+					tags = tags.split(',');
+					tags.splice($.inArray("#EwiMessage", tags),1);
+					$('#gintags').val(tags);
+					getGintagGroupContacts(gintag_details);
+					gintag_details.tags = "#EwiMessage";
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+				} else {
+					getGintagGroupContacts(gintag_details);
+					for (var counter = 0; counter < tags.length;counter++) {
+						if (tags[counter] === "#EwiMessage") {
+							for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+								getOngoingEvents(tagSitenames[tag_counter]);
+							}
+							break;
 						}
-						break;
 					}
 				}
 
@@ -2898,6 +2954,7 @@ $(document).ready(function() {
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
 						$.notify("GINTAG successfully tagged!","success");
+						$( "#messages li" ).eq(message_li_index).addClass("tagged");
 					});
 				}
 			}
@@ -2909,7 +2966,7 @@ $(document).ready(function() {
 					'tag_name': tags[i],
 					'tag_description': "communications",
 					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-					'tagger': tagger_user_id,
+					'tagger': tagger_user_id,	
 					'table_element_id': data[5],
 					'table_used': data[6],
 					'remarks': "" //Leave it blank for now.
@@ -2917,7 +2974,8 @@ $(document).ready(function() {
 				gintags_collection.push(gintags);
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
-					console.log(response);
+					$.notify("GINTAG successfully tagged!","success");
+					$( "#messages li" ).eq(message_li_index).addClass("tagged");
 				});
 			}
 		}
@@ -2956,38 +3014,46 @@ $(document).ready(function() {
 		$.post("../generalinformation/removeIndividualGintagEntryViaChatterbox", {gintags: gintag_details})
 		.done(function(response) {
 			$.notify("GINTAG successfully removed!","success");
+			$( "#messages li" ).eq(message_li_index).removeClass("tagged");
 		});
 	}
 
 	function getGintagGroupContacts(gintag_details){
-		if (gintag_details.cmd == "insert") {
-			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
-			.done(function(response) {
-				var data = JSON.parse(response);
-				var tags = $('#gintags').val();
-				tags = tags.split(',');
-				for (var i = 0; i < tags.length; i++) {
-					gintags_collection = [];
-					for (var x = 0 ; x < data.length; x++) {
-						for (var y = 0; y < data[x].length; y++) {
-							gintags = {
-								'tag_name': tags[i],
-								'tag_description': "communications",
-								'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-								'tagger': tagger_user_id,
-								'table_element_id': data[x][y].sms_id,					
-								'table_used': "smsoutbox",
-								'remarks': "" // Leave it blank for now
+		if (gintag_details.cmd == "insert" ) {
+			var tags = $('#gintags').val();
+			tags = tags.split(',');
+			console.log(tags);
+			if (tags[0] != "") {
+				$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
+				.done(function(response) {
+					var data = JSON.parse(response);
+					for (var i = 0; i < tags.length; i++) {
+						gintags_collection = [];
+						for (var x = 0 ; x < data.length; x++) {
+							for (var y = 0; y < data[x].length; y++) {
+								gintags = {
+									'tag_name': tags[i],
+									'tag_description': "communications",
+									'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+									'tagger': tagger_user_id,
+									'table_element_id': data[x][y].sms_id,					
+									'table_used': "smsoutbox",
+									'remarks': "" // Leave it blank for now
+								}
+								gintags_collection.push(gintags);
 							}
-							gintags_collection.push(gintags);
+						}
+						if (gintags_collection != null || gintags_collection.length > 0) {
+							$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+							.done(function(response) {
+								$.notify("GINTAG successfully tagged ","success");
+								$( "#messages li" ).eq(message_li_index).addClass("tagged");
+							});
 						}
 					}
-					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-					.done(function(response) {
-						$.notify("GINTAG successfully tagged!","success");
-					});
-				}
-			});
+					
+				});
+			}
 		} else if (gintag_details.cmd == "delete") {
 			if (gintag_details.data[1] == "You") {
 				$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
@@ -3008,7 +3074,7 @@ $(document).ready(function() {
 					$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 					.done(function(response) {
 						$.notify("GINTAG successfully removed!","success");
-
+						$( "#messages li" ).eq(message_li_index).removeClass("tagged");
 					});
 				});
 			} else {
@@ -3018,6 +3084,7 @@ $(document).ready(function() {
 				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 				.done(function(response) {
 					$.notify("GINTAG successfully removed!","success");
+					$( "#messages li" ).eq(message_li_index).removeClass("tagged");
 				});
 
 			}
