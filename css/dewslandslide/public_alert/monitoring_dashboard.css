@@ -70,6 +70,18 @@ hr {
 	background-color: rgba(60, 60, 60, 0.5);
 }
 
+#ewi-recipients-container {
+	display: inline-flex;
+}
+
+#ewi-recipients-container label{
+	padding-top: 5px;
+}
+
+#ewi-recipients-container input{
+    margin-bottom: 10px;
+    margin-left: 10px;
+
 .close { margin-top: -3px; }
 
 #send-btn-ewi-amd,#edit-btn-ewi-amd {

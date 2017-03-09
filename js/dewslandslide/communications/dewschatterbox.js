@@ -2781,6 +2781,21 @@ $(document).ready(function() {
 	});
 
 
+	$('#gintags').on('beforeItemAdd', function(event) {
+		if (gintags_msg_details[1] === "You") {
+			if (event.item === "#EwiResponse") {
+				console.log("Cannot add EwiResponse Tag for this message");
+				event.cancel = true;
+				$.notify("You cannot tag #EwiResponse if you are the sender","error");
+			}
+		} else {
+			if (event.item === "#EwiMessage") {
+				console.log("Cannot add EwiMessage Tag for this message");
+				event.cancel = true;
+				$.notify("You cannot tag #EwiMessage if you are the recipient","error");
+			}
+		}
+	});
 
 	$('#confirm-gintags').click(function(){
 		var tags = holdTags.split(',');
@@ -2854,7 +2869,6 @@ $(document).ready(function() {
 			} else {
 				db_used = "smsinbox";
 			}
-
 			var gintag_details = {
 				"data": data,
 				"tags": tags,
@@ -2869,12 +2883,27 @@ $(document).ready(function() {
 		var data = JSON.parse($('#gintag_details_container').val());
 		$('#gintags').val(data.tags);
 		getGintagGroupContacts(data);
+
+		var tagSitenames = [];
+		$('input[name="sitenames"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+
+		var tags = $('#gintags').val();
+		tags = tags.split(',');
+		for (var counter = 0; counter < tags.length;counter++) {
+			if (tags[counter] === "#EwiMessage") {
+				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+					getOngoingEvents(tagSitenames[tag_counter]);
+				}
+				break;
+			}
+		}
 	});
 
 	$("#cancel-narrative").on('click',function(){
 		$('#save-narrative-modal').modal('toggle');
 	});
-
 
 	function displayNarrativeConfirmation(gintag_details){
 		$('#save-narrative-modal').modal('toggle');
@@ -2928,14 +2957,6 @@ $(document).ready(function() {
 					$("#gintag_details_container").val(JSON.stringify(gintag_details));
 				} else {
 					getGintagGroupContacts(gintag_details);
-					for (var counter = 0; counter < tags.length;counter++) {
-						if (tags[counter] === "#EwiMessage") {
-							for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-								getOngoingEvents(tagSitenames[tag_counter]);
-							}
-							break;
-						}
-					}
 				}
 
 			} else {
@@ -3022,7 +3043,6 @@ $(document).ready(function() {
 		if (gintag_details.cmd == "insert" ) {
 			var tags = $('#gintags').val();
 			tags = tags.split(',');
-			console.log(tags);
 			if (tags[0] != "") {
 				$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 				.done(function(response) {
