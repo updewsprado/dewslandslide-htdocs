@@ -72,15 +72,12 @@ hr {
 
 #ewi-recipients-container {
 	display: inline-flex;
+	margin-bottom: 10px;
 }
 
 #ewi-recipients-container label{
 	padding-top: 5px;
 }
-
-#ewi-recipients-container input{
-    margin-bottom: 10px;
-    margin-left: 10px;
 
 .close { margin-top: -3px; }
 
