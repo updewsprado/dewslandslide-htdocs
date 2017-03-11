@@ -2780,7 +2780,6 @@ $(document).ready(function() {
 		$('.bootstrap-tagsinput').prop("disabled", true );
 	});
 
-
 	$('#gintags').on('beforeItemAdd', function(event) {
 		if (gintags_msg_details[1] === "You") {
 			if (event.item === "#EwiResponse") {
@@ -2882,22 +2881,56 @@ $(document).ready(function() {
 	$("#confirm-narrative").on('click',function(){
 		var data = JSON.parse($('#gintag_details_container').val());
 		$('#gintags').val(data.tags);
-		getGintagGroupContacts(data);
-
 		var tagSitenames = [];
+		var tags = $('#gintags').val();
+		tags = tags.split(',');
+
 		$('input[name="sitenames"]:checked').each(function() {
 			tagSitenames.push(this.value);
 		});
 
-		var tags = $('#gintags').val();
-		tags = tags.split(',');
-		for (var counter = 0; counter < tags.length;counter++) {
-			if (tags[counter] === "#EwiMessage") {
-				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					getOngoingEvents(tagSitenames[tag_counter]);
+		gintags_msg_details.tags = tags[0];
+		if (data.tags === "#EwiMessage") {
+			getGintagGroupContacts(data);
+			for (var counter = 0; counter < tags.length;counter++) {
+				if (tags[counter] === "#EwiMessage") {
+					for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+						getOngoingEvents(tagSitenames[tag_counter]);
+					}
+					break;
 				}
-				break;
 			}
+		} else if (data.tags === "#EwiResponse") {
+			if (tags[1] != "") {
+				for (var i = 0; i < tags.length;i++) {
+					gintags_collection = [];
+					gintags = {
+						'tag_name': tags[i],
+						'tag_description': "communications",
+						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+						'tagger': tagger_user_id,
+						'table_element_id': data.data[5],
+						'table_used': data.data[6],
+						'remarks': "" // Leave it blank for now.
+					}
+					gintags_collection.push(gintags);
+					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+					.done(function(response) {
+						$.notify("GINTAG successfully tagged!","success");
+						$( "#messages li" ).eq(message_li_index).addClass("tagged");
+					});
+				}
+			}
+			for (var counter = 0; counter < tags.length;counter++) {
+				if (tags[counter] === "#EwiResponse") {
+					for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+						getOngoingEvents(tagSitenames[tag_counter]);
+					}
+					break;
+				}
+			}
+		} else {
+			$.notify('Invalid Request, please try again.',"warning");
 		}
 	});
 
@@ -2923,7 +2956,6 @@ $(document).ready(function() {
 			$('#save-narrative-content p').text("Saving an #EwiMessage tagged message will be permanently save to narratives.");
 			$('#ewi-tagged-msg').val(summary);
 		} else {
-			console.log(gintag_details);
 			var summary = "";
 			var sender = "Sender(s): "+gintag_details.data[1];
 			summary = sender+"\n\n"+gintag_details.data[4];
@@ -3056,11 +3088,21 @@ $(document).ready(function() {
 				for (var counter = 0; counter < events.length; counter++) {
 					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 						if (events[counter].site_id == siteids[siteid_counter].id) {
+							var narrative_template = "";
+							console.log(gintags_msg_details);
+							debugger;
+							if (gintags_msg_details.tags === "#EwiResponse") {
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1];
+							} else if (gintags_msg_details.tags === "#EwiMessage"){
+								narrative_template = "Sent Early warning information message.";
+							} else {
+								$.notify("Invalid request, please try again.","warning");
+							}
 							var narrative_details = {
 								'event_id': events[counter].event_id,
 								'site_id': siteids[siteid_counter].id,
 								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': "Sent Early Warning Information."
+								'narrative_template': narrative_template
 							}
 							
 							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
