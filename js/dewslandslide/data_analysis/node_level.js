@@ -19,7 +19,7 @@ $(document).ready(function(e) {
 	console.log(current_site,currrent_node,currrent_fdate,currrent_tdate)
 
 	if(current_site != "loca" ){
-		var curSite = current_site;
+		var curSite = current_site.toLowerCase();
 		var node_id = currrent_node;
 		var fromDate = currrent_fdate;
 		var toDate = currrent_tdate;
