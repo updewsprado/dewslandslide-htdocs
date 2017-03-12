@@ -434,9 +434,9 @@ function siteMaintenance(curSite) {
 }
 
 function NodeSumary(site,siteDiv){ 
-	let dataSubmit = { site:site}
+	let dataSubmit = { site:site.toLowerCase()}
 	$(".column_level").append('<div class="col-md-8 " id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
-	$(".column_level").append('<br><br><br><div class="col-md-9"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
+	$(".column_level").append('<br><br><br><div class="col-md-10"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
 	$(".column_level").append('<br><div class="col-md-12 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
 		'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
 		'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
@@ -1149,13 +1149,13 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 			for(var n = 0 ; n < label_color.length ; n++){
 				if(label_color[n] == "#99ff99"){
 					$("#alert_div").empty()
-					$("#alert_div").append('No Significant ground movement');
+					$("#alert_div").append(('<strong>No Significant ground movement</strong>').toUpperCase());
 					$("#panel_alert").addClass("panel-success");
 				}else if(label_color[n] == "#ffb366"){
 					$("#A0").empty()
 					$("#A0").hide()
 					$("#alert_div").empty()
-					$("#alert_div").append("ALERT!! </b> Significant ground movement observer in the last 24 hours");
+					$("#alert_div").append("<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>");
 					$("#panel_alert").addClass("panel-warning");
 				}else if(label_color[n] == "#ff6666"){
 					$("#A0").empty()
@@ -1163,7 +1163,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 					$("#A0").hide()
 					$("#A1").hide()
 					$("#alert_div").empty()
-					$("#alert_div").append("<b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent");
+					$("#alert_div").append("<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>");
 					$("#panel_alert").addClass("panel-danger");
 				}
 			}
