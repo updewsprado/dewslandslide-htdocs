@@ -1,7 +1,10 @@
 function sendViaAlertMonitor(data){
 	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
 	.done(function(response) {
-		console.log(JSON.parse(response));
+		var contacts = JSON.parse(response);
+		for (var counter = 0; counter < contacts.length; counter++) {
+			$('#ewi-recipients-dashboard').tagsinput('add',contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" - "+contacts[counter].number);
+		}
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
