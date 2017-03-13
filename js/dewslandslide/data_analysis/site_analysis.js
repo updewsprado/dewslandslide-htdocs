@@ -5,22 +5,22 @@ $(document).ajaxStart(function () {
 	});
 	$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
 	$("body").popover({ selector: '[data-toggle=popover]' });  
-	var $sidebar   = $("#sidebar"), 
-	$window    = $(window),
-	offset     = $sidebar.offset(),
-	topPadding = 5;
+	// var $sidebar   = $("#sidebar"), 
+	// $window    = $(window),
+	// offset     = $sidebar.offset(),
+	// topPadding = 5;
 
-	$window.scroll(function() {
-		if ($window.scrollTop() > offset.top) {
-			$sidebar.stop().animate({
-				marginTop: $window.scrollTop() - offset.top + topPadding
-			});
-		} else {
-			$sidebar.stop().animate({
-				marginTop: 0
-			});
-		}
-	});
+	// $window.scroll(function() {
+	// 	if ($window.scrollTop() > offset.top) {
+	// 		$sidebar.stop().animate({
+	// 			marginTop: $window.scrollTop() - offset.top + topPadding
+	// 		});
+	// 	} else {
+	// 		$sidebar.stop().animate({
+	// 			marginTop: 0
+	// 		});
+	// 	}
+	// });
 });
 $(document).ajaxStop(function () {
 	$('#loading').modal('toggle');

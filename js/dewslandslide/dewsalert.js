@@ -232,10 +232,21 @@ function getNodeStatus(xOffset) {
 					}
 				})     // remove any fill colour		
 				.attr("points", function(d){
-					var xStart = x(d.node) + xOffset;
+					var xStart = x(d.node) + xOffset +1;
 					var yStart = yOrd(d.site);
-					var xWidth = xStart + cellw * 0.6;
-					var yHeight = yStart + cellh * 0.6;
+					var xWidth = xStart + cellw * 1;
+					var yHeight = yStart + cellh * 1;
+					if(yStart == undefined){
+						 yStart = 0;
+					}else{
+						 yStart = yOrd(d.site);
+					}
+
+					if(yHeight== NaN){
+						 yHeight = 0;
+					}else{
+						 yHeight = yStart + cellh * 1;
+					}
 					var points = xStart + "," + yStart + "," +
 								xWidth + "," + yStart + "," +
 								xStart + "," + yHeight + "";
