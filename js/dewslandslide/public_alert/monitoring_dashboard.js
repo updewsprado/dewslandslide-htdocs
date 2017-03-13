@@ -292,18 +292,21 @@ $(document).ready( function() {
 	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 	        temp.reporter_1 = $("#reporter_1").attr("value-id");
 
-	        if( temp.trigger_list.indexOf("D") > -1 )
+	        if( temp.trigger_list != null ) 
 	        {
-	    		if($(".od_group[value=llmc]").is(":checked")) temp.is_llmc = true;
-	    		if($(".od_group[value=lgu]").is(":checked")) temp.is_lgu = true;
-	    		temp.reason = $("#reason").val();
-	        } else if( temp.trigger_list.indexOf("E") > -1 )
-	        {
-	    		temp.magnitude = $("#magnitude").val();
-	    		temp.latitude = $("#latitude").val();
-	    		temp.longitude = $("#longitude").val();
+				if( temp.trigger_list.indexOf("D") > -1 )
+		        {
+		    		if($(".od_group[value=llmc]").is(":checked")) temp.is_llmc = true;
+		    		if($(".od_group[value=lgu]").is(":checked")) temp.is_lgu = true;
+		    		temp.reason = $("#reason").val();
+		        } else if( temp.trigger_list.indexOf("E") > -1 )
+		        {
+		    		temp.magnitude = $("#magnitude").val();
+		    		temp.latitude = $("#latitude").val();
+		    		temp.longitude = $("#longitude").val();
+		        }
 	        }
-
+	        
 	        if (entry.status == "new")
 	        {
 	        	if( typeof entry.previous_event_id != 'undefined' ) temp.previous_event_id = entry.previous_event_id;
