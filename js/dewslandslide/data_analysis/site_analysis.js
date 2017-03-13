@@ -104,7 +104,7 @@ function SelectedColumn(selecte_site) {
 			'</h4><br><div id="ground_graph"></div><div>')
 
 		SiteInfo(selecte_column)
-		DataPresence(selecte_column,'data_presence_div')
+		DataPresence(selecte_column,'data_presence')
 		NodeSumary(selecte_column,'node_summary_div')
 		mapGenerator(selecte_column)
 		// siteMaintenance(selecte_column)
@@ -515,7 +515,7 @@ function DataPresence(site,siteDiv){
 				.attr("width", ($(".container").width()-$("#info_site").width())+200)
 				.attr("height", 100);
 
-				// svg.call(tip);
+				svg.call(tip);
 
 				var rectangles = svg.selectAll("rect")
 				.data(pattern)
