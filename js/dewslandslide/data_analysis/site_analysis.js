@@ -462,7 +462,7 @@ function SiteInfo(site){
 }
 function DataPresence(site){
 	var start = moment().subtract(1, 'days'); 
-	var end = moment();
+	var end = moment().add(1, 'days');
 	// var start = moment('2016-04-05'); 
 	// var end = moment('2016-04-06');
 	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
