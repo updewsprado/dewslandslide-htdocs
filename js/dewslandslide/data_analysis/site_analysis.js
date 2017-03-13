@@ -38,7 +38,7 @@ $(document).ready(function(e) {
 		}
 	})
 	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-		var selecte_site = $(this).find('option').eq(clickedIndex).text();
+		var selecte_site = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
 
 		var start = moment().subtract(2, 'days'); 
 		var end = moment().add(1, 'days');
@@ -77,7 +77,7 @@ function SelectedColumn(selecte_site) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		$( "#analysis_panel_body").empty();
 		$(".ground_table").empty()
-		var selecte_column = $(this).find('option').eq(clickedIndex).text();
+		var selecte_column = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
 		CheckBoxSiteLevel(selecte_site,selecte_column);
 		$('.checkbox').prop('disabled', false);
 		$('#ground_measurement_checkbox').prop('checked', true);
@@ -114,7 +114,7 @@ function SelectedColumn(selecte_site) {
 		$('.nodegeneral').append('<label for="nodegeneral">Node</label><select class="selectpicker"  id="nodegeneral" multiple data-live-search="true"></select>');
 		$('#nodegeneral').selectpicker();
 		let dataSubmit = {
-			site : selecte_site
+			site : (selecte_site).toLowerCase()
 		}
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){ // <----------------- Data for crack name
 			var result= JSON.parse(data_result)
@@ -391,7 +391,7 @@ function CheckBoxTimeProcess(site_column,site,time,list_checkbox){
 	var node =  $('#nodegeneral').val();
 	var node_id = node
 	let dataSubmit = { 
-		site : site_column, 
+		site : (site_column).toLowerCase(), 
 		fdate : fdate,
 		tdate : tdate,
 		node:node_id
@@ -415,7 +415,7 @@ function mapGenerator(site) {
 }
 
 function siteMaintenance(curSite) {
-	let dataSubmit = {site : curSite}
+	let dataSubmit = {site : (curSite).toLowerCase()}
 	$("#site_maintenance").append('<br><h4><span class=""></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
 		'<thead><tr><th>ID</th><th>Site Name</th>th>Start Date</th><th>End Date</th><th>Personel</th><th>Activity</th><th>Object(s)</th><th>Remarks</th></tr> </thead><tbody> </tbody></table>')
 	$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){
@@ -452,7 +452,7 @@ function NodeSumary(site,siteDiv){
 }
 
 function SiteInfo(site){ 
-	let dataSubmit = { site:site}
+	let dataSubmit = { site:(site).toLowerCase()}
 	$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data); 
 		$("#info_site").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase().slice(0,3)+")")
@@ -536,7 +536,7 @@ function DataPresence(site,siteDiv){
 
 function RainFallProcess(curSite,fromDate,toDate){
 	let dataSubmit = { 
-		site : curSite, 
+		site : (curSite).toLowerCase(), 
 		fdate : fromDate,
 		tdate : toDate
 	}
@@ -2049,7 +2049,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 function accel1(data,list){
 	$.ajax({ 
 		dataType: "json",
-		url: "/node_level_page/AccelUnfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(result) {
+		url: "/node_level_page/AccelUnfilteredDataIn/"+(data.site).toLowerCase()+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(result) {
 			var seperated_num =[]
 			for (a = 0; a < data.node.length; a++) {
 				var result_seperated =[];
