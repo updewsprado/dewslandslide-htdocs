@@ -1146,7 +1146,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 			var color_alert_list=["#99ff99","#ffb366","#ff6666"]
 			var label_color = removeDuplicates(color_label);
-
+			console.log(label_color)
 			for(var n = 0 ; n < label_color.length ; n++){
 				if(label_color[n] == "#99ff99"){
 					$("#alert_div").empty()
