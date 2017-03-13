@@ -11,6 +11,7 @@ let realtime_cache = [], ongoing = [], candidate_triggers = [];
 let isTableInitialized = false;
 let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
 let modalForm = null, entry = {};
+let sitesList = [];
 
 let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
 let lookup2 = { "rain":["R"], "eq":["E"], "ground":["g","G"], "sensor":["s","S"], "on-demand":["D"]};
@@ -22,6 +23,8 @@ let setElementHeight = function () {
 };
 
 $(document).ready( function() {
+
+	getSites();
 
 	$(window).on("resize", function () {
 	    setElementHeight();
@@ -84,6 +87,11 @@ $(document).ready( function() {
 		let row = candidate_table.row(i).data();
 		let site = row.site;
 
+		$("#timestamp_entry").val(row.timestamp);
+		$("#internal_alert_level").val(row.internal_alert);
+		$("#site").val(sitesList[row.site]);
+		$("#comments").val("");
+
 		let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
@@ -123,12 +131,7 @@ $(document).ready( function() {
 			$("#release").prop("disabled", false);
 		}
 
-		$("#timestamp_entry").val(row.timestamp);
-		$("#internal_alert_level").val(row.internal_alert);
-		$("#site option:contains("+ row.site.toUpperCase() +")").attr('selected', true);
-		$("#comments").val("");
-		$("#releaseModal").modal("show");
-		
+		$("#releaseModal").modal({ backdrop: 'static', keyboard: false, show: true});	
 		//console.log(entry);
 	});
 
@@ -872,4 +875,12 @@ function checkCandidateTriggers(cache) {
 	});
 
 	return final;
+}
+
+function getSites() {
+	$.get("../monitoring/getSites", function(data) {
+        data.forEach(function(x) {
+        	sitesList[x.name] = x.id;
+        });
+    }, "json");
 }
