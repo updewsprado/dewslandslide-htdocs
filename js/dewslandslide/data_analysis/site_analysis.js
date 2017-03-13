@@ -463,7 +463,8 @@ function SiteInfo(site){
 function DataPresence(site,siteDiv){
 	var start = moment(); 
 	var end = moment().add(1, 'days');
-	$.ajax({url: "../site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
+	console.log("/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'))
+	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
 		dataType: "json",
 		async: false,
 		success: function(result){
@@ -514,7 +515,7 @@ function DataPresence(site,siteDiv){
 				.attr("width", ($(".container").width()-$("#info_site").width())+200)
 				.attr("height", 100);
 
-				svg.call(tip);
+				// svg.call(tip);
 
 				var rectangles = svg.selectAll("rect")
 				.data(pattern)
