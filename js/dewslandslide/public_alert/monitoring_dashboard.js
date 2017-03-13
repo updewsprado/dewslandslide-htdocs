@@ -497,7 +497,7 @@ function buildTable( latest, extended, overdue, candidate )
 	    {
             switch(data.day)
             {
-            	case 0: 
+            	case 0: break;
             	case 1: $(row).addClass("day-one"); break;
                 case 2: $(row).addClass("day-two"); break;
                 case 3: $(row).addClass("day-three"); break;
