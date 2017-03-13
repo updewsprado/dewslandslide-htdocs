@@ -72,6 +72,7 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 	$(id).append('<option val="'+newitemnum+'">'+newitemdesc+'</option>');
 	$(id).selectpicker('refresh'); 
 }
+
 function SelectedColumn(selecte_site) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		$( "#analysis_panel_body").empty();
@@ -333,7 +334,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 				$('.daygeneral').prop('disabled', false);
 				$(".heatmapClass").empty()
 				$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
-				'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
+					'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
 				$('#daygeneral').on('change', function() {
 					
 					heatmapProcess(selecte_column,tdate,this.value)
@@ -1912,8 +1913,10 @@ function NodeProcess(data,list_checkbox){
 					}
 					accel1(dataSubmit,list_checkbox);
 					accel1filtered(dataSubmit,list_checkbox)
-					for (i = 0; i < soms_id.length; i++) {
-						somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+					if(data.site.slice(3,4) == "s"){
+						for (i = 0; i < soms_id.length; i++) {
+							somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+						}
 					}
 				}else{
 					accelVersion1Filtered(data.site,data.node,data.fdate,data.tdate,id,list_checkbox);
@@ -2822,95 +2825,95 @@ function heatmapProcess(site,tdate,day){
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
 			if(data_result.slice(0,1) != "E"){
-					$("#heatmap_container").empty()
-					$("#heatmap_div").append('<div id="heatmap_container"></div>')
-					var result = JSON.parse(data_result)
-					var all_time =[]
-					var all_nodes = []
-					var pattern_time =[]
-					for (a = 0; a < result.length; a++) {
-						all_time.push(result[a].ts)
-						all_nodes.push(result[a].id)
+				$("#heatmap_container").empty()
+				$("#heatmap_div").append('<div id="heatmap_container"></div>')
+				var result = JSON.parse(data_result)
+				var all_time =[]
+				var all_nodes = []
+				var pattern_time =[]
+				for (a = 0; a < result.length; a++) {
+					all_time.push(result[a].ts)
+					all_nodes.push(result[a].id)
+				}
+				var list_time = removeDuplicates(all_time)
+				var list_id = removeDuplicates(all_nodes)
+				var number_all =[]
+				for (b = 0; b < list_id.length; b++) {
+					for (c = 0; c < list_time.length; c++) {
+						pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
 					}
-					var list_time = removeDuplicates(all_time)
-					var list_id = removeDuplicates(all_nodes)
-					var number_all =[]
-					for (b = 0; b < list_id.length; b++) {
-						for (c = 0; c < list_time.length; c++) {
-							pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
+				}
+				var sorted_data_num =[]
+				for (d = 0; d < pattern_time.length; d++) {
+					number_all.push(d)
+					for (e = 0; e < result.length; e++) {
+						if((pattern_time[d].id == result[e].id) && (pattern_time[d].ts == result[e].ts) ){
+							sorted_data_num.push(d)
 						}
 					}
-					var sorted_data_num =[]
-					for (d = 0; d < pattern_time.length; d++) {
-						number_all.push(d)
-						for (e = 0; e < result.length; e++) {
-							if((pattern_time[d].id == result[e].id) && (pattern_time[d].ts == result[e].ts) ){
-								sorted_data_num.push(d)
-							}
-						}
-		
-					}	
-					var remove_data = []
-					for (f = 0; f < sorted_data_num.length; f++) {
-						remove_data.push(number_all.splice(number_all.indexOf(sorted_data_num[f]), 1 ) )
-					}
-		
-					for (f = 0; f < number_all.length; f++) {
-						result.push(pattern_time[number_all[f]])
-					}
-					var sorted_time = []
-					for (g = 0; g < list_time.length; g++) {
-						for (h = 0; h < result.length; h++) {
-							if(list_time[g] == result[h].ts){
-								sorted_time .push(result[h])
-							}
+
+				}	
+				var remove_data = []
+				for (f = 0; f < sorted_data_num.length; f++) {
+					remove_data.push(number_all.splice(number_all.indexOf(sorted_data_num[f]), 1 ) )
+				}
+
+				for (f = 0; f < number_all.length; f++) {
+					result.push(pattern_time[number_all[f]])
+				}
+				var sorted_time = []
+				for (g = 0; g < list_time.length; g++) {
+					for (h = 0; h < result.length; h++) {
+						if(list_time[g] == result[h].ts){
+							sorted_time .push(result[h])
 						}
 					}
-					
-					var sorted_result_all = []
-					for (g = 0; g < list_id.length; g++) {
-						for (h = 0; h < result.length; h++) {
-							if(list_id[g] == sorted_time[h].id){
-								sorted_result_all.push(sorted_time[h])
-							}
+				}
+
+				var sorted_result_all = []
+				for (g = 0; g < list_id.length; g++) {
+					for (h = 0; h < result.length; h++) {
+						if(list_id[g] == sorted_time[h].id){
+							sorted_result_all.push(sorted_time[h])
 						}
 					}
-					var x_heatmap = []
-					var y_heatmap =[]
-					for (i = 0; i < list_id.length; i++) {
-						for (j = 0; j < list_time.length; j++) {
-							x_heatmap.push(i)
-							y_heatmap.push(j)
-						}
+				}
+				var x_heatmap = []
+				var y_heatmap =[]
+				for (i = 0; i < list_id.length; i++) {
+					for (j = 0; j < list_time.length; j++) {
+						x_heatmap.push(i)
+						y_heatmap.push(j)
 					}
-		
-					var series_data =[]
-					for (k = 0; k < sorted_result_all.length; k++) {
-						series_data.push({y:y_heatmap[k],x:x_heatmap[k],value:parseFloat(sorted_result_all[k].cval),
-							ts:sorted_result_all[k].ts,id:sorted_result_all[k].id})
+				}
+
+				var series_data =[]
+				for (k = 0; k < sorted_result_all.length; k++) {
+					series_data.push({y:y_heatmap[k],x:x_heatmap[k],value:parseFloat(sorted_result_all[k].cval),
+						ts:sorted_result_all[k].ts,id:sorted_result_all[k].id})
+				}
+
+				var obj_list_time=[]
+				for (l = 0; l < list_time.length; l++) {
+					obj_list_time.push({index:l,ts:list_time[l]})
+				}
+
+				var obj_list_id=[]
+				for (l = 0; l < list_id.length; l++) {
+					obj_list_id.push({index:l,id:list_id[l]})
+				}
+
+				heatmapVisual(series_data,obj_list_time,obj_list_id)
+				$("#heatmap_checkbox").empty()
+				$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
+				$('#heatmap_checkbox').prop('checked', true);
+				$('input[id="heatmap_checkbox"]').on('click',function () {
+					if ($('#heatmap_checkbox').is(':checked')) {
+						$("#heatmap_div").slideDown()
+					}else{
+						$("#heatmap_div").slideUp()
 					}
-					
-					var obj_list_time=[]
-					for (l = 0; l < list_time.length; l++) {
-						obj_list_time.push({index:l,ts:list_time[l]})
-					}
-		
-					var obj_list_id=[]
-					for (l = 0; l < list_id.length; l++) {
-						obj_list_id.push({index:l,id:list_id[l]})
-					}
-		
-					heatmapVisual(series_data,obj_list_time,obj_list_id)
-					$("#heatmap_checkbox").empty()
-					$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
-					$('#heatmap_checkbox').prop('checked', true);
-					$('input[id="heatmap_checkbox"]').on('click',function () {
-						if ($('#heatmap_checkbox').is(':checked')) {
-							$("#heatmap_div").slideDown()
-						}else{
-							$("#heatmap_div").slideUp()
-						}
-					});
+				});
 			}else{
 				$(".daygeneral").hide()
 				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')

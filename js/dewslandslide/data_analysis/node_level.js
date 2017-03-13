@@ -7,18 +7,12 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
-	var s = ((window.location.href).length) - 24
-	if(window.location.href.slice((s-5),(s-4)) != "/"){
-		var current_site = window.location.href.slice((s-5),s)
-	}else{
-		var current_site = window.location.href.slice((s-4),s)
-	}
-	var currrent_node = window.location.href.slice((s+1),(s+2))
-	var currrent_fdate = window.location.href.slice((s+3),(s+13))
-	var currrent_tdate = window.location.href.slice((s+14),(s+24))
-	console.log(current_site,currrent_node,currrent_fdate,currrent_tdate)
-
-	if(current_site != "loca" ){
+	var values = window.location.href.split("/")
+	var current_site = values[5]
+	var currrent_node = values[6]
+	var currrent_fdate = values[7]
+	var currrent_tdate =values[8]
+	if(current_site != undefined ){
 		var curSite = current_site.toLowerCase();
 		var node_id = currrent_node;
 		var fromDate = currrent_fdate;
@@ -47,7 +41,7 @@ $(document).ready(function(e) {
 		Time(start,end)
 		sites("Select")
 		submit()
-	}
+	} 
 });
 
 function sites(site_selected){
@@ -136,7 +130,8 @@ function nodeSummary(data){
 			nodeAlertJSON = JSON.parse(result.nodeAlerts)
 			maxNodesJSON = JSON.parse(result.siteMaxNodes)
 			nodeStatusJSON = JSON.parse(result.nodeStatus)
-			$( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas"></div>' );
+			$( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas" style="width:'+(($("#header-site").width()-$(".col-lg-4").width())-180)+'px;height:'+
+				($(".panel-heading").height()-35)+'px"></div>' );
 			initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,"mini-alert-canvas")
 		}
 	});
@@ -152,6 +147,7 @@ function initialProcessGraph(data,id){
 					var ms_id = 32;
 					var mode =["1"]
 					var soms_id =[112];
+
 					if(data.site.substring(3,4) == "s"){
 						let dataSubmit = { 
 							site : data.site, 
@@ -181,8 +177,10 @@ function initialProcessGraph(data,id){
 					id: id
 				}
 				accel1(dataSubmit);
-				for (i = 0; i < soms_id.length; i++) {
-					somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+				if(data.site.slice(3,4) == "s"){
+					for (i = 0; i < soms_id.length; i++) {
+						somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+					}
 				}
 			}else{
 				accelVersion1(data.site,data.node,data.fdate,data.tdate,id);
@@ -201,7 +199,6 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 		nid: node
 	}
 	$.post("../node_level_page/getAllAccelVersion1", {data : dataVersion1} ).done(function(data){
-		console.log(data)
 		var result = JSON.parse(data);
 		var series_data = [];
 		var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -251,9 +248,9 @@ function accelVersion1Filtered(data,series_data,id){
 			var dataseries=[]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				 data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
-				 data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
-				 dataseries.push(data_push)
+				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
+				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
+				dataseries.push(data_push)
 			}
 
 			var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
@@ -419,13 +416,13 @@ function accel2filtered(data,series,msgid){
 function somsV2(data,mode){
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(data_result) {
+		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/0",  success: function(data_result) {
 			var result = JSON.parse(data_result);
 			var rawDataSeries =[];
 			for (i = 0; i < result.length; i++) {
 				var rawData=[] ;
 				var time = Date.parse(result[i].ts);
-				rawData.push(time,  parseFloat(result[i].raw));
+				rawData.push(time,  parseFloat(result[i].mval1));
 				rawDataSeries.push(rawData);
 			}
 			var mode= "0";
@@ -476,10 +473,11 @@ function somsUnfiltered(data,soms_msgid,name,mode){
 	});	
 }
 function somsfiltered(data,dataSoms,series){
+
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode,  success: function(data_result) {
-			console.log("/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode)
+			// console.log("/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode)
 			var result = JSON.parse(data_result);
 			var filterDataSeries =[];
 			var series_data=[] , data_series=[];
@@ -539,7 +537,7 @@ function chartProcess(id,data_series,name,color){
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e. %b %Y',
-				year: '%b'
+				year: '%Y'
 			},
 			title: {
 				text: 'Date'
