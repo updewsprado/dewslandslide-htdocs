@@ -1,5 +1,5 @@
 
-var wsUri = "ws://" + window.location.hostname + ":999/";
+var wsUri = "ws://" + window.location.hostname + ":5070/";
 var output;
 var attributes_log;
 var websocket;
