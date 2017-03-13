@@ -72,7 +72,6 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 	$(id).append('<option val="'+newitemnum+'">'+newitemdesc+'</option>');
 	$(id).selectpicker('refresh'); 
 }
-
 function SelectedColumn(selecte_site) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		$( "#analysis_panel_body").empty();
