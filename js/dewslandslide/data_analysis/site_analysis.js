@@ -1,5 +1,5 @@
 $(document).ajaxStart(function () {
-	// $('#loading').modal('toggle');
+	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -23,7 +23,7 @@ $(document).ajaxStart(function () {
 	});
 });
 $(document).ajaxStop(function () {
-	// $('#loading').modal('toggle');
+	$('#loading').modal('toggle');
 });
 
 $(document).ready(function(e) {
@@ -98,8 +98,14 @@ function SelectedColumn(selecte_site) {
 			$("#divData").append('<div class="panel panel-default"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Level Overview</h1>'+
 				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
 		}
-
-		$(".site_level").append(' <div id="panel_alert" class="panel"><div class="panel-heading text-center" id="alert_div"></div></div><div class = "col-md-3 map-canvas" id="map-canvas"></div>')
+		var panel_alert_colors =['panel-success','panel-danger','panel-warning']
+		var alert_note =[('<strong>No Significant ground movement</strong>').toUpperCase(),'<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>',
+		'<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>']
+		for(var b = 0; b < panel_alert_colors.length; b++){
+			$(".site_level").append(' <div id="panel_alert" class="panel '+panel_alert_colors[b]+'"><div class="panel-heading text-center">'+alert_note[b]+'</div></div>')
+			$("."+panel_alert_colors[b]).hide();
+		}
+		$(".site_level").append('<div class = "col-md-3 map-canvas" id="map-canvas"></div>')
 		$(".site_level").append('<div class="col-md-8" ><div id="surficial_graph"><h4><span class="glyphicon "></span><b>Superimpose Surficial Graph</b>'+
 			'</h4><br><div id="ground_graph"></div><div>')
 
@@ -167,7 +173,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
 
-	if(selecte_column.slice(3,4) != "S"){
+	if(selecte_column.slice(3,4) != "s"){
 		$('.heatmap_checkbox').hide()
 		$('.soms_checkbox').hide()
 	}else{
@@ -304,7 +310,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 		if ($('#'+list_checkbox[13]+'_checkbox').is(':checked')) {
 			$(".node_level").append('<div class="col-md-12" id="heatmap_div"></div>')
 			$("#heatmap_div").append('<br><h4><b>Soms Heatmap </b></h4><ol class="breadcrumb subsurface-breadcrumb" id="subsurface-breadcrumb">'+
-				'<label id="reportrange3">Date:&nbsp;</label><input id="reportrange3" type="text" name="datefilter3" value="" placeholder="Nothing selected"/><div class="form-group nodegeneral"><label class="daygeneral">Days:&nbsp;</label>'+
+				'<label class="reportrange3">Date:&nbsp;</label><input id="reportrange3" class="reportrange3" type="text" name="datefilter3" value="" placeholder="Nothing selected"/><div class="form-group nodegeneral heatmapClass"><label class="daygeneral">Days:&nbsp;</label>'+
 				'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div></ol>')
 			$('.daygeneral').prop('disabled', true);
 			var start = moment().subtract(2, 'days'); 
@@ -319,13 +325,18 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 				singleDatePicker: true,
 				showDropdowns: true
 			});
+
 			$('input[name="datefilter3"]').on('apply.daterangepicker', function(ev, picker) {
+				$("#heatmap_container").empty();
 				var time = $(this).val(picker.startDate.format('YYYY-MM-DD'));
 				var timevalue =time.context.value
 				var tdate = timevalue.slice(0,10);
 				$('.daygeneral').prop('disabled', false);
+				$(".heatmapClass").empty()
+				$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
+				'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
 				$('#daygeneral').on('change', function() {
-					$("#heatmap_container").empty()
+					
 					heatmapProcess(selecte_column,tdate,this.value)
 				})
 			});
@@ -335,7 +346,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 			});
 			
 		}else{
-			$("#heatmap_div").empty()
+			$("#heatmap_container").empty()
 		}
 	});
 
@@ -1146,20 +1157,21 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 			var color_alert_list=["#99ff99","#ffb366","#ff6666"]
 			var label_color = removeDuplicates(color_label);
-			console.log(label_color)
+			var panel_alert_colors =['panel-success','panel-danger','panel-warning']
+
 			for(var n = 0 ; n < label_color.length ; n++){
 				if(label_color[n] == "#99ff99"){
-					$("#alert_div").empty()
-					$("#alert_div").text(('No Significant ground movement').toUpperCase());
-					$("#panel_alert").addClass("panel-success");
+					$('.'+panel_alert_colors[0]).show()
 				}else if(label_color[n] == "#ffb366"){
-					$("#alert_div").empty()
-					$("#alert_div").text("ALERT!!  Significant ground movement observer in the last 24 hours");
-					$("#panel_alert").addClass("panel-warning");
+					$('.'+panel_alert_colors[0]).empty()
+					$('.'+panel_alert_colors[0]).hide()
+					$('.'+panel_alert_colors[2]).show()
 				}else if(label_color[n] == "#ff6666"){
-					$("#alert_div").empty()
-					$("#alert_div").text("ALERT!! Critical ground movement observed in the last 48 hours; landslide may be imminent");
-					$("#panel_alert").addClass("panel-danger");
+					$('.'+panel_alert_colors[0]).empty()
+					$('.'+panel_alert_colors[0]).hide()
+					$('.'+panel_alert_colors[2]).empty()
+					$('.'+panel_alert_colors[2]).hide()
+					$('.'+panel_alert_colors[1]).show()
 				}
 			}
 
@@ -2271,7 +2283,7 @@ function somsV2(data,mode){
 		id_name : id_name,
 		id:data.id[4]
 	}
-	somsfiltered(data,dataSoms,rawDataSeries)
+	somsfiltered(data,dataSoms,"rawDataSeries")
 }
 
 function somsUnfiltered(data,soms_msgid,name,mode){
@@ -2298,7 +2310,7 @@ function somsfiltered(data,dataSoms,series){
 		dataType: "json",
 		url: "/api/SomsfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+dataSoms.mode,  success: function(data_result) {
 			if(data_result.length != 0){
-				if(data_result[0].length <= 20){
+				if(data_result[0].length >= 35){
 					var result = JSON.parse(data_result);
 					var seperated_num =[]
 					for (a = 0; a < data.node.length; a++) {
@@ -2807,98 +2819,103 @@ function chartProcessbattSoms(id,data_series,name,color,list){
                     );
 }
 function heatmapProcess(site,tdate,day){
-	// /api/heatmap/imesb/2016-05-01/"+day
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
-			$("#heatmap_div").append('<div id="heatmap_container"></div>')
-			var result = JSON.parse(data_result)
-			var all_time =[]
-			var all_nodes = []
-			var pattern_time =[]
-			for (a = 0; a < result.length; a++) {
-				all_time.push(result[a].ts)
-				all_nodes.push(result[a].id)
-			}
-			var list_time = removeDuplicates(all_time)
-			var list_id = removeDuplicates(all_nodes)
-			var number_all =[]
-			for (b = 0; b < list_id.length; b++) {
-				for (c = 0; c < list_time.length; c++) {
-					pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
-				}
-			}
-			var sorted_data_num =[]
-			for (d = 0; d < pattern_time.length; d++) {
-				number_all.push(d)
-				for (e = 0; e < result.length; e++) {
-					if((pattern_time[d].id == result[e].id) && (pattern_time[d].ts == result[e].ts) ){
-						sorted_data_num.push(d)
+			if(data_result.slice(0,1) != "E"){
+					$("#heatmap_container").empty()
+					$("#heatmap_div").append('<div id="heatmap_container"></div>')
+					var result = JSON.parse(data_result)
+					var all_time =[]
+					var all_nodes = []
+					var pattern_time =[]
+					for (a = 0; a < result.length; a++) {
+						all_time.push(result[a].ts)
+						all_nodes.push(result[a].id)
 					}
-				}
-
-			}	
-			var remove_data = []
-			for (f = 0; f < sorted_data_num.length; f++) {
-				remove_data.push(number_all.splice(number_all.indexOf(sorted_data_num[f]), 1 ) )
-			}
-
-			for (f = 0; f < number_all.length; f++) {
-				result.push(pattern_time[number_all[f]])
-			}
-			var sorted_time = []
-			for (g = 0; g < list_time.length; g++) {
-				for (h = 0; h < result.length; h++) {
-					if(list_time[g] == result[h].ts){
-						sorted_time .push(result[h])
+					var list_time = removeDuplicates(all_time)
+					var list_id = removeDuplicates(all_nodes)
+					var number_all =[]
+					for (b = 0; b < list_id.length; b++) {
+						for (c = 0; c < list_time.length; c++) {
+							pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
+						}
 					}
-				}
-			}
-			
-			var sorted_result_all = []
-			for (g = 0; g < list_id.length; g++) {
-				for (h = 0; h < result.length; h++) {
-					if(list_id[g] == sorted_time[h].id){
-						sorted_result_all.push(sorted_time[h])
+					var sorted_data_num =[]
+					for (d = 0; d < pattern_time.length; d++) {
+						number_all.push(d)
+						for (e = 0; e < result.length; e++) {
+							if((pattern_time[d].id == result[e].id) && (pattern_time[d].ts == result[e].ts) ){
+								sorted_data_num.push(d)
+							}
+						}
+		
+					}	
+					var remove_data = []
+					for (f = 0; f < sorted_data_num.length; f++) {
+						remove_data.push(number_all.splice(number_all.indexOf(sorted_data_num[f]), 1 ) )
 					}
-				}
+		
+					for (f = 0; f < number_all.length; f++) {
+						result.push(pattern_time[number_all[f]])
+					}
+					var sorted_time = []
+					for (g = 0; g < list_time.length; g++) {
+						for (h = 0; h < result.length; h++) {
+							if(list_time[g] == result[h].ts){
+								sorted_time .push(result[h])
+							}
+						}
+					}
+					
+					var sorted_result_all = []
+					for (g = 0; g < list_id.length; g++) {
+						for (h = 0; h < result.length; h++) {
+							if(list_id[g] == sorted_time[h].id){
+								sorted_result_all.push(sorted_time[h])
+							}
+						}
+					}
+					var x_heatmap = []
+					var y_heatmap =[]
+					for (i = 0; i < list_id.length; i++) {
+						for (j = 0; j < list_time.length; j++) {
+							x_heatmap.push(i)
+							y_heatmap.push(j)
+						}
+					}
+		
+					var series_data =[]
+					for (k = 0; k < sorted_result_all.length; k++) {
+						series_data.push({y:y_heatmap[k],x:x_heatmap[k],value:parseFloat(sorted_result_all[k].cval),
+							ts:sorted_result_all[k].ts,id:sorted_result_all[k].id})
+					}
+					
+					var obj_list_time=[]
+					for (l = 0; l < list_time.length; l++) {
+						obj_list_time.push({index:l,ts:list_time[l]})
+					}
+		
+					var obj_list_id=[]
+					for (l = 0; l < list_id.length; l++) {
+						obj_list_id.push({index:l,id:list_id[l]})
+					}
+		
+					heatmapVisual(series_data,obj_list_time,obj_list_id)
+					$("#heatmap_checkbox").empty()
+					$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
+					$('#heatmap_checkbox').prop('checked', true);
+					$('input[id="heatmap_checkbox"]').on('click',function () {
+						if ($('#heatmap_checkbox').is(':checked')) {
+							$("#heatmap_div").slideDown()
+						}else{
+							$("#heatmap_div").slideUp()
+						}
+					});
+			}else{
+				$(".daygeneral").hide()
+				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
 			}
-			var x_heatmap = []
-			var y_heatmap =[]
-			for (i = 0; i < list_id.length; i++) {
-				for (j = 0; j < list_time.length; j++) {
-					x_heatmap.push(i)
-					y_heatmap.push(j)
-				}
-			}
-
-			var series_data =[]
-			for (k = 0; k < sorted_result_all.length; k++) {
-				series_data.push({y:y_heatmap[k],x:x_heatmap[k],value:parseFloat(sorted_result_all[k].cval),
-					ts:sorted_result_all[k].ts,id:sorted_result_all[k].id})
-			}
-			
-			var obj_list_time=[]
-			for (l = 0; l < list_time.length; l++) {
-				obj_list_time.push({index:l,ts:list_time[l]})
-			}
-
-			var obj_list_id=[]
-			for (l = 0; l < list_id.length; l++) {
-				obj_list_id.push({index:l,id:list_id[l]})
-			}
-
-			heatmapVisual(series_data,obj_list_time,obj_list_id)
-			$("#heatmap_checkbox").empty()
-			$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
-			$('#heatmap_checkbox').prop('checked', true);
-			$('input[id="heatmap_checkbox"]').on('click',function () {
-				if ($('#heatmap_checkbox').is(':checked')) {
-					$("#heatmap_div").slideDown()
-				}else{
-					$("#heatmap_div").slideUp()
-				}
-			});
 		}
 	});	
 }
