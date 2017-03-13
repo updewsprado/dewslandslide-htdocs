@@ -1,5 +1,5 @@
 $(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
+	// $('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -23,7 +23,7 @@ $(document).ajaxStart(function () {
 	});
 });
 $(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
+	// $('#loading').modal('toggle');
 });
 
 $(document).ready(function(e) {
