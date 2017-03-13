@@ -461,11 +461,10 @@ function SiteInfo(site){
 	});
 }
 function DataPresence(site){
-	var start = moment(); 
-	var end = moment().add(1, 'days');
+	var start = moment().subtract(1, 'days'); 
+	var end = moment();
 	// var start = moment('2016-04-05'); 
 	// var end = moment('2016-04-06');
-	console.log("/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'))
 	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
 		dataType: "json",
 		success: function(result){
@@ -1476,7 +1475,6 @@ function allSensorPosition(site,fdate,tdate) {
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
-			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c)
 			displacementPosition(data[0].d,data[0].v)
