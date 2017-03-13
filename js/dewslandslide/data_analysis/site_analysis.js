@@ -1150,21 +1150,15 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 			for(var n = 0 ; n < label_color.length ; n++){
 				if(label_color[n] == "#99ff99"){
 					$("#alert_div").empty()
-					$("#alert_div").append(('<strong>No Significant ground movement</strong>').toUpperCase());
+					$("#alert_div").text(('No Significant ground movement').toUpperCase());
 					$("#panel_alert").addClass("panel-success");
 				}else if(label_color[n] == "#ffb366"){
-					$("#A0").empty()
-					$("#A0").hide()
 					$("#alert_div").empty()
-					$("#alert_div").append("<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>");
+					$("#alert_div").text("ALERT!!  Significant ground movement observer in the last 24 hours");
 					$("#panel_alert").addClass("panel-warning");
 				}else if(label_color[n] == "#ff6666"){
-					$("#A0").empty()
-					$("#A1").empty()
-					$("#A0").hide()
-					$("#A1").hide()
 					$("#alert_div").empty()
-					$("#alert_div").append("<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>");
+					$("#alert_div").text("ALERT!! Critical ground movement observed in the last 48 hours; landslide may be imminent");
 					$("#panel_alert").addClass("panel-danger");
 				}
 			}
