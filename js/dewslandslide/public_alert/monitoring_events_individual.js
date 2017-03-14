@@ -212,16 +212,16 @@ $(document).ready(function()
 
     $("#refresh").click(function() { location.reload(); });
 
-    let id = null, text = null, filename = null, subject = null;
+    let release_id = null, text = null, filename = null, subject = null;
 
      $(".print").click(function () 
     {
-        id = $(this).val();
-        loadBulletin(id);
+        release_id = $(this).val();
+        loadBulletin(release_id, event_id);
     })
 
     $('#download').click(function () {
-       $.when(renderPDF(id))
+       $.when(renderPDF(release_id))
        .then(function () {
             $('#bulletinLoadingModal').modal('hide');
             filename = $("#filename").text();
@@ -230,7 +230,7 @@ $(document).ready(function()
     });
 
     $("#send").click(function () {
-        $.when(renderPDF(id))
+        $.when(renderPDF(release_id))
         .then(function (x) {
             if( x == "Success.")
             {
