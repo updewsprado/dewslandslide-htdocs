@@ -81,7 +81,7 @@ function Time(start,end){
 	
 
 	$('#reportrange').daterangepicker({
-		maxDate: new Date(),
+		maxDate: moment().add(1, 'days'),
 		autoUpdateInput: true,
 		startDate: start,
 		endDate: end,
