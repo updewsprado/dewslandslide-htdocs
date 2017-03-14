@@ -889,7 +889,7 @@ if(show_div == "rain_a"){
 }else if(show_div == "rain_s"){
 	$("#rain_senslope").addClass("collapse in");
 }else{
-	$("#"+show_div).addClass("collapse in");
+	$("#"+($(".rain-breadcrumb").html()).slice(235,240)).addClass("collapse in");
 }
 }
 
