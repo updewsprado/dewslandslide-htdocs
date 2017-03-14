@@ -1,4 +1,5 @@
 $(document).ready(function(e) {
+	
 	d3.select(window).on("resize", resize2)
 	function resize2() {
 		d3.selectAll("#svg-alert").remove();
@@ -15,6 +16,8 @@ $(document).ready(function(e) {
 	$(document).ready(function(){
 		$('[data-toggle="tooltip"]').tooltip();   
 	});
+
+
 	$.get("../api/AllSiteDetails").done(function(data){
 		var all_sites_details = JSON.parse(data);
 		var map_pins=[]
