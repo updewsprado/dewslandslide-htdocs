@@ -101,7 +101,7 @@ var tip = d3.tip()
 
 //initialize dimensions
 function init_dims() {
-	cWidth = document.getElementById('alert-canvas').clientWidth;
+	cWidth = document.getElementById('page-header').clientWidth;
 	cHeight = document.getElementById('alert-canvas').clientHeight;
 	
 	//var margin = {top: 70, right: 20, bottom: 70, left: 90},
@@ -126,7 +126,7 @@ function init_dims() {
 	// Adds the svg canvas
 	svg = d3.select("#alert-canvas").append("svg")
 			.attr("id", "svg-alert")
-	        .attr("width", width + margin.left + margin.right)
+	        .attr("width", cWidth )
 	        .attr("height", height + margin.top + margin.bottom)
 			.append("g")
 	        .attr("transform", 
@@ -225,6 +225,7 @@ function getNodeStatus(xOffset) {
 		var cellw = (graphDim.gWidth / maxNode) * 0.9;
 		var cellh = yOrd.rangeBand();
 			
+
 		svg.selectAll(".triangle")
 				.data(nodeStatuses)
 			.enter().append("polygon")
@@ -240,12 +241,23 @@ function getNodeStatus(xOffset) {
 					else if(d.status == "Use with Caution") {
 						return "#FFF500";
 					}
-				})     // remove any fill colour		
+				})     	
 				.attr("points", function(d){
 					var xStart = x(d.node) + xOffset;
 					var yStart = yOrd(d.site);
 					var xWidth = xStart + cellw * 0.6;
 					var yHeight = yStart + cellh * 0.6;
+					if(yStart == undefined){
+						 yStart = 0;
+					}else{
+						 yStart = yOrd(d.site);
+					}
+
+					if(yHeight== NaN){
+						 yHeight = 0;
+					}else{
+						 yHeight = yStart + cellh * 1;
+					}
 					var points = xStart + "," + yStart + "," +
 								xWidth + "," + yStart + "," +
 								xStart + "," + yHeight + "";
