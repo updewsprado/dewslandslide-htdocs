@@ -452,10 +452,12 @@ $(document).ready(function(e) {
 		});	
 	}
 	function surficialAnalysis(site,crack_id) {  
-
 		$.ajax({ 
 			dataType: "json",
 			url: "/api/GroundVelocityDisplacementData/"+site+"/"+crack_id,success: function(result) {
+				if(result.slice(0,1) != "I"){
+
+
 				var ground_analysis_data = JSON.parse(result)
 				var dvt = [];
 				var vGraph =[] ;
@@ -505,7 +507,13 @@ $(document).ready(function(e) {
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
 				chartProcess('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
+			}else{
+				$("#analysisVelocity").empty()
+				$("#analysisVelocity").append('<div class="text-center"> <h3>No Data</h3> </div>')
+				$("#analysisDisplacement").empty()
+				$("#analysisDisplacement").append('<div class="text-center"> <h3>No Data</h3> </div>')
 			}
+		}
 		});	
 	}
 

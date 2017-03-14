@@ -45,7 +45,7 @@ $(document).ready(function(e) {
 
 		$('input[name="datefilter"]').daterangepicker({
 			autoUpdateInput: false,
-			maxDate: new Date(),
+			maxDate: moment().add(1, 'days'),
 			opens: "right",
 			startDate: start,
 			endDate: end,
@@ -251,7 +251,7 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 			var end = moment().add(1, 'days');
 			$('input[name="datefilter-r"]').daterangepicker({
 				autoUpdateInput: false,
-				maxDate: new Date(),
+				maxDate: moment().add(1, 'days'),
 				opens: "right",
 				startDate: start,
 				endDate: end,
@@ -587,7 +587,7 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 		$.ajax({
 			url:"/api/RainSenslope/"+site+"/"+fdate+"/"+tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log('hey')},
+				console.log(errorThrown)},
 				success: function(data)
 				{
 					if(data.length != 0){
@@ -647,7 +647,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 		$.ajax({
 			url:"/api/RainARQ/"+site+"/"+fdate+"/"+tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log('hey')},
+				console.log(errorThrown)},
 				success: function(data)
 				{
 					if(data.length != 0){
@@ -695,7 +695,7 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 		$.ajax({
 			url:"/api/RainNoah/"+rain_noah_number+"/"+fdate+"/"+tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log('hey')},
+				console.log(errorThrown)},
 				success: function(data)
 				{
 					if(data.length != 0){
@@ -981,8 +981,6 @@ function surficialMeasurement(dataSubmit) {
 				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
 			}		
 			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
-
-
 		});
 }
 
@@ -1268,68 +1266,73 @@ function surficialAnalysis(site,crack_id) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundVelocityDisplacementData/"+site+"/"+crack_id,success: function(result) {
-			var ground_analysis_data = JSON.parse(result)
-			var dvt = [];
-			var vGraph =[] ;
-			var dvtgnd = [];
-			var dvtdata = ground_analysis_data["dvt"];
-			var catdata= [];
-			var up =[];
-			var down =[];
-			var line = [];
-			var series_data_vel =[];
-			var series_data_dis =[];
-			for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
-				dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
-				catdata.push(i);
-			}
-			for(var i = 0; i < dvtdata.interp["surfdisp"].length; i++){
-				dvt.push([dvtdata.interp["ts"][i],dvtdata.interp["surfdisp"][i]]);
-			}
-			var last =[];
-			for(var i = 0; i < ground_analysis_data["av"].v.length; i++){
-				var data = [];
-				data.push( ground_analysis_data["av"].v[i] , ground_analysis_data["av"].a[i]);
-				vGraph.push(data);
-			}
-
-			for(var i = ground_analysis_data["av"].v.length-1; i < ground_analysis_data["av"].v.length; i++){
-				last.push([ground_analysis_data["av"].v[i],ground_analysis_data["av"].a[i]]);
-			}
-
-			for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
-				up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
-				down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
-				line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
-			}
-
-			var series_data_name_vel =[vGraph,up,down,line,last];
-			var series_name =["Data","TU","TD","TL","LPoint"];
-			series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
-			series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
-			series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
-				marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
-			for(var i = 1; i < series_data_name_vel.length-2; i++){
-				series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
-			}
-			chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
-
-			series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
-			series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
-			chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
-			$(".surficial_velocity_checkbox").empty()
-			$("#surf_title").popover('destroy')
-			// $("#sub_title").popover('show')
-			$(".surficial_velocity_checkbox").append('<input id="surficial_velocity_checkbox" type="checkbox" class="checkbox">'
-				+'<label for="surficial_velocity_checkbox"> Surficial Analysis Graph</label>')
-			$('#surficial_velocity_checkbox').prop('checked', true);
-			$('input[id="surficial_velocity_checkbox"]').on('click',function () {
-				if ($('#surficial_velocity_checkbox').is(':checked')) {
-					$("#surficial_graphs_VD").slideDown()
-				}else{
-					$("#surficial_graphs_VD").slideUp()
+			if(result.slice(0,1) != "I"){
+				var ground_analysis_data = JSON.parse(result)
+				var dvt = [];
+				var vGraph =[] ;
+				var dvtgnd = [];
+				var dvtdata = ground_analysis_data["dvt"];
+				var catdata= [];
+				var up =[];
+				var down =[];
+				var line = [];
+				var series_data_vel =[];
+				var series_data_dis =[];
+				for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
+					dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
+					catdata.push(i);
 				}
-			});	
+				for(var i = 0; i < dvtdata.interp["surfdisp"].length; i++){
+					dvt.push([dvtdata.interp["ts"][i],dvtdata.interp["surfdisp"][i]]);
+				}
+				var last =[];
+				for(var i = 0; i < ground_analysis_data["av"].v.length; i++){
+					var data = [];
+					data.push( ground_analysis_data["av"].v[i] , ground_analysis_data["av"].a[i]);
+					vGraph.push(data);
+				}
+
+				for(var i = ground_analysis_data["av"].v.length-1; i < ground_analysis_data["av"].v.length; i++){
+					last.push([ground_analysis_data["av"].v[i],ground_analysis_data["av"].a[i]]);
+				}
+
+				for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
+					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
+					down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
+					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
+				}
+
+				var series_data_name_vel =[vGraph,up,down,line,last];
+				var series_name =["Data","TU","TD","TL","LPoint"];
+				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
+				series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
+				series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
+					marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
+				for(var i = 1; i < series_data_name_vel.length-2; i++){
+					series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
+				}
+				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
+
+				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
+				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
+				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
+				$(".surficial_velocity_checkbox").empty()
+				$("#surf_title").popover('destroy')
+
+				$(".surficial_velocity_checkbox").append('<input id="surficial_velocity_checkbox" type="checkbox" class="checkbox">'
+					+'<label for="surficial_velocity_checkbox"> Surficial Analysis Graph</label>')
+				$('#surficial_velocity_checkbox').prop('checked', true);
+				$('input[id="surficial_velocity_checkbox"]').on('click',function () {
+					if ($('#surficial_velocity_checkbox').is(':checked')) {
+						$("#surficial_graphs_VD").slideDown()
+					}else{
+						$("#surficial_graphs_VD").slideUp()
+					}
+				});	
+			}else{
+				$("#analysisVelocity").empty()
+				$("#analysisVelocity").append('<div class="text-center"> <h3>No Data</h3> </div>')
+			}
 		}
 	});	
 }
@@ -1385,7 +1388,7 @@ function piezometer(curSite){
 	$.ajax({
 		dataType: "json",
 		url: "/api/PiezometerAllData/"+curSite+"pzpz",error: function(xhr, textStatus, errorThrown){
-			$("#piezo-breadcrumb").append('<h4> NO DATA </h4>')
+			$("#piezo-breadcrumb").append('<h3> NO DATA </h3>')
 			$(".piezo_checkbox").empty()
 			$(".piezo_checkbox").append('<input id="piezo_checkbox" type="checkbox" class="checkbox">'
 				+'<label for="piezo_checkbox"> Piezometer Graph</label>')
@@ -1877,7 +1880,7 @@ function NodeProcess(data,list_checkbox){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getDatafromSiteColumn/"+data.site,error: function(xhr, textStatus, errorThrown){
-			console.log('hey')},success: function(result) {
+			console.log(errorThrown)},success: function(result) {
 				if(result[0].version != 1 ){
 					if( result[0].version == 2){
 						var ms_id = 32;

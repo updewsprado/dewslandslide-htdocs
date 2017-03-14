@@ -166,22 +166,24 @@ $(document).ready(function(e) {
 		if(site != null){
 			$.ajax({
 				url:"/api/RainSenslope/"+site+"/"+fdate+"/"+tdate,
-				dataType: "json",
-				success: function(data)
-				{
-					var jsonRespo =JSON.parse(data);
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-					var max = max_rain;
-					var colors= ["#EBF5FB","#82b1ff","#448aff"]
-					for (i = 0; i < jsonRespo.length; i++) {
-						var Data24h=[] ,Datarain=[] ,Data72h=[];
-						var time =  Date.parse(jsonRespo[i].ts);
-						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-						Datarain.push(time, parseFloat(jsonRespo[i].rval));
-						DataSeries72h.push(Data72h);
-						DataSeries24h.push(Data24h);
-						DataSeriesRain.push(Datarain);
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+						if(data.length != 0){	
+							var jsonRespo =JSON.parse(data);
+							var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+							var max = max_rain;
+							var colors= ["#EBF5FB","#82b1ff","#448aff"]
+							for (i = 0; i < jsonRespo.length; i++) {
+								var Data24h=[] ,Datarain=[] ,Data72h=[];
+								var time =  Date.parse(jsonRespo[i].ts);
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
 						// if(jsonRespo[i].hrs24 == null){
 						// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
 						// 		nval.push(i);
@@ -209,7 +211,8 @@ $(document).ready(function(e) {
 					}
 					chartProcess(series_data,id,'Senslope',site,max_rain,negative );
 				}
-			})
+			}
+		})
 
 		}
 	}
@@ -218,22 +221,24 @@ $(document).ready(function(e) {
 		if(site != null){
 			$.ajax({
 				url:"/api/RainARQ/"+site+"/"+fdate+"/"+tdate,
-				dataType: "json",
-				success: function(data)
-				{
-					var jsonRespo =JSON.parse(data);
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-					var max = max_rain;
-					var colors= ["#EBF5FB","#82b1ff","#448aff"]
-					for (i = 0; i < jsonRespo.length; i++) {
-						var Data24h=[] ,Datarain=[] ,Data72h=[];
-						var time =  Date.parse(jsonRespo[i].ts);
-						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-						Datarain.push(time, parseFloat(jsonRespo[i].rval));
-						DataSeries72h.push(Data72h);
-						DataSeries24h.push(Data24h);
-						DataSeriesRain.push(Datarain);
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+						if(data.length != 0){
+							var jsonRespo =JSON.parse(data);
+							var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+							var max = max_rain;
+							var colors= ["#EBF5FB","#82b1ff","#448aff"]
+							for (i = 0; i < jsonRespo.length; i++) {
+								var Data24h=[] ,Datarain=[] ,Data72h=[];
+								var time =  Date.parse(jsonRespo[i].ts);
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
 						// if(jsonRespo[i].hrs24 == null){
 						// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
 						// 		nval.push(i);
@@ -256,9 +261,9 @@ $(document).ready(function(e) {
 						series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
 					}
 					chartProcess(series_data,id,'ARQ',site,max_rain,negative );
-
 				}
-			})
+			}
+		})
 		}
 	}
 
@@ -267,44 +272,46 @@ $(document).ready(function(e) {
 			var rain_noah_numeber = site.slice(10,20)
 			$.ajax({
 				url:"/api/RainNoah/"+rain_noah_numeber+"/"+fdate+"/"+tdate,
-				dataType: "json",
-				success: function(data)
-				{
-					var jsonRespo = JSON.parse(data);
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-					var max = max_rain;
-					var colors= ["#EBF5FB","#82b1ff","#448aff"]
-					for (i = 0; i < jsonRespo.length; i++) {
-						var Data24h=[] ,Datarain=[] ,Data72h=[];
-						var time =  Date.parse(jsonRespo[i].ts);
-						Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-						Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-						Datarain.push(time, parseFloat(jsonRespo[i].rval));
-						DataSeries72h.push(Data72h);
-						DataSeries24h.push(Data24h);
-						DataSeriesRain.push(Datarain);
-						// if(jsonRespo[i].hrs24 == null){
-						// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-						// 		nval.push(i);
-						// 	}
-						// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-						// 		nval.push(i);
-						// 	}
-						// }
-					}
-					for (var i = 0; i < nval.length; i=i+2) {
-						var n = nval[i];
-						var n2 = nval[i+1];
-						negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-					}
-					var divname =["15mins","24hrs" ,"72hrs"];
-					var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
-					var color =["red","blue","green"];
-					var series_data = [];
-					for (i = 0; i < divname.length; i++) {
-						series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
-					}
-					chartProcess(series_data,id,'Noah',site,max_rain,negative );
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data){
+						if(data.length != 0){
+							var jsonRespo = JSON.parse(data);
+							var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+							var max = max_rain;
+							var colors= ["#EBF5FB","#82b1ff","#448aff"]
+							for (i = 0; i < jsonRespo.length; i++) {
+								var Data24h=[] ,Datarain=[] ,Data72h=[];
+								var time =  Date.parse(jsonRespo[i].ts);
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
+								// if(jsonRespo[i].hrs24 == null){
+								// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								// 		nval.push(i);
+								// 	}
+								// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+								// 		nval.push(i);
+								// 	}
+								// }
+							}
+							for (var i = 0; i < nval.length; i=i+2) {
+								var n = nval[i];
+								var n2 = nval[i+1];
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							var divname =["15mins","24hrs" ,"72hrs"];
+							var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
+							var color =["red","blue","green"];
+							var series_data = [];
+							for (i = 0; i < divname.length; i++) {
+								series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+							}
+							chartProcess(series_data,id,'Noah',site,max_rain,negative );
+						}
 				}
 			})
 		}
