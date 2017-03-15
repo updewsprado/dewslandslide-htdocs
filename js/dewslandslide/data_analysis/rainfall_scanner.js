@@ -421,11 +421,11 @@ function rainScannerBar(data,id) {
             name: '1 Day cummulative',
             data: data.day1
         }, {
-            name: '3 Day cummulative',
-            data: data.day3
-        },{
             name: '2 year max half',
             data: data.y2maxhalf
+        },{
+            name: '3 Day cummulative',
+            data: data.day3
         },{
            name: '2 year max ',
            data: data.y2max
