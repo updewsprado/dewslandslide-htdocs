@@ -14,7 +14,7 @@ function sendViaAlertMonitor(data){
 			var temp = "";
 			if (contacts[counter].ewirecipient != 0) {
 		        numbers.forEach(function(x) {
-		        	temp = temp+":"+x;
+		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
 		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
@@ -22,7 +22,7 @@ function sendViaAlertMonitor(data){
 				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
 			} else {
 		        numbers.forEach(function(x) {
-		        	temp = temp+":"+x;
+		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
 		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
@@ -1746,7 +1746,7 @@ $('#send-msg').on('click',function(){
 				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-				// updateMessages(temp_msg_holder);
+				console.log(temp_msg_holder);
 				conn.send(JSON.stringify(temp_msg_holder));
 				$('#msg').val('');
 			}
@@ -2298,8 +2298,25 @@ $('#send-btn-ewi-amd').click(function(){
 		updateMessages(msg);
 
 		if (difference != null || difference.length != 0) {
-			console.log("Catch here");
-			console.log(difference.length);
+			var added_contacts = [];
+			difference.forEach(function(x){
+				var temp = x.split('|');
+				added_contacts.push(temp.splice(1,1));
+			});
+
+			for (var counter = 0; counter < added_contacts.length;counter++) {
+				user = "You";
+				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
+				temp_msg_holder = {
+					'type': 'smssend',
+					'user': user,
+					'numbers': added_contacts[counter],
+					'msg': text + footer,
+					'timestamp': gsmTimestampIndicator,
+					'ewi_tag':true
+				};
+				conn.send(JSON.stringify(temp_msg_holder));
+			}
 		}
 
 		$('#constructed-ewi-amd').val('');
