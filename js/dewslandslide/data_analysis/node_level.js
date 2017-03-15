@@ -497,6 +497,7 @@ function somsfiltered(data,dataSoms,series){
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 			}else{
+				var series_data = [];
 				series_data.push(series)
 				var visibility =[true,false]
 				for (i = 0; i < series_data.length; i++) {
