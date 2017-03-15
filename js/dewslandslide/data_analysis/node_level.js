@@ -192,37 +192,35 @@ function initialProcessGraph(data,id){
 	});
 }
 function accelVersion1(curSite,node,fromDate,toDate,id){
-	let dataVersion1= { 
-		site : curSite, 
-		fdate : fromDate,
-		tdate : toDate,
-		nid: node
-	}
-	$.post("../node_level_page/getAllAccelVersion1", {data : dataVersion1} ).done(function(data){
-		var result = JSON.parse(data);
-		var series_data = [];
-		var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
-		for (i = 0; i < result.length; i++) {
-			var xData=[] , yData=[] ,zData = [] ,mData = [];
-			var time =  Date.parse(result[i].timestamp);
-			xData.push(time, parseFloat(result[i].xvalue));
-			yData.push(time, parseFloat(result[i].yvalue));
-			zData.push(time, parseFloat(result[i].zvalue));
-			mData.push(time, parseFloat(result[i].mvalue));
-			xDataSeries.push(xData);
-			yDataSeries.push(yData);
-			zDataSeries.push(zData);
-			mDataSeries.push(mData);
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
+			console.log(data);
+			var result = data;
+			var series_data = [];
+			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
+			for (i = 0; i < result.length; i++) {
+				var xData=[] , yData=[] ,zData = [] ,mData = [];
+				var time =  Date.parse(result[i].timestamp);
+				xData.push(time, parseFloat(result[i].xvalue));
+				yData.push(time, parseFloat(result[i].yvalue));
+				zData.push(time, parseFloat(result[i].zvalue));
+				mData.push(time, parseFloat(result[i].mvalue));
+				xDataSeries.push(xData);
+				yDataSeries.push(yData);
+				zDataSeries.push(zData);
+				mDataSeries.push(mData);
+			}
+			var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
+			var series_name = ["xvalue","yvalue","zvalue","mvalue"];
+			var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
+			for (i = 0; i < series_id.length; i++) {
+				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
+			}
+			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
+			series_id.pop()
+			accelVersion1Filtered(data,series_id,id)
 		}
-		var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
-		var series_name = ["xvalue","yvalue","zvalue","mvalue"];
-		var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
-		for (i = 0; i < series_id.length; i++) {
-			series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
-		}
-		chartProcess(id[3],series_data[3],series_name[3],color_series[3])
-		series_id.pop()
-		accelVersion1Filtered(data,series_id,id)
 	});
 }
 
