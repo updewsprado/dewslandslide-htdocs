@@ -195,7 +195,6 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
-			console.log(data);
 			var result = data;
 			var series_data = [];
 			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -471,33 +470,41 @@ function somsUnfiltered(data,soms_msgid,name,mode){
 	});	
 }
 function somsfiltered(data,dataSoms,series){
-
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode,  success: function(data_result) {
-			// console.log("/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode)
-			var result = JSON.parse(data_result);
-			var filterDataSeries =[];
-			var series_data=[] , data_series=[];
-			for (i = 0; i < result.length; i++) {
-				var filterData=[];
-				var time =  Date.parse(result[i].ts);
-				if(dataSoms.id_name == "Soms(raw)" && dataSoms.mode == '0'){
-					filterData.push(time,  parseFloat(result[i][0]));
-					filterDataSeries.push(filterData);
-				}else{
-					filterData.push(time,  parseFloat(result[i].mval1));
-					filterDataSeries.push(filterData);
+			if(data_result.length != 0){
+				var result = JSON.parse(data_result);
+				var filterDataSeries =[];
+				var series_data=[] , data_series=[];
+				for (i = 0; i < result.length; i++) {
+					var filterData=[];
+					var time =  Date.parse(result[i].ts);
+					if(dataSoms.id_name == "Soms(raw)" && dataSoms.mode == '0'){
+						filterData.push(time,  parseFloat(result[i][0]));
+						filterDataSeries.push(filterData);
+					}else{
+						filterData.push(time,  parseFloat(result[i].mval1));
+						filterDataSeries.push(filterData);
+					}
 				}
+				series_data.push(series)
+				series_data.push(filterDataSeries)
+				var visibility =[true,false]
+				for (i = 0; i < series_data.length; i++) {
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+				}	
+				var color_series =["#00ff80" ,"#ffff00"];
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
+			}else{
+				series_data.push(series)
+				var visibility =[true,false]
+				for (i = 0; i < series_data.length; i++) {
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+				}	
+				var color_series =["#00ff80" ,"#ffff00"];
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 			}
-			series_data.push(series)
-			series_data.push(filterDataSeries)
-			var visibility =[true,false]
-			for (i = 0; i < series_data.length; i++) {
-				data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
-			}	
-			var color_series =["#00ff80" ,"#ffff00"];
-			chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 		}
 	});	
 }
