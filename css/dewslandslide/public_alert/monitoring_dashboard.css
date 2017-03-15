@@ -85,6 +85,10 @@ hr {
     margin-top: 10px;
 }
 
+#additional-recipients {
+    margin-bottom: 5px;
+}
+
 #ewi-asap-modal,#success-ewi-modal{
    width: 100%;
 }

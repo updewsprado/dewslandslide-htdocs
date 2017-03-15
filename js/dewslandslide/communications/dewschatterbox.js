@@ -2,9 +2,35 @@ function sendViaAlertMonitor(data){
 	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
 	.done(function(response) {
 		var contacts = JSON.parse(response);
+		var default_recipients = [];
+		var additional_recipients = [];
+
+		$('#ewi-recipients-dashboard').tagsinput('removeAll');
+		$('#ewi-recipients-dashboard').val('');
+
 		for (var counter = 0; counter < contacts.length; counter++) {
-			$('#ewi-recipients-dashboard').tagsinput('add',contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" - "+contacts[counter].number);
+			var numbers = contacts[counter].number.split(',');
+			var number = "";
+			var temp = "";
+			if (contacts[counter].ewirecipient != 0) {
+		        numbers.forEach(function(x) {
+		        	temp = temp+":"+x;
+		        	number = temp;
+		        });
+		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+		        default_recipients.push(detailed);
+				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+			} else {
+		        numbers.forEach(function(x) {
+		        	temp = temp+":"+x;
+		        	number = temp;
+		        });
+		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+		        additional_recipients.push(detailed);
+			}
 		}
+		$('#default-recipients').val(default_recipients);
+		$('#additional-recipients').val(additional_recipients);
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -12,6 +38,7 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
+
 	$.ajax({
 		type: "GET",
 		url: "../chatterbox/getewi",   
@@ -211,6 +238,14 @@ $(document).ready(function() {
 	var socket = "";
 
 	$.get( "../generalinformation/initialize", function( data ) {
+	});
+
+	$('#ewi-recipients-dashboard').on('beforeItemRemove', function(event) {
+		var def_val = $('#default-recipients').val().split(',');
+		if ($.inArray(event.item, def_val) != -1) {
+			$.notify("You cannot remove default recipients.","info");
+			event.cancel = true;
+		}
 	});
 
 	try {
@@ -699,7 +734,7 @@ $(document).ready(function() {
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		//Base url and Ws indicator.
-		if (window.location.host == "dewslandslide.com") {
+		if (window.location.host == "www.dewslandslide.com") {
 			$('#testing-site-indicator').hide();
 		} else {
 			$('#testing-site-indicator span').html("TEST SITE: "+window.location.host);
@@ -2200,6 +2235,14 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#send-btn-ewi-amd').click(function(){
+	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
+	var default_recipients = $('#default-recipients').val().split(',');
+	var difference = [];
+
+	$.grep(current_recipients, function(el) {
+	        if ($.inArray(el, default_recipients) == -1) difference.push(el);
+	});
+
 	ewiFlagger = true;
 	var footer = " -"+$('#footer-ewi').val()+" from PHIVOLCS-DYNASLOPE";
 	var text = $('#constructed-ewi-amd').val();
@@ -2253,6 +2296,11 @@ $('#send-btn-ewi-amd').click(function(){
 		msgType = "smssendgroup";
 		messages = [];
 		updateMessages(msg);
+
+		if (difference != null || difference.length != 0) {
+			console.log("Catch here");
+			console.log(difference.length);
+		}
 
 		$('#constructed-ewi-amd').val('');
 		$('#result-ewi-message').text('Early Warning Information sent successfully!');
