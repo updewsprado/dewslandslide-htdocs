@@ -38,6 +38,10 @@ body {
 
 @media (max-width: 767px)
 {
+    .navbar .dropdown-toggle {
+      padding-left: 25px;
+    }
+
     footer .navbar {
         display: none; 
     }
