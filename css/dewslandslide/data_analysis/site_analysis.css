@@ -9,25 +9,27 @@
 #alert_div{
   height: 30px;
 }
-#A0 {
+/*#A0 {
  background-color: #99ff99;
  padding-bottom: 0px;
  padding-top: 0px;
- padding: 0px
+ padding: 0px;
+ font-size: 12pt;
 }
 #A1 {
  background-color: #ffb366;
  padding-bottom: 0px;
  padding-top: 0px;
  padding: 0px
+ font-size: 12pt;
 }
 
 #A2 {
  background-color: #ff6666;
  padding-bottom: 0px;
- padding: 0px
  padding-top: 0px;
-}
+ padding: 0px
+}*/
 #ground_table thead tr th:nth-child(2) {
   display: none;
 }

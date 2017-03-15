@@ -7,51 +7,40 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
-	if(window.location.href.slice(40,41) != "/"){
-		current_site = window.location.href.slice(36,41);
-		currrent_node = window.location.href.slice(42,43);
-		if(window.location.href.slice(44,45) == "/"){
-			currrent_fdate = window.location.href.slice(45,55)
-			currrent_tdate = window.location.href.slice(56,66)
-		}else{
-			currrent_fdate = window.location.href.slice(44,54)
-			currrent_tdate = window.location.href.slice(55,65)
-		}
+	var s = ((window.location.href).length) - 24
+	if(window.location.href.slice((s-5),(s-4)) != "/"){
+		var current_site = window.location.href.slice((s-5),s)
 	}else{
-		current_site = window.location.href.slice(36,40);
-		currrent_node = window.location.href.slice(41,42);
-		if(window.location.href.slice(43,44) == "/"){
-			currrent_fdate = window.location.href.slice(44,54)
-			currrent_tdate = window.location.href.slice(55,65)
-		}else{
-			currrent_fdate = window.location.href.slice(43,53)
-			currrent_tdate = window.location.href.slice(54,64)
-		}
+		var current_site = window.location.href.slice((s-4),s)
 	}
-	if(current_site != "" ){
+	var currrent_node = window.location.href.slice((s+1),(s+2))
+	var currrent_fdate = window.location.href.slice((s+3),(s+13))
+	var currrent_tdate = window.location.href.slice((s+14),(s+24))
+	console.log(current_site,currrent_node,currrent_fdate,currrent_tdate)
 
-				var curSite = current_site;
-				var node_id = currrent_node;
-				var fromDate = currrent_fdate;
-				var toDate = currrent_tdate;
-				var start = moment(currrent_fdate); 
-				var end = moment(currrent_tdate);
-				$("#sitegeneral").empty()
-				$("#nodetable").empty()
-				$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
-				var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
-				let dataSubmit = { 
-					site : curSite, 
-					fdate : fromDate,
-					tdate : toDate,
-					node:node_id
-				}
-				nodeSummary(dataSubmit)
-				initialProcessGraph(dataSubmit,id)
-				sites(current_site.toUpperCase())
-				Time(start,end)
-				$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
-				
+	if(current_site != "loca" ){
+		var curSite = current_site.toLowerCase();
+		var node_id = currrent_node;
+		var fromDate = currrent_fdate;
+		var toDate = currrent_tdate;
+		var start = moment(currrent_fdate); 
+		var end = moment(currrent_tdate);
+		$("#sitegeneral").empty()
+		$("#nodetable").empty()
+		$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
+		var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+		let dataSubmit = { 
+			site : curSite, 
+			fdate : fromDate,
+			tdate : toDate,
+			node:node_id
+		}
+		nodeSummary(dataSubmit)
+		initialProcessGraph(dataSubmit,id)
+		sites(current_site.toUpperCase())
+		Time(start,end)
+		$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
+
 	}else{
 		var start = moment().subtract(7, 'days'); 
 		var end = moment().add(1, 'days');
@@ -212,6 +201,7 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 		nid: node
 	}
 	$.post("../node_level_page/getAllAccelVersion1", {data : dataVersion1} ).done(function(data){
+		console.log(data)
 		var result = JSON.parse(data);
 		var series_data = [];
 		var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -429,7 +419,7 @@ function accel2filtered(data,series,msgid){
 function somsV2(data,mode){
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+mode,  success: function(data_result) {
+		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(data_result) {
 			var result = JSON.parse(data_result);
 			var rawDataSeries =[];
 			for (i = 0; i < result.length; i++) {
@@ -489,6 +479,7 @@ function somsfiltered(data,dataSoms,series){
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode,  success: function(data_result) {
+			console.log("/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode)
 			var result = JSON.parse(data_result);
 			var filterDataSeries =[];
 			var series_data=[] , data_series=[];
@@ -547,7 +538,7 @@ function chartProcess(id,data_series,name,color){
 		xAxis: {
 			type: 'datetime',
 			dateTimeLabelFormats: { 
-				month: '%e. %b',
+				month: '%e. %b %Y',
 				year: '%b'
 			},
 			title: {

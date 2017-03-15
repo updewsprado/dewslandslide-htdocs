@@ -1,5 +1,5 @@
 
-var wsUri = "ws://" + window.location.hostname + ":999/";
+var wsUri = "ws://" + window.location.hostname + ":5070/";
 var output;
 var attributes_log;
 var websocket;
@@ -52,7 +52,7 @@ function init() {
 function onClose(evt) {
     websocket.close();
     console.log("DASHBOARD SERVER: DISCONNECTED");
-    waitForConnection();
+    //waitForConnection();
 }
 
 function onMessage(evt) {
