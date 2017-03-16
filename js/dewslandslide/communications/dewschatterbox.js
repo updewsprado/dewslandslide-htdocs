@@ -3158,15 +3158,12 @@ function getInitialQuickInboxMessages () {
 			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 			.done(function(response) {
 				siteids = JSON.parse(response);
-				console.log(siteids);
 				for (var counter = 0; counter < events.length; counter++) {
 					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 						if (events[counter].site_id == siteids[siteid_counter].id) {
 							var narrative_template = "";
-							console.log(gintags_msg_details);
-							debugger;
 							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1];
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
 							} else if (gintags_msg_details.tags === "#EwiMessage"){
 								narrative_template = "Sent Early warning information message.";
 							} else {
