@@ -52,7 +52,7 @@ function init() {
 function onClose(evt) {
     websocket.close();
     console.log("DASHBOARD SERVER: DISCONNECTED");
-    waitForConnection();
+    //waitForConnection();
 }
 
 function onMessage(evt) {

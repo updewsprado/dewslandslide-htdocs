@@ -11,6 +11,7 @@ let realtime_cache = [], ongoing = [], candidate_triggers = [];
 let isTableInitialized = false;
 let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
 let modalForm = null, entry = {};
+let sitesList = [];
 
 let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
 let lookup2 = { "rain":["R"], "eq":["E"], "ground":["g","G"], "sensor":["s","S"], "on-demand":["D"]};
@@ -21,7 +22,11 @@ let setElementHeight = function () {
     $('#map-canvas').css('min-height', col_height-20);
 };
 
+
+
 $(document).ready( function() {
+
+	getSites();
 
 	$(window).on("resize", function () {
 	    setElementHeight();
@@ -84,6 +89,11 @@ $(document).ready( function() {
 		let row = candidate_table.row(i).data();
 		let site = row.site;
 
+		$("#timestamp_entry").val(row.timestamp);
+		$("#internal_alert_level").val(row.internal_alert);
+		$("#site").val(sitesList[row.site]);
+		$("#comments").val("");
+
 		let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
@@ -123,12 +133,7 @@ $(document).ready( function() {
 			$("#release").prop("disabled", false);
 		}
 
-		$("#timestamp_entry").val(row.timestamp);
-		$("#internal_alert_level").val(row.internal_alert);
-		$("#site option:contains("+ row.site.toUpperCase() +")").attr('selected', true);
-		$("#comments").val("");
-		$("#releaseModal").modal("show");
-		
+		$("#releaseModal").modal({ backdrop: 'static', keyboard: false, show: true});	
 		//console.log(entry);
 	});
 
@@ -289,18 +294,21 @@ $(document).ready( function() {
 	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 	        temp.reporter_1 = $("#reporter_1").attr("value-id");
 
-	        if( temp.trigger_list.indexOf("D") > -1 )
+	        if( temp.trigger_list != null ) 
 	        {
-	    		if($(".od_group[value=llmc]").is(":checked")) temp.is_llmc = true;
-	    		if($(".od_group[value=lgu]").is(":checked")) temp.is_lgu = true;
-	    		temp.reason = $("#reason").val();
-	        } else if( temp.trigger_list.indexOf("E") > -1 )
-	        {
-	    		temp.magnitude = $("#magnitude").val();
-	    		temp.latitude = $("#latitude").val();
-	    		temp.longitude = $("#longitude").val();
+				if( temp.trigger_list.indexOf("D") > -1 )
+		        {
+		    		if($(".od_group[value=llmc]").is(":checked")) temp.is_llmc = true;
+		    		if($(".od_group[value=lgu]").is(":checked")) temp.is_lgu = true;
+		    		temp.reason = $("#reason").val();
+		        } else if( temp.trigger_list.indexOf("E") > -1 )
+		        {
+		    		temp.magnitude = $("#magnitude").val();
+		    		temp.latitude = $("#latitude").val();
+		    		temp.longitude = $("#longitude").val();
+		        }
 	        }
-
+	        
 	        if (entry.status == "new")
 	        {
 	        	if( typeof entry.previous_event_id != 'undefined' ) temp.previous_event_id = entry.previous_event_id;
@@ -497,7 +505,7 @@ function buildTable( latest, extended, overdue, candidate )
 	    {
             switch(data.day)
             {
-            	case 0: 
+            	case 0: break;
             	case 1: $(row).addClass("day-one"); break;
                 case 2: $(row).addClass("day-two"); break;
                 case 3: $(row).addClass("day-three"); break;
@@ -872,4 +880,12 @@ function checkCandidateTriggers(cache) {
 	});
 
 	return final;
+}
+
+function getSites() {
+	$.get("../monitoring/getSites", function(data) {
+        data.forEach(function(x) {
+        	sitesList[x.name] = x.id;
+        });
+    }, "json");
 }
