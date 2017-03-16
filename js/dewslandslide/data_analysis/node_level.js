@@ -481,19 +481,15 @@ function somsfiltered(data,dataSoms,series){
 				for (i = 0; i < result.length; i++) {
 					var filterData=[];
 					var time =  Date.parse(result[i].ts);
-					if(dataSoms.id_name == "Soms(raw)" && dataSoms.mode == '0'){
-						filterData.push(time,  parseFloat(result[i][0]));
-						filterDataSeries.push(filterData);
-					}else{
-						filterData.push(time,  parseFloat(result[i].mval1));
-						filterDataSeries.push(filterData);
-					}
+					filterData.push(time,  parseFloat(result[i].mval1));
+					filterDataSeries.push(filterData);
 				}
 				series_data.push(series)
 				series_data.push(filterDataSeries)
 				var visibility =[true,false]
 				for (i = 0; i < series_data.length; i++) {
 					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)

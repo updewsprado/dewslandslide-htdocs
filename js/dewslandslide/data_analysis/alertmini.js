@@ -75,7 +75,7 @@ var tip = d3.tip()
 
 //initialize dimensions
 function init_dims(divID) {
-	cWidth = document.getElementById(divID).clientWidth * 1.2;
+	cWidth = document.getElementById(divID).clientWidth * .95;
 	cHeight = document.getElementById(divID).clientHeight * 1.5;
 
 	margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -98,7 +98,7 @@ function init_dims(divID) {
 		.append("svg")
         .attr("id", "svg-alertmini") 	
 	        .attr("width", width + margin.left + margin.right)
-	        .attr("height", height + margin.top + margin.bottom)
+	        .attr("height", 25)
 	    .append("g")
 	        .attr("transform", 
 	              "translate(" + margin.left + "," + margin.top + ")");

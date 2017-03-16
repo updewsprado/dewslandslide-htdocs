@@ -300,7 +300,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 	
 			// Add hyperlinks to Y Axis ticks
 			var urlBase = "http://" + window.location.hostname + "/";
-			var urlExt = "data_analysis/site/";	
+			var urlExt = "data_analysis/column/";	
 			var urlNodeExt = "data_analysis/node/";		
 			var start = moment().subtract(7, 'days').format('YYYY-MM-DD'); 
 			var end = moment().add(1, 'days').format('YYYY-MM-DD');

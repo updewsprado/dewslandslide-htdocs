@@ -2846,6 +2846,7 @@ function heatmapProcess(site,tdate,day){
 						pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
 					}
 				}
+				console.log(pattern_time)
 				var sorted_data_num =[]
 				for (d = 0; d < pattern_time.length; d++) {
 					number_all.push(d)
@@ -2925,7 +2926,7 @@ function heatmapProcess(site,tdate,day){
 	});	
 }
 function heatmapVisual(series_data,list_time,list_id){
-
+	console.log(series_data .)
 	times = d3.range(list_time.length);
 
 	var margin = {
