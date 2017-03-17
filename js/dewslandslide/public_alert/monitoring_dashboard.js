@@ -22,6 +22,8 @@ let setElementHeight = function () {
     $('#map-canvas').css('min-height', col_height-20);
 };
 
+
+
 $(document).ready( function() {
 
 	getSites();
