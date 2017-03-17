@@ -99,7 +99,7 @@ $(document).ready( function() {
 		if(index > -1)
 		{
 			previous = merged_arr[index];
-			entry.trigger_list = showModalTriggers(row.retriggerTS, previous.trigger_timestamp);
+			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
 			entry.previous_validity = previous.validity;
 
 			// Put internal alert checker here if there's invalid trigger
@@ -123,7 +123,7 @@ $(document).ready( function() {
 			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
 			if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 
-			entry.trigger_list = showModalTriggers(row.retriggerTS, null);
+			entry.trigger_list = showModalTriggers(row, null);
 			
 			// Put internal alert checker here if there's invalid trigger
 			entry.status = "new";
@@ -141,8 +141,9 @@ $(document).ready( function() {
 		$("#manualInputModal").modal("show");
 	});
 
-	function showModalTriggers(list, latest) 
+	function showModalTriggers(row, latest) 
 	{
+		let list = row.retriggerTS;
 		let arr = [];
 		list.forEach(function (x) {
 			if( moment(x.timestamp).isAfter(latest) || latest == null )
@@ -165,7 +166,7 @@ $(document).ready( function() {
 			let y = lookup[x.retrigger];
 			$("#" + y[0] + "_area").show();
 			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-			$("#trigger_" + y[1] + "_info").val("").prop("disabled", false);
+			$("#trigger_" + y[1] + "_info").val(row.tech_info[0][y[1] + "_tech"]).prop("disabled", false);
 			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
 			else if( y[2] == "E" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", false);
 			retriggers.push(y[2]);
