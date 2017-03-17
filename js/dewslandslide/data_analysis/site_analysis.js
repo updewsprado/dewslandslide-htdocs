@@ -315,6 +315,8 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 			$('.daygeneral').prop('disabled', true);
 			var start = moment().subtract(2, 'days'); 
 			$('input[name="datefilter3"]').daterangepicker({
+				timePicker: true,
+				timePickerIncrement: 30,
 				autoUpdateInput: false,
 				maxDate: new Date(),
 				opens: "right",
@@ -328,16 +330,17 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 
 			$('input[name="datefilter3"]').on('apply.daterangepicker', function(ev, picker) {
 				$("#heatmap_container").empty();
-				var time = $(this).val(picker.startDate.format('YYYY-MM-DD'));
+				var time = $(this).val(picker.startDate.format('YYYY-MM-DD HH:mm'));
 				var timevalue =time.context.value
 				var tdate = timevalue.slice(0,10);
+				var time = timevalue.slice(11,16);
 				$('.daygeneral').prop('disabled', false);
 				$(".heatmapClass").empty()
 				$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
 					'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
 				$('#daygeneral').on('change', function() {
 					
-					heatmapProcess(selecte_column,tdate,this.value)
+					heatmapProcess(selecte_column,(tdate+"T"+time),this.value)
 				})
 			});
 
@@ -2843,10 +2846,9 @@ function heatmapProcess(site,tdate,day){
 				var number_all =[]
 				for (b = 0; b < list_id.length; b++) {
 					for (c = 0; c < list_time.length; c++) {
-						pattern_time.push({id:list_id[b],ts:list_time[c],cval:1})
+						pattern_time.push({id:list_id[b],ts:list_time[c],cval:"null"})
 					}
 				}
-				console.log(pattern_time)
 				var sorted_data_num =[]
 				for (d = 0; d < pattern_time.length; d++) {
 					number_all.push(d)
@@ -2926,176 +2928,190 @@ function heatmapProcess(site,tdate,day){
 	});	
 }
 function heatmapVisual(series_data,list_time,list_id){
-	console.log(series_data .)
-	times = d3.range(list_time.length);
-
-	var margin = {
-		top: 80,
-		right: 50,
-		bottom: 150,
-		left: 50
-	};
-
-	var width = (($(".container").width()-$("#info_site").width())+450) - margin.left - margin.right - 20,
-	gridSize = Math.floor(width / list_time.length),
-	height = gridSize * (list_id.length+2);
-
-	var tip = d3.tip()
-	.attr('class', 'd3-tip')
-	.offset([-10, 0])
-	.html(function(d) {
-		return "<strong>Timestamp:</strong> <span style='color:red'>"+d.ts+"</span>"+
-		"<br><strong>Value:</strong> <span style='color:red'>"+d.value+"</span>";
-	}) 
-
-
-
-	var svg = d3.select('#heatmap_container')
-	.append("svg")
-	.attr("width", width + margin.left + margin.right)
-	.attr("height", height + margin.top + margin.bottom)
-	.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-	var newFontSize = width * 62.5 / 900;
-	d3.select("html").style("font-size", newFontSize + "%");
-
-	var colorScale = d3.scale.linear()
-	.domain([0,255])
-	.range([ "#ffffcc","#ff3300"])
-
-	var x = d3.time.scale()
-	.domain([Date.parse(list_time[0].ts),Date.parse(list_time[list_time.length-1].ts)])
-	.range([0, width]);
-
-	var xAxis = d3.svg.axis()
-	.scale(x);
-
-	
-	var dayLabels = svg.selectAll(".dayLabel")
-	.data(list_id)
-	.enter().append("text")
-	.text(function (d) { return d.id; })
-	.attr("x", 0)
-	.attr("y", function (d, i) { return i * gridSize; })
-	.style("text-anchor", "end")
-	.attr("transform", "translate(-6," + gridSize / 1.5 + ")")
-	.attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
-
-	// var timeLabels = svg.selectAll(".timeLabel")
-	// .data(times)
-	// .enter().append("text")
-	// .text(function(d) { return d; })
-	// .attr("x", function(d, i) { return i * gridSize; })
-	// .attr("y", 0)
-	// .style("text-anchor", "middle")
-	// .attr("transform", function(d) {
-	// 	return "rotate(-65)" 
-	// })
-	// .attr("class", function(d, i) { return ((i >= 8 && i <= 17) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
-
-	svg.call(tip);
-	var heatMap = svg.selectAll(".hour")
-	.data(series_data)
-	.enter().append("rect")
-	.attr("x", function(d) { return (d.y ) * gridSize; })
-	.attr("y", function(d) { return (d.x ) * gridSize; })
-	.attr("class", "hour bordered")
-	.attr("width", gridSize)
-	.attr("height", gridSize)
-	.style("stroke", "white")
-	.style("fill", function(d) { return colorScale(d.value); })
-	.on('mouseover', tip.show)
-	.on('mouseout', tip.hide)
-	.append("g");
-
-	// svg.append("g")
-	// .attr("class", "x axis")
-	// .attr("transform", "translate(0," + (gridSize * list_time.length + 120) + ")")
-	// .call(xAxis)
-	// .selectAll("text")
-	// .attr("y", 0)
-	// .attr("x", 9)
-	// .attr("dy", ".35em")
-	// .attr("transform", "rotate(-90)")
-	// .style("text-anchor", "middle");
-
-	svg.append("text")
-	.attr("class", "title")
-	.attr("x", width/2)
-	.attr("y", -40)
-	.style("text-anchor", "middle")
-	.text("Soms Heatmap");
-
-
-	var countScale = d3.scale.linear()
-	.domain([0, 255])
-	.range([0, width])
-
-	var numStops = 10;
-	countRange = countScale.domain();
-	countRange[2] = countRange[1] - countRange[0];
-	countPoint = [];
-	for(var i = 0; i < numStops; i++) {
-		countPoint.push(i * countRange[2]/(numStops-1) + countRange[0]);
+	for(var i=0;i<series_data.length;i++){
+		if(series_data[i].id == "null" || series_data[i].value == NaN ){
+			series_data.splice(i,1);
+			i--;
+		}
 	}
+	for(var i=0;i<list_id.length;i++){
+		if(list_id[i].id== "null"){
+			list_id.splice(i,1);
+			i--;
+		}
+	}
+	if(list_id.length != 0){
+		times = d3.range(list_time.length);
+		var margin = {
+			top: 80,
+			right: 50,
+			bottom: 150,
+			left: 50
+		};
+
+		var width = (($(".container").width()-$("#info_site").width())+450) - margin.left - margin.right - 20,
+		gridSize = Math.floor(width / list_time.length),
+		height = gridSize * (list_id.length+2);
+
+		var tip = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([-10, 0])
+		.html(function(d) {
+			return "<strong>Timestamp:</strong> <span style='color:red'>"+d.ts+"</span>"+
+			"<br><strong>Value:</strong> <span style='color:red'>"+d.value+"</span>";
+		}) 
 
 
-	svg.append("defs")
-	.append("linearGradient")
-	.attr("id", "legend-traffic")
-	.attr("x1", "0%").attr("y1", "0%")
-	.attr("x2", "100%").attr("y2", "0%")
-	.selectAll("stop") 
-	.data(d3.range(numStops))                
-	.enter().append("stop") 
-	.attr("offset", function(d,i) { 
-		return countScale( countPoint[i] )/width;
-	})   
-	.attr("stop-color", function(d,i) { 
-		return colorScale( countPoint[i] ); 
-	});
+
+		var svg = d3.select('#heatmap_container')
+		.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var newFontSize = width * 62.5 / 900;
+		d3.select("html").style("font-size", newFontSize + "%");
+
+		var colorScale = d3.scale.linear()
+		.domain([0,255])
+		.range([ "#ffffcc","#ff3300"])
+
+		var x = d3.time.scale()
+		.domain([Date.parse(list_time[0].ts),Date.parse(list_time[list_time.length-1].ts)])
+		.range([0, width]);
+
+		var xAxis = d3.svg.axis()
+		.scale(x);
+
+		
+		var dayLabels = svg.selectAll(".dayLabel")
+		.data(list_id)
+		.enter().append("text")
+		.text(function (d) { return d.id; })
+		.attr("x", 0)
+		.attr("y", function (d, i) { return i * gridSize; })
+		.style("text-anchor", "end")
+		.attr("transform", "translate(-6," + gridSize / 1.5 + ")")
+		.attr("class", function (d, i) { return ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"); });
+
+		// var timeLabels = svg.selectAll(".timeLabel")
+		// .data(times)
+		// .enter().append("text")
+		// .text(function(d) { return d; })
+		// .attr("x", function(d, i) { return i * gridSize; })
+		// .attr("y", 0)
+		// .style("text-anchor", "middle")
+		// .attr("transform", function(d) {
+		// 	return "rotate(-65)" 
+		// })
+		// .attr("class", function(d, i) { return ((i >= 8 && i <= 17) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
+
+		svg.call(tip);
+		var heatMap = svg.selectAll(".hour")
+		.data(series_data)
+		.enter().append("rect")
+		.attr("x", function(d) { return (d.y ) * gridSize; })
+		.attr("y", function(d) { return (d.x ) * gridSize; })
+		.attr("class", "hour bordered")
+		.attr("width", gridSize)
+		.attr("height", gridSize)
+		.style("stroke", "white")
+		.style("fill", function(d) { return colorScale(d.value); })
+		.on('mouseover', tip.show)
+		.on('mouseout', tip.hide)
+		.append("g");
+
+		// svg.append("g")
+		// .attr("class", "x axis")
+		// .attr("transform", "translate(0," + (gridSize * list_time.length + 120) + ")")
+		// .call(xAxis)
+		// .selectAll("text")
+		// .attr("y", 0)
+		// .attr("x", 9)
+		// .attr("dy", ".35em")
+		// .attr("transform", "rotate(-90)")
+		// .style("text-anchor", "middle");
+
+		svg.append("text")
+		.attr("class", "title")
+		.attr("x", width/2)
+		.attr("y", -40)
+		.style("text-anchor", "middle")
+		.text("Soms Heatmap");
+
+
+		var countScale = d3.scale.linear()
+		.domain([0, 255])
+		.range([0, width])
+
+		var numStops = 10;
+		countRange = countScale.domain();
+		countRange[2] = countRange[1] - countRange[0];
+		countPoint = [];
+		for(var i = 0; i < numStops; i++) {
+			countPoint.push(i * countRange[2]/(numStops-1) + countRange[0]);
+		}
+
+
+		svg.append("defs")
+		.append("linearGradient")
+		.attr("id", "legend-traffic")
+		.attr("x1", "0%").attr("y1", "0%")
+		.attr("x2", "100%").attr("y2", "0%")
+		.selectAll("stop") 
+		.data(d3.range(numStops))                
+		.enter().append("stop") 
+		.attr("offset", function(d,i) { 
+			return countScale( countPoint[i] )/width;
+		})   
+		.attr("stop-color", function(d,i) { 
+			return colorScale( countPoint[i] ); 
+		});
 
 
 
-	var legendWidth = Math.min(width*0.8, 400);
+		var legendWidth = Math.min(width*0.8, 400);
 
-	var legendsvg = svg.append("g")
-	.attr("class", "legendWrapper")
-	.attr("transform", "translate(" + (width/2) + "," + (gridSize * list_id.length + 120) + ")");
-
-
-	legendsvg.append("rect")
-	.attr("class", "legendRect")
-	.attr("x", -legendWidth/2)
-	.attr("y", 0)
-	.attr("width", legendWidth)
-	.attr("height", 10)
-	.style("fill", "url(#legend-traffic)");
+		var legendsvg = svg.append("g")
+		.attr("class", "legendWrapper")
+		.attr("transform", "translate(" + (width/2) + "," + (gridSize * list_id.length + 120) + ")");
 
 
-	legendsvg.append("text")
-	.attr("class", "legendTitle")
-	.attr("x", 0)
-	.attr("y", -10)
-	.style("text-anchor", "middle")
-	.text("Soms Scale");
+		legendsvg.append("rect")
+		.attr("class", "legendRect")
+		.attr("x", -legendWidth/2)
+		.attr("y", 0)
+		.attr("width", legendWidth)
+		.attr("height", 10)
+		.style("fill", "url(#legend-traffic)");
 
 
-	var xScale = d3.scale.linear()
-	.range([-legendWidth/2, legendWidth/2])
-	.domain([ 0, 255] );
+		legendsvg.append("text")
+		.attr("class", "legendTitle")
+		.attr("x", 0)
+		.attr("y", -10)
+		.style("text-anchor", "middle")
+		.text("Soms Scale");
 
 
-	var xAxis = d3.svg.axis()
-	.orient("bottom")
-	.ticks(5)
-	.scale(xScale);
+		var xScale = d3.scale.linear()
+		.range([-legendWidth/2, legendWidth/2])
+		.domain([ 0, 255] );
 
 
-	legendsvg.append("g")
-	.attr("class", "axis")
-	.attr("transform", "translate(0," + (10) + ")")
-	.call(xAxis);
+		var xAxis = d3.svg.axis()
+		.orient("bottom")
+		.ticks(5)
+		.scale(xScale);
 
+
+		legendsvg.append("g")
+		.attr("class", "axis")
+		.attr("transform", "translate(0," + (10) + ")")
+		.call(xAxis);
+	}else{
+		$(".daygeneral").hide();
+		$("#heatmap_div").append('<div id="heatmap_container"><h3 style="text-align: center"> NO DATA </h3></div>')
+	}
 }
