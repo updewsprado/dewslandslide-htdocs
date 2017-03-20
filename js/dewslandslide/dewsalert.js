@@ -159,7 +159,6 @@ function getSiteMaxNodes(xOffset) {
 	var cellh = yOrd.rangeBand(); //9;
 	
 	for (var i = 0; i < siteMaxNodes.length; i++) {
-		
 		for (var j = 1; j <= siteMaxNodes[i].nodes; j++) {
 			tester.push(
 				{site: siteMaxNodes[i].site, node: j }
@@ -191,9 +190,16 @@ function getSiteMaxNodes(xOffset) {
 var nodeStatuses = [];
 function getNodeStatus(xOffset) {
 		var data = nodeStatusJSON.slice();
+		var nodeStatuses = [];
+		for (var i = 0; i < siteMaxNodes.length; i++) {
+			for (var a = 0; a < data.length; a++) {
+				if(siteMaxNodes[i].site == data[a].site){
+					nodeStatuses.push(data[a])
+				}
+			}	
+		}
 		
-		nodeStatuses = data;
-		
+		// nodeStatuses = data;
 		var cellw = (graphDim.gWidth / maxNode) * 0.4;
 		var cellh = yOrd.rangeBand()-4;
 
@@ -251,7 +257,6 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			data.push({node:sample_value[i].id,site:sample_value[i].site,timestamp:sample_value[i].timestamp,
 				disp_alert:sample_value[i].disp_alert,vel_alert:sample_value[i].vel_alert,col_alert:sample_value[i].col_alert})
 		}
-		console.log(data)
 		jsondata = data;
 
 		data.forEach(function(d) {
@@ -332,7 +337,7 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 		.on('mouseover', tip.show)
 		.on('mouseout', tip.hide)
 		.on("click", function(d){
-			document.location.href = urlBase+urlNodeExt+d.site+'/'+d.node+'/'+start+'/'+end;
+			document.location.href = urlBase+urlNodeExt+d.site+'/'+d.nodes;
 		});	
 		getNodeStatus(xOffset);	
 

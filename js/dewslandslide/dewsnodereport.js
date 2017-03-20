@@ -204,7 +204,15 @@ function getSiteMaxNodes(xOffset) {
 var nodeStatuses = [];
 function getNodeStatus(xOffset) {
 	var data = nodeStatusJSON.slice();
-	nodeStatuses = data;
+	var nodeStatuses = [];
+		for (var i = 0; i < siteMaxNodes.length; i++) {
+			for (var a = 0; a < data.length; a++) {
+				if(siteMaxNodes[i].site == data[a].site){
+					nodeStatuses.push(data[a])
+				}
+			}	
+		}
+	// nodeStatuses = data;
 	var cellw = (graphDim.gWidth / maxNode) * 1;
 	var cellh = yOrd.rangeBand()-5;
 	svg.selectAll(".triangle")
