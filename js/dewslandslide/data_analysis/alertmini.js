@@ -36,12 +36,16 @@ var tip = d3.tip()
   .html(function(d) {
 	var alert,status,id_ts,comment;
 	
-	if((parseFloat(d.xalert) > 0) || (parseFloat(d.yalert) > 0) || (parseFloat(d.zalert) > 0)) {
-		alert = "<strong>Alerts:</strong> <span style='color:red'>" + Number((d.xalert).toFixed(3)) 
-				+ ", " + Number((d.yalert).toFixed(3)) 
-				+ ", " + Number((d.zalert).toFixed(3)) +"</span><Br/>";
-	}
-	else {
+	if(d.vel_alert == 0) {
+		alert = "<strong>Alerts:</strong> <span style='color:#B5CA8D'> 0 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else if(d.disp_alert == 1){
+		alert = "<strong>Alerts:</strong> <span style='color:#8BB174'> 1 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else if(d.disp_alert == 2){
+		alert = "<strong>Alerts:</strong> <span style='color:#426B69'> 2 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else {
 		alert = "";
 	}
 	
