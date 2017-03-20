@@ -67,6 +67,7 @@ var tip = d3.tip()
 		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
 	}else {
 		alert = "";
+		ts = "";
 	}
 	
 	if(typeof d.status === 'undefined'){
