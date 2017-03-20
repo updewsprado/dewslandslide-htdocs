@@ -96,6 +96,8 @@ $(document).ready( function() {
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
 
+		entry.rain_alert = row.rain_alert;
+
 		if(index > -1)
 		{
 			previous = merged_arr[index];
@@ -124,8 +126,6 @@ $(document).ready( function() {
 			if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 
 			entry.trigger_list = showModalTriggers(row, null);
-			
-			// Put internal alert checker here if there's invalid trigger
 			entry.status = "new";
 
 			$("#release").prop("disabled", false);
@@ -321,9 +321,10 @@ $(document).ready( function() {
 	        	if( temp.internal_alert_level.indexOf("ND") > -1 || temp.internal_alert_level.indexOf("g0") > -1 || temp.internal_alert_level.indexOf("s0") > -1 )
 	        		extend = true;
 
-	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) && temp.trigger_list == null && extend )
+	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) )
 	        	{
-	        		temp.extend_ND = true;
+	        		if( extend ) temp.extend_ND = true;
+	        		else if ( entry.rain_alert == "rx" ) temp.extend_rain_x = true;
 	        	}
 	        }
 
