@@ -17,14 +17,13 @@ $(function () { $('#exampleModal').on('show.bs.modal', function () {
 	modal.find('.modal-title').text('Node Status Report for ' + gReportData.site + ' ' + gReportData.node);
 	modal.find('#site-column-name').val(gReportData.site);
 	modal.find('#node-id').val(gReportData.node);
-	    //modal.find('#date-discovered').val(gReportData.node);  
-	    modal.find('.input-group.date').datepicker({
-	    	clearBtn: true,
-	    	autoclose: true,
-	    	todayHighlight: true
-	    });  
-	    modal.find('#comment-text').val('Testing this wonderful function called modals');
-	});
+	modal.find('.input-group.date').datepicker({
+		clearBtn: true,
+		autoclose: true,
+		todayHighlight: true
+	});  
+	modal.find('#comment-text').val('Testing this wonderful function called modals');
+});
 });
 
 
@@ -57,18 +56,19 @@ var tip = d3.tip()
 	var alert,status,id_ts,comment,node_alert,flagger_name,ts;
 	
 	if(d.vel_alert == 0) {
-		alert = "<strong>Alerts:</strong> <span style='color:#B5CA8D'> 0 axis alert </span><Br/>";
+		alert = "<strong>Alerts:</strong> <span style='color:#4A6C6F'> 0 axis alert </span><Br/>";
 		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
 	}else if(d.disp_alert == 1){
-		alert = "<strong>Alerts:</strong> <span style='color:#8BB174'> 1 axis alert </span><Br/>";
+		alert = "<strong>Alerts:</strong> <span style='color:#846075'> 1 axis alert </span><Br/>";
 		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
 	}else if(d.disp_alert == 2){
-		alert = "<strong>Alerts:</strong> <span style='color:#426B69'> 2 axis alert </span><Br/>";
+		alert = "<strong>Alerts:</strong> <span style='color:#AF5D63'> 2 axis alert </span><Br/>";
 		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
 	}else {
 		alert = "";
 		ts = "";
 	}
+	
 	
 	if(typeof d.status === 'undefined'){
 		status = "";
@@ -322,14 +322,14 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			var xdata, ydata, zdata, color;
 			if(d.vel_alert == 0){
 				xdata = 1;
-				color = d3.rgb(181,182,130);
+				color = d3.rgb(74, 108, 111);
 				return color;
 			}else if(d.vel_alert == 1){
-				color = d3.rgb(139,177,116);
+				color = d3.rgb(132, 96, 117);
 				return color;
 
 			}else if(d.vel_alert == 2){
-				color = d3.rgb(66,107,105);
+				color = d3.rgb(175, 93, 99);
 				return color;
 			}
 		})

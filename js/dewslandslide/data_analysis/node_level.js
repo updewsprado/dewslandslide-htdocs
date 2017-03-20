@@ -195,7 +195,7 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
-			console.log("/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node)
+			// console.log("/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node)
 			var result = data;
 			var series_data = [];
 			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -489,7 +489,7 @@ function somsfiltered(data,dataSoms,series){
 				var visibility =[true,false]
 				for (i = 0; i < series_data.length; i++) {
 					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
-					console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
+					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
