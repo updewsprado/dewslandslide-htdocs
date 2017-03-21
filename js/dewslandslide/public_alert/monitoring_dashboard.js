@@ -98,10 +98,12 @@ $(document).ready( function() {
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
 
+		entry.rain_alert = row.rain_alert;
+
 		if(index > -1)
 		{
 			previous = merged_arr[index];
-			entry.trigger_list = showModalTriggers(row.retriggerTS, previous.trigger_timestamp);
+			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
 			entry.previous_validity = previous.validity;
 
 			// Put internal alert checker here if there's invalid trigger
@@ -125,9 +127,7 @@ $(document).ready( function() {
 			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
 			if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 
-			entry.trigger_list = showModalTriggers(row.retriggerTS, null);
-			
-			// Put internal alert checker here if there's invalid trigger
+			entry.trigger_list = showModalTriggers(row, null);
 			entry.status = "new";
 
 			$("#release").prop("disabled", false);
@@ -143,8 +143,9 @@ $(document).ready( function() {
 		$("#manualInputModal").modal("show");
 	});
 
-	function showModalTriggers(list, latest) 
+	function showModalTriggers(row, latest) 
 	{
+		let list = row.retriggerTS;
 		let arr = [];
 		list.forEach(function (x) {
 			if( moment(x.timestamp).isAfter(latest) || latest == null )
@@ -167,9 +168,15 @@ $(document).ready( function() {
 			let y = lookup[x.retrigger];
 			$("#" + y[0] + "_area").show();
 			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-			$("#trigger_" + y[1] + "_info").val("").prop("disabled", false);
+			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["tech_info"] : row.tech_info[y[0] + "_tech"];
+			$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
 			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
-			else if( y[2] == "E" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", false);
+			else if( y[2] == "E" ) {
+				let x = row.tech_info[y[1] + "_tech"];
+				$("#magnitude").val(x.magnitude).prop("disabled", false);
+				$("#longitude").val(x.longitude).prop("disabled", false);
+				$("#latitude").val(x.latitude).prop("disabled", false);
+			}
 			retriggers.push(y[2]);
 		});
 
@@ -322,9 +329,10 @@ $(document).ready( function() {
 	        	if( temp.internal_alert_level.indexOf("ND") > -1 || temp.internal_alert_level.indexOf("g0") > -1 || temp.internal_alert_level.indexOf("s0") > -1 )
 	        		extend = true;
 
-	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) && temp.trigger_list == null && extend )
+	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) )
 	        	{
-	        		temp.extend_ND = true;
+	        		if( extend ) temp.extend_ND = true;
+	        		else if ( entry.rain_alert == "rx" ) temp.extend_rain_x = true;
 	        	}
 	        }
 

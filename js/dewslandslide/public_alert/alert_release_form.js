@@ -20,6 +20,7 @@ $(document).ready(function()
 
     $('#nd label').tooltip();
     $('.cbox_trigger_nd[value=R0]').parent("label").tooltip();
+    $('.cbox_trigger_rx').parent("label").tooltip();
 
     $('.datetime').datetimepicker({
         format: 'YYYY-MM-DD HH:mm:00',
@@ -43,7 +44,7 @@ $(document).ready(function()
     });
 
     let status = 'new', active = [], routine_finish = [], validity_global = null;
-    let publicReleaseForm = null;
+    let publicReleaseForm = null, isEndOfValidity = false;
 
     /*******************************************
      * 
@@ -174,7 +175,6 @@ $(document).ready(function()
         // Prevent entering of NO DATA trigger on NEW ON-GOING ENTRIES
         // if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
 
-
         $(".cbox_trigger_switch").trigger("change");
         $(".cbox_trigger").trigger("change");
     });
@@ -254,9 +254,14 @@ $(document).ready(function()
         {
             if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) {
                 $(".cbox_trigger[value=" + this.value[0] + "]").prop("checked", false).prop("disabled", true);
-                $(".cbox_trigger[value=" + this.value[0] + "]").parent().next().children("input").prop("disabled", true);
+                $(".cbox_trigger[value=" + this.value[0] + "]").parent().next().children("input").prop("disabled", true).val("");
             }
             else $(".cbox_trigger[value=" + this.value[0] + "]").prop("disabled", false);
+
+            // Enable/Disable Rainfall Intermediate Threshold option (rx)
+            // if R0 is checked
+            if(this.value[0] == "R" && this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", true);
+            if(this.value[0] == "R" && !this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", false);
         }
         
         // Disable Timestamp Input Validation Checkbox Fields
@@ -295,6 +300,17 @@ $(document).ready(function()
         let alert = trigger_list.length > 0 ? alert_level + "-" + trigger_list.join("") : alert_level;
         alert = $("#public_alert_level").val() == "A0" ? "A0" : alert;
         $("#internal_alert_level").val(alert);
+    });
+
+    // Disable R0 if rx is checked
+    $(".cbox_trigger_rx").change(function () 
+    {
+        if(this.checked) {
+            $(".cbox_trigger_nd[value=R0]").prop("checked", false).prop("disabled", true);
+            $(".cbox_trigger[value=R]").prop("checked", false).prop("disabled", true);
+            $(".cbox_trigger[value=R]").parent().next().children("input").prop("disabled", true).val("");
+        }
+        else $(".cbox_trigger_nd[value=R0], .cbox_trigger[value=R]").prop("checked", false).prop("disabled", false);
     });
 
     /*************** END OF THIS AREA ****************/
@@ -414,6 +430,7 @@ $(document).ready(function()
                 validity_global = null;
                 $(".previous_info span:nth-child(2)").text("No trigger yet.");
                 $("#site_info_area").slideUp();
+                $(".cbox_trigger_rx").prop('disabled', true).prop('checked', false).trigger("change");
                 $(".cbox_trigger_nd").prop('disabled', true);
                 $('#public_alert_level option').prop('disabled', false);
                 $("#public_alert_level").val("").trigger("change");
@@ -609,6 +626,7 @@ $(document).ready(function()
    jQuery.validator.addMethod("isEndOfValidity", function(value, element, param) {
         let x = validity_global;
         let y = $("#timestamp_entry").val();
+        reposition("#nd_modal");
         console.log(moment(x).isSame(moment(y).add(30, 'minutes')));
         if( moment(x).isSame(moment(y).add(30, 'minutes')) )
         {
@@ -616,6 +634,7 @@ $(document).ready(function()
             {   
                 return true;
             }
+            else if( $(".cbox_trigger_rx").is(":checked") ) return true;
             if( $("#public_alert_level").val() == "A1")
             {
                 if($(element).is(":checked") || $(".cbox_trigger").is(":checked"))
@@ -771,10 +790,10 @@ $(document).ready(function()
                 temp.current_event_id = current_event.event_id;
 
                 // Check if needed for 4-hour extension if ND
-                if( toExtendND && temp.trigger_list == null && moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
+                if( temp.trigger_list == null && moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
                 {
-                    console.log("ND EXTEND");
-                    temp.extend_ND = true;
+                    if( toExtendND ) temp.extend_ND = true;
+                    else if ( typeof temp.cbox_trigger_rx !== "undefined" ) temp.extend_rain_x = true;
                 }
                 // If A0, check if legit lowered or invalid
                 else if( temp.public_alert_level == "A0")
@@ -818,36 +837,36 @@ $(document).ready(function()
 
             console.log(temp);
 
-            $("#loading .progress-bar").text("Submitting early warning releases... Please wait.");
-            reposition("#loading");
-            $("#loading").modal("show");
+            // $("#loading .progress-bar").text("Submitting early warning releases... Please wait.");
+            // reposition("#loading");
+            // $("#loading").modal("show");
 
-            $.ajax({
-                url: "../pubrelease/insert",
-                type: "POST",
-                data : temp,
-                success: function(result, textStatus, jqXHR)
-                {
-                    $("#loading").modal("hide");
-                    $("#loading .progress-bar").text("Loading...");
-                    console.log(result);
-                    setTimeout(function () 
-                    {
-                        if( result == "Routine")
-                             $("#view").attr("href", "../monitoring/events").text("View All Releases");
-                        else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
-                        reposition("#view_modal");
-                        $('#view_modal').modal('show');
-                    }, 1000);
+            // $.ajax({
+            //     url: "../pubrelease/insert",
+            //     type: "POST",
+            //     data : temp,
+            //     success: function(result, textStatus, jqXHR)
+            //     {
+            //         $("#loading").modal("hide");
+            //         $("#loading .progress-bar").text("Loading...");
+            //         console.log(result);
+            //         setTimeout(function () 
+            //         {
+            //             if( result == "Routine")
+            //                  $("#view").attr("href", "../monitoring/events").text("View All Releases");
+            //             else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
+            //             reposition("#view_modal");
+            //             $('#view_modal').modal('show');
+            //         }, 1000);
 
-                    // Send to websocket to refresh all dashboards
-                    doSend("getOnGoingAndExtended");
-                },
-                error: function(xhr, status, error) {
-                  var err = eval("(" + xhr.responseText + ")");
-                  alert(err.Message);
-                }
-            });
+            //         // Send to websocket to refresh all dashboards
+            //         doSend("getOnGoingAndExtended");
+            //     },
+            //     error: function(xhr, status, error) {
+            //       var err = eval("(" + xhr.responseText + ")");
+            //       alert(err.Message);
+            //     }
+            // });
         }
     });
 });
