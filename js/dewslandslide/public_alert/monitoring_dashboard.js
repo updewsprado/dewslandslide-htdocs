@@ -166,9 +166,15 @@ $(document).ready( function() {
 			let y = lookup[x.retrigger];
 			$("#" + y[0] + "_area").show();
 			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-			$("#trigger_" + y[1] + "_info").val(row.tech_info[0][y[1] + "_tech"]).prop("disabled", false);
+			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["tech_info"] : row.tech_info[y[0] + "_tech"];
+			$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
 			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
-			else if( y[2] == "E" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", false);
+			else if( y[2] == "E" ) {
+				let x = row.tech_info[y[1] + "_tech"];
+				$("#magnitude").val(x.magnitude).prop("disabled", false);
+				$("#longitude").val(x.longitude).prop("disabled", false);
+				$("#latitude").val(x.latitude).prop("disabled", false);
+			}
 			retriggers.push(y[2]);
 		});
 
