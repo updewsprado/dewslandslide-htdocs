@@ -10,6 +10,7 @@
 let onEdit = null;
 let release_id = null, event_id = null;
 let editableOrigValue = [];
+let bulletin_timestamp = null;
 
 function loadBulletin(id1, id2) {
     release_id = id1;
@@ -35,7 +36,26 @@ function loadBulletin(id1, id2) {
                     $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
                 }   
             }
-            $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
+            bulletin_timestamp = moment(datetime, 'DD MMMM YYYY, h:mm A');
+
+            $.get( "/../../accomplishment/getNarrativesForShift", 
+            { event_id: event_id, start: bulletin_timestamp.format("YYYY-MM-DD HH:mm:ss"), end: moment(bulletin_timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
+            .done(function (data) {
+                let temp = JSON.parse(data);
+                console.log(temp);
+                let isBulletinSent = false;
+                for( let i = 0; i < temp.length; i++) {
+                    console.log(temp[i].narrative.includes(bulletin_timestamp.format("hh:mm A")), bulletin_timestamp.format("hh:mm A")) 
+                    if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(bulletin_timestamp.format("hh:mm A")))
+                    {
+                        isBulletinSent = true; break;
+                    }
+                }
+                
+                if(isBulletinSent) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
+                else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
+                $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
+            });
         }
     }); 
 }
@@ -138,17 +158,28 @@ function sendMail(text, subject, filename, recipients) {
         success: function(data)
         {
             $('#bulletinLoadingModal').modal('hide');
-            $('#resultModal > .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
+            $('#resultModal .modal-header').html("<h4>Early Warning Information for " + subject.slice(0,3) + "</h4>");
             reposition("#resultModal");
 
             setTimeout(function () {
                 if(data == "Sent.")
                 {
                     console.log('Email sent');
+
+                    let people = recipients.map(function (x) {
+                        if(x == "rusolidum@phivolcs.dost.gov.ph") return x = "RUS";
+                        else if(x == "asdaag@yahoo.com") return x = "ASD";
+                        else if(x == "hyunbin_vince@yahoo.com") return x = "KDDC";
+                        else return x;
+                    });
+
+                    let x = moment(bulletin_timestamp).hour() % 4 == 0  && moment(bulletin_timestamp).minute() == 0 ?  moment(bulletin_timestamp).format("hh:mm A") : moment(bulletin_timestamp).format("hh:mm A") + " onset";
+                    let message = "Sent " + x + " EWI Bulletin to " + people.join(", ");
+
                     let narratives = [{ 
                         event_id: event_id,
                         timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
-                        narrative: "Sent EWI Bulletin to recipients"
+                        narrative: message
                     }];
 
                     $.post("/../../accomplishment/insertNarratives", {narratives: narratives} )
@@ -181,7 +212,7 @@ function edit(onEdit) {
     if(onEdit) {
         $(".edit-event-page").css({"background-color": "#FFFF00"});    
         $("#edit-bulletin").text("Exit Edit");
-        $("#send_to_mail").text("Send Edit to Mail");
+        $("#send").text("Send Edited");
         $("#download").text("Download Edit");
         $("#edit-reminder").show();
         $("#cancel, #bulletinModal .close").hide();
@@ -202,7 +233,7 @@ function edit(onEdit) {
     else {
         $(".edit-event-page").css({"background-color": "#fffff"});
         $("#edit-bulletin").text("Edit");
-        $("#send_to_mail").text("Send to Mail");
+        $("#send").text("Send");
         $("#download").text("Download");
         $("#edit-reminder").hide();
         $("#cancel, #bulletinModal .close").show();
