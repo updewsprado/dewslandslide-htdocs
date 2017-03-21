@@ -2234,6 +2234,12 @@ $('#btn-ewi').on('click',function(){
 	$('#early-warning-modal').modal('toggle');
 });
 
+Array.prototype.removeDuplicates = function () {
+    return this.filter(function (item, index, self) {
+        return self.indexOf(item) == index;
+    });
+};
+
 $('#send-btn-ewi-amd').click(function(){
 	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 	var default_recipients = $('#default-recipients').val().split(',');
@@ -2251,7 +2257,14 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = [];
+		var raw_offices = [];
+
+        current_recipients.forEach(function(x) {
+        	if (x.substring(0, x.indexOf(':')).trim() != "") {raw_offices.push(x.substring(0, x.indexOf(':')).trim());}
+        });
+
+       	tagOffices = raw_offices.removeDuplicates();
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
@@ -2300,10 +2313,18 @@ $('#send-btn-ewi-amd').click(function(){
 		if (difference != null || difference.length != 0) {
 			var added_contacts = [];
 			difference.forEach(function(x){
-				var temp = x.split('|');
-				added_contacts.push(temp.splice(1,1));
+				if (!isNaN(x.charAt(0))){
+					added_contacts.push([x])
+				} else {
+					var temp = x.split('|');
+					temp.forEach(function(y) {
+						if (!isNaN(y)) {added_contacts.push([y.trim()]);}
+					});
+				}
 			});
 
+
+			console.log(added_contacts);
 			for (var counter = 0; counter < added_contacts.length;counter++) {
 				user = "You";
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
