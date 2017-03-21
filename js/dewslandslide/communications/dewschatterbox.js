@@ -2251,7 +2251,7 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU'];
+		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
