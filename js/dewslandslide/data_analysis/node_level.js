@@ -7,47 +7,49 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
-	var s = ((window.location.href).length) - 24
-	if(window.location.href.slice((s-5),(s-4)) != "/"){
-		var current_site = window.location.href.slice((s-5),s)
-	}else{
-		var current_site = window.location.href.slice((s-4),s)
-	}
-	var currrent_node = window.location.href.slice((s+1),(s+2))
-	var currrent_fdate = window.location.href.slice((s+3),(s+13))
-	var currrent_tdate = window.location.href.slice((s+14),(s+24))
-	console.log(current_site,currrent_node,currrent_fdate,currrent_tdate)
-
-	if(current_site != "loca" ){
+	var values = window.location.href.split("/")
+	var current_site = values[5]
+	var currrent_node = values[6]
+	var currrent_fdate = values[7]
+	var currrent_tdate =values[8]
+	if(current_site != undefined ){
 		var curSite = current_site.toLowerCase();
-		var node_id = currrent_node;
+		var node_id = Math.abs(parseFloat(currrent_node));
 		var fromDate = currrent_fdate;
 		var toDate = currrent_tdate;
 		var start = moment(currrent_fdate); 
 		var end = moment(currrent_tdate);
-		$("#sitegeneral").empty()
-		$("#nodetable").empty()
-		$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
-		var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
-		let dataSubmit = { 
-			site : curSite, 
-			fdate : fromDate,
-			tdate : toDate,
-			node:node_id
+		if(Number.isInteger(node_id) == true && curSite != "select" ){
+			$("#sitegeneral").empty()
+			$("#nodetable").empty()
+			$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
+			var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+			let dataSubmit = { 
+				site : curSite, 
+				fdate : fromDate,
+				tdate : toDate,
+				node:node_id
+			}
+			nodeSummary(dataSubmit)
+			initialProcessGraph(dataSubmit,id)
+			sites(current_site.toUpperCase())
+			Time(start,end)
+			$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
+		}else{
+			$("#errorMsg2").modal('show');
+			var start = moment().subtract(7, 'days'); 
+			var end = moment().add(1, 'days');
+			Time(start,end)
+			sites("Select")
+			submit()
 		}
-		nodeSummary(dataSubmit)
-		initialProcessGraph(dataSubmit,id)
-		sites(current_site.toUpperCase())
-		Time(start,end)
-		$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
-
 	}else{
 		var start = moment().subtract(7, 'days'); 
 		var end = moment().add(1, 'days');
 		Time(start,end)
 		sites("Select")
 		submit()
-	}
+	} 
 });
 
 function sites(site_selected){
@@ -87,7 +89,7 @@ function Time(start,end){
 	
 
 	$('#reportrange').daterangepicker({
-		maxDate: new Date(),
+		maxDate: moment().add(1, 'days'),
 		autoUpdateInput: true,
 		startDate: start,
 		endDate: end,
@@ -112,8 +114,9 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
-		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){	
-			if( $("#node").val() <= 40 ){
+		console.log($("#sitegeneral").val() , $("#node").val() != "")
+		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
+			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
 				var curSite = $("#sitegeneral").val();
 				var node = $ ("#node").val();
@@ -136,7 +139,8 @@ function nodeSummary(data){
 			nodeAlertJSON = JSON.parse(result.nodeAlerts)
 			maxNodesJSON = JSON.parse(result.siteMaxNodes)
 			nodeStatusJSON = JSON.parse(result.nodeStatus)
-			$( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas"></div>' );
+			$( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas" style="width:'+(($("#header-site").width()-$(".col-lg-4").width())-180)+'px;height:'+
+				($(".panel-heading").height()-35)+'px"></div>' );
 			initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,"mini-alert-canvas")
 		}
 	});
@@ -152,6 +156,7 @@ function initialProcessGraph(data,id){
 					var ms_id = 32;
 					var mode =["1"]
 					var soms_id =[112];
+
 					if(data.site.substring(3,4) == "s"){
 						let dataSubmit = { 
 							site : data.site, 
@@ -181,8 +186,10 @@ function initialProcessGraph(data,id){
 					id: id
 				}
 				accel1(dataSubmit);
-				for (i = 0; i < soms_id.length; i++) {
-					somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+				if(data.site.slice(3,4) == "s"){
+					for (i = 0; i < soms_id.length; i++) {
+						somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+					}
 				}
 			}else{
 				accelVersion1(data.site,data.node,data.fdate,data.tdate,id);
@@ -194,38 +201,35 @@ function initialProcessGraph(data,id){
 	});
 }
 function accelVersion1(curSite,node,fromDate,toDate,id){
-	let dataVersion1= { 
-		site : curSite, 
-		fdate : fromDate,
-		tdate : toDate,
-		nid: node
-	}
-	$.post("../node_level_page/getAllAccelVersion1", {data : dataVersion1} ).done(function(data){
-		console.log(data)
-		var result = JSON.parse(data);
-		var series_data = [];
-		var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
-		for (i = 0; i < result.length; i++) {
-			var xData=[] , yData=[] ,zData = [] ,mData = [];
-			var time =  Date.parse(result[i].timestamp);
-			xData.push(time, parseFloat(result[i].xvalue));
-			yData.push(time, parseFloat(result[i].yvalue));
-			zData.push(time, parseFloat(result[i].zvalue));
-			mData.push(time, parseFloat(result[i].mvalue));
-			xDataSeries.push(xData);
-			yDataSeries.push(yData);
-			zDataSeries.push(zData);
-			mDataSeries.push(mData);
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
+			// console.log("/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node)
+			var result = data;
+			var series_data = [];
+			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
+			for (i = 0; i < result.length; i++) {
+				var xData=[] , yData=[] ,zData = [] ,mData = [];
+				var time =  Date.parse(result[i].timestamp);
+				xData.push(time, parseFloat(result[i].xvalue));
+				yData.push(time, parseFloat(result[i].yvalue));
+				zData.push(time, parseFloat(result[i].zvalue));
+				mData.push(time, parseFloat(result[i].mvalue));
+				xDataSeries.push(xData);
+				yDataSeries.push(yData);
+				zDataSeries.push(zData);
+				mDataSeries.push(mData);
+			}
+			var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
+			var series_name = ["xvalue","yvalue","zvalue","mvalue"];
+			var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
+			for (i = 0; i < series_id.length; i++) {
+				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
+			}
+			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
+			series_id.pop()
+			accelVersion1Filtered(data,series_id,id)
 		}
-		var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
-		var series_name = ["xvalue","yvalue","zvalue","mvalue"];
-		var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
-		for (i = 0; i < series_id.length; i++) {
-			series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
-		}
-		chartProcess(id[3],series_data[3],series_name[3],color_series[3])
-		series_id.pop()
-		accelVersion1Filtered(data,series_id,id)
 	});
 }
 
@@ -251,9 +255,9 @@ function accelVersion1Filtered(data,series_data,id){
 			var dataseries=[]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				 data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
-				 data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
-				 dataseries.push(data_push)
+				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
+				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
+				dataseries.push(data_push)
 			}
 
 			var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
@@ -419,13 +423,13 @@ function accel2filtered(data,series,msgid){
 function somsV2(data,mode){
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(data_result) {
+		url: "/api/SomsVS2/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/0",  success: function(data_result) {
 			var result = JSON.parse(data_result);
 			var rawDataSeries =[];
 			for (i = 0; i < result.length; i++) {
 				var rawData=[] ;
 				var time = Date.parse(result[i].ts);
-				rawData.push(time,  parseFloat(result[i].raw));
+				rawData.push(time,  parseFloat(result[i].mval1));
 				rawDataSeries.push(rawData);
 			}
 			var mode= "0";
@@ -479,29 +483,35 @@ function somsfiltered(data,dataSoms,series){
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode,  success: function(data_result) {
-			console.log("/api/SomsfilteredData/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node+"/"+dataSoms.mode)
-			var result = JSON.parse(data_result);
-			var filterDataSeries =[];
-			var series_data=[] , data_series=[];
-			for (i = 0; i < result.length; i++) {
-				var filterData=[];
-				var time =  Date.parse(result[i].ts);
-				if(dataSoms.id_name == "Soms(raw)" && dataSoms.mode == '0'){
-					filterData.push(time,  parseFloat(result[i][0]));
-					filterDataSeries.push(filterData);
-				}else{
+			if(data_result.length != 0){
+				var result = JSON.parse(data_result);
+				var filterDataSeries =[];
+				var series_data=[] , data_series=[];
+				for (i = 0; i < result.length; i++) {
+					var filterData=[];
+					var time =  Date.parse(result[i].ts);
 					filterData.push(time,  parseFloat(result[i].mval1));
 					filterDataSeries.push(filterData);
 				}
+				series_data.push(series)
+				series_data.push(filterDataSeries)
+				var visibility =[true,false]
+				for (i = 0; i < series_data.length; i++) {
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
+				}	
+				var color_series =["#00ff80" ,"#ffff00"];
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
+			}else{
+				var series_data=[] , data_series=[];
+				series_data.push(series)
+				var visibility =[true,false]
+				for (i = 0; i < series_data.length; i++) {
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+				}	
+				var color_series =["#00ff80" ,"#ffff00"];
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 			}
-			series_data.push(series)
-			series_data.push(filterDataSeries)
-			var visibility =[true,false]
-			for (i = 0; i < series_data.length; i++) {
-				data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
-			}	
-			var color_series =["#00ff80" ,"#ffff00"];
-			chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 		}
 	});	
 }
@@ -539,7 +549,7 @@ function chartProcess(id,data_series,name,color){
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e. %b %Y',
-				year: '%b'
+				year: '%Y'
 			},
 			title: {
 				text: 'Date'
