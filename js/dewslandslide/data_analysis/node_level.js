@@ -14,27 +14,35 @@ $(document).ready(function(e) {
 	var currrent_tdate =values[8]
 	if(current_site != undefined ){
 		var curSite = current_site.toLowerCase();
-		var node_id = currrent_node;
+		var node_id = Math.abs(parseFloat(currrent_node));
 		var fromDate = currrent_fdate;
 		var toDate = currrent_tdate;
 		var start = moment(currrent_fdate); 
 		var end = moment(currrent_tdate);
-		$("#sitegeneral").empty()
-		$("#nodetable").empty()
-		$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
-		var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
-		let dataSubmit = { 
-			site : curSite, 
-			fdate : fromDate,
-			tdate : toDate,
-			node:node_id
+		if(Number.isInteger(node_id) == true && curSite != "select" ){
+			$("#sitegeneral").empty()
+			$("#nodetable").empty()
+			$("#nodetable").append('<input class="form-control" name="node" id="node" type="number" min="1" max="41"  maxlength="2" size="2" value="'+currrent_node+'"></td>')
+			var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+			let dataSubmit = { 
+				site : curSite, 
+				fdate : fromDate,
+				tdate : toDate,
+				node:node_id
+			}
+			nodeSummary(dataSubmit)
+			initialProcessGraph(dataSubmit,id)
+			sites(current_site.toUpperCase())
+			Time(start,end)
+			$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
+		}else{
+			$("#errorMsg2").modal('show');
+			var start = moment().subtract(7, 'days'); 
+			var end = moment().add(1, 'days');
+			Time(start,end)
+			sites("Select")
+			submit()
 		}
-		nodeSummary(dataSubmit)
-		initialProcessGraph(dataSubmit,id)
-		sites(current_site.toUpperCase())
-		Time(start,end)
-		$('#sitegeneral').val($("#sitegeneral option:contains('"+current_site+"')").val());
-
 	}else{
 		var start = moment().subtract(7, 'days'); 
 		var end = moment().add(1, 'days');
@@ -106,8 +114,9 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
-		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){	
-			if( $("#node").val() <= 40 ){
+		console.log($("#sitegeneral").val() , $("#node").val() != "")
+		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
+			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
 				var curSite = $("#sitegeneral").val();
 				var node = $ ("#node").val();

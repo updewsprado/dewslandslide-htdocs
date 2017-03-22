@@ -39,14 +39,14 @@ $(document).ready(function(e) {
 			per_site_name.push(per_site[i].name)
 		}
 	})
-	$('#searchtool input[id="submit"]').on('click',function(){
+	$('#submit').on('click',function(){
 		if($("#sitegeneral").val() != ""){
 			var subSites =[];
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
 			// dataPresencePerSite(curSite)
-			document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Site Overview"
+			document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Column Overview"
 			for (i = 0; i <  per_site_name.length; i++) {
 				var siteCode = per_site_name[i].slice(0,3)
 				if( curSite == siteCode) {

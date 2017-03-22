@@ -9,7 +9,7 @@ $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var current_site = values[5];
 	$("#soms_search_tool").hide()
-	if(current_site != undefined ){
+	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)
 		ValueProcess(current_site)
 		$("#soms_search_tool").slideDown()
@@ -131,8 +131,11 @@ function removeDuplicates(num) {
 function getAlertmini(site,siteDiv){ 
 	let dataSubmit = { site:site}
 	$.ajax({url: "/node_level_page/getAllSingleAlertGet/"+site,
-		dataType: "json",
+		dataType: "json",error: function(xhr, textStatus, errorThrown){
+				submit()
+				$("#errorMsg").modal('show')},
 		success: function(data){
+			console.log(data)
 			var result = data;
 			nodeAlertJSON = JSON.parse(result.nodeAlerts)
 			maxNodesJSON = JSON.parse(result.siteMaxNodes)
