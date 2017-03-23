@@ -837,36 +837,36 @@ $(document).ready(function()
 
             console.log(temp);
 
-            // $("#loading .progress-bar").text("Submitting early warning releases... Please wait.");
-            // reposition("#loading");
-            // $("#loading").modal("show");
+            $("#loading .progress-bar").text("Submitting early warning releases... Please wait.");
+            reposition("#loading");
+            $("#loading").modal("show");
 
-            // $.ajax({
-            //     url: "../pubrelease/insert",
-            //     type: "POST",
-            //     data : temp,
-            //     success: function(result, textStatus, jqXHR)
-            //     {
-            //         $("#loading").modal("hide");
-            //         $("#loading .progress-bar").text("Loading...");
-            //         console.log(result);
-            //         setTimeout(function () 
-            //         {
-            //             if( result == "Routine")
-            //                  $("#view").attr("href", "../monitoring/events").text("View All Releases");
-            //             else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
-            //             reposition("#view_modal");
-            //             $('#view_modal').modal('show');
-            //         }, 1000);
+            $.ajax({
+                url: "../pubrelease/insert",
+                type: "POST",
+                data : temp,
+                success: function(result, textStatus, jqXHR)
+                {
+                    $("#loading").modal("hide");
+                    $("#loading .progress-bar").text("Loading...");
+                    console.log(result);
+                    setTimeout(function () 
+                    {
+                        if( result == "Routine")
+                             $("#view").attr("href", "../monitoring/events").text("View All Releases");
+                        else $("#view").attr("href", "../monitoring/events/" + result).text("View Recent Release");
+                        reposition("#view_modal");
+                        $('#view_modal').modal('show');
+                    }, 1000);
 
-            //         // Send to websocket to refresh all dashboards
-            //         doSend("getOnGoingAndExtended");
-            //     },
-            //     error: function(xhr, status, error) {
-            //       var err = eval("(" + xhr.responseText + ")");
-            //       alert(err.Message);
-            //     }
-            // });
+                    // Send to websocket to refresh all dashboards
+                    doSend("getOnGoingAndExtended");
+                },
+                error: function(xhr, status, error) {
+                  var err = eval("(" + xhr.responseText + ")");
+                  alert(err.Message);
+                }
+            });
         }
     });
 });
