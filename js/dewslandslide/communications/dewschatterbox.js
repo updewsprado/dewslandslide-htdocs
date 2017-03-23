@@ -1,3 +1,4 @@
+var data_timestamp;
 function sendViaAlertMonitor(data){
 	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
 	.done(function(response) {
@@ -143,6 +144,8 @@ function sendViaAlertMonitor(data){
 			} else {
 				alert("Error Occured: Please contact Administrator");
 			}
+
+			data_timestamp = moment(data.data_timestamp).add(30, 'm').format('hh:mm A');
 			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30, 'm').format('hh:mm a'));
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
@@ -806,8 +809,6 @@ $(document).ready(function() {
 					tagOffices.push(this.value);
 				});
 
-				console.log(tagOffices);
-
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -831,11 +832,12 @@ $(document).ready(function() {
 							'table_element_id': msg["data"][i][0],
 							'table_used': "smsoutbox",
 							'remarks': "" // Leave it blank for now
-					}
+						}
 					gintags_collection.push(gintags)
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
+					console.log(response);
 					var event_details = JSON.parse($('#event_details').val());
 					var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 					var tagOffices = [];
@@ -858,7 +860,7 @@ $(document).ready(function() {
 								});
 							}
 
-							narrative_template = "Sent EWI SMS to "+narrative_template.substring(1);
+							narrative_template = "Sent "+data_timestamp+" EWI SMS to "+narrative_template.substring(1);
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -870,9 +872,9 @@ $(document).ready(function() {
 								'narrative_template': narrative_template
 							}
 
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 							.done(function(response) {
-								// console.log(response);
+								console.log(response);
 							});
 							narrative_recipients = [];
 						} 
@@ -965,6 +967,62 @@ $(document).ready(function() {
 
 	return tempConn;
 }
+
+	function getOngoingEvents(sites){
+		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+			var events = JSON.parse(data);
+			console.log(events);
+			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+			.done(function(response) {
+				siteids = JSON.parse(response);
+				for (var counter = 0; counter < events.length; counter++) {
+					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+						if (events[counter].site_id == siteids[siteid_counter].id) {
+							var narrative_template = "";
+							if (gintags_msg_details.tags === "#EwiResponse") {
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+							} else if (gintags_msg_details.tags === "#EwiMessage"){
+
+								var tagOffices = [];
+								$('input[name="offices"]:checked').each(function() {
+									tagOffices.push(this.value);
+								});
+
+						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+									if (narrative_recipients.length > 0) {
+										narrative_recipients.forEach(function(x) {
+											narrative_template = narrative_template+","+x;
+										});
+									} else {
+										tagOffices.forEach(function(x) {
+											narrative_template = narrative_template+","+x;
+										});
+									}
+
+									narrative_template = "Sent "+moment(events[counter].timestamp).add(30, 'm').format('hh:mm a')+" EWI SMS to "+narrative_template.substring(1);
+						        }
+							} else {
+								$.notify("Invalid request, please try again.","warning");
+							}
+							var narrative_details = {
+								'event_id': events[counter].event_id,
+								'site_id': siteids[siteid_counter].id,
+								'ewi_sms_timestamp': gintags_msg_details[2],
+								'narrative_template': narrative_template
+							}
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+							.done(function(response) {
+								console.log(response);
+							});
+
+						}
+					}
+				}
+			});
+		});
+	}
+
 function waitForSocketConnection() {
 	if (!window.timerID) {
 		window.timerID = setInterval(
@@ -2245,12 +2303,6 @@ $('#btn-ewi').on('click',function(){
 	$('#early-warning-modal').modal('toggle');
 });
 
-Array.prototype.removeDuplicates = function () {
-    return this.filter(function (item, index, self) {
-        return self.indexOf(item) == index;
-    });
-};
-
 $('#send-btn-ewi-amd').click(function(){
 	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 	var default_recipients = $('#default-recipients').val().split(',');
@@ -2278,8 +2330,6 @@ $('#send-btn-ewi-amd').click(function(){
 		$.each(raw_offices, function(i, el){
 		    if($.inArray(el, narrative_recipients) === -1) narrative_recipients.push(el);
 		});
-
-		console.log(narrative_recipients);
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
@@ -2338,8 +2388,6 @@ $('#send-btn-ewi-amd').click(function(){
 				}
 			});
 
-
-			console.log(added_contacts);
 			for (var counter = 0; counter < added_contacts.length;counter++) {
 				user = "You";
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
@@ -3186,56 +3234,6 @@ function getInitialQuickInboxMessages () {
 				});
 			}
 		}
-	}
-
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
-								$('input[name="offices"]:checked').each(function() {
-									tagOffices.push(this.value);
-								});
-						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-									if (narrative_recipients.length > 0) {
-										narrative_recipients.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									} else {
-										tagOffices.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									}
-									narrative_template = "Sent EWI SMS to "+narrative_template.substring(1);
-						        }
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-
-						}
-					}
-				}
-			});
-		});
 	}
 
 	function removeIndividualGintag(gintag_details){
