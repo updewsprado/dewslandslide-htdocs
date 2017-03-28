@@ -37,25 +37,11 @@ function loadBulletin(id1, id2) {
                 }   
             }
             bulletin_timestamp = moment(datetime, 'DD MMMM YYYY, h:mm A');
+            let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
 
-            $.get( "/../../accomplishment/getNarrativesForShift", 
-            { event_id: event_id, start: bulletin_timestamp.format("YYYY-MM-DD HH:mm:ss"), end: moment(bulletin_timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
-            .done(function (data) {
-                let temp = JSON.parse(data);
-                console.log(temp);
-                let isBulletinSent = false;
-                for( let i = 0; i < temp.length; i++) {
-                    console.log(temp[i].narrative.includes(bulletin_timestamp.format("hh:mm A")), bulletin_timestamp.format("hh:mm A")) 
-                    if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(bulletin_timestamp.format("hh:mm A")))
-                    {
-                        isBulletinSent = true; break;
-                    }
-                }
-                
-                if(isBulletinSent) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
-                else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
-                $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
-            });
+            if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
+            else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
+            $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
         }
     }); 
 }
