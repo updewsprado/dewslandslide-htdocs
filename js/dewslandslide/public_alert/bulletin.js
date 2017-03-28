@@ -168,6 +168,8 @@ function sendMail(text, subject, filename, recipients) {
                         narrative: message
                     }];
 
+                    $("#" + release_id).css("color", "red").attr("data-sent", 1);
+
                     $.post("/../../accomplishment/insertNarratives", {narratives: narratives} )
                     .fail(function (x, y) {
                         console.log(y);
