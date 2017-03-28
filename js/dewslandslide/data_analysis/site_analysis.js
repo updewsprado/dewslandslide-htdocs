@@ -141,7 +141,11 @@ function SelectedSite(from,to) {
 			$('#columngeneral').selectpicker();
 			$('#columngeneral').append('<option value="">Select Column</option>')
 			for (b = 0; b <  result.length; b++) {
-				dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');
+				if(selected_site == "lab" && result[b].name == "plab" ){
+				// dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');
+				}else{
+				dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');	
+				}
 			}
 			SelectedColumn(selected_site,from,to);
 		}
