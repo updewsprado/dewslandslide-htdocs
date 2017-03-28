@@ -5,124 +5,157 @@ $(document).ajaxStart(function () {
 	});
 	$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
 	$("body").popover({ selector: '[data-toggle=popover]' });  
-	// var $sidebar   = $("#sidebar"), 
-	// $window    = $(window),
-	// offset     = $sidebar.offset(),
-	// topPadding = 5;
 
-	// $window.scroll(function() {
-	// 	if ($window.scrollTop() > offset.top) {
-	// 		$sidebar.stop().animate({
-	// 			marginTop: $window.scrollTop() - offset.top + topPadding
-	// 		});
-	// 	} else {
-	// 		$sidebar.stop().animate({
-	// 			marginTop: 0
-	// 		});
-	// 	}
-	// });
 });
 $(document).ajaxStop(function () {
 	$('#loading').modal('toggle');
+	$(".bootstrap-select").click(function () {
+		$(this).addClass("open");
+	});
 });
 
 $(document).ready(function(e) {
+	$(".bootstrap-select").click(function () {
+		$(this).addClass("open");
+	});
 	dropdowlistAppendValue()
 	$('#sitegeneral').selectpicker();
 	$('.checkbox').prop('disabled', true);
-	$('#reportrange').prop('disabled', true);
-	$.get("../site_level_page/getAllSiteNames").done(function(data){
-		var per_site = JSON.parse(data);
-		for (a = 0; a <  per_site.length; a++) {
-			dropdowlistAppendValue(per_site[a].name, (per_site[a].name).toUpperCase(),'#sitegeneral');
-		}
-	})
-	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-		var selecte_site = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-
-		var start = moment().subtract(2, 'days'); 
-		var end = moment().add(1, 'days');
-
-		$('input[name="datefilter"]').daterangepicker({
-			autoUpdateInput: false,
-			maxDate: moment().add(1, 'days'),
-			opens: "right",
-			startDate: start,
-			endDate: end,
-			locale: {
-				cancelLabel: 'Clear'
-			}
-		});
-		$('.columngeneral').empty();
-		$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
-		$('#columngeneral').selectpicker();
-		$('#columngeneral').append('<option >Select Column</option>');
-		$.ajax({url: "/api/SiteDetails/"+selecte_site , dataType: "json",success: function(result){
-			for (b = 0; b <  result.length; b++) {
-				dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');
-
-			}
-			SelectedColumn(selecte_site);
-		}
-	})
-	});
+	$('.site-panel').hide();
+	$('.column-panel').hide();
+	$('.node-panel').hide();
+	$('.crackgeneral').hide()
+	dateselection();
 });
+
 
 function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 	$(id).append('<option val="'+newitemnum+'">'+newitemdesc+'</option>');
 	$(id).selectpicker('refresh'); 
 }
 
-function SelectedColumn(selecte_site) {
-	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-		$( "#analysis_panel_body").empty();
-		$(".ground_table").empty()
-		var selecte_column = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-		CheckBoxSiteLevel(selecte_site,selecte_column);
-		$('.checkbox').prop('disabled', false);
-		$('#ground_measurement_checkbox').prop('checked', true);
-		$('#data_presence_checkbox').prop('checked', true);
-		$('#communication_health_checkbox').prop('checked', true);
-		$('#node_summary_checkbox').prop('checked', true);
-		$('.crackgeneral').empty();
-		$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true" ></select>');
-		$('#crackgeneral').attr('disabled',true)
-		$('#crackgeneral').selectpicker();
-		$('#crackgeneral').append('<option >Select Crack</option>');
-		$(".ground_table").append(' <table id="ground_table" class="display table" cellspacing="0"></table>')
-		$( "#analysis_panel_body").append('<small id="small_header"><b>&nbsp;&nbsp;&nbsp;'+selecte_site.toUpperCase()+'&nbsp;&nbsp;&nbsp;>&nbsp;&nbsp;&nbsp;'
-			+selecte_column.toUpperCase()+'</b></small><div class="panel panel-default "><div class="panel-body"><div class="col-md-12" id="divData"></div> </div></div>');
-		var panel_div_name =["site","column","node"];
-		var panel_name=["Site","Column","Node"]
-		for(var a = 0; a < panel_div_name.length; a++){
-			$("#divData").append('<div class="panel panel-default"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Level Overview</h1>'+
-				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
-		}
-		var panel_alert_colors =['panel-success','panel-danger','panel-warning']
-		var alert_note =[('<strong>No Significant ground movement</strong>').toUpperCase(),'<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>',
-		'<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>']
-		for(var b = 0; b < panel_alert_colors.length; b++){
-			$(".site_level").append(' <div id="panel_alert" class="panel '+panel_alert_colors[b]+'"><div class="panel-heading text-center">'+alert_note[b]+'</div></div>')
-			$("."+panel_alert_colors[b]).hide();
-		}
-		$(".site_level").append('<div class = "col-md-3 map-canvas" id="map-canvas"></div>')
-		$(".site_level").append('<div class="col-md-8" ><div id="surficial_graph"><h4><span class="glyphicon "></span><b>Superimpose Surficial Graph</b>'+
-			'</h4><br><div id="ground_graph"></div><div>')
 
-		SiteInfo(selecte_column)
-		DataPresence(selecte_column,'data_presence')
-		NodeSumary(selecte_column,'node_summary_div')
-		mapGenerator(selecte_column)
-		// siteMaintenance(selecte_column)
-		showCommHealthPlotGeneral(selecte_column,'healthbars')
-		
-		$('.nodegeneral').empty();
-		$('.nodegeneral').append('<label for="nodegeneral">Node</label><select class="selectpicker"  id="nodegeneral" multiple data-live-search="true"></select>');
-		$('#nodegeneral').selectpicker();
-		let dataSubmit = {
-			site : (selecte_site).toLowerCase()
+function dateselection() {
+	var start = moment().subtract(30, 'days'); 
+	var end = moment();
+
+	$('#reportrange0').daterangepicker({
+		singleDatePicker: true,
+		startDate: end,
+	}, cb);
+
+	cb(start, end);
+
+	
+	$('#collapseSite' ).switchClass( "collapse", "in");
+	var panel_div_name =["site","column","node"];
+	var panel_name=["Site","Column","Node"]
+	for(var a = 0; a < panel_div_name.length; a++){
+		$("#analysis_panel_body").append('<div class="panel panel-info '+panel_div_name[a]+'_collapse"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Overview</h1>'+
+			'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
+		$('.'+panel_div_name[a]+'_collapse').hide()
+	}
+	var panel_alert_colors =['panel-success','panel-warning','panel-danger']
+	var alert_note =[('<strong>No Significant ground movement</strong>').toUpperCase(),'<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>',
+	'<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>']
+	for(var b = 0; b < panel_alert_colors.length; b++){
+		$(".site_level").append(' <div id="panel_alert" class="panel '+panel_alert_colors[b]+'"><div class="panel-heading text-center">'+alert_note[b]+'</div></div>')
+		$("."+panel_alert_colors[b]).hide();
+	}
+	$(".site_level").append('<div class="col-md-12" id="surficial_graph"></div>')
+	$("#surficial_graph").empty()
+	$("#surficial_graph").append('<h4><span class="glyphicon "></span><b>Superimpose Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+		'</select></b></h4><br><div id="ground_graph"><div>')
+	daysOption('surperimpose')
+}
+
+function cb(start, end) {
+	$('#reportrange0 span').html(end.format('YYYY-MM-DD'));
+	var parse_time = $('#reportrange0 span').text();
+	var fromDate = start.format('YYYY-MM-DD');
+	var toDate = moment(parse_time).add(1,'days').format('YYYY-MM-DD');
+	$('.site-panel').slideDown();
+	$('.sitegeneral').empty();
+	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
+	$('#sitegeneral').selectpicker();
+	$('#sitegeneral').append('<option >Select Site</option>')
+	$.get("../site_level_page/getAllSiteNames").done(function(data){
+		var per_site = JSON.parse(data);
+		for (a = 0; a <  per_site.length; a++) {
+			dropdowlistAppendValue(per_site[a].name, (per_site[a].name).toUpperCase(),'#sitegeneral');
 		}
-		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){ // <----------------- Data for crack name
+	})
+	SelectedSite(fromDate,toDate);
+}
+
+function daysOption(id) {
+	var day_list_text=["7 days","2 weeks","1 month","3 months","6 months","1 year"];
+	var day_list_val =["7d","2w","1m","3m","6m","1y"];
+	
+	$('#'+id+'_days').selectpicker();
+	for (var j = 0; j < day_list_text.length; j++) {
+		dropdowlistAppendValue(day_list_val[j], day_list_text[j] ,'#'+id+'_days')
+	}
+}
+
+function removeDuplicates(num) {
+	var x,
+	len=num.length,
+	out=[],
+	obj={};
+
+	for (x=0; x<len; x++) {
+		obj[num[x]]=0;
+	}
+	for (x in obj) {
+		out.push(x);
+	}
+	return out;
+}
+
+/************************/
+/***SITE LEVEL PROCESS***/
+/************************/
+
+function SelectedSite(from,to) {
+	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_site = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
+		$(".ground_table").empty()
+		$(".ground_table").append(' <table id="ground_table" class="display table" cellspacing="0"></table>')
+		$("#analysis_panel").empty();
+		$('.site_collapse').slideDown()
+		$('.column_collapse').slideUp()
+		$('.node_collapse').slideUp()
+		$('#analysis_panel_body' ).switchClass( "original", "change");
+		$('.column-panel').slideDown();
+		$('#collapseColumn' ).switchClass( "collapse", "in");
+		$('#collapseNode' ).switchClass( "in", "collapse");
+		$('#surperimpose_days').val('3 months')
+		$('#surperimpose_days').selectpicker('refresh')
+		SelectdaysOption('surperimpose')
+		CheckBoxSite(selected_site,from,to)
+		RainFallProcess(selected_site,from,to)
+		$.ajax({url: "/api/SiteDetails/"+selected_site , dataType: "json",success: function(result){
+			$('.columngeneral').empty();
+			$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
+			$('#columngeneral').selectpicker();
+			$('#columngeneral').append('<option value="">Select Column</option>')
+			for (b = 0; b <  result.length; b++) {
+				dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');
+			}
+			SelectedColumn(selected_site,from,to);
+		}
+	})
+		let dataSubmit = {
+			site : (selected_site).toLowerCase(),
+			fdate : from,
+			tdate : to
+		}
+		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){
+			$('.crackgeneral').empty();
+			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+			$('#crackgeneral').selectpicker();
+			$('#crackgeneral').append('<option value="">Select Crack</option>')
 			var result= JSON.parse(data_result)
 			var crack_name= [];
 			for (i = 0; i <  result.length; i++) {
@@ -130,78 +163,30 @@ function SelectedColumn(selecte_site) {
 				crack_name.push(result[i].crack_id)
 			}
 			dataTableProcess(dataSubmit,crack_name)
-			
+
 		});
-		$.ajax({url: "/api/NodeNumberPerSite/"+selecte_column , dataType: "json",success: function(result){
-			$(".bootstrap-select").click(function () {
-				$(this).addClass("open");
-			});
-			for (c = 0; c <  result.length; c++) {
-				for (d = 0; d <  result[c].num_nodes; d++) {
-					dropdowlistAppendValue((d+1),(d+1),'#nodegeneral');
-				}
-			}
-			SelectedNode()
-		}
-	})
 	});
 }
-function SelectedNode() {
-	if( $('.nodegeneral').val() == ""){
-		$('input[name="datefilter"]').val('');
-		$('#reportrange').prop('disabled', true);
-	}
-	$('.nodegeneral').change(function(e) {
-		var selected = $(e.target).val();
-		if(selected != null){
-			$('#reportrange').prop('disabled', false);
-		}else{
-			$('#reportrange').prop('disabled', true);
-		}
-	}); 
-}
-function CheckBoxSiteLevel(selecte_site,selecte_column){
 
-	$('.checkbox').empty()
-	var list_checkbox =["ground_measurement","rain_graph","surficial_velocity",
-	"piezo","data_presence","sub_surface_analysis","communication_health","node_summary","x_accel","y_accel",
-	"z_accel","soms","batt","heatmap","ground_table"];
-	var name_checkbox =["Surficial Measurement Graph","Rainfall Graph","Surficial Analysis Graph",
-	"Piezometer Graph","Data Presence","SubSurface Analysis Graph","Communication Health","Node Summary","X Accel Graph","Y Accel Graph",
-	"Z Accel Graph","Soms Graph","Battery Graph","Soms Heatmap","Surficial Measurement Data Table"]
+function CheckBoxSite(site,from,to){
+	$('.site_checkbox').empty()
+	$('.crackgeneral').slideUp()
+	var list_checkbox =["ground_measurement","ground_table","rain_graph","surficial_velocity"];
+	var name_checkbox =["Surficial Measurement Graph","Surficial Measurement Data Table","Rainfall Graph","Surficial Analysis Graph"];
 	for (a = 0; a <  list_checkbox.length; a++) {
 		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
 
-	if(selecte_column.slice(3,4) != "s"){
-		$('.heatmap_checkbox').hide()
-		$('.soms_checkbox').hide()
-	}else{
-		$('.heatmap_checkbox').show()
-		$('.soms_checkbox').show()
-	}
-	for (a = 8; a <  list_checkbox.length; a++) {
-		$('#'+list_checkbox[a]+'_checkbox').prop('disabled', true);
-	}
-	$('#'+list_checkbox[14]+'_checkbox').prop('disabled', false);
-	$('#'+list_checkbox[13]+'_checkbox').prop('disabled', false);
-	$("#nodegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-		var selecte_site = $(this).find('option').eq(clickedIndex).text();
-	});
-	$('input[name="datefilter"]').on('apply.daterangepicker', function(ev, picker) {
-		var time = $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-		CheckBoxTimeProcess(selecte_column,selecte_site,time.context.value,list_checkbox)
+	$('#'+list_checkbox[0]+'_checkbox').prop('checked', true);
+	$('input[id="'+list_checkbox[0]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
+			$('#surficial_graph').slideDown()
 
-		for (a = 8; a <  list_checkbox.length; a++) {
-			$('#'+list_checkbox[a]+'_checkbox').prop('disabled', false);
+		}else{
+			$('#surficial_graph').slideUp()
 		}
 	});
-
-	$('input[name="datefilter"]').on('cancel.daterangepicker', function(ev, picker) {
-		$(this).val('Select Date');
-	});
-
-	$('input[id="ground_table_checkbox"]').on('click',function () {
+	$('input[id="'+list_checkbox[1]+'_checkbox"]').on('click',function () {
 		if ($('#ground_table_checkbox').is(':checked')) {
 			$('#groundModal').modal({backdrop: 'static', keyboard: false})  
 			$("#groundModal").modal('show')
@@ -211,345 +196,99 @@ function CheckBoxSiteLevel(selecte_site,selecte_column){
 		
 	});
 	$('.close').on('click',function () {
-		$('#ground_table_checkbox').prop('checked', false);
+		$('#'+list_checkbox[1]+'_checkbox').prop('checked', false);
 	});
-	$('input[id="'+list_checkbox[4]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
-			$('#data_presence').show();
-		}
-	});
-	$('input[id="'+list_checkbox[0]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
-			$('#surficial_graph').slideDown()
-		}else{
-			$('#surficial_graph').slideUp()
-		}
-	});
-	$('input[id="'+list_checkbox[6]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[6]+'_checkbox').is(':checked')) {
-			$('#'+list_checkbox[6]+'_checkbox').addClass("jumper");
-			$('#'+list_checkbox[6]+'_checkbox').attr("href","#commhealth_div");
-			$('#commhealth_div').slideDown()
-		}else{
-			$('#commhealth_div').slideUp()
-		}
-	});
-	$('input[id="'+list_checkbox[7]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[7]+'_checkbox').is(':checked')) {
-			$('#node_summary_div').slideDown()
-		}else{
-			$('#node_summary_div').slideUp()		}
-		});
 
-	$('input[id="'+list_checkbox[1]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[1]+'_checkbox').is(':checked')) {
-			$(".site_level").append('<div class="col-md-12" id="raincharts"></div>')
-			$("#raincharts").empty()
-			$("#raincharts").append('<br><h4><span class=""></span><b>Rain Fall Graph</b></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"> <label for="reportrange-r">Date:</label>'+
-				'<input id="reportrange-r" type="text" name="datefilter-r" value="" placeholder="Nothing selected"/><br></ol>')
-			var start = moment().subtract(2, 'days'); 
-			var end = moment().add(1, 'days');
-			$('input[name="datefilter-r"]').daterangepicker({
-				autoUpdateInput: false,
-				maxDate: moment().add(1, 'days'),
-				opens: "right",
-				startDate: start,
-				endDate: end,
-				locale: {
-					cancelLabel: 'Clear'
-				}
-			});
-			$('input[name="datefilter-r"]').on('apply.daterangepicker', function(ev, picker) {
-				var time = $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-				var timevalue =time.context.value
-				var fdate = timevalue.slice(0,10);
-				var tdate = timevalue.slice(13,23);
-				RainFallProcess(selecte_site,fdate,tdate)
-			});
-
-			$('input[name="datefilter-r]').on('cancel.daterangepicker', function(ev, picker) {
-				$(this).val('Select Date');
-			});
-			
-		}else{
-			$("#raincharts").empty()
-		}
-	});	
-	$('input[id="'+list_checkbox[2]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[2]+'_checkbox').is(':checked')) {
-			$('#crackgeneral').attr('disabled',false)
-			$('#crackgeneral').selectpicker('refresh')
-			$(".site_level").append('<div class="col-md-12 surficial_graphs_VD" id="surficial_graphs_VD"></div>')
-			$("#surficial_graphs_VD").empty()
-			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b></h4><ol class="breadcrumb surficial-breadcrumb" id="surficial-breadcrumb"></ol>')
-			$("#surficial-breadcrumb").append('<li class="breadcrumb-item" id="surf_title" data-toggle="tooltip" data-placement="left"  data-content="Select Crack"><b class="breadcrumb-item" data-toggle="collapse" data-target="#analysisVelocity">Surficial Velocity</b></li>'+
-				'<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#analysisDisplacement">Surficial Displacement</b></li>')
-			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div> ')
-			$("#surf_title").popover('show')
-			$("#crackgeneral").change(function () {
-				var current_crack = $(this).find("option:selected").text();
-				surficialAnalysis(selecte_site,current_crack)
-			});
-		}else{
-			$(".surficial_graphs_VD").empty()
-			$('#crackgeneral').attr('disabled',true)
-			$('#crackgeneral').selectpicker('refresh')
-		}
-	});
 	$('input[id="'+list_checkbox[3]+'_checkbox"]').on('click',function () {
 		if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
-			$(".site_level").append('<div class="col-md-12" id="piezometer_div"></div>')
-			$("#piezometer_div").empty()
-			$("#piezometer_div").append('<br><h4><span class=""></span><b>Piezometer Graph </b></h4><ol class="breadcrumb piezo-breadcrumb" id="piezo-breadcrumb"></ol>')
-			piezometer(selecte_column)
+			$('.crackgeneral').slideDown()
+			$(".site_level").append('<div class="col-md-12 surficial_graphs_VD" id="surficial_graphs_VD"></div>')
+			$("#surficial_graphs_VD").empty()
+			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b><select class="selectpicker pull-right surficialgeneral"  id="surficialgeneral" multiple><option value="analysisVelocity">Surficial Velocity</option><option value="analysisDisplacement">Surficial Displacement</option></select></h4>')
+			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div> ')
+			$("#surficialgeneral").selectpicker('refresh')
+			$(".surficialgeneral").hide();
+			$("#crackgeneral").change(function () {
+				var current_crack = $(this).find("option:selected").text();
+				if(current_crack !="Select Crack"){
+					surficialAnalysis(site,current_crack);
+					$(".surficialgeneral").slideDown();
+				}
+			});
 		}else{
-			$("#piezometer_div").empty()
-		}
-	});	
-	$('input[id="'+list_checkbox[13]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[13]+'_checkbox').is(':checked')) {
-			$(".node_level").append('<div class="col-md-12" id="heatmap_div"></div>')
-			$("#heatmap_div").append('<br><h4><b>Soms Heatmap </b></h4><ol class="breadcrumb subsurface-breadcrumb" id="subsurface-breadcrumb">'+
-				'<label class="reportrange3">Date:&nbsp;</label><input id="reportrange3" class="reportrange3" type="text" name="datefilter3" value="" placeholder="Nothing selected"/><div class="form-group nodegeneral heatmapClass"><label class="daygeneral">Days:&nbsp;</label>'+
-				'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div></ol>')
-			$('.daygeneral').prop('disabled', true);
-			var start = moment().subtract(2, 'days'); 
-			$('input[name="datefilter3"]').daterangepicker({
-				timePicker: true,
-				timePickerIncrement: 30,
-				autoUpdateInput: false,
-				maxDate: new Date(),
-				opens: "right",
-				startDate: start,
-				locale: {
-					cancelLabel: 'Clear'
-				},
-				singleDatePicker: true,
-				showDropdowns: true
-			});
-
-			$('input[name="datefilter3"]').on('apply.daterangepicker', function(ev, picker) {
-				$("#heatmap_container").empty();
-				var time = $(this).val(picker.startDate.format('YYYY-MM-DD HH:mm'));
-				var timevalue =time.context.value
-				var tdate = timevalue.slice(0,10);
-				var time = timevalue.slice(11,16);
-				$('.daygeneral').prop('disabled', false);
-				$(".heatmapClass").empty()
-				$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
-					'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
-				$('#daygeneral').on('change', function() {
-					
-					heatmapProcess(selecte_column,(tdate+"T"+time),this.value)
-				})
-			});
-
-			$('input[name="datefilter2"]').on('cancel.daterangepicker', function(ev, picker) {
-				$(this).val('Select Date');
-			});
-			
-		}else{
-			$("#heatmap_container").empty()
+			$('.crackgeneral').slideUp()
+			$("#surficial_graphs_VD").slideUp()
 		}
 	});
+}
 
-	$('input[id="'+list_checkbox[5]+'_checkbox"]').on('click',function () {
-		if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
-			$(".column_level").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
-			$("#subsurface_analysis_div").append('<br><h4><b>Sub-Surface Analysis Graph </b></h4><ol class="breadcrumb subsurface-breadcrumb" id="subsurface-breadcrumb">'+
-				'<label id="reportrange2"  for="reportrange2"  data-toggle="popover" data-placement="top" title="Notice" data-content="Due to slow process of chart.Maximum time range can only be 1 week or less">Date:&nbsp;</label><input id="reportrange2" type="text" name="datefilter2" value="" placeholder="Nothing selected"/><br></ol>')
-			$("#reportrange2").popover('show')
-			var title = ["Column","Displacement","Velocity"]
-			var id_title =["column","dis","velocity"]
-			var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
-			for(var a = 0; a < title.length; a++){
-				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
-				$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="'+id_title[a]+'_sub" class="collapse">'+
-					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
+function SurficialOnSelect() {
+	var name = ['Surficial Velocity','Surficial Displacement']
+	var id = ['analysisVelocity','analysisDisplacement']
+	$("#surficialgeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_surficial =($(this).find('option').eq(clickedIndex).val());
+		for (a = 0; a < name.length; a++) {
+			if(selected_surficial ==  id[a]){
+				var div1 = document.getElementById(id[a]);
+				var collapse_id = div1.getAttribute("class");
+				if( collapse_id == "in"){
+					$("#"+id[a]).switchClass("in" , "collapse");
+				}else{
+					$("#"+id[a]).switchClass("collapse" , "in");
+				}
 			}
-			
-			var start = moment().subtract(2, 'days'); 
-			var end = moment().add(1, 'days');
-			$('input[name="datefilter2"]').daterangepicker({
-				autoUpdateInput: false,
-				maxDate: new Date(),
-				opens: "right",
-				startDate: start,
-				endDate: end,
-				locale: {
-					cancelLabel: 'Clear'
-				}
-			});
-			$('input[name="datefilter2"]').on('apply.daterangepicker', function(ev, picker) {
-				var time = $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
-				var timevalue =time.context.value
-				var fdate = timevalue.slice(0,10);
-				var tdate = timevalue.slice(13,23);
-				allSensorPosition(selecte_column,fdate,tdate)
-			});
-
-			$('input[name="datefilter2"]').on('cancel.daterangepicker', function(ev, picker) {
-				$(this).val('Select Date');
-			});
-			
-		}else{
-			$(".subsurface_analysis_div").empty()
 		}
-	});
-
+	})
 }
 
-function CheckBoxTimeProcess(site_column,site,time,list_checkbox){
-	var fdate = time.slice(0,10);
-	var tdate = time.slice(13,23);
-	var node =  $('#nodegeneral').val();
-	var node_id = node
-	let dataSubmit = { 
-		site : (site_column).toLowerCase(), 
-		fdate : fdate,
-		tdate : tdate,
-		node:node_id
-	}
-	NodeProcess(dataSubmit,list_checkbox)
-}
-
-function mapGenerator(site) {
-	$.ajax({url: "/api/SiteDetails/"+site , dataType: "json",success: function(result){
-		var map = new google.maps.Map(document.getElementById('map-canvas'), {
-			zoom: 7,
-			center: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-		});
-		var marker = new google.maps.Marker({
-			position: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
-			map: map
-		});
-	}
-})
-}
-
-function siteMaintenance(curSite) {
-	let dataSubmit = {site : (curSite).toLowerCase()}
-	$("#site_maintenance").append('<br><h4><span class=""></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
-		'<thead><tr><th>ID</th><th>Site Name</th>th>Start Date</th><th>End Date</th><th>Personel</th><th>Activity</th><th>Object(s)</th><th>Remarks</th></tr> </thead><tbody> </tbody></table>')
-	$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){
-		var result = JSON.parse(data);
-		var site_maintenace = []
-		for (i = 0; i < result.length; i++) {
-			site_maintenace.push([result[i].sm_id,result[i].site,result[i].start_date , result[i].end_date , result[i].staff_name , result[i].activity , result[i].object, 
-				result[i].remarks])
+function SelectdaysOption(id) {
+	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		var fdate;
+		if(selected_days == "7 days"){
+			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "2 weeks"){
+			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "1 month"){
+			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "3 months"){
+			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "6 months"){
+			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "1 year"){
+			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
 		}
-		$('#mTable').DataTable({
-			data:  site_maintenace,
-			"processing": true, 
-			"lengthMenu": [ 10, 25, 50, 75, 100 ]
-		} );
-	});
-}
 
-function NodeSumary(site,siteDiv){ 
-	let dataSubmit = { site:site.toLowerCase()}
-	$(".column_level").append('<div class="col-md-8 " id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
-	$(".column_level").append('<br><br><br><div class="col-md-10"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
-	$(".column_level").append('<br><div class="col-md-12 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
-		'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
-		'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
-		'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
-		'</div><div class="row" id="healthbars" style=" height: 300px;width:auto"></div></div>')
-	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
-		var result = JSON.parse(data);
-		nodeAlertJSON = JSON.parse(result.nodeAlerts)
-		maxNodesJSON = JSON.parse(result.siteMaxNodes)
-		nodeStatusJSON = JSON.parse(result.nodeStatus)
-		initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
-	});
-}
-
-function SiteInfo(site){ 
-	let dataSubmit = { site:(site).toLowerCase()}
-	$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){
-		var result = JSON.parse(data); 
-		$("#info_site").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase().slice(0,3)+")")
-		$("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")")
-		// $("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")<br>Date install("+result[0].date_install +") <br> Date Activation("+result[0].date_activation+")")
-	});
-}
-function DataPresence(site){
-	var start = moment().subtract(1, 'days'); 
-	var end = moment().add(1, 'days');
-	// var start = moment('2016-04-05'); 
-	// var end = moment('2016-04-06');
-	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
-		dataType: "json",
-		success: function(result){
-			if(result.length != 0){
-				var time_non_moment = []
-				var time_index_obj =[]
-				var time_data =[]
-				var pattern = []
-				for (a = 0; a < 48; a++) {
-					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
-					time_non_moment.push(time.format('YYYY-MM-DD HH:mm:ss'))
-				}
-				time_non_moment.reverse()
-				for (b = 0; b < 48; b++) {
-					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
-					time_index_obj.push({index:b,time:time_non_moment[b]})
-				}
-				for (c = 0; c < time_non_moment.length; c++) {
-					for (d = 0; d < result.length; d++) {
-						if(time_non_moment[c] == result[d].timeslice){
-							time_data.push(c)
-						}
-					}
-				}
-
-
-				colors = [ "#222", "#222"]
-				for (e = 0; e < time_data.length; e++) {
-					pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
-				}
-				var colorDomain = d3.extent(pattern, function(d) {
-					return d.time;
-				});
-
-				var colorScale = d3.scale.linear()
-				.domain(colorDomain)
-				.range(colors);
-
-				var tip = d3.tip()
-				.attr('class', 'd3-tip')
-				.offset([-10, 0])
-				.html(function(d) {
-					return "<strong>timestamp:</strong> <span style='color:red'>"+d.timestamp+"</span>";
-				}) 
-
-				var svg = d3.select("#data_presence_div")
-				.append("svg")
-				.attr("width", ($(".container").width()-$("#info_site").width())+200)
-				.attr("height", 100);
-
-				svg.call(tip);
-
-				var rectangles = svg.selectAll("rect")
-				.data(pattern)
-				.enter().append("rect")
-
-				rectangles.attr("x", function(d) {
-					return d.index_x * (((($(".container").width()-$("#info_site").width())+200)/48));})
-				.attr("y", function(d) {
-					return d.index_y * (((($(".container").width()-$("#info_site").width())+200)/48));})
-				.attr("width", (((($(".container").width()-$("#info_site").width())+200)/48)-2))
-				.attr("height", 15).
-				style("fill", function(d) {
-					return colorScale(d.index_x);})
-				.on('mouseover', tip.show)
-				.on('mouseout', tip.hide)}
-			}
-		});
+		var site = $("#sitegeneral").val();
+		var tdate = moment().add(1,'days').format('YYYY-MM-DD');
+		
+		let dataTableSubmit = { 
+			site : site, 
+			fdate : fdate,
+			tdate : tdate
+		}
+		if(id == "surperimpose"){
+			surficialGraph(dataTableSubmit)
+		}else if(id ==  "rainfall" ){
+			RainFallProcess(site,fdate,tdate)
+			$('#rainfall_days').val(selected_days)
+			$('#rainfall_days').selectpicker('refresh')
+		}
+		
+		
+	})
 }
 
 function RainFallProcess(curSite,fromDate,toDate){
+	$('#rainfallgeneral').selectpicker();
+	$('#rainfall_days').selectpicker();
+	$(".site_level").append('<div class="col-md-12" id="raincharts"></div>')
+	$("#raincharts").empty()
+	$("#raincharts").append('<h4><b>Rain Fall Graph</b><select class="selectpicker pull-right rainfall_select"  id="rainfall_days"></select><select class="selectpicker pull-right rainfall_select"  id="rainfallgeneral" multiple ></select></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol><br>')
+	$('.rainfall_select').selectpicker('refresh')
+	daysOption('rainfall')
+	SelectdaysOption('rainfall')
+	$(".rain-breadcrumb").hide()
 	let dataSubmit = { 
 		site : (curSite).toLowerCase(), 
 		fdate : fromDate,
@@ -595,8 +334,9 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 				{
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 						$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div></div>')
+						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var colors= ["#EBF5FB","#82b1ff","#448aff"]
@@ -609,18 +349,18 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							if(jsonRespo[i].hrs24 == null){
-								if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-									nval.push(i);
+							// if(jsonRespo[i].hrs24 == null){
+							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+							// 		nval.push(i);
+							// 	}
+							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+							// 		nval.push(i);
 
-								}else{
-									nval.push(i);
-									break;
-								}
-							}
+							// 	}else{
+							// 		nval.push(i);
+							// 		break;
+							// 	}
+							// }
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -655,8 +395,9 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 				{
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 						$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div></div>')
+						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var colors= ["#EBF5FB","#82b1ff","#448aff"]
@@ -703,8 +444,9 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 				{
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'">'+site.toUpperCase()+'</b></li>')
+						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 						$("#raincharts").append('<div class="col-md-12"><div id="'+id+'" class="collapse"></div><div>')
+						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var colors= ["#EBF5FB","#82b1ff","#448aff"]
@@ -717,14 +459,14 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							if(jsonRespo[i].hrs24 == null){
-								if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-									nval.push(i);
-								}
-							}
+							// if(jsonRespo[i].hrs24 == null){
+							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+							// 		nval.push(i);
+							// 	}
+							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
+							// 		nval.push(i);
+							// 	}
+							// }
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -749,6 +491,7 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
+	RainFallOnSelect()
 	var colors= ["#EBF5FB","#82b1ff","#448aff"]
 	Highcharts.setOptions({
 		global: {
@@ -762,7 +505,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 			panning: true,
 			panKey: 'shift',
 			height: 300,
-			width:$(".breadcrumb").width(),
+			width:($(".site_collapse").width()-80),
 			backgroundColor: {
 				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
 				stops: [
@@ -781,135 +524,127 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 		xAxis: {
 			plotBands: negative,
 			type: 'datetime',
-                                    dateTimeLabelFormats: { // don't display the dummy year
-                                    month: '%e. %b %Y',
-                                    year: '%b'
-                                },
-                                title: {
-                                	text: 'Date'
-                                },
-                                labels: {
-                                	style:{
-                                		color: 'white'
-                                	}
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+			labels: {
+				style:{
+					color: 'white'
+				}
 
-                                },
-                                title: {
-                                	text: 'Date',
-                                	style:{
-                                		color: 'white'
-                                	}
-                                }
-                            },
+			},
+			title: {
+				text: 'Date',
+				style:{
+					color: 'white'
+				}
+			}
+		},
 
-                            yAxis:{
-                 plotBands: [{ // visualize the weekend
-                 	value: max/2,
-                 	color: colors[1],
-                 	dashStyle: 'shortdash',
-                 	width: 2,
-                 	label: {
-                 		text: '24hrs threshold (' + max/2 +')',
-                 		style: { color: '#fff',}
-                 	}
-                 },{
-                 	value: max,
-                 	color: colors[2],
-                 	dashStyle: 'shortdash',
-                 	width: 2,
-                 	label: {
-                 		text: '72hrs threshold (' + max +')',
-                 		style: { color: '#fff',}
-                 	}
-                 }]
+		yAxis:{
+			plotBands: [{
+				value: max/2,
+				color: colors[1],
+				dashStyle: 'shortdash',
+				width: 2,
+				label: {
+					text: '24hrs threshold (' + max/2 +')',
+					style: { color: '#fff',}
+				}
+			},{
+				value: max,
+				color: colors[2],
+				dashStyle: 'shortdash',
+				width: 2,
+				label: {
+					text: '72hrs threshold (' + max +')',
+					style: { color: '#fff',}
+				}
+			}]
 
-             },
+		},
 
-             tooltip: {
-             	shared: true,
-             	crosshairs: true
-             },
+		tooltip: {
+			shared: true,
+			crosshairs: true
+		},
 
-             plotOptions: {
-             	series: {
-             		marker: {
-             			radius: 3
-             		},
-             		cursor: 'pointer',
-             		point: {
-             			events: {
-             				click: function () {
-             					if(this.series.name =="Comment"){
+		plotOptions: {
+			series: {
+				marker: {
+					radius: 3
+				},
+				cursor: 'pointer',
+				
+			},
+			area: {
+				marker: {
+					lineWidth: 3,
+					lineColor: null 
+				}
+			}
 
-             						$("#anModal").modal("show");
-             						$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-             					}else if(this.series.name =="Alert" ){
+		},
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#E0E0E3'
+			},
+			itemHoverStyle: {
+				color: '#FFF'
+			},
+			itemHiddenStyle: {
+				color: '#606063'
+			}
+		},
+		series:series_data
+	});
+	var show_div =($(".rain-breadcrumb").html()).split("\"")
+	var div_rainfall_name = (show_div[10].toString()).split("<")
+	var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
+	var rain_name =(filtered_rain_name[1]).toString()
+	var div_data_show = show_div[7].toString()
+	if(div_data_show== "#rain_arq"){
+		$("#rain_arq").addClass("in");
+		$('#rainfallgeneral').val(rain_name)
+	}else if(div_data_show== "#rain_senslope"){
+		$("#rain_senslope").addClass("in");
+		$('#rainfallgeneral').val(rain_name)
+	}else{
+		$(div_data_show).addClass("in");
+		$('#rainfallgeneral').val(rain_name)
+	}
 
-             						$("#anModal").modal("show");
-             						$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+	$('#rainfallgeneral').selectpicker('refresh')
 
-             					}else if(this.series.name =="Maintenace"){
-
-             						$("#anModal").modal("show");
-             						$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-             					}
-             					else {
-             						$("#annModal").modal("show");
-             						$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-             					}
-             				}
-             			}
-             		}
-             	},
-             	area: {
-             		marker: {
-             			lineWidth: 3,
-                                        lineColor: null // inherit from series
-                                    }
-                                }
-
-                            },
-                            legend: {
-                            	layout: 'vertical',
-                            	align: 'right',
-                            	verticalAlign: 'middle',
-                            	borderWidth: 0,
-                            	itemStyle: {
-                            		color: '#E0E0E3'
-                            	},
-                            	itemHoverStyle: {
-                            		color: '#FFF'
-                            	},
-                            	itemHiddenStyle: {
-                            		color: '#606063'
-                            	}
-                            },
-                            series:series_data
-                        });
-var show_div =($(".rain-breadcrumb").html()).slice(235,241)
-if(show_div == "rain_a"){
-	$("#rain_arq").addClass("collapse in");
-}else if(show_div == "rain_s"){
-	$("#rain_senslope").addClass("collapse in");
-}else{
-	$("#"+($(".rain-breadcrumb").html()).slice(235,240)).addClass("collapse in");
-}
 }
 
-
-function removeDuplicates(num) {
-	var x,
-	len=num.length,
-	out=[],
-	obj={};
-
-	for (x=0; x<len; x++) {
-		obj[num[x]]=0;
-	}
-	for (x in obj) {
-		out.push(x);
-	}
-	return out;
+function RainFallOnSelect(){
+	var separators = [' ','>','<','/','"'];
+	var show_div =($(".rain-breadcrumb").html()).split((new RegExp('[' + separators.join('') + ']', 'g')))
+	var all_rain_name = [show_div[21],show_div[51],show_div[81],show_div[111],show_div[141]]
+	var all_rain_id = [show_div[14],show_div[44],show_div[74],show_div[104],show_div[131]]
+	$("#rainfallgeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_rain =($(this).find('option').eq(clickedIndex).val());
+		for (a = 0; a < all_rain_name.length; a++) {
+			if(selected_rain ==  all_rain_name[a]){
+				var div1 = document.getElementById((all_rain_id[a]).slice(1,15));
+				var collapse_id = div1.getAttribute("class");
+				if( collapse_id == "in"){
+					$(all_rain_id[a]).switchClass("in" , "collapse");
+				}else{
+					$(all_rain_id[a]).switchClass("collapse" , "in");
+				}
+			}
+		}
+	})
 }
 
 function dataTableProcess(dataSubmit,crack_name) {  
@@ -928,8 +663,18 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
+		var fdate = moment().subtract(90,'days').format('YYYY-MM-DD');
+		let dataTableSubmit1 = { 
+			site : dataSubmit.site, 
+			fdate : fdate,
+			tdate : dataSubmit.tdate,
+			crack_name:crack_name,
+			last:last_goodData,
+			all_data_last:result,
+		}
 		surficialMeasurement(dataTableSubmit)
-		surficialGraph(dataTableSubmit)
+		surficialGraph(dataTableSubmit1)
+
 	});
 
 }
@@ -1163,16 +908,29 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 			for(var n = 0 ; n < label_color.length ; n++){
 				if(label_color[n] == "#99ff99"){
 					$('.'+panel_alert_colors[0]).show()
+					$('.'+panel_alert_colors[0]).empty()
+					$('.'+panel_alert_colors[0]).append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>')
+					$('.'+panel_alert_colors[1]).empty()
+					$('.'+panel_alert_colors[1]).hide()
+					$('.'+panel_alert_colors[2]).empty()
+					$('.'+panel_alert_colors[2]).hide()
 				}else if(label_color[n] == "#ffb366"){
 					$('.'+panel_alert_colors[0]).empty()
 					$('.'+panel_alert_colors[0]).hide()
 					$('.'+panel_alert_colors[2]).show()
+					$('.'+panel_alert_colors[2]).empty()
+					$('.'+panel_alert_colors[2]).append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>')
+					$('.'+panel_alert_colors[1]).empty()
+					$('.'+panel_alert_colors[1]).hide()
 				}else if(label_color[n] == "#ff6666"){
 					$('.'+panel_alert_colors[0]).empty()
 					$('.'+panel_alert_colors[0]).hide()
 					$('.'+panel_alert_colors[2]).empty()
 					$('.'+panel_alert_colors[2]).hide()
 					$('.'+panel_alert_colors[1]).show()
+					$('.'+panel_alert_colors[1]).empty()
+					$('.'+panel_alert_colors[1]).append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>Critical ground movement observed in the last 48 hours; landslide may be imminent</strong></div>')
+
 				}
 			}
 
@@ -1183,18 +941,20 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 function surficialGraph(dataTableSubmit) {  
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/GroundDataFromLEWS/"+dataTableSubmit.site,  success: function(data_result) {
+		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
+			// console.log("/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate)
 			var result = JSON.parse(data_result)
+			var crackname_process = []
+			for (var a = 0; a < result.length; a++) {
+				crackname_process.push(result[a].crack_id)
+			}
 			var slice =[0];
 			var data1 =[];
 			var data =[];
 			var opts = $('#crackgeneral')[0].options;
 
-			var array = $.map(opts, function(elem) {
-				return (elem.value || elem.text);
-			});
-			array.shift()
-			var crack_name = array
+			var crack_name = removeDuplicates(crackname_process);
+			
 			for (var a = 0; a < crack_name.length; a++) {
 				var all = []
 				for (var i = 0; i < result.length; i++) {
@@ -1232,7 +992,7 @@ function chartProcessSurficial(id,data_series,name){
 			panning: true,
 			panKey: 'shift',
 			height: 400,
-			width:550
+			width:$("#ground_graph").width()
 		},
 		title: {
 			text: name,
@@ -1250,7 +1010,8 @@ function chartProcessSurficial(id,data_series,name){
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			shared: true,
-			crosshairs: true
+			crosshairs: true,
+			split: true,
 		},
 		plotOptions: {
 			spline: {
@@ -1314,24 +1075,26 @@ function surficialAnalysis(site,crack_id) {
 				for(var i = 1; i < series_data_name_vel.length-2; i++){
 					series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
 				}
+				$('#surficialgeneral').val('analysisVelocity')
+				$('#surficialgeneral').selectpicker('refresh')
 				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
-
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
 				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
 				$(".surficial_velocity_checkbox").empty()
-				$("#surf_title").popover('destroy')
-
 				$(".surficial_velocity_checkbox").append('<input id="surficial_velocity_checkbox" type="checkbox" class="checkbox">'
 					+'<label for="surficial_velocity_checkbox"> Surficial Analysis Graph</label>')
 				$('#surficial_velocity_checkbox').prop('checked', true);
 				$('input[id="surficial_velocity_checkbox"]').on('click',function () {
 					if ($('#surficial_velocity_checkbox').is(':checked')) {
 						$("#surficial_graphs_VD").slideDown()
+						$(".crackgeneral").slideDown()
 					}else{
 						$("#surficial_graphs_VD").slideUp()
+						$(".crackgeneral").slideUp()
 					}
 				});	
+
 			}else{
 				$("#analysisVelocity").empty()
 				$("#analysisVelocity").append('<div class="text-center"> <h3>No Data</h3> </div>')
@@ -1341,6 +1104,7 @@ function surficialAnalysis(site,crack_id) {
 }
 
 function chartProcessSurficialAnalysis(id,data_series,name){
+	SurficialOnSelect()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1384,9 +1148,152 @@ function chartProcessSurficialAnalysis(id,data_series,name){
 		},
 		series:data_series
 	});
-	$("#analysisVelocity").addClass("collapse in");
+	$("#analysisVelocity").addClass("in");
 }
 
+/************************/
+/**COLUMN LEVEL PROCESS**/
+/************************/
+
+function SelectedColumn(site,from,to) {
+	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_column = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
+		CheckBoxColumn(site,selected_column,from,to)
+		$('.column_collapse').slideDown()
+		$('.node-panel').slideDown();
+		$('.node_collapse').slideUp()
+		$('.collapseSite' ).switchClass( "in", "collapse");
+		$('#collapseNode' ).switchClass( "collapse", "in");
+		$(".column_level").empty()
+		SiteInfo(selected_column)
+		DataPresence(selected_column,'data_presence')
+		NodeSumary(selected_column,'node_summary_div')
+		mapGenerator(selected_column)
+		// // siteMaintenance(selecte_column)
+		$('#communication_health_checkbox').prop('checked', true);
+		showCommHealthPlotGeneral(selected_column,'healthbars')
+		
+
+
+		$.ajax({url: "/api/NodeNumberPerSite/"+selected_column , dataType: "json",success: function(result){
+			$('.nodegeneral').empty();
+			$('.nodegeneral').append('<label for="nodegeneral" class="pull-left">Node</label><select class="selectpicker"  id="nodegeneral" multiple data-live-search="true">'+
+				'</select><br><button  id="node_sumbit" type="button" class="node_sumbit btn btn-success btn-xs" style="padding-top: 1px;margin-top: 10px;width: 137px;">Submit</button>');
+			$('.node_sumbit').hide();
+			$('.node_checkbox').hide();
+			$('#nodegeneral').selectpicker();
+			$(".bootstrap-select").click(function () {
+				$(this).addClass("open");
+			});
+			for (c = 0; c <  result.length; c++) {
+				for (d = 0; d <  result[c].num_nodes; d++) {
+					dropdowlistAppendValue((d+1),(d+1),'#nodegeneral');
+				}
+			}
+			SelectedNode(site,selected_column,to)
+		}
+	})
+	});
+}
+
+function CheckBoxColumn(site,column,from,to){
+	$('.column_checkbox').empty()
+	$('.crackgeneral').slideUp()
+	var list_checkbox =["data_presence","sub_surface_analysis","communication_health","node_summary","heatmap","piezo"];
+	var name_checkbox =["Data Presence","SubSurface Analysis Graph","Communication Health","Node Summary","Soms Heatmap","Piezometer Graph"];
+	for (a = 0; a <  list_checkbox.length; a++) {
+		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
+	}
+
+	if(column.slice(3,4) != "s"){
+		$("."+list_checkbox[4]+"_checkbox").hide()
+	}else{
+		$("."+list_checkbox[4]+"_checkbox").show()
+	}
+
+	$('#'+list_checkbox[0]+'_checkbox').prop('checked', true);
+	$('input[id="'+list_checkbox[0]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
+			$('#data_presence').slideDown()
+
+		}else{
+			$('#data_presence').slideUp()
+		}
+	});
+
+	$('input[id="'+list_checkbox[1]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[1]+'_checkbox').is(':checked')) {
+			$(".selectpicker").selectpicker()
+			$(".column_level").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
+			$("#subsurface_analysis_div").append('<br><h4><b>Sub-Surface Analysis Graph </b>'+
+				'<select class="sub_days selectpicker pull-right" id="sub_days"><option value="3d">3 Days </option><option value="5d">5 Days</option><option value="7d">1 Week </option></select>'+
+				'<select class="selectpicker pull-right" id="subgeneral" multiple><option value="column_sub">Column</option><option value="dis_sub">Displacement</option><option value="velocity_sub">Velocity</option></select></h4>')
+			$("#subgeneral").val('column_sub')
+			$(".selectpicker").selectpicker('refresh')
+			var title = ["Column","Displacement","Velocity"]
+			var id_title =["column","dis","velocity"]
+			var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+			for(var a = 0; a < title.length; a++){
+				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
+				$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="'+id_title[a]+'_sub" class="collapse">'+
+					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
+			}
+			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
+			SubOnSelect()
+		}else{
+			$(".subsurface_analysis_div").empty()
+		}
+	});
+	$('#'+list_checkbox[2]+'_checkbox').prop('checked', true);
+	$('input[id="'+list_checkbox[2]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[2]+'_checkbox').is(':checked')) {
+			$('#commhealth_div').slideDown()
+			$('#map-canvas').slideDown()
+		}else{
+			$('#commhealth_div').slideUp()
+			$('#map-canvas').slideUp()
+		}
+	});
+	$('#'+list_checkbox[3]+'_checkbox').prop('checked', true);
+	$('input[id="'+list_checkbox[3]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
+			$('#node_summary_div').slideDown()
+
+		}else{
+			$('#node_summary_div').slideUp()
+		}
+	});
+
+	$('input[id="'+list_checkbox[4]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
+			var start = moment().format('MM-DD-YYYY HH:mm');
+			$("#daygeneral").selectpicker();
+			$(".column_level").append('<div class="col-md-12" id="heatmap_header"></div>')
+			$("#heatmap_header").empty();
+			$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
+				'<div class="pull-right"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/></div>'+
+				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
+			$("#daygeneral").val('30d');
+			$("#daygeneral").selectpicker('refresh');
+			var time = moment().format('YYYY-MM-DDTHH:mm');
+			heatmapProcess(column,time,'30d')
+			HeatmapOnSelect(column)
+			HeatmapOnSelectDay(column)
+		}
+	});
+	
+	$('input[id="'+list_checkbox[5]+'_checkbox"]').on('click',function () {
+		if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
+			$(".column_level").append('<div class="col-md-12" id="piezometer_div"></div>')
+			$("#piezometer_div").empty()
+			$("#piezometer_div").append('<br><h4><span class=""></span><b>Piezometer Graph </b><select class="selectpicker pull-right"  id="piezogeneral" multiple></select></h4><ol class="breadcrumb piezo-breadcrumb" id="piezo-breadcrumb"></ol>')
+			piezometer(column)
+		}else{
+			$("#piezometer_div").empty()
+		}
+	});
+
+}
 function piezometer(curSite){
 	$.ajax({
 		dataType: "json",
@@ -1404,9 +1311,12 @@ function piezometer(curSite){
 				}
 			});},
 			success: function(result) { 
-				$("#piezo-breadcrumb").append('<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#freq_div">Frequency</b></li>'+
-					'<li class="breadcrumb-item"><b class="breadcrumb-item" data-toggle="collapse" data-target="#temp_div">Temperature</b></li>')
-				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="collapse in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
+				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
+				dropdowlistAppendValue('#freq_div','Frequency','#piezogeneral');
+				dropdowlistAppendValue('#temp_div','Temperature','#piezogeneral');
+				$("#piezogeneral").val('Frequency');
+				$("#piezogeneral").selectpicker('refresh');
+				PiezoOnSelect()
 				var freq_data=[] , temp_data =[];
 				var freqDataseries =[] ,tempDataseries =[];
 				for(var i = 0; i < result.length; i++){
@@ -1416,7 +1326,6 @@ function piezometer(curSite){
 					freq_data.push(freq)
 					temp_data.push(temp)
 				}
-
 
 				freqDataseries.push({name:'frequency',data:freq_data})
 				tempDataseries.push({name:'Temperature',data:temp_data})
@@ -1482,11 +1391,30 @@ function chartProcessPiezo(id,data_series,name){
 			series:data_series
 		});
 }
+function PiezoOnSelect() {
+	var name = ['Frequency','Temperature']
+	var id = ['freq_div','temp_div']
+	$("#piezogeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_piezo =($(this).find('option').eq(clickedIndex).val());
+		for (a = 0; a < name.length; a++) {
+			if(selected_piezo ==  name[a]){
+				var div1 = document.getElementById(id[a]);
+				var collapse_id = div1.getAttribute("class");
+				if(collapse_id == "in"){
+					$("#"+id[a]).switchClass("in" , "collapse");
+				}else{
+					$("#"+id[a]).switchClass("collapse" , "in");
+				}
+			}
+		}
+	})
+}
 
 function allSensorPosition(site,fdate,tdate) {
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
+			SubOnSelectDay(site,tdate)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c)
 			displacementPosition(data[0].d,data[0].v)
@@ -1557,7 +1485,7 @@ function columnPosition(data_result) {
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
-		$("#column_sub").addClass("collapse in");
+		$("#column_sub").switchClass("collapse","in");
 	}     
 }
 
@@ -1869,967 +1797,244 @@ function chartProcessbase(id,data_series,name){
 	});
 }
 
+function SubOnSelect() {
+	var name = ["Column","Displacement","Velocity"]
+	var id=["column","dis","velocity"]
+	$("#subgeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_sub =($(this).find('option').eq(clickedIndex).val());
 
-function NodeProcess(data,list_checkbox){
-	var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
-	var node_div_ID =["x","y","z","m","c","r"];
-	for (i = 0; i < node_div_ID.length; i++) {
-		$("#"+node_div_ID[i]+"_div").empty()
-	}
-	for (i = 8; i < list_checkbox.length; i++) {
-		$('#'+list_checkbox[i]+'_checkbox').prop('checked', false);
-	}
-	
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/getDatafromSiteColumn/"+data.site,error: function(xhr, textStatus, errorThrown){
-			console.log(errorThrown)},success: function(result) {
-				if(result[0].version != 1 ){
-					if( result[0].version == 2){
-						var ms_id = 32;
-						var mode =["1"]
-						var soms_id =[112];
-						if(data.site.substring(3,4) == "s"){
-							let dataSubmit = { 
-								site : data.site, 
-								fdate : data.fdate,
-								tdate : data.tdate,
-								node: data.node,
-								id:id
-							}
-							somsV2(dataSubmit,'0',list_checkbox);
-						}
-						if(data.site == "nagsa"){
-							var mode =["1"]
-							var soms_id =[23];
-						}
-					}else if (result[0].version == 3){
-						var ms_id = 11;
-						var mode =["0","1"]
-						var soms_id =[110 , 113];
-					}
-					let dataSubmit = { 
-						site : data.site, 
-						fdate : data.fdate,
-						tdate : data.tdate,
-						node: data.node,
-						msgid: ms_id,
-						version: result[0].version,
-						id: id
-					}
-					accel1(dataSubmit,list_checkbox);
-					accel1filtered(dataSubmit,list_checkbox)
-					if(data.site.slice(3,4) == "s"){
-						for (i = 0; i < soms_id.length; i++) {
-							somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
-						}
-					}
+		for (a = 0; a < name.length; a++) {
+			if(selected_sub ==  (id[a]+"_sub")){
+				var div1 = document.getElementById(id[a]+"_sub");
+				var collapse_id = div1.getAttribute("class");
+				if(collapse_id == "in"){
+					$("#"+id[a]+"_sub").switchClass("in" , "collapse");
 				}else{
-					accelVersion1Filtered(data.site,data.node,data.fdate,data.tdate,id,list_checkbox);
-					$("#accel-c").hide();
-					$("#accel-r").hide();
+					$("#"+id[a]+"_sub").switchClass("collapse" , "in");
+				}
+			}
+		}
+	})
+}
+function SubOnSelectDay(column,tdate) {
+	$("#sub_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_day =($(this).find('option').eq(clickedIndex).val());
+		if(selected_day =="3d"){
+			var fdate = (moment().subtract(3,'days')).format('YYYY-MM-DD');
+		}else if(selected_day =="5d"){
+			var fdate = (moment().subtract(5,'days')).format('YYYY-MM-DD');
+		}else if(selected_day =="7d"){
+			var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
+		}
+		allSensorPosition(column,fdate,tdate)
+	})
+}
+function HeatmapOnSelect(column) {
+	$("#daygeneral").selectpicker();
+	var start = moment().format('MM-DD-YYYY HH:mm'); 
+	$('input[name="datefilter3"]').daterangepicker({
+		timePicker: true,
+		timePickerIncrement: 30,
+		autoUpdateInput: false,
+		maxDate: new Date(),
+		opens: "right",
+		drops: "up",
+		startDate: start,
+		locale: {
+			cancelLabel: 'Clear'
+		},
+		singleDatePicker: true,
+		showDropdowns: true
+	});
+	$('input[name="datefilter3"]').on('apply.daterangepicker', function(ev, picker) {
+		var time = $(this).val(picker.startDate.format('YYYY-MM-DD HH:mm'));
+		var timevalue =time.context.value
+		var tdate = timevalue.slice(0,10);
+		var time = timevalue.slice(11,16);
+		var day = $("#daygeneral").val();
+		$("#heatmap_div").empty();
+		heatmapProcess(column,(tdate+"T"+time),day)
+
+	})
+}
+
+
+function HeatmapOnSelectDay(column) {
+	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
+		var timevalue = $("#reportrange3").val();
+		var tdate = timevalue.slice(0,10);
+		var time = timevalue.slice(11,16);
+		if(selected_day == "1 day"){
+			var day = '1d'
+		}else if( selected_day == "3 days"){
+			var day = '3d'
+		}else if( selected_day == "30 days"){
+			var day = '30d'
+		}
+		heatmapProcess(column,(tdate+"T"+time),day)
+	})
+}
+
+
+function DataPresence(site){
+	$('#data_presence_checkbox').prop('checked', true);
+	var start = moment().subtract(1, 'days'); 
+	var end = moment().add(1, 'days');
+	// var start = moment('2016-04-05'); 
+	// var end = moment('2016-04-06');
+	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/"+start.format('YYYY-MM-DD')+"/"+end.format('YYYY-MM-DD'),
+		dataType: "json",
+		success: function(result){
+			if(result.length != 0){
+				var time_non_moment = []
+				var time_index_obj =[]
+				var time_data =[]
+				var pattern = []
+				for (a = 0; a < 48; a++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_non_moment.push(time.format('YYYY-MM-DD HH:mm:ss'))
+				}
+				time_non_moment.reverse()
+				for (b = 0; b < 48; b++) {
+					var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+					time_index_obj.push({index:b,time:time_non_moment[b]})
+				}
+				for (c = 0; c < time_non_moment.length; c++) {
+					for (d = 0; d < result.length; d++) {
+						if(time_non_moment[c] == result[d].timeslice){
+							time_data.push(c)
+						}
+					}
 				}
 
+
+				colors = [ "#222", "#222"]
+				for (e = 0; e < time_data.length; e++) {
+					pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
+				}
+				var colorDomain = d3.extent(pattern, function(d) {
+					return d.time;
+				});
+
+				var colorScale = d3.scale.linear()
+				.domain(colorDomain)
+				.range(colors);
+
+				var tip = d3.tip()
+				.attr('class', 'd3-tip')
+				.offset([-10, 0])
+				.html(function(d) {
+					return "<strong>timestamp:</strong> <span style='color:red'>"+d.timestamp+"</span>";
+				}) 
+
+				var svg = d3.select("#data_presence_div")
+				.append("svg")
+				.attr("width", ($(".container").width()-$("#info_site").width())+200)
+				.attr("height", 100);
+
+				svg.call(tip);
+
+				var rectangles = svg.selectAll("rect")
+				.data(pattern)
+				.enter().append("rect")
+
+				rectangles.attr("x", function(d) {
+					return d.index_x * (((($(".container").width()-$("#info_site").width())+200)/48));})
+				.attr("y", function(d) {
+					return d.index_y * (((($(".container").width()-$("#info_site").width())+200)/48));})
+				.attr("width", (((($(".container").width()-$("#info_site").width())+200)/48)-2))
+				.attr("height", 15).
+				style("fill", function(d) {
+					return colorScale(d.index_x);})
+				.on('mouseover', tip.show)
+				.on('mouseout', tip.hide)}
 			}
 		});
 }
 
-function accelVersion1Filtered(site,node,fdate,tdate,id,list){
-	let dataVersion1= { 
-		site : site, 
-		fdate : fdate,
-		tdate : tdate,
-		nid: node
+function mapGenerator(site) {
+	$.ajax({url: "/api/SiteDetails/"+site , dataType: "json",success: function(result){
+		var map = new google.maps.Map(document.getElementById('map-canvas'), {
+			zoom: 7,
+			center: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		});
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
+			map: map
+		});
 	}
-	$.post("../node_level_page/getAllAccelVersion1In", {data : dataVersion1} ).done(function(data){
+})
+}
+
+function siteMaintenance(curSite) {
+	let dataSubmit = {site : (curSite).toLowerCase()}
+	$("#site_maintenance").append('<br><h4><span class=""></span><b>Site Maintenance</b></h4><table id="mTable" class="display table" cellspacing="0" width="100%">'+
+		'<thead><tr><th>ID</th><th>Site Name</th>th>Start Date</th><th>End Date</th><th>Personel</th><th>Activity</th><th>Object(s)</th><th>Remarks</th></tr> </thead><tbody> </tbody></table>')
+	$.post("../site_level_page/getDatafromSiteMaintenance", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
-		var seperated_num =[]
-		for (a = 0; a < node.length; a++) {
-			var result_seperated =[];
-			var mDataSeries=[] ;
-			for (b = 0; b < result.length; b++) {
-				if(node[a] == result[b].id){	
-					var mData=[]  ;
-					var time =  Date.parse(result[b].timestamp);
-					mData.push(time, parseFloat(result[b].mvalue));
-					mDataSeries.push(mData);
-				}
-			}
-			result_seperated.push(mDataSeries);
-			seperated_num.push(result_seperated)
+		var site_maintenace = []
+		for (i = 0; i < result.length; i++) {
+			site_maintenace.push([result[i].sm_id,result[i].site,result[i].start_date , result[i].end_date , result[i].staff_name , result[i].activity , result[i].object, 
+				result[i].remarks])
 		}
-
-
-		var series_data = [];
-		for (a = 0; a < node.length; a++) {
-			var series_collection =[]
-			series_collection.push({ name: "mvalue(n"+node[a]+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
-			series_data.push(series_collection)
-		}	
-		var series_filtered =[]
-		for (b = 0; b < series_data[0].length; b++) {
-			var series_sorted=[]
-			for (c = 0; c < series_data.length; c++) {
-				series_sorted.push(series_data[c][b])
-			}
-			series_filtered.push(series_sorted)
-		}
-		var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
-		$('input[id="'+list[12]+'_checkbox"]').on('click',function () {
-			if ($('#'+list[12]+'_checkbox').is(':checked')) {
-				$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-				$("#batt_div").append('<br><div id="'+id[3]+'"></div>')
-				chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt')
-			}
-		});
+		$('#mTable').DataTable({
+			data:  site_maintenace,
+			"processing": true, 
+			"lengthMenu": [ 10, 25, 50, 75, 100 ]
+		} );
 	});
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/AccelfilteredVersion1In/"+site+"/"+fdate+"/"+tdate+"/"+node.toString().replace(/,/g, "-"),  success: function(data) {
-			var result = JSON.parse(data);
-			var seperated_num =[]
-			for (a = 0; a < node.length; a++) {
-				var result_seperated =[];
-				var xDataSeries=[] , yDataSeries=[] , zDataSeries=[];
-				for (b = 0; b < result.length; b++) {
-					if(node[a] == result[b].id){	
-						var xData=[] , yData=[] ,zData = [] ;
-						var time =  Date.parse(result[b].ts);
-						xData.push(time, parseFloat(result[b].x));
-						yData.push(time, parseFloat(result[b].y));
-						zData.push(time, parseFloat(result[b].z));
-						xDataSeries.push(xData);
-						yDataSeries.push(yData);
-						zDataSeries.push(zData);
-					}
-				}
-				result_seperated.push(xDataSeries);
-				result_seperated.push(yDataSeries);
-				result_seperated.push(zDataSeries);
-				seperated_num.push(result_seperated)
-
-			}
-
-
-			var series_data = [];
-
-			var series_id = [xDataSeries,yDataSeries,zDataSeries];
-			var series_name = ["X-accelerometer Graph","Y-accelerometer Graph","Z-accelerometer Graph"];
-			var node_series_name =["x","y","z"]
-			for (a = 0; a < node.length; a++) {
-				var series_collection =[]
-				for (i = 0; i < series_id.length; i++) {
-					series_collection.push({ name: node_series_name[i]+"(n"+node[a]+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
-				}
-				series_data.push(series_collection)
-			}	
-			var series_filtered =[]
-			for (b = 0; b < series_data[0].length; b++) {
-				var series_sorted=[]
-				for (c = 0; c < series_data.length; c++) {
-					series_sorted.push(series_data[c][b])
-				}
-				series_filtered.push(series_sorted)
-			}
-			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
-			$('input[id="'+list[8]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[8]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="x_div"></div>')
-					$("#x_div").append('<br><div id="'+id[0]+'"></div>')
-					chartProcessAccel(id[0],series_filtered[0],series_name[0],color_series,"x")
-				}else{
-					$("#x_div").empty()
-				}
-			});
-			$('input[id="'+list[9]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[9]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="y_div"></div>')
-					$("#y_div").append('<br><div id="'+id[1]+'"></div>')
-					chartProcessAccel(id[1],series_filtered[1],series_name[1],color_series,"y")
-
-				}
-			});
-			$('input[id="'+list[10]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[10]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="z_div"></div>')
-					$("#z_div").append('<br><div id="'+id[2]+'"></div>')
-					chartProcessAccel(id[2],series_filtered[2],series_name[2],color_series,"z")
-				}
-			});
-
-		}
-	});	
-}
-function accel1(data,list){
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/AccelUnfilteredDataIn/"+(data.site).toLowerCase()+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(result) {
-			var seperated_num =[]
-			for (a = 0; a < data.node.length; a++) {
-				var result_seperated =[];
-				var mDataSeries=[] ;
-				for (b = 0; b < result.length; b++) {
-					if(data.node[a] == result[b].id){	
-						var mData=[]  ;
-						var time =  Date.parse(result[b].timestamp);
-						mData.push(time, parseFloat(result[b].batt));
-						mDataSeries.push(mData);
-					}
-				}
-				result_seperated.push(mDataSeries);
-				seperated_num.push(result_seperated)
-			}
-			var series_data = [];
-			for (a = 0; a < data.node.length; a++) {
-				var series_collection =[]
-
-				series_collection.push({ name: "m(n"+data.node[a]+")("+data.msgid+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
-
-				series_data.push(series_collection)
-			}	
-			var series_filtered =[]
-
-			for (b = 0; b < series_data[0].length; b++) {
-				var series_sorted=[]
-				for (c = 0; c < series_data.length; c++) {
-					series_sorted.push(series_data[c][b])
-				}
-				series_filtered.push(series_sorted)
-			}
-
-			if(data.version == 2){
-				var ms_id = '33';
-			}else{
-				var ms_id = '12'
-			}
-
-			accel2(data,series_filtered,ms_id,list)
-		}
-	});	
 }
 
-function accel2(data,series,msgid,list){
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/AccelUnfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+msgid,  success: function(result) {
-			var seperated_num =[]
-			for (a = 0; a < data.node.length; a++) {
-				var result_seperated =[];
-				var mDataSeries=[] ;
-				for (b = 0; b < result.length; b++) {
-					if(data.node[a] == result[b].id){	
-						var mData=[]  ;
-						var time =  Date.parse(result[b].timestamp);
-						mData.push(time, parseFloat(result[b].batt));
-						mDataSeries.push(mData);
-					}
-				}
-				result_seperated.push(mDataSeries);
-				seperated_num.push(result_seperated)
-			}
-
-
-			var series_data = [];
-			for (a = 0; a < data.node.length; a++) {
-				var series_collection =[]
-				series_collection.push({ name: "m(n"+data.node[a]+")("+msgid+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
-				series_data.push(series_collection)
-			}	
-			var series_filtered =[]
-
-			for (b = 0; b < series_data[0].length; b++) {
-				
-				for (c = 0; c < series_data.length; c++) {
-					series_filtered.push(series[0][b])
-					series_filtered.push(series_data[c][b])
-				}
-			}
-			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
-			$('input[id="'+list[12]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[12]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-					$("#batt_div").append('<br><div id="'+data.id[3]+'"></div>')
-					chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt")
-				}
-			});
-		}
-	});	
-}
-
-function accel1filtered(data,list){
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/AccelfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(data_result) {
-			
-			var result = JSON.parse(data_result);
-			var seperated_num =[]
-			for (a = 0; a < data.node.length; a++) {
-				var result_seperated =[];
-				var xDataSeries=[],yDataSeries=[],zDataSeries=[] ;
-				for (b = 0; b < result.length; b++) {
-					if(data.node[a] == result[b].id){	
-						var xData=[],yData=[],zData=[]  ;
-						var time =  Date.parse(result[b].ts);
-						xData.push(time, parseFloat(result[b].x));
-						yData.push(time, parseFloat(result[b].y));
-						zData.push(time, parseFloat(result[b].z));
-						xDataSeries.push(xData);
-						yDataSeries.push(yData);
-						zDataSeries.push(zData);
-					}
-				}
-				result_seperated.push(xDataSeries);
-				result_seperated.push(yDataSeries);
-				result_seperated.push(zDataSeries);
-				seperated_num.push(result_seperated)
-			}
-			var series_id = [xDataSeries,yDataSeries,zDataSeries];
-			var series_data = [];
-			var node_series_name =["x","y","z"]
-			for (a = 0; a < data.node.length; a++) {
-				var series_collection =[]
-				for (i = 0; i < series_id.length; i++) {
-					series_collection.push({ name: node_series_name[i]+"(n"+data.node[a]+")("+data.msgid+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
-				}
-				series_data.push(series_collection)
-			}	
-
-			if(data.version == 2){
-				var ms_id = '33';
-			}else{
-				var ms_id = '12'
-			}
-			
-			accel2filtered(data,series_data,ms_id,list)
-		}
-	});	
-}
-
-function accel2filtered(data,series,msgid,list){
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/AccelfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+msgid,  success: function(data_result) {
-			var result = JSON.parse(data_result);
-			var seperated_num =[]
-			for (a = 0; a < data.node.length; a++) {
-				var result_seperated =[];
-				var xDataSeries=[] , yDataSeries=[] , zDataSeries=[];
-				for (b = 0; b < result.length; b++) {
-					if(data.node[a] == result[b].id){	
-						var xData=[] , yData=[] ,zData = [] ;
-						var time =  Date.parse(result[b].ts);
-						xData.push(time, parseFloat(result[b].x));
-						yData.push(time, parseFloat(result[b].y));
-						zData.push(time, parseFloat(result[b].z));
-						xDataSeries.push(xData);
-						yDataSeries.push(yData);
-						zDataSeries.push(zData);
-					}
-				}
-				result_seperated.push(xDataSeries);
-				result_seperated.push(yDataSeries);
-				result_seperated.push(zDataSeries);
-				seperated_num.push(result_seperated)
-
-			}
-			var series_data = [];
-
-			var series_id = [xDataSeries,yDataSeries,zDataSeries];
-			var series_name = ["X-accelerometer Graph","Y-accelerometer Graph","Z-accelerometer Graph"];
-			var node_series_name =["x","y","z"]
-			for (a = 0; a < data.node.length; a++) {
-				var series_collection =[]
-				for (i = 0; i < series_id.length; i++) {
-					series_collection.push({ name: node_series_name[i]+"(n"+data.node[a]+")("+msgid+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
-				}
-				series_data.push(series_collection)
-			}	
-			var series_filtered =[]
-			for (b = 0; b < series_data[0].length; b++) {
-				var series_sorted=[]
-				for (c = 0; c < series_data.length; c++) {
-					series_sorted.push(series[c][b])
-					series_sorted.push(series_data[c][b])
-				}
-				series_filtered.push(series_sorted)
-			}
-			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
-			$('input[id="'+list[8]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[8]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="x_div"></div>')
-					$("#x_div").append('<br><div id="'+data.id[0]+'"></div>')
-					chartProcessAccel(data.id[0],series_filtered[0],series_name[0],color_series,"x")
-				}
-			});
-			$('input[id="'+list[9]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[9]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="y_div"></div>')
-					$("#y_div").append('<br><div id="'+data.id[1]+'"></div>')
-					chartProcessAccel(data.id[1],series_filtered[1],series_name[1],color_series,"y")
-
-				}
-			});
-			$('input[id="'+list[10]+'_checkbox"]').on('click',function () {
-				if ($('#'+list[10]+'_checkbox').is(':checked')) {
-					$(".node_level").append('<div class="col-md-12" id="z_div"></div>')
-					$("#z_div").append('<br><div id="'+data.id[2]+'"></div>')
-					chartProcessAccel(data.id[2],series_filtered[2],series_name[2],color_series,"z")
-
-				}
-			});
-		}
-	});	
-}
-
-function somsV2(data,mode){
-	var mode= "0";
-	var name= ["Raw","Raw(filtered)"];
-	var id_name = "Soms(raw)"
-	let dataSoms= { 
-		mode : mode, 
-		name : name,
-		id_name : id_name,
-		id:data.id[4]
-	}
-	somsfiltered(data,dataSoms,"rawDataSeries")
-}
-
-function somsUnfiltered(data,soms_msgid,name,mode){
-	var somsDataSeries =[];
-	if(mode == "0"){
-		var name= ["Raw","Raw(filtered)"];
-		var id_name = "Soms(raw)"
-		var id = data.id[4]
-	}else{
-		var name= ["Cal","Cal(filtered)"];
-		var id_name = "Soms(cal)"
-		var id = data.id[5]
-	}
-	let dataSoms= { 
-		mode : mode, 
-		name : name,
-		id_name : id_name,
-		id:id
-	}
-	somsfiltered(data,dataSoms,somsDataSeries)
-}
-function somsfiltered(data,dataSoms,series){
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/SomsfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+dataSoms.mode,  success: function(data_result) {
-			if(data_result.length != 0){
-				if(data_result[0].length >= 35){
-					var result = JSON.parse(data_result);
-					var seperated_num =[]
-					for (a = 0; a < data.node.length; a++) {
-						var result_seperated =[];
-						var DataSeries=[];
-						for (b = 0; b < result.length; b++) {
-							if(data.node[a] == result[b].id){	
-								var Data=[] ;
-								var time =  Date.parse(result[b].ts);
-								Data.push(time, parseFloat(result[b].mval1));
-								DataSeries.push(Data);
-							}
-						}
-						result_seperated.push(DataSeries);
-						seperated_num.push(result_seperated)
-					}
-					var series_id = [DataSeries];
-					var series_data = [];
-					for (a = 0; a < data.node.length; a++) {
-						var series_collection =[]
-						series_collection.push({ name: dataSoms.id_name+"(n"+data.node[a]+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
-						series_data.push(series_collection)
-					}	
-					var series_filtered =[]
-					for (b = 0; b < series_data[0].length; b++) {
-						var series_sorted=[]
-						for (c = 0; c < series_data.length; c++) {
-							series_sorted.push(series_data[c][b])
-						}
-						series_filtered.push(series_sorted)
-					}
-					var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
-					$('input[id="soms_checkbox"]').on('click',function () {
-						if ($('#soms_checkbox').is(':checked')) {
-							$(".node_level").append('<div class="col-md-12" id="soms_div"></div>')
-							$("#soms_div").append('<br><div id="'+dataSoms.id+'"></div>')
-							chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms')
-						}
-					});
-				}
-			}
-		}
-	});	
-}
-
-function chartProcessAccel(id,data_series,name,color,list){
-	$("."+list+"_accel_checkbox").empty()
-	$("."+list+"_accel_checkbox").append('<input id="'+list+'_accel_checkbox" type="checkbox" class="checkbox">'
-		+'<label for="'+list+'_accel_checkbox">'+list.toUpperCase()+' Accel Graph</label>')
-	$('#'+list+'_accel_checkbox').prop('checked', true);
-	$('input[id="'+list+'_accel_checkbox"]').on('click',function () {
-		if ($('#'+list+'_accel_checkbox').is(':checked')) {
-			$("#"+list+"_div").slideDown()
-		}else{
-			$("#"+list+"_div").slideUp()
-		}
+function NodeSumary(site,siteDiv){ 
+	$('#node_summary_checkbox').prop('checked', true);
+	let dataSubmit = { site:site.toLowerCase()}
+	$(".column_level").append('<div class="col-md-12" id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
+	$(".column_level").append('<br><br><br><div class="col-md-10"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
+	$(".column_level").append('<div class ="col-md-3 map-canvas" id="map-canvas"></div>')
+	$(".column_level").append('<br><div class="col-md-8 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
+		'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
+		'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
+		'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
+		'</div><div class="row" id="healthbars" style=" height: 300px;width:auto"></div></div>')
+	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
+		var result = JSON.parse(data);
+		nodeAlertJSON = JSON.parse(result.nodeAlerts)
+		maxNodesJSON = JSON.parse(result.siteMaxNodes)
+		nodeStatusJSON = JSON.parse(result.nodeStatus)
+		initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
 	});
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-		colors: color,
-	});
-
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 300,
-			backgroundColor: {
-				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-				stops: [
-				[0, '#2a2a2b'],
-				[1, '#3e3e40']
-				]
-			},
-		},
-		title: {
-			text: name.toUpperCase(),
-			style: {
-				color: '#E0E0E3',
-				fontSize: '20px'
-			}
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%Y'
-			},
-			title: {
-				text: 'Date'
-			},
-			labels: {
-				style:{
-					color: 'white'
-				}
-
-			},
-			title: {
-				text: 'Date',
-				style:{
-					color: 'white'
-				}
-			}
-		},
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				marker: {
-					radius: 3
-				},
-				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name =="Comment"){
-
-								$("#anModal").modal("show");
-								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-							}else if(this.series.name =="Alert" ){
-
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}else if(this.series.name =="Maintenace"){
-
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}
-							else {
-								$("#annModal").modal("show");
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							}
-						}
-					}
-				}
-			},
-			area: {
-				marker: {
-					lineWidth: 3,
-                                    lineColor: null // inherit from series
-                                }
-                            }
-
-                        },
-                        legend: {
-                        	layout: 'vertical',
-                        	align: 'right',
-                        	verticalAlign: 'middle',
-                        	borderWidth: 0,
-                        	itemStyle: {
-                        		color: '#E0E0E3'
-                        	},
-                        	itemHoverStyle: {
-                        		color: '#FFF'
-                        	},
-                        	itemHiddenStyle: {
-                        		color: '#606063'
-                        	}
-                        },
-                        credits: {
-                        	enabled: false
-                        },
-                        series:data_series
-                    }
-                    );
 }
-function chartProcessbattSoms(id,data_series,name,color,list){
-	$("."+list+"_checkbox").empty()
-	if(list == "batt"){
-		var list_name ="Battery"
-	}else {
-		var list_name = "Soms"
-	}
-	$("."+list+"_checkbox").append('<input id="'+list+'_checkbox" type="checkbox" class="checkbox">'
-		+'<label for="'+list+'_checkbox">'+list_name+'  Graph</label>')
-	$('#'+list+'_checkbox').prop('checked', true);
-	$('input[id="'+list+'_checkbox"]').on('click',function () {
-		if ($('#'+list+'_checkbox').is(':checked')) {
-			$("#"+list+"_div").slideDown()
-		}else{
-			$("#"+list+"_div").slideUp()
-		}
+
+function SiteInfo(site){ 
+	let dataSubmit = { site:(site).toLowerCase()}
+	$.post("../site_level_page/getDatafromSiteColumn", {data : dataSubmit} ).done(function(data){
+		var result = JSON.parse(data); 
+		$("#info_site").empty();
+		$("#info_column").empty();
+		$("#info_site").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase().slice(0,3)+")")
+		$("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")")
+		// $("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")<br>Date install("+result[0].date_install +") <br> Date Activation("+result[0].date_activation+")")
 	});
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-		colors: color,
-	});
-	// Highcharts.setOptions({
-	// 	global: {
-	// 		timezoneOffset: -8 * 60
-	// 	},
-	// 	colors: color,
-	// 	chart: {
-	// 		backgroundColor: {
-	// 			linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
-	// 			stops: [
-	// 			[0, '#2a2a2b'],
-	// 			[1, '#3e3e40']
-	// 			]
-	// 		},
-	// 		style: {
-	// 			fontFamily: '\'Unica One\', sans-serif'
-	// 		},
-	// 		plotBorderColor: '#606063'
-	// 	},
-	// 	title: {
-	// 		style: {
-	// 			color: '#E0E0E3',
-	// 			textTransform: 'uppercase',
-	// 			fontSize: '20px'
-	// 		}
-	// 	},
-	// 	xAxis: {
-	// 		gridLineColor: '#707073',
-	// 		labels: {
-	// 			style: {
-	// 				color: '#E0E0E3'
-	// 			}
-	// 		},
-	// 		lineColor: '#707073',
-	// 		minorGridLineColor: '#505053',
-	// 		tickColor: '#707073',
-	// 		title: {
-	// 			style: {
-	// 				color: '#A0A0A3'
-
-	// 			}
-	// 		}
-	// 	},
-	// 	yAxis: {
-	// 		gridLineColor: '#707073',
-	// 		labels: {
-	// 			style: {
-	// 				color: '#E0E0E3'
-	// 			}
-	// 		},
-	// 		lineColor: '#707073',
-	// 		minorGridLineColor: '#505053',
-	// 		tickColor: '#707073',
-	// 		tickWidth: 1,
-	// 		title: {
-	// 			style: {
-	// 				color: '#A0A0A3'
-	// 			}
-	// 		}
-	// 	},
-	// 	tooltip: {
-	// 		backgroundColor: 'rgba(0, 0, 0, 0.85)',
-	// 		style: {
-	// 			color: '#F0F0F0'
-	// 		}
-	// 	},
-	// 	plotOptions: {
-	// 		series: {
-	// 			dataLabels: {
-	// 				color: '#B0B0B3'
-	// 			},
-	// 			marker: {
-	// 				lineColor: '#333'
-	// 			}
-	// 		},
-	// 		boxplot: {
-	// 			fillColor: '#505053'
-	// 		},
-	// 		candlestick: {
-	// 			lineColor: 'white'
-	// 		},
-	// 		errorbar: {
-	// 			color: 'white'
-	// 		}
-	// 	},
-	// 	legend: {
-	// 		itemStyle: {
-	// 			color: '#E0E0E3'
-	// 		},
-	// 		itemHoverStyle: {
-	// 			color: '#FFF'
-	// 		},
-	// 		itemHiddenStyle: {
-	// 			color: '#606063'
-	// 		}
-	// 	},
-	// 	labels: {
-	// 		style: {
-	// 			color: '#707073'
-	// 		}
-	// 	},
-	// 	navigation: {
-	// 		buttonOptions: {
-	// 			symbolStroke: '#DDDDDD',
-	// 			theme: {
-	// 				fill: '#505053'
-	// 			}
-	// 		}
-	// 	},
-	// 	drilldown: {
-	// 		activeAxisLabelStyle: {
-	// 			color: '#F0F0F3'
-	// 		},
-	// 		activeDataLabelStyle: {
-	// 			color: '#F0F0F3'
-	// 		}
-	// 	},
-
-	// 	navigation: {
-	// 		buttonOptions: {
-	// 			symbolStroke: '#DDDDDD',
-	// 			theme: {
-	// 				fill: '#505053'
-	// 			}
-	// 		}
-	// 	},
-	// 	rangeSelector: {
-	// 		buttonTheme: {
-	// 			fill: '#505053',
-	// 			stroke: '#000000',
-	// 			style: {
-	// 				color: '#CCC'
-	// 			},
-	// 			states: {
-	// 				hover: {
-	// 					fill: '#707073',
-	// 					stroke: '#000000',
-	// 					style: {
-	// 						color: 'white'
-	// 					}
-	// 				},
-	// 				select: {
-	// 					fill: '#000003',
-	// 					stroke: '#000000',
-	// 					style: {
-	// 						color: 'white'
-	// 					}
-	// 				}
-	// 			}
-	// 		},
-	// 		inputBoxBorderColor: '#505053',
-	// 		inputStyle: {
-	// 			backgroundColor: '#333',
-	// 			color: 'silver'
-	// 		},
-	// 		labelStyle: {
-	// 			color: 'silver'
-	// 		}
-	// 	},
-	// });
-
-	// Highcharts.stockChart(id, {
-	// 	title: {
-	// 		text: 'AAPL Stock Price'
-	// 	},
-	// 	yAxis: {
-	// 		labels: {
-	// 			formatter: function () {
-	// 				return (this.value > 0 ? ' + ' : '') + this.value + '%';
-	// 			}
-	// 		},
-	// 		plotLines: [{
-	// 			value: 0,
-	// 			width: 2,
-	// 			color: 'silver'
-	// 		}]
-	// 	},
-
-	// 	legend: {
-	// 		layout: 'vertical',
-	// 		align: 'right',
-	// 		verticalAlign: 'middle',
-	// 		borderWidth: 0
-	// 	},
-	// 	plotOptions: {
-	// 		series: {
-	// 			compare: 'percent',
-	// 			showInNavigator: true
-	// 		}
-	// 	},
-	// 	tooltip: {
-	// 		pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
-	// 		valueDecimals: 2,
-	// 		split: true
-	// 	},
-	// 	series: data_series
-	// });
-
-	
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 300,
-			backgroundColor: {
-				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-				stops: [
-				[0, '#2a2a2b'],
-				[1, '#3e3e40']
-				]
-			},
-		},
-		title: {
-			text: name.toUpperCase(),
-			style: {
-				color: '#E0E0E3',
-				fontSize: '20px'
-			}
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
-			},
-			title: {
-				text: 'Date'
-			},
-			labels: {
-				style:{
-					color: 'white'
-				}
-
-			},
-			title: {
-				text: 'Date',
-				style:{
-					color: 'white'
-				}
-			}
-		},
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				marker: {
-					radius: 3
-				},
-				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name =="Comment"){
-
-								$("#anModal").modal("show");
-								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-							}else if(this.series.name =="Alert" ){
-
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}else if(this.series.name =="Maintenace"){
-
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}
-							else {
-								$("#annModal").modal("show");
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							}
-						}
-					}
-				}
-			},
-			area: {
-				marker: {
-					lineWidth: 3,
-                                    lineColor: null // inherit from series
-                                }
-                            }
-
-                        },
-                        legend: {
-                        	layout: 'vertical',
-                        	align: 'right',
-                        	verticalAlign: 'middle',
-                        	borderWidth: 0,
-                        	itemStyle: {
-                        		color: '#E0E0E3'
-                        	},
-                        	itemHoverStyle: {
-                        		color: '#FFF'
-                        	},
-                        	itemHiddenStyle: {
-                        		color: '#606063'
-                        	}
-                        },
-                        credits: {
-                        	enabled: false
-                        },
-                        series:data_series
-                    }
-                    );
 }
+
 function heatmapProcess(site,tdate,day){
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
+			HeatmapOnSelect(site)
+			HeatmapOnSelectDay(site)
+			$("#heatmap_checkbox").empty()
+			$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
+			$('#heatmap_checkbox').prop('checked', true);
+			$('input[id="heatmap_checkbox"]').on('click',function () {
+				if ($('#heatmap_checkbox').is(':checked')) {
+					$("#heatmap_header").slideDown()
+				}else{
+					$("#heatmap_header").slideUp()
+				}
+			});
 			if(data_result.slice(0,1) != "E"){
 				$("#heatmap_container").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"></div>')
@@ -2910,18 +2115,7 @@ function heatmapProcess(site,tdate,day){
 				}
 
 				heatmapVisual(series_data,obj_list_time,obj_list_id)
-				$("#heatmap_checkbox").empty()
-				$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
-				$('#heatmap_checkbox').prop('checked', true);
-				$('input[id="heatmap_checkbox"]').on('click',function () {
-					if ($('#heatmap_checkbox').is(':checked')) {
-						$("#heatmap_div").slideDown()
-					}else{
-						$("#heatmap_div").slideUp()
-					}
-				});
 			}else{
-				$(".daygeneral").hide()
 				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
 			}
 		}
@@ -3111,7 +2305,806 @@ function heatmapVisual(series_data,list_time,list_id){
 		.attr("transform", "translate(0," + (10) + ")")
 		.call(xAxis);
 	}else{
-		$(".daygeneral").hide();
+		// $(".daygeneral").hide();
 		$("#heatmap_div").append('<div id="heatmap_container"><h3 style="text-align: center"> NO DATA </h3></div>')
 	}
+}
+
+/************************/
+/**NODE LEVEL PROCESS**/
+/************************/
+
+function SelectedNode(site,column,to) {
+	if( $('.nodegeneral').val() == ""){
+		$('input[name="datefilter"]').val('');
+		$('#reportrange').prop('disabled', true);
+	}
+	$('.nodegeneral').change(function(e) {
+		$('.node_collapse').slideDown();
+		var selected = $(e.target).val();
+		if(selected != null){
+			$('#reportrange').prop('disabled', false);
+			$('.node_sumbit').slideDown();
+		}else{
+			$('#reportrange').prop('disabled', true);
+		}
+	});
+	CheckBoxNode(site,column,to)
+	$("#accel_dropdown_days").selectpicker()
+	$(".node_level").append('<div class="col-md-12"><h3>Node Analysis<select class="selectpicker pull-right" id="accel_dropdown_days"></select></h3></div>')
+	daysOption('accel_dropdown')
+	$("#accel_dropdown_days").selectpicker('refresh')
+}
+
+function CheckBoxNode(site,column,to){
+	$('.node_checkbox').empty()
+	var list_checkbox =["x_accel","y_accel","z_accel","soms","batt"];
+	var name_checkbox =["X Accel Graph","Y Accel Graph","Z Accel Graph","Soms Graph"," Battery Graph"];
+	for (a = 0; a <  list_checkbox.length; a++) {
+		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
+	}
+	$(".header_node").append('<label>&nbsp; NODE CHARTS and GRAPHS</label>')
+	$('#node_sumbit').on('click',function(){
+		$('#collapseColumn' ).switchClass( "in", "collapse");
+		$('#collapseSite' ).switchClass( "in", "collapse");
+		var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
+		var tdate = (moment().add(2,'days')).format('YYYY-MM-DD');
+		var node =  $('#nodegeneral').val();
+		var node_id = node
+		let dataSubmit = { 
+			site : (column).toLowerCase(), 
+			fdate : fdate,
+			tdate : tdate,
+			node:node_id
+		}
+		NodeProcess(dataSubmit,list_checkbox);
+		NodeOnSelectDay(column,tdate)
+		$('.node_collapse').slideDown();
+	});
+}
+
+function NodeProcess(data,list_checkbox){
+	var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+	var node_div_ID =["x","y","z","m","c","r"];
+	for (i = 0; i < node_div_ID.length; i++) {
+		$("#"+node_div_ID[i]+"_div").empty()
+	}
+	for (i = 8; i < list_checkbox.length; i++) {
+		$('#'+list_checkbox[i]+'_checkbox').prop('checked', false);
+	}
+	
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getDatafromSiteColumn/"+data.site,error: function(xhr, textStatus, errorThrown){
+			console.log(errorThrown)},success: function(result) {
+				$('.node_checkbox').slideDown();
+				if(result[0].version != 1 ){
+					if( result[0].version == 2){
+						var ms_id = 32;
+						var mode =["1"]
+						var soms_id =[112];
+						if(data.site.substring(3,4) == "s"){
+							let dataSubmit = { 
+								site : data.site, 
+								fdate : data.fdate,
+								tdate : data.tdate,
+								node: data.node,
+								id:id
+							}
+							somsV2(dataSubmit,'0',list_checkbox);
+						}
+						if(data.site == "nagsa"){
+							var mode =["1"]
+							var soms_id =[23];
+						}
+					}else if (result[0].version == 3){
+						var ms_id = 11;
+						var mode =["0","1"]
+						var soms_id =[110 , 113];
+					}
+					let dataSubmit = { 
+						site : data.site, 
+						fdate : data.fdate,
+						tdate : data.tdate,
+						node: data.node,
+						msgid: ms_id,
+						version: result[0].version,
+						id: id
+					}
+					accel1(dataSubmit,list_checkbox);
+					accel1filtered(dataSubmit,list_checkbox)
+					if(data.site.slice(3,4) == "s"){
+						for (i = 0; i < soms_id.length; i++) {
+							somsUnfiltered(dataSubmit,soms_id[i],id[4+i],mode[i]);
+						}
+					}
+				}else{
+					accelVersion1Filtered(data.site,data.node,data.fdate,data.tdate,id,list_checkbox);
+					$("#accel-c").hide();
+					$("#accel-r").hide();
+				}
+
+			}
+		});
+}
+
+function accelVersion1Filtered(site,node,fdate,tdate,id,list){
+	let dataVersion1= { 
+		site : site, 
+		fdate : fdate,
+		tdate : tdate,
+		nid: node
+	}
+	$.post("../node_level_page/getAllAccelVersion1In", {data : dataVersion1} ).done(function(data){
+		var result = JSON.parse(data);
+		var seperated_num =[]
+		for (a = 0; a < node.length; a++) {
+			var result_seperated =[];
+			var mDataSeries=[] ;
+			for (b = 0; b < result.length; b++) {
+				if(node[a] == result[b].id){	
+					var mData=[]  ;
+					var time =  Date.parse(result[b].timestamp);
+					mData.push(time, parseFloat(result[b].mvalue));
+					mDataSeries.push(mData);
+				}
+			}
+			result_seperated.push(mDataSeries);
+			seperated_num.push(result_seperated)
+		}
+
+
+		var series_data = [];
+		for (a = 0; a < node.length; a++) {
+			var series_collection =[]
+			series_collection.push({ name: "mvalue(n"+node[a]+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
+			series_data.push(series_collection)
+		}	
+		var series_filtered =[]
+		for (b = 0; b < series_data[0].length; b++) {
+			var series_sorted=[]
+			for (c = 0; c < series_data.length; c++) {
+				series_sorted.push(series_data[c][b])
+			}
+			series_filtered.push(series_sorted)
+		}
+		var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
+		$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
+		$("#batt_div").append('<br><div id="'+id[3]+'"></div>')
+		chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt')
+	});
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/AccelfilteredVersion1In/"+site+"/"+fdate+"/"+tdate+"/"+node.toString().replace(/,/g, "-"),  success: function(data) {
+			var result = JSON.parse(data);
+			var seperated_num =[]
+			for (a = 0; a < node.length; a++) {
+				var result_seperated =[];
+				var xDataSeries=[] , yDataSeries=[] , zDataSeries=[];
+				for (b = 0; b < result.length; b++) {
+					if(node[a] == result[b].id){	
+						var xData=[] , yData=[] ,zData = [] ;
+						var time =  Date.parse(result[b].ts);
+						xData.push(time, parseFloat(result[b].x));
+						yData.push(time, parseFloat(result[b].y));
+						zData.push(time, parseFloat(result[b].z));
+						xDataSeries.push(xData);
+						yDataSeries.push(yData);
+						zDataSeries.push(zData);
+					}
+				}
+				result_seperated.push(xDataSeries);
+				result_seperated.push(yDataSeries);
+				result_seperated.push(zDataSeries);
+				seperated_num.push(result_seperated)
+
+			}
+
+
+			var series_data = [];
+
+			var series_id = [xDataSeries,yDataSeries,zDataSeries];
+			var series_name = ["X-accelerometer Graph","Y-accelerometer Graph","Z-accelerometer Graph"];
+			var node_series_name =["x","y","z"]
+			for (a = 0; a < node.length; a++) {
+				var series_collection =[]
+				for (i = 0; i < series_id.length; i++) {
+					series_collection.push({ name: node_series_name[i]+"(n"+node[a]+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
+				}
+				series_data.push(series_collection)
+			}	
+			var series_filtered =[]
+			for (b = 0; b < series_data[0].length; b++) {
+				var series_sorted=[]
+				for (c = 0; c < series_data.length; c++) {
+					series_sorted.push(series_data[c][b])
+				}
+				series_filtered.push(series_sorted)
+			}
+			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
+			for (a= 0; a < series_name.length; a++) {
+				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"></div>')
+				chartProcessAccel(id[a],series_filtered[a],series_name[a],color_series,node_series_name[a])
+			}
+		}
+	});	
+}
+function accel1(data,list){
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/AccelUnfilteredDataIn/"+(data.site).toLowerCase()+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(result) {
+			var seperated_num =[]
+			for (a = 0; a < data.node.length; a++) {
+				var result_seperated =[];
+				var mDataSeries=[] ;
+				for (b = 0; b < result.length; b++) {
+					if(data.node[a] == result[b].id){	
+						var mData=[]  ;
+						var time =  Date.parse(result[b].timestamp);
+						mData.push(time, parseFloat(result[b].batt));
+						mDataSeries.push(mData);
+					}
+				}
+				result_seperated.push(mDataSeries);
+				seperated_num.push(result_seperated)
+			}
+			var series_data = [];
+			for (a = 0; a < data.node.length; a++) {
+				var series_collection =[]
+
+				series_collection.push({ name: "Node #"+data.node[a]+"("+data.msgid+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
+
+				series_data.push(series_collection)
+			}	
+			var series_filtered =[]
+
+			for (b = 0; b < series_data[0].length; b++) {
+				var series_sorted=[]
+				for (c = 0; c < series_data.length; c++) {
+					series_sorted.push(series_data[c][b])
+				}
+				series_filtered.push(series_sorted)
+			}
+
+			if(data.version == 2){
+				var ms_id = '33';
+			}else{
+				var ms_id = '12'
+			}
+
+			accel2(data,series_filtered,ms_id,list)
+		}
+	});	
+}
+
+function accel2(data,series,msgid,list){
+		$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/AccelUnfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+msgid,  success: function(result) {
+			var seperated_num =[]
+			for (a = 0; a < data.node.length; a++) {
+				var result_seperated =[];
+				var mDataSeries=[] ;
+				for (b = 0; b < result.length; b++) {
+					if(data.node[a] == result[b].id){	
+						var mData=[]  ;
+						var time =  Date.parse(result[b].timestamp);
+						mData.push(time, parseFloat(result[b].batt));
+						mDataSeries.push(mData);
+					}
+				}
+				result_seperated.push(mDataSeries);
+				seperated_num.push(result_seperated)
+			}
+
+
+			var series_data = [];
+			for (a = 0; a < data.node.length; a++) {
+				var series_collection =[]
+				series_collection.push({ name: "Node #"+data.node[a]+"("+msgid+")" ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
+				series_data.push(series_collection)
+			}	
+			var series_filtered =[]
+
+			for (b = 0; b < series_data[0].length; b++) {
+				
+				for (c = 0; c < series_data.length; c++) {
+					series_filtered.push(series[0][c])
+					series_filtered.push(series_data[c][b])
+				}
+			}
+			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
+			$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
+			$("#batt_div").append('<br><div id="'+data.id[3]+'"></div>')
+			chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt")
+		}
+	});	
+}
+
+function accel1filtered(data,list){
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/AccelfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+data.msgid,  success: function(data_result) {
+			
+			var result = JSON.parse(data_result);
+			var seperated_num =[]
+			for (a = 0; a < data.node.length; a++) {
+				var result_seperated =[];
+				var xDataSeries=[],yDataSeries=[],zDataSeries=[] ;
+				for (b = 0; b < result.length; b++) {
+					if(data.node[a] == result[b].id){	
+						var xData=[],yData=[],zData=[]  ;
+						var time =  Date.parse(result[b].ts);
+						xData.push(time, parseFloat(result[b].x));
+						yData.push(time, parseFloat(result[b].y));
+						zData.push(time, parseFloat(result[b].z));
+						xDataSeries.push(xData);
+						yDataSeries.push(yData);
+						zDataSeries.push(zData);
+					}
+				}
+				result_seperated.push(xDataSeries);
+				result_seperated.push(yDataSeries);
+				result_seperated.push(zDataSeries);
+				seperated_num.push(result_seperated)
+			}
+			var series_id = [xDataSeries,yDataSeries,zDataSeries];
+			var series_data = [];
+			var node_series_name =["x","y","z"]
+			for (a = 0; a < data.node.length; a++) {
+				var series_collection =[]
+				for (i = 0; i < series_id.length; i++) {
+					series_collection.push({ name:"Node #"+data.node[a]+"("+data.msgid+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
+				}
+				series_data.push(series_collection)
+			}	
+
+			if(data.version == 2){
+				var ms_id = '33';
+			}else{
+				var ms_id = '12'
+			}
+			
+			accel2filtered(data,series_data,ms_id,list)
+		}
+	});	
+}
+
+function accel2filtered(data,series,msgid,list){
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/AccelfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+msgid,  success: function(data_result) {
+			var result = JSON.parse(data_result);
+			var seperated_num =[]
+			for (a = 0; a < data.node.length; a++) {
+				var result_seperated =[];
+				var xDataSeries=[] , yDataSeries=[] , zDataSeries=[];
+				for (b = 0; b < result.length; b++) {
+					if(data.node[a] == result[b].id){	
+						var xData=[] , yData=[] ,zData = [] ;
+						var time =  Date.parse(result[b].ts);
+						xData.push(time, parseFloat(result[b].x));
+						yData.push(time, parseFloat(result[b].y));
+						zData.push(time, parseFloat(result[b].z));
+						xDataSeries.push(xData);
+						yDataSeries.push(yData);
+						zDataSeries.push(zData);
+					}
+				}
+				result_seperated.push(xDataSeries);
+				result_seperated.push(yDataSeries);
+				result_seperated.push(zDataSeries);
+				seperated_num.push(result_seperated)
+
+			}
+			var series_data = [];
+
+			var series_id = [xDataSeries,yDataSeries,zDataSeries];
+			var series_name = ["X-accelerometer Graph","Y-accelerometer Graph","Z-accelerometer Graph"];
+			var node_series_name =["x","y","z"]
+			for (a = 0; a < data.node.length; a++) {
+				var series_collection =[]
+				for (i = 0; i < series_id.length; i++) {
+					series_collection.push({ name: "Node #"+data.node[a]+"("+msgid+")" ,step: true, data:seperated_num[a][i] ,id: 'dataseries'})
+				}
+				series_data.push(series_collection)
+			}	
+			var series_filtered =[]
+			for (b = 0; b < series_data[0].length; b++) {
+				var series_sorted=[]
+				for (c = 0; c < series_data.length; c++) {
+					series_sorted.push(series[c][b])
+					series_sorted.push(series_data[c][b])
+				}
+				series_filtered.push(series_sorted)
+			}
+			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
+			for (a= 0; a < series_name.length; a++) {
+				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"></div>')
+				chartProcessAccel(data.id[a],series_filtered[a],series_name[a],color_series,node_series_name[a])
+			}
+		}
+	});	
+}
+
+function somsV2(data,mode){
+	var mode= "0";
+	var name= ["Raw","Raw(filtered)"];
+	var id_name = "Soms(raw)"
+	let dataSoms= { 
+		mode : mode, 
+		name : name,
+		id_name : id_name,
+		id:data.id[4]
+	}
+	somsfiltered(data,dataSoms,"rawDataSeries")
+}
+
+function somsUnfiltered(data,soms_msgid,name,mode){
+	var somsDataSeries =[];
+	if(mode == "0"){
+		var name= ["Raw","Raw(filtered)"];
+		var id_name = "Soms(raw)"
+		var id = data.id[4]
+	}else{
+		var name= ["Cal","Cal(filtered)"];
+		var id_name = "Soms(cal)"
+		var id = data.id[5]
+	}
+	let dataSoms= { 
+		mode : mode, 
+		name : name,
+		id_name : id_name,
+		id:id
+	}
+	somsfiltered(data,dataSoms,somsDataSeries)
+}
+function somsfiltered(data,dataSoms,series){
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/SomsfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+dataSoms.mode,  success: function(data_result) {
+			if(data_result.length != 0){
+				if(data_result[0].length >= 35){
+					var result = JSON.parse(data_result);
+					var seperated_num =[]
+					for (a = 0; a < data.node.length; a++) {
+						var result_seperated =[];
+						var DataSeries=[];
+						for (b = 0; b < result.length; b++) {
+							if(data.node[a] == result[b].id){	
+								var Data=[] ;
+								var time =  Date.parse(result[b].ts);
+								Data.push(time, parseFloat(result[b].mval1));
+								DataSeries.push(Data);
+							}
+						}
+						result_seperated.push(DataSeries);
+						seperated_num.push(result_seperated)
+					}
+					var series_id = [DataSeries];
+					var series_data = [];
+					for (a = 0; a < data.node.length; a++) {
+						var series_collection =[]
+						series_collection.push({ name:"Node #"+data.node[a] ,step: true, data:seperated_num[a][0] ,id: 'dataseries'})
+						series_data.push(series_collection)
+					}	
+					var series_filtered =[]
+					for (b = 0; b < series_data[0].length; b++) {
+						var series_sorted=[]
+						for (c = 0; c < series_data.length; c++) {
+							series_sorted.push(series_data[c][b])
+						}
+						series_filtered.push(series_sorted)
+					}
+					var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
+					$(".node_level").append('<div class="col-md-12" id="soms_div"></div>')
+					$("#soms_div").append('<br><div id="'+dataSoms.id+'"></div>')
+					chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms')
+					
+				}
+			}
+		}
+	});	
+}
+
+function chartProcessAccel(id,data_series,name,color,list){
+	$("."+list+"_accel_checkbox").empty()
+	$("."+list+"_accel_checkbox").append('<input id="'+list+'_accel_checkbox" type="checkbox" class="checkbox">'
+		+'<label for="'+list+'_accel_checkbox">'+list.toUpperCase()+' Accel Graph</label>')
+	$('#'+list+'_accel_checkbox').prop('checked', true);
+	$('input[id="'+list+'_accel_checkbox"]').on('click',function () {
+		if ($('#'+list+'_accel_checkbox').is(':checked')) {
+			$("#"+list+"_div").slideDown()
+		}else{
+			$("#"+list+"_div").slideUp()
+		}
+	});
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+		colors: color,
+	});
+
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			height: 300,
+			backgroundColor: {
+				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+				stops: [
+				[0, '#2a2a2b'],
+				[1, '#3e3e40']
+				]
+			},
+		},
+		title: {
+			text: name.toUpperCase(),
+			style: {
+				color: '#E0E0E3',
+				fontSize: '20px'
+			}
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%Y'
+			},
+			title: {
+				text: 'Date'
+			},
+			labels: {
+				style:{
+					color: 'white'
+				}
+
+			},
+			title: {
+				text: 'Date',
+				style:{
+					color: 'white'
+				}
+			}
+		},
+		tooltip: {
+			shared: true,
+			crosshairs: true,
+			split: true,
+		},
+
+		plotOptions: {
+			series: {
+				marker: {
+					radius: 3
+				},
+				cursor: 'pointer',
+				point: {
+					events: {
+						click: function () {
+							if(this.series.name =="Comment"){
+
+								$("#anModal").modal("show");
+								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
+							}else if(this.series.name =="Alert" ){
+
+								$("#anModal").modal("show");
+								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+							}else if(this.series.name =="Maintenace"){
+
+								$("#anModal").modal("show");
+								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+							}
+							else {
+								$("#annModal").modal("show");
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+							}
+						}
+					}
+				}
+			},
+			area: {
+				marker: {
+					lineWidth: 3,
+                                    lineColor: null // inherit from series
+                                }
+                            }
+
+                        },
+                        legend: {
+                        	layout: 'vertical',
+                        	align: 'right',
+                        	verticalAlign: 'middle',
+                        	borderWidth: 0,
+                        	itemStyle: {
+                        		color: '#E0E0E3'
+                        	},
+                        	itemHoverStyle: {
+                        		color: '#FFF'
+                        	},
+                        	itemHiddenStyle: {
+                        		color: '#606063'
+                        	}
+                        },
+                        credits: {
+                        	enabled: false
+                        },
+                        series:data_series
+                    }
+                    );
+}
+function chartProcessbattSoms(id,data_series,name,color,list){
+	$("."+list+"_checkbox").empty()
+	if(list == "batt"){
+		var list_name ="Battery"
+	}else {
+		var list_name = "Soms"
+	}
+	$("."+list+"_checkbox").append('<input id="'+list+'_checkbox" type="checkbox" class="checkbox">'
+		+'<label for="'+list+'_checkbox">'+list_name+'  Graph</label>')
+	$('#'+list+'_checkbox').prop('checked', true);
+	$('input[id="'+list+'_checkbox"]').on('click',function () {
+		if ($('#'+list+'_checkbox').is(':checked')) {
+			$("#"+list+"_div").slideDown()
+		}else{
+			$("#"+list+"_div").slideUp()
+		}
+	});
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+		colors: color,
+	});
+	
+	
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			height: 300,
+			backgroundColor: {
+				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+				stops: [
+				[0, '#2a2a2b'],
+				[1, '#3e3e40']
+				]
+			},
+		},
+		title: {
+			text: name.toUpperCase(),
+			style: {
+				color: '#E0E0E3',
+				fontSize: '20px'
+			}
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+			labels: {
+				style:{
+					color: 'white'
+				}
+
+			},
+			title: {
+				text: 'Date',
+				style:{
+					color: 'white'
+				}
+			}
+		},
+		tooltip: {
+			shared: true,
+			crosshairs: true,
+			split: true,
+		},
+
+		plotOptions: {
+			series: {
+				marker: {
+					radius: 3
+				},
+				cursor: 'pointer',
+				point: {
+					events: {
+						click: function () {
+							if(this.series.name =="Comment"){
+
+								$("#anModal").modal("show");
+								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
+							}else if(this.series.name =="Alert" ){
+
+								$("#anModal").modal("show");
+								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+							}else if(this.series.name =="Maintenace"){
+
+								$("#anModal").modal("show");
+								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+							}
+							else {
+								$("#annModal").modal("show");
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+							}
+						}
+					}
+				}
+			},
+			area: {
+				marker: {
+					lineWidth: 3,
+                                    lineColor: null // inherit from series
+                                }
+                            }
+
+                        },
+                        legend: {
+                        	layout: 'vertical',
+                        	align: 'right',
+                        	verticalAlign: 'middle',
+                        	borderWidth: 0,
+                        	itemStyle: {
+                        		color: '#E0E0E3'
+                        	},
+                        	itemHoverStyle: {
+                        		color: '#FFF'
+                        	},
+                        	itemHiddenStyle: {
+                        		color: '#606063'
+                        	}
+                        },
+                        credits: {
+                        	enabled: false
+                        },
+                        series:data_series
+                    }
+                    );
+}
+
+function NodeOnSelectDay(column,tdate) {
+	var list_checkbox =["x_accel","y_accel","z_accel","soms","batt"];
+	var node =  $('#nodegeneral').val();
+	var node_id = node
+
+
+	$("#accel_dropdown_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var selected_days =($(this).find('option').eq(clickedIndex).val());
+		if(selected_days == "7 days"){
+			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "2 weeks"){
+			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "1 month"){
+			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "3 months"){
+			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "6 months"){
+			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+		}else if(selected_days == "1 year"){
+			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+		}
+		let dataSubmit = { 
+			site : (column).toLowerCase(), 
+			fdate : fdate,
+			tdate : tdate,
+			node:node_id
+		}
+		NodeProcess(dataSubmit,list_checkbox)
+	})
 }

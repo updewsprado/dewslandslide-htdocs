@@ -61,7 +61,7 @@ $(document).ready(function(e) {
 			$('.crackgeneral').change(function(e) {
 				for (i = 1; i <  3; i++) {
 					$('.graphS'+i+'-li' ).switchClass( "active", "nav-item");
-					-					$('.graphS'+i+'' ).switchClass( "active", " ");
+					$('.graphS'+i+'' ).switchClass( "active", " ");
 				}
 				$('.graph1-li' ).switchClass( "nav-item", "active");
 				$('.graph1' ).switchClass( "tab-pane", "tab-pane fade in active");
@@ -470,7 +470,6 @@ function surficialGraph(dataTableSubmit) {
 			for(var a = 0; a < crack_name.length; a++){
 				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
 			}
-			console.log(series_data)
 			chartProcess2('ground_graph',series_data,'Superimpose Surficial Graph')
 		}
 	});	
