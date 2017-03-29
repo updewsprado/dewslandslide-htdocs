@@ -17,9 +17,13 @@ function sendViaAlertMonitor(data){
 		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        default_recipients.push(detailed);
-				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+
+		        if (contacts[counter].office != "GDAPD-PHIV") {
+			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+			        default_recipients.push(detailed);
+					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+		        }
+		        
 			} else {
 		        numbers.forEach(function(x) {
 		        	temp = temp+"|"+x;
