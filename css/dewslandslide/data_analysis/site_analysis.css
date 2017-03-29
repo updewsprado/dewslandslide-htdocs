@@ -467,6 +467,7 @@ h4{
     .panel-body {
       padding-left: 0px;
       padding-right: 0px;
+      display: table-caption;
 
     }
 }
