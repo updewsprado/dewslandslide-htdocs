@@ -455,7 +455,7 @@ h4{
                                                                                             border-color: #5cb85c; }
                                                                                             .radio-success input[type="radio"]:checked + label::after {
                                                                                               background-color: #5cb85c; }
-@media screen and (max-width: 1236px) {
+@media screen and (max-width: 901px) {
     .container {
         padding-right: 10px!important;
         padding-left: 10px!important;
