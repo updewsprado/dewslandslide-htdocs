@@ -49,10 +49,11 @@ $(document).ready(function(e) {
         for (i = 0; i <  data.length; i++) {
             data_all_unfilterd.push(data[i])
             if((data[i]["half of 2yr max"] * (0.80)) <= data[i]["1D cml"] ){
-               data_filtered_site.push(data[i])
+               data_filtered_site.push(data[i]);
+               var percent =(data[i]["half of 2yr max"] * (0.80));
            }
        }
-       criteria_process(data_filtered_site,"container")
+       criteria_process(data_filtered_site,"container",percent)
        criteriaSelection(data_all_unfilterd,"container")
        percentage_select(data_all_unfilterd,"container")
        $("#chart_view").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
@@ -308,7 +309,7 @@ function percentage_select(data,id) {
 criteria_process(data_filtered_site,id)
 })
 }
-function criteria_process(data,id) {
+function criteria_process(data,id,percent) {
     var site = [];
     var day1 =[];
     var day3 =[];
@@ -316,10 +317,10 @@ function criteria_process(data,id) {
     var year2maxhalf =[];
     for (i = 0; i <  data.length; i++) {
         site.push(data[i].site.toUpperCase())
-        day1.push(data[i]["1D cml"])
-        day3.push(data[i]["3D cml"])
-        year2max.push(data[i]["2yr max"])
-        year2maxhalf.push(data[i]["half of 2yr max"])
+        day1.push({y:(data[i]["1D cml"]/data[i]["half of 2yr max"]),data_value:data[i]["1D cml"]+"/"+data[i]["half of 2yr max"] +" = "+Math.round((data[i]["1D cml"]/data[i]["half of 2yr max"])*100)+"% of 2yr half max"})
+        day3.push({y:(data[i]["3D cml"]/data[i]["2yr max"]),data_value:data[i]["3D cml"]+"/"+data[i]["2yr max"] +" = "+Math.round((data[i]["3D cml"]/data[i]["2yr max"])*100)+"% of 2yr half"})
+        // year2max.push(data[i]["2yr max"])
+        // year2maxhalf.push(data[i]["half of 2yr max"])
     }
     let dataJson = { 
         sites : site,
@@ -399,19 +400,16 @@ function rainScannerBar(data,id) {
         yAxis: [{
             min: 0,
             title: {
-                text: 'cummulative'
-            }
-        }, {
-            title: {
                 text: 'Threshold'
             },
-            opposite: true
         }],
         legend: {
             shadow: false
         },
         tooltip: {
-            shared: true
+           formatter: function() {
+        return '<b>'+ this.series.name +'</b> '+this.point.data_value;
+    }
         },
         plotOptions: {
             column: {
@@ -421,23 +419,23 @@ function rainScannerBar(data,id) {
             }
         },
         series: [{
-            name: '2 year max half',
-            data: data.y2maxhalf,
-            pointPadding: 0.3,
-            pointPlacement: -0.2,
-            yAxis: 1
-        }, {
+        //     name: '2 year max half',
+        //     data: data.y2maxhalf,
+        //     pointPadding: 0.3,
+        //     pointPlacement: -0.2,
+        //     yAxis: 1
+        // }, {
 
             name: '1 Day cummulative',
             data: data.day1,
             pointPadding: 0.4,
             pointPlacement: -0.2,
-        },{
-         name: '2 year max ',
-         data: data.y2max,
-         pointPadding: 0.3,
-         pointPlacement: 0.2,
-         yAxis: 1
+        // },{
+        //  name: '2 year max ',
+        //  data: data.y2max,
+        //  pointPadding: 0.3,
+        //  pointPlacement: 0.2,
+        //  yAxis: 1
      },{
         name: '3 Day cummulative',
         data: data.day3,

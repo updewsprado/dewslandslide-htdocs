@@ -48,25 +48,8 @@ function dateselection() {
 
 	
 	$('#collapseSite' ).switchClass( "collapse", "in");
-	var panel_div_name =["site","column","node"];
-	var panel_name=["Site","Column","Node"]
-	for(var a = 0; a < panel_div_name.length; a++){
-		$("#analysis_panel_body").append('<div class="panel panel-info '+panel_div_name[a]+'_collapse"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Overview</h1>'+
-			'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
-		$('.'+panel_div_name[a]+'_collapse').hide()
-	}
-	var panel_alert_colors =['panel-success','panel-warning','panel-danger']
-	var alert_note =[('<strong>No Significant ground movement</strong>').toUpperCase(),'<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>',
-	'<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>']
-	for(var b = 0; b < panel_alert_colors.length; b++){
-		$(".site_level").append(' <div id="panel_alert" class="panel '+panel_alert_colors[b]+'"><div class="panel-heading text-center">'+alert_note[b]+'</div></div>')
-		$("."+panel_alert_colors[b]).hide();
-	}
-	$(".site_level").append('<div class="col-md-12" id="surficial_graph"></div>')
-	$("#surficial_graph").empty()
-	$("#surficial_graph").append('<h4><span class="glyphicon "></span><b>Superimpose Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
-		'</select></b></h4><br><div id="ground_graph"><div>')
-	daysOption('surperimpose')
+
+	
 }
 
 function cb(start, end) {
@@ -86,6 +69,7 @@ function cb(start, end) {
 		}
 	})
 	SelectedSite(fromDate,toDate);
+
 }
 
 function daysOption(id) {
@@ -120,6 +104,26 @@ function removeDuplicates(num) {
 function SelectedSite(from,to) {
 	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_site = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
+		var panel_div_name =["site","column","node"];
+		var panel_name=["Site","Column","Node"]
+		$("#analysis_panel_body").empty();
+		for(var a = 0; a < panel_div_name.length; a++){
+			$("#analysis_panel_body").append('<div class=" panel panel-info '+panel_div_name[a]+'_collapse"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Overview</h1>'+
+				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
+			$('.'+panel_div_name[a]+'_collapse').hide()
+		}
+		var panel_alert_colors =['panel-success','panel-warning','panel-danger']
+		var alert_note =[('<strong>No Significant ground movement</strong>').toUpperCase(),'<strong>ALERT!! </b> Significant ground movement observer in the last 24 hours</strong>',
+		'<strong><b>ALERT!! </b> Critical ground movement observed in the last 48 hours; landslide may be imminent</strong>']
+		for(var b = 0; b < panel_alert_colors.length; b++){
+			$(".site_level").append(' <div id="panel_alert" class="panel '+panel_alert_colors[b]+'"><div class="panel-heading text-center">'+alert_note[b]+'</div></div>')
+			$("."+panel_alert_colors[b]).hide();
+		}
+		$(".site_level").append('<div class="col-md-12" id="surficial_graph"></div>')
+		$("#surficial_graph").empty()
+		$("#surficial_graph").append('<h4><span class="glyphicon "></span><b>Superimpose Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+			'</select></b></h4><br><div id="ground_graph"><div>')
+		daysOption('surperimpose')
 		$(".ground_table").empty()
 		$(".ground_table").append(' <table id="ground_table" class="display table" cellspacing="0"></table>')
 		$("#analysis_panel").empty();
@@ -131,7 +135,11 @@ function SelectedSite(from,to) {
 		$('#collapseColumn' ).switchClass( "collapse", "in");
 		$('#collapseNode' ).switchClass( "in", "collapse");
 		$('#surperimpose_days').val('3 months')
-		$('#surperimpose_days').selectpicker('refresh')
+		$('#surperimpose_days').selectpicker('refresh');
+		$('.column_checkbox').prop('checked', false);
+		$('.column_checkbox').prop('disabled', true);
+		$('.node-panel').hide();
+
 		SelectdaysOption('surperimpose')
 		CheckBoxSite(selected_site,from,to)
 		RainFallProcess(selected_site,from,to)
@@ -143,13 +151,13 @@ function SelectedSite(from,to) {
 			for (b = 0; b <  result.length; b++) {
 				if(selected_site == "lab" && result[b].name == "plab" ){
 				// dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');
-				}else{
+			}else{
 				dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');	
-				}
 			}
-			SelectedColumn(selected_site,from,to);
 		}
-	})
+		SelectedColumn(selected_site,from,to);
+	}
+})
 		let dataSubmit = {
 			site : (selected_site).toLowerCase(),
 			fdate : from,
@@ -175,10 +183,14 @@ function SelectedSite(from,to) {
 function CheckBoxSite(site,from,to){
 	$('.site_checkbox').empty()
 	$('.crackgeneral').slideUp()
+	$('#piezo_checkbox').prop('checked', false);
+	$('#sub_surface_analysis_checkbox').prop('checked', false);
+	$('#piezo_checkbox').prop('disabled', true);
+	$('#sub_surface_analysis_checkbox').prop('disabled', true);
 	var list_checkbox =["ground_measurement","ground_table","rain_graph","surficial_velocity"];
 	var name_checkbox =["Surficial Measurement Graph","Surficial Measurement Data Table","Rainfall Graph","Surficial Analysis Graph"];
 	for (a = 0; a <  list_checkbox.length; a++) {
-		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
+		$("."+list_checkbox[a]+"_checkbox").append('<input class="site_checkbox" id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
 
 	$('#'+list_checkbox[0]+'_checkbox').prop('checked', true);
@@ -1206,7 +1218,7 @@ function CheckBoxColumn(site,column,from,to){
 	var list_checkbox =["data_presence","sub_surface_analysis","communication_health","node_summary","heatmap","piezo"];
 	var name_checkbox =["Data Presence","SubSurface Analysis Graph","Communication Health","Node Summary","Soms Heatmap","Piezometer Graph"];
 	for (a = 0; a <  list_checkbox.length; a++) {
-		$("."+list_checkbox[a]+"_checkbox").append('<input id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
+		$("."+list_checkbox[a]+"_checkbox").append('<input class="column_checkbox" id="'+list_checkbox[a]+'_checkbox" type="checkbox"><label for="'+list_checkbox[a]+'_checkbox">'+name_checkbox[a]+'</label>')
 	}
 
 	if(column.slice(3,4) != "s"){
@@ -1267,7 +1279,7 @@ function CheckBoxColumn(site,column,from,to){
 			$('#node_summary_div').slideUp()
 		}
 	});
-
+	$('#'+list_checkbox[4]+'_checkbox').prop('checked', false);
 	$('input[id="'+list_checkbox[4]+'_checkbox"]').on('click',function () {
 		if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
 			var start = moment().format('MM-DD-YYYY HH:mm');
@@ -1285,7 +1297,7 @@ function CheckBoxColumn(site,column,from,to){
 			HeatmapOnSelectDay(column)
 		}
 	});
-	
+	$('#'+list_checkbox[5]+'_checkbox').prop('checked', false);
 	$('input[id="'+list_checkbox[5]+'_checkbox"]').on('click',function () {
 		if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
 			$(".column_level").append('<div class="col-md-12" id="piezometer_div"></div>')
@@ -1302,6 +1314,7 @@ function piezometer(curSite){
 	$.ajax({
 		dataType: "json",
 		url: "/api/PiezometerAllData/"+curSite+"pzpz",error: function(xhr, textStatus, errorThrown){
+			console.log(textStatus);
 			$("#piezo-breadcrumb").append('<h3> NO DATA </h3>')
 			$(".piezo_checkbox").empty()
 			$(".piezo_checkbox").append('<input id="piezo_checkbox" type="checkbox" class="checkbox">'
@@ -2119,8 +2132,6 @@ function heatmapProcess(site,tdate,day){
 				}
 
 				heatmapVisual(series_data,obj_list_time,obj_list_id)
-			}else{
-				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
 			}
 		}
 	});	
@@ -2309,7 +2320,7 @@ function heatmapVisual(series_data,list_time,list_id){
 		.attr("transform", "translate(0," + (10) + ")")
 		.call(xAxis);
 	}else{
-		// $(".daygeneral").hide();
+		$("#heatmap_div").empty()
 		$("#heatmap_div").append('<div id="heatmap_container"><h3 style="text-align: center"> NO DATA </h3></div>')
 	}
 }
@@ -2583,7 +2594,7 @@ function accel1(data,list){
 }
 
 function accel2(data,series,msgid,list){
-		$.ajax({ 
+	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/AccelUnfilteredDataIn/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node.toString().replace(/,/g, "-")+"/"+msgid,  success: function(result) {
 			var seperated_num =[]
@@ -2805,7 +2816,7 @@ function somsfiltered(data,dataSoms,series){
 					var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 					$(".node_level").append('<div class="col-md-12" id="soms_div"></div>')
 					$("#soms_div").append('<br><div id="'+dataSoms.id+'"></div>')
-					chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms')
+					chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms',data.site)
 					
 				}
 			}
@@ -2944,14 +2955,14 @@ function chartProcessAccel(id,data_series,name,color,list){
                     }
                     );
 }
-function chartProcessbattSoms(id,data_series,name,color,list){
+function chartProcessbattSoms(id,data_series,name,color,list,column){
 	$("."+list+"_checkbox").empty()
 	if(list == "batt"){
 		var list_name ="Battery"
 	}else {
 		var list_name = "Soms"
 	}
-	$("."+list+"_checkbox").append('<input id="'+list+'_checkbox" type="checkbox" class="checkbox">'
+	$("."+list+"_checkbox").append('<input class="'+list+'_checkbox" id="'+list+'_checkbox" type="checkbox" class="checkbox">'
 		+'<label for="'+list+'_checkbox">'+list_name+'  Graph</label>')
 	$('#'+list+'_checkbox').prop('checked', true);
 	$('input[id="'+list+'_checkbox"]').on('click',function () {
@@ -2961,6 +2972,11 @@ function chartProcessbattSoms(id,data_series,name,color,list){
 			$("#"+list+"_div").slideUp()
 		}
 	});
+	if(column == undefined){
+		$(".soms_checkbox").hide()
+	}else{
+		$(".soms_checkbox").show()
+	}
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
