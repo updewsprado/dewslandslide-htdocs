@@ -18,6 +18,10 @@
 /*.analysis{
     margin-top: 115px;
 }*/
+/*.panel-body {
+      display: table-caption !important;;
+
+}*/
 .breadcrumb {
     background-color: rgba(245, 245, 245, 0) !important;
 }
