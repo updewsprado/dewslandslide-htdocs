@@ -1,3 +1,8 @@
+ .title {
+    font-size: 18pt;
+    fill: #4F4F4F;
+    font-weight: 300;
+  }
  .dygraphDefaultAnnotation {
         color:#000;
     }
@@ -22,7 +27,7 @@
     #submit{     
         height: 32px;
         margin-top: 5px;
-        width: 156px;
+        width: 100px;
     }
     #reportrange{
         background: #fff;
@@ -34,9 +39,7 @@
     #sitegeneral{
         width: auto;
     }
-    #submit{
-        width: 226.22222px;
-    }
+
     #div-panel-body{
         height: 1900;
     }
