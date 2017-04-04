@@ -872,6 +872,9 @@ $(document).ready(function() {
 		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+
+
+						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -882,14 +885,16 @@ $(document).ready(function() {
 								'ewi_sms_timestamp': current_timestamp,
 								'narrative_template': narrative_template
 							}
-
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
 							.done(function(response) {
+								console.log(response);
 							});
+						} 
 							narrative_recipients = [];
 						} 
 			        }
-			        
+			       
 				});
 			}
 		} else {
