@@ -19,9 +19,13 @@ function sendViaAlertMonitor(data){
 		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        default_recipients.push(detailed);
-				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+
+		        if (contacts[counter].office != "GDAPD-PHIV") {
+			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+			        default_recipients.push(detailed);
+					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+		        }
+		        
 			} else {
 		        numbers.forEach(function(x) {
 		        	temp = temp+"|"+x;
@@ -893,6 +897,7 @@ $(document).ready(function() {
 			if (contactInfo == "groups") {
 				updateMessages(msg);
 			}
+
 			else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
@@ -2338,18 +2343,6 @@ $('#send-btn-ewi-amd').click(function(){
 		tagSitenames.push($('#site-abbr').val().toUpperCase());
 
 		switch(tagSitenames[0]) {
-			case "MNG":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "MAN":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "JOR":
-			tagSitenames[0] = "JOR/POB";
-			break;
-			case "POB":
-			tagSitenames[0] = "JOR/POB";
-			break;
 			case "MSL":
 			tagSitenames[0] = "MES";
 			break;
@@ -2357,7 +2350,6 @@ $('#send-btn-ewi-amd').click(function(){
 			tagSitenames[0] = "MES";
 			break;
 		}
-
 
 		var msg = {
 			'type': 'smssendgroup',

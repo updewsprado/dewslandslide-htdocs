@@ -470,6 +470,8 @@ function surficialGraph(dataTableSubmit) {
 			for(var a = 0; a < crack_name.length; a++){
 				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
 			}
+			console.log(series_data)
+
 			chartProcess2('ground_graph',series_data,'Superimpose Surficial Graph')
 		}
 	});	
