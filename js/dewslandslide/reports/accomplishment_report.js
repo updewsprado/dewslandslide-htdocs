@@ -672,7 +672,7 @@ $(document).ready(function()
 
                     let report = "";
                     let end = formData.end;
-                    let start = moment(formData.start).add(1, 'hour').format("YYYY-MM-DD HH:ss:mm");
+                    let start = moment(formData.start).add(1, 'hour').format("YYYY-MM-DD HH:mm:ss");
                     let form = {
                         start: start,
                         end: end,
