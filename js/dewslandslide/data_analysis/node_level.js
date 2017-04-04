@@ -136,15 +136,32 @@ function submit(){
 
 
 function submittedAccel(){
+	
 	$('#tag_submit').on('click',function(){
-		console.log($("#current_user_id").val())
-		// var tag_name = ;
-		// var tag_description = "data_analysis";
-		// var timestamp = moment.format('YYYY-MM-DD HH:mm:ss');
-		// var tagger = 
-		// var table_element_id =
-		// var table_used =
-		// var remarks = 
+		debugger;
+		var tag_name = $("#tag_ids").val(); ;
+		var tag_description = "node analysis";
+		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		var tagger = $("#current_user_id").val();
+		var table_element_id = $("#node").val();
+		var table_used = $("#sitegeneral").val();
+		var remarks = $("#tag_time").val()+"%"+$("#comment").val();
+		// console.log(tag_name,tag_description,timestamp,tagger,table_element_id,table_used,remarks)
+		var dataSubmit = [{ 
+			'tag_name' : tag_name, 
+			'tag_description' : tag_description,
+			'timestamp' : timestamp,
+			'tagger' : tagger,
+			'table_element_id' :table_element_id,
+			'table_used' :  table_used,
+			'remarks' : remarks
+		}]
+
+		console.log(dataSubmit);
+
+		$.post("../generalInformation/inserGintags/",{gintags: dataSubmit}).done(function(response) {
+			console.log(response);
+		});
 	});
 }
 
@@ -614,7 +631,7 @@ function chartProcess(id,data_series,name,color){
 							}
 							else {
 								$("#annModal").modal("show");
-								console.log(this.series.data.x)
+								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
