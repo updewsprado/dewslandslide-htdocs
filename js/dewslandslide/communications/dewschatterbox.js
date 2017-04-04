@@ -867,7 +867,7 @@ $(document).ready(function() {
 						
 						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
 						.done(function(response) {
-							// console.log(response);
+							console.log(response);
 						});
 					} 
 				});
@@ -884,6 +884,7 @@ $(document).ready(function() {
 			if (contactInfo == "groups") {
 				updateMessages(msg);
 			}
+
 			else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
@@ -2264,18 +2265,6 @@ $('#send-btn-ewi-amd').click(function(){
 		tagSitenames.push($('#site-abbr').val().toUpperCase());
 
 		switch(tagSitenames[0]) {
-			case "MNG":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "MAN":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "JOR":
-			tagSitenames[0] = "JOR/POB";
-			break;
-			case "POB":
-			tagSitenames[0] = "JOR/POB";
-			break;
 			case "MSL":
 			tagSitenames[0] = "MES";
 			break;
@@ -2283,7 +2272,6 @@ $('#send-btn-ewi-amd').click(function(){
 			tagSitenames[0] = "MES";
 			break;
 		}
-
 
 		var msg = {
 			'type': 'smssendgroup',
