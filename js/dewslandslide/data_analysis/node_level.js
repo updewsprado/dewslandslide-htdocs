@@ -7,6 +7,7 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
+
 	var values = window.location.href.split("/")
 	var current_site = values[5]
 	var currrent_node = values[6]
@@ -50,6 +51,7 @@ $(document).ready(function(e) {
 		sites("Select")
 		submit()
 	} 
+	submittedAccel()
 });
 
 function sites(site_selected){
@@ -129,6 +131,20 @@ function submit(){
 		}else{
 			$("#errorMsg").modal('show')
 		}
+	});
+}
+
+
+function submittedAccel(){
+	$('#tag_submit').on('click',function(){
+		console.log($("#current_user_id").val())
+		// var tag_name = ;
+		// var tag_description = "data_analysis";
+		// var timestamp = moment.format('YYYY-MM-DD HH:mm:ss');
+		// var tagger = 
+		// var table_element_id =
+		// var table_used =
+		// var remarks = 
 	});
 }
 
@@ -598,6 +614,7 @@ function chartProcess(id,data_series,name,color){
 							}
 							else {
 								$("#annModal").modal("show");
+								console.log(this.series.data.x)
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
