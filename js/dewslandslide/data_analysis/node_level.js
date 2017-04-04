@@ -136,9 +136,7 @@ function submit(){
 
 
 function submittedAccel(){
-	
-	$('#tag_submit').on('click',function(){
-		debugger;
+	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").val(); ;
 		var tag_description = "node analysis";
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -146,7 +144,6 @@ function submittedAccel(){
 		var table_element_id = $("#node").val();
 		var table_used = $("#sitegeneral").val();
 		var remarks = $("#tag_time").val()+"%"+$("#comment").val();
-		// console.log(tag_name,tag_description,timestamp,tagger,table_element_id,table_used,remarks)
 		var dataSubmit = [{ 
 			'tag_name' : tag_name, 
 			'tag_description' : tag_description,
@@ -156,12 +153,10 @@ function submittedAccel(){
 			'table_used' :  table_used,
 			'remarks' : remarks
 		}]
-
-		console.log(dataSubmit);
-
-		$.post("../generalInformation/inserGintags/",{gintags: dataSubmit}).done(function(response) {
-			console.log(response);
-		});
+		let host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+		})
 	});
 }
 
