@@ -1,4 +1,5 @@
 var data_timestamp;
+var latest_release_id;
 function sendViaAlertMonitor(data){
 	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
 	.done(function(response) {
@@ -19,9 +20,13 @@ function sendViaAlertMonitor(data){
 		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        default_recipients.push(detailed);
-				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+
+		        if (contacts[counter].office != "GDAPD-PHIV") {
+			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+			        default_recipients.push(detailed);
+					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+		        }
+		        
 			} else {
 		        numbers.forEach(function(x) {
 		        	temp = temp+"|"+x;
@@ -145,8 +150,13 @@ function sendViaAlertMonitor(data){
 				alert("Error Occured: Please contact Administrator");
 			}
 
-			data_timestamp = moment(data.data_timestamp).add(30, 'm').format('hh:mm A');
-			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30, 'm').format('hh:mm a'));
+			data_timestamp = data.data_timestamp;
+			latest_release_id = data.latest_release_id;
+
+			var x = moment(data.data_timestamp).hour() % 1 == 0  && moment(data.data_timestamp).minute() == 0 ?  moment(data.data_timestamp).format("hh:mm A").add(30,'m') : moment(data.data_timestamp).format("hh:mm A");
+
+
+			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",x);
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
@@ -837,7 +847,6 @@ $(document).ready(function() {
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
-					console.log(response);
 					var event_details = JSON.parse($('#event_details').val());
 					var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 					var tagOffices = [];
@@ -860,7 +869,12 @@ $(document).ready(function() {
 								});
 							}
 
-							narrative_template = "Sent "+data_timestamp+" EWI SMS to "+narrative_template.substring(1);
+		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+
+							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+
+
+						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -871,14 +885,16 @@ $(document).ready(function() {
 								'ewi_sms_timestamp': current_timestamp,
 								'narrative_template': narrative_template
 							}
-
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
 							.done(function(response) {
 								console.log(response);
 							});
+						} 
 							narrative_recipients = [];
 						} 
 			        }
+			       
 				});
 			}
 		} else {
@@ -893,6 +909,7 @@ $(document).ready(function() {
 			if (contactInfo == "groups") {
 				updateMessages(msg);
 			}
+
 			else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
@@ -998,8 +1015,9 @@ $(document).ready(function() {
 											narrative_template = narrative_template+","+x;
 										});
 									}
+									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
 
-									narrative_template = "Sent "+moment(events[counter].timestamp).add(30, 'm').format('hh:mm a')+" EWI SMS to "+narrative_template.substring(1);
+									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 						        }
 							} else {
 								$.notify("Invalid request, please try again.","warning");
@@ -2338,18 +2356,6 @@ $('#send-btn-ewi-amd').click(function(){
 		tagSitenames.push($('#site-abbr').val().toUpperCase());
 
 		switch(tagSitenames[0]) {
-			case "MNG":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "MAN":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "JOR":
-			tagSitenames[0] = "JOR/POB";
-			break;
-			case "POB":
-			tagSitenames[0] = "JOR/POB";
-			break;
 			case "MSL":
 			tagSitenames[0] = "MES";
 			break;
@@ -2357,7 +2363,6 @@ $('#send-btn-ewi-amd').click(function(){
 			tagSitenames[0] = "MES";
 			break;
 		}
-
 
 		var msg = {
 			'type': 'smssendgroup',
@@ -2407,6 +2412,7 @@ $('#send-btn-ewi-amd').click(function(){
 		$('#result-ewi-message').text('Early Warning Information sent successfully!');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
+		$("#" + latest_release_id + "_sms").css("color", "red").attr("data-sent", 1);
 	} catch(err) {
 		$('#result-ewi-message').text('Failed!, Please check the template.');
 		alert(err.stack);

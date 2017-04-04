@@ -68,6 +68,15 @@ margin-left: 15px;
   right: 11%
 }
 
+#notice-modal {
+  margin: 0;
+  padding: 0;
+}
+
+#no-bg-img {
+  background-image: none;
+}
+
 #search-contacts {
   position: fixed;
   list-style: none;
