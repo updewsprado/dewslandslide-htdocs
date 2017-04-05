@@ -889,12 +889,14 @@ $(document).ready(function() {
 				});
 			}
 		} else {
-			
+			debugger;
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
+			} else if (msg.type == "ackrpi"){
+				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
 				updateMessages(msg);
 			} else {
