@@ -50,7 +50,7 @@ $(document).ready( function() {
 
 	$("#latest, #extended").on( "click", 'tbody tr .glyphicon-envelope', function(x) {
 		id = $(this).prop('id');
-		let event_id = $(this).attr('event-id')
+		let event_id = $(this).attr('data-event-id')
 		console.log("event", event_id)
 		loadBulletin(id, event_id);
 	});
@@ -427,7 +427,7 @@ function buildTable( latest, extended, overdue, candidate )
 	        	},
 	        	{
 	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a> &ensp; <a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' event-id='" + full.event_id + "'></span></a>";
+	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
 	            	}
 	        	}
 	    	],
@@ -495,7 +495,7 @@ function buildTable( latest, extended, overdue, candidate )
         	},
         	{
         		"render": function (data, type, full) {
-            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "'></span></a>";
+            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0'></span></a>";
             	}
         	}
 		],
@@ -730,6 +730,12 @@ function getOnGoingAndExtended(data) {
 		reloadTable(candidate_table, candidate);
 	}
 	else buildTable(ongoing.latest, ongoing.extended, ongoing.overdue, candidate);
+
+	// Update icon on dashboard if EWI and Bulletin already sent
+	ongoing.latest.forEach(function (x) {
+		checkIfAlreadySent(x.latest_release_id, x.event_id, x.data_timestamp);
+	});
+
 	initialize_map();
 }
 
@@ -896,4 +902,28 @@ function getSites() {
         	sitesList[x.name] = x.id;
         });
     }, "json");
+}
+
+function checkIfAlreadySent(release_id, event_id, timestamp) 
+{
+	$.get( "/../../accomplishment/getNarrativesForShift", 
+    { event_id: event_id, start: moment(timestamp).format("YYYY-MM-DD HH:mm:ss"), end: moment(timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
+    .done(function (data) {
+        let temp = JSON.parse(data);
+        let isBulletinSent = false;
+        let isEWISent = false;
+        for( let i = 0; i < temp.length; i++) {
+            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(moment(timestamp).format("hh:mm A")))
+            {
+            	isBulletinSent = true;
+                $("#" + release_id).css("color", "red").attr("data-sent", 1);
+            }
+
+            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(moment(timestamp).format("hh:mm A")))
+            {
+            	isEWISent = true;
+                $("#" + release_id + "_sms").css("color", "red").attr("data-sent", 1);
+            }
+        }
+    });
 }

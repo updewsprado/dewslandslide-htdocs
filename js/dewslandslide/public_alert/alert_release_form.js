@@ -32,7 +32,7 @@ $(document).ready(function()
     })
     .on('dp.show', function (e) {
         $(this).data("DateTimePicker").maxDate(moment().second(0));
-    })
+    });
     
     $('.time').datetimepicker({
         format: 'HH:mm:00',

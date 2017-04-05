@@ -1,4 +1,15 @@
 
+/****
+ *
+ *  Created by Kevin Dhale dela Cruz
+ *  JS file for Ratchet websocket implementation on
+ *  several site pages:
+ *  - Monitoring Dashboard
+ *  - Alert Release Form
+ *  - Issues And Reminders Page
+ *  
+****/
+
 var wsUri = "ws://" + window.location.hostname + ":5070/";
 var output;
 var attributes_log;
@@ -57,26 +68,37 @@ function onClose(evt) {
 
 function onMessage(evt) {
     let data = JSON.parse(evt.data);
+    let pathname = window.location.pathname;
+
     console.log('DASHBOARD SERVER: onMessage Event Fired');
     console.log('RESPONSE:', data);
 
-    if( window.location.pathname.includes("release_form") ) return;
+    if( pathname.includes("release_form") ) {
+        return;
+    };
 
-    if(data.code == "getJSONandLastRelease")
-    {
-        let temp = data.alert_json.slice(0);
-        temp = temp.pop();
-        if(json_cache == null || json_cache !== JSON.stringify(temp))
+    if( pathname.includes("dashboard") || pathname.includes("home") ) {
+        if(data.code == "getJSONandLastRelease")
         {
-            getRealtimeAlerts(data);
-            json_cache = JSON.stringify(temp);
-            doSend("getOnGoingAndExtended");
-        } else {
-            console.log("DASHBOARD SERVER: No new JSON data.");
+            let temp = data.alert_json.slice(0);
+            temp = temp.pop();
+            if(json_cache == null || json_cache !== JSON.stringify(temp))
+            {
+                getRealtimeAlerts(data);
+                json_cache = JSON.stringify(temp);
+                doSend("getOnGoingAndExtended");
+            } else {
+                console.log("DASHBOARD SERVER: No new JSON data.");
+            }
         }
+        else if(data.code == "getOnGoingAndExtended")
+            getOnGoingAndExtended(data);
     }
-    else if(data.code == "getOnGoingAndExtended")
-        getOnGoingAndExtended(data);
+
+    if(data.code == "getNormalAndLockedIssues") {
+        getNormalAndLockedIssues(data);
+    }
+
 }
 
 function onError(evt) {
