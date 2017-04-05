@@ -88,10 +88,8 @@ function sites(site_selected){
 	submit();
 }
 function Time(start,end){
-	
-
 	$('#reportrange').daterangepicker({
-		maxDate: moment().add(1, 'days'),
+		maxDate: moment(),
 		autoUpdateInput: true,
 		startDate: start,
 		endDate: end,
@@ -144,7 +142,7 @@ function submittedAccel(){
 		var tagger = $("#current_user_id").val();
 		var table_element_id = $("#node").val();
 		var table_used = ($("#sitegeneral").val()).toLowerCase();
-		var remarks = $("#tag_time").val()+"%"+$("#comment").val();
+		var remarks = $("#tag_value").val()+"%"+$("#tag_time").val()+"%"+$("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -158,12 +156,26 @@ function submittedAccel(){
 			})
 		}
 		console.log(dataSubmit)
-		let host = window.location.host;
+		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
 		})
 	});
 }
+
+function nodeAnnotationInitial(data){
+
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllgintagsNodeTagID/"+data.site+"/"+data.fdate+"/"+moment(data.tdate).add(1,"days").format('YYYY-MM-DD'),success: function(result) {
+			console.log(result)
+		}
+	});
+}
+
+
+
+
 
 function nodeSummary(data){
 	$.ajax({ 
@@ -184,6 +196,7 @@ function initialProcessGraph(data,id){
 		dataType: "json",
 		url: "/node_level_page/getDatafromSiteColumn/"+data.site,success: function(result) {
 			document.getElementById("header-site").innerHTML = data.site.toUpperCase()+" v"+ result[0].version +" (node "+ data.node +") Overview"
+			nodeAnnotationInitial(data)
 			if(result[0].version != 1 ){
 				if( result[0].version == 2){
 					var ms_id = 32;
@@ -631,11 +644,13 @@ function chartProcess(id,data_series,name,color){
 							}
 							else {
 								$("#annModal").modal("show");
+								$("#tag_value").hide();
 								$('#tag_ids').tagsinput('removeAll');
-								$('#tag_ids').tagsinput('add', '#Accel'+this.series.name);
-								$('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase()+"-"+$('#node').val());
-								$('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase());
+								// $('#tag_ids').tagsinput('add', '#Accel'+this.series.name);
+								// $('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase()+"-"+$('#node').val());
+								// $('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase());
 								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+								$("#tag_value").val(this.y)
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
