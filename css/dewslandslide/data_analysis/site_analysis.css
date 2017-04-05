@@ -1,3 +1,29 @@
+/*.page-header{
+  position: fixed !important;
+  z-index: 10 !important;
+  background: #fff;
+   width: 60%;
+  top: 0px;
+
+}
+.fixed1 {
+  top:130px;
+  position: fixed !important;
+  background: #fff;
+  z-index: 10;
+  width: 13% !important;
+  height: 13% !important;
+}
+*/
+/*.analysis{
+    margin-top: 115px;
+}*/
+/*.site-panel{
+      display: table-caption !important;
+}*/
+.breadcrumb {
+    background-color: rgba(245, 245, 245, 0) !important;
+}
 #draggable { width: 150px; height: 150px; padding: 0.5em; }
 #divData{
   padding-right: 0px;
@@ -9,27 +35,11 @@
 #alert_div{
   height: 30px;
 }
-/*#A0 {
- background-color: #99ff99;
- padding-bottom: 0px;
- padding-top: 0px;
- padding: 0px;
- font-size: 12pt;
-}
-#A1 {
- background-color: #ffb366;
- padding-bottom: 0px;
- padding-top: 0px;
- padding: 0px
- font-size: 12pt;
+
+#site_collapse{
+  padding-right: 0px !important
 }
 
-#A2 {
- background-color: #ff6666;
- padding-bottom: 0px;
- padding-top: 0px;
- padding: 0px
-}*/
 #ground_table thead tr th:nth-child(2) {
   display: none;
 }
@@ -48,9 +58,12 @@
   width: 100%
 }
 .analysis{
-  height: 937px;
+  height: 450px;
 }
 
+#heatmap_container{
+  text-align: center;
+}
 ol{
   text-align: center;
 }
@@ -61,13 +74,27 @@ ol{
   padding-left: 5px;
 }
 #analysis_panel_body{
-  padding: 0px
+  padding: 0px;
+}
+#extra_panel_body{
+  padding: 0px;
+}
+.container .extra_original .panel-body {
+  background: #f4f4f4 url(/../../images/DEWSL.png);
+  background-repeat: no-repeat;
+  background-position: left; 
+  background-size:contain;
+  font-family: Arial;
+  padding-left: 0px;
+}
+.extra_panel_body{
+  height:30px;
 }
 .analysis_divDta{
   padding-left: 5px;
   padding-right: 0px;
 }
-.container .col-md-9 .panel-body{
+.container .original .panel-body {
   background: #f4f4f4 url(/../../images/dews-l-logo.png);
   background-blend-mode: overlay;
   background-repeat: no-repeat;
@@ -77,11 +104,15 @@ ol{
   font-family: Arial;
   padding-left: 0px;
 }
-#map-canvas {
-  width: 250px;
-  height: 450px;
-  min-width: 5%!important;
-  min-height: 5%!important;
+.container .change .panel-body {
+/*  background: #f4f4f4 url(/../../images/dews-l-logo.png);*/
+  background-blend-mode: overlay;
+  background-repeat: no-repeat;
+  background-position: center; 
+  background-size:contain;
+  opacity: 4;
+  font-family: Arial;
+  padding-left: 0px;
 }
 
 #mTable_wrapper{
@@ -429,3 +460,19 @@ h4{
                                                                                             border-color: #5cb85c; }
                                                                                             .radio-success input[type="radio"]:checked + label::after {
                                                                                               background-color: #5cb85c; }
+@media screen and (max-width: 901px) {
+    .container {
+        padding-right: 10px!important;
+        padding-left: 10px!important;
+        margin-right: 0px !important;
+        margin-left: 0px !important;
+        width: 100%;  
+    }
+
+    .panel-body {
+      padding-left: 0px;
+      padding-right: 0px;
+      display: table-caption;
+
+    }
+}
