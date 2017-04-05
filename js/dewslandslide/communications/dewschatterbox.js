@@ -1,8 +1,8 @@
 var data_timestamp;
+var latest_release_id;
 function sendViaAlertMonitor(data){
 	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
 	.done(function(response) {
-		console.log(data);
 		var contacts = JSON.parse(response);
 		var default_recipients = [];
 		var additional_recipients = [];
@@ -117,7 +117,7 @@ function sendViaAlertMonitor(data){
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
 			var day = moment().locale('en').format("YYYY-MM-DD").substring(8, 10);
 
-			var reconstructedDate = day+" "+months[parseInt(month)]+", "+year;
+			var reconstructedDate = day+" "+months[parseInt(month)]+" "+year;
 
 			constructedEWIDate = constructedEWIDate.replace("%%DATE%%",reconstructedDate);
 			var ewiLocation = data["sitio"]+", "+data["barangay"]+", "+data["municipality"]+", "+data["province"];
@@ -131,26 +131,54 @@ function sendViaAlertMonitor(data){
 			var currentTime = moment().format("YYYY-MM-DD HH:mm");
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30 AM");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 07:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 AM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
 				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 11:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 NN");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30 PM");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 15:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","4:00 PM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 23:59")).valueOf()){
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30 AM");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 19:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 PM");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).add(24,"hours").valueOf()){
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30 AM");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 23:55")).valueOf()) {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 MN");
+				} else {
+					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+				}
 			} else {
 				alert("Error Occured: Please contact Administrator");
 			}
 
-			data_timestamp = moment(data.data_timestamp).add(30, 'm').format('hh:mm A');
-			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30, 'm').format('hh:mm a'));
+			data_timestamp = data.data_timestamp;
+			latest_release_id = data.latest_release_id;
+
+			var x = moment(data.data_timestamp).hour() % 1 == 0  && moment(data.data_timestamp).minute() == 0 ?  moment(data.data_timestamp).format("hh:mm A").add(30,'m') : moment(data.data_timestamp).format("hh:mm A");
+			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",x);
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
@@ -220,8 +248,6 @@ $(document).ready(function() {
 	var temp_ewi_template_holder = "";
 	var temp_msg_holder = "";
 	var socket = "";
-	var added_contacts = [];
-	var narrative_recipients = [];
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
@@ -326,26 +352,42 @@ $(document).ready(function() {
 					msg.isyou = 0;
 					messages.push(msg);	
 				} else {
+
 					if (msg.name == "unknown") {
 						return;
 					}
+
 					var isTargetSite = false;
 					for (i in groupTags.sitenames) {
-						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						if (msg.name == null || msg.msg != null) {
+							msg.isyou = 0;
+							msg.user = "PASALOAD REQUEST";
 							isTargetSite = true;
 							continue;
+						} else {
+							if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+								isTargetSite = true;
+								continue;
+							}	
 						}
 					}
 
 					if (isTargetSite == false) {
 						return;
 					}
+
 					var isOffices = false;
 					for (i in groupTags.offices) {
-						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						if (msg.name == null){
+							msg.name = "PASALOAD REQUEST";
 							isOffices = true;
 							continue;
-						}
+						} else {
+							if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+								isOffices = true;
+								continue;
+							}	
+						}	
 					}
 
 					if (isOffices == false) {
@@ -362,6 +404,7 @@ $(document).ready(function() {
 						messages.push(msg);	
 					}
 				}
+
 			} else {
 				for (i in contactInfo) {
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
@@ -387,15 +430,14 @@ $(document).ready(function() {
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
+
 			try {
 				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
 						lastMessageTimeStampYou = messages[counters]['timestamp'];
 					}
 				} else {
-
 					if (lastMessageTimeStamp == "") {
-
 						lastMessageTimeStamp = messages[counters]['timestamp'];
 					}
 				}
@@ -806,13 +848,6 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
-
-				
-				var tagOffices = [];
-				$('input[name="offices"]:checked').each(function() {
-					tagOffices.push(this.value);
-				});
-
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -835,13 +870,12 @@ $(document).ready(function() {
 							'tagger': tagger_user_id,
 							'table_element_id': msg["data"][i][0],
 							'table_used': "smsoutbox",
-							'remarks': "" // Leave it blank for now
-						}
+						'remarks': "" // Leave it blank for now
+					}
 					gintags_collection.push(gintags)
 				}
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
-					console.log(response);
 					var event_details = JSON.parse($('#event_details').val());
 					var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 					var tagOffices = [];
@@ -864,7 +898,12 @@ $(document).ready(function() {
 								});
 							}
 
-							narrative_template = "Sent "+data_timestamp+" EWI SMS to "+narrative_template.substring(1);
+		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+
+							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+
+
+						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -875,30 +914,45 @@ $(document).ready(function() {
 								'ewi_sms_timestamp': current_timestamp,
 								'narrative_template': narrative_template
 							}
-
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
 							.done(function(response) {
 								console.log(response);
 							});
+						} 
 							narrative_recipients = [];
 						} 
 			        }
+
+					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+						var narrative_details = {
+							'event_id': event_details.event_id,
+							'site_id': event_details.site_id,
+							'municipality': event_details.municipality,
+							'province': event_details.province,
+							'barangay': event_details.barangay,
+							'sition': event_details.sition,
+							'ewi_sms_timestamp': current_timestamp,
+							'narrative_template': "Sent Early Warning Information."
+						}
+						
+						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+						.done(function(response) {
+							console.log(response);
+						});
+					} 
 				});
 			}
 		} else {
-
+			
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
-			}
-
-			if (contactInfo == "groups") {
+			} else if (contactInfo == "groups") {
 				updateMessages(msg);
-			}
-
-			else {
+			} else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
 					updateQuickInbox(msg);
@@ -912,8 +966,7 @@ $(document).ready(function() {
 							return;
 						}
 					}
-				}
-				else {
+				} else {
 					console.log("alphanumeric keywords for msg.user");
 					for (i in contactnumTrimmed) {
 						for (j in msg.numbers) {
@@ -1003,8 +1056,9 @@ $(document).ready(function() {
 											narrative_template = narrative_template+","+x;
 										});
 									}
+									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
 
-									narrative_template = "Sent "+moment(events[counter].timestamp).add(30, 'm').format('hh:mm a')+" EWI SMS to "+narrative_template.substring(1);
+									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 						        }
 							} else {
 								$.notify("Invalid request, please try again.","warning");
@@ -2325,16 +2379,7 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-
-		var raw_offices = [];
-
-        current_recipients.forEach(function(x) {
-        	if (x.substring(0, x.indexOf(':')).trim() != "") {raw_offices.push(x.substring(0, x.indexOf(':')).trim());}
-        });
-
-		$.each(raw_offices, function(i, el){
-		    if($.inArray(el, narrative_recipients) === -1) narrative_recipients.push(el);
-		});
+		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
@@ -2354,7 +2399,7 @@ $('#send-btn-ewi-amd').click(function(){
 		var msg = {
 			'type': 'smssendgroup',
 			'user': 'You',
-			'offices': narrative_recipients,
+			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'msg': text+footer,
 			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
@@ -2368,16 +2413,10 @@ $('#send-btn-ewi-amd').click(function(){
 		updateMessages(msg);
 
 		if (difference != null || difference.length != 0) {
-			added_contacts = [];
+			var added_contacts = [];
 			difference.forEach(function(x){
-				if (!isNaN(x.charAt(0))){
-					added_contacts.push([x])
-				} else {
-					var temp = x.split('|');
-					temp.forEach(function(y) {
-						if (!isNaN(y)) {added_contacts.push([y.trim()]);}
-					});
-				}
+				var temp = x.split('|');
+				added_contacts.push(temp.splice(1,1));
 			});
 
 			for (var counter = 0; counter < added_contacts.length;counter++) {
@@ -2399,6 +2438,7 @@ $('#send-btn-ewi-amd').click(function(){
 		$('#result-ewi-message').text('Early Warning Information sent successfully!');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
+		$("#" + latest_release_id + "_sms").css("color", "red").attr("data-sent", 1);
 	} catch(err) {
 		$('#result-ewi-message').text('Failed!, Please check the template.');
 		alert(err.stack);
@@ -3226,6 +3266,42 @@ function getInitialQuickInboxMessages () {
 				});
 			}
 		}
+	}
+
+	function getOngoingEvents(sites){
+		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+			var events = JSON.parse(data);
+			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+			.done(function(response) {
+				siteids = JSON.parse(response);
+				for (var counter = 0; counter < events.length; counter++) {
+					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+						if (events[counter].site_id == siteids[siteid_counter].id) {
+							var narrative_template = "";
+							if (gintags_msg_details.tags === "#EwiResponse") {
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+							} else if (gintags_msg_details.tags === "#EwiMessage"){
+								narrative_template = "Sent Early warning information message.";
+							} else {
+								$.notify("Invalid request, please try again.","warning");
+							}
+							var narrative_details = {
+								'event_id': events[counter].event_id,
+								'site_id': siteids[siteid_counter].id,
+								'ewi_sms_timestamp': gintags_msg_details[2],
+								'narrative_template': narrative_template
+							}
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+							.done(function(response) {
+								console.log(response);
+							});
+
+						}
+					}
+				}
+			});
+		});
 	}
 
 	function removeIndividualGintag(gintag_details){

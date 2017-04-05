@@ -36,9 +36,10 @@ function loadBulletin(id1, id2) {
                     $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
                 }   
             }
+
             bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
             bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
-
+          
             let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
 
             if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
