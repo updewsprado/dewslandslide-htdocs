@@ -351,7 +351,7 @@ $(document).ready(function() {
 
 					var isTargetSite = false;
 					for (i in groupTags.sitenames) {
-						if (msg.name == null) {
+						if (msg.name == null || msg.msg != null) {
 							msg.isyou = 0;
 							msg.user = "PASALOAD REQUEST";
 							isTargetSite = true;
@@ -889,19 +889,16 @@ $(document).ready(function() {
 				});
 			}
 		} else {
-
+			debugger;
+			
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
-			}
-
-			if (contactInfo == "groups") {
+			} else if (contactInfo == "groups") {
 				updateMessages(msg);
-			}
-
-			else {
+			} else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
 					updateQuickInbox(msg);
@@ -915,8 +912,7 @@ $(document).ready(function() {
 							return;
 						}
 					}
-				}
-				else {
+				} else {
 					console.log("alphanumeric keywords for msg.user");
 					for (i in contactnumTrimmed) {
 						for (j in msg.numbers) {
