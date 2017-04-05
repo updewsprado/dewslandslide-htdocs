@@ -388,7 +388,7 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: 'dataseries',fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
 						chartProcessRain(series_data,id,'Senslope',site,max_rain,negative );
 					}else{
@@ -437,7 +437,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative );
 					}else{
@@ -494,7 +494,7 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 0, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,negative );
 					}else{
@@ -567,6 +567,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 				color: colors[1],
 				dashStyle: 'shortdash',
 				width: 2,
+				zIndex: 0,
 				label: {
 					text: '24hrs threshold (' + max/2 +')',
 					style: { color: '#fff',}
@@ -576,6 +577,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 				color: colors[2],
 				dashStyle: 'shortdash',
 				width: 2,
+				zIndex: 0,
 				label: {
 					text: '72hrs threshold (' + max +')',
 					style: { color: '#fff',}
@@ -1718,7 +1720,7 @@ function chartProcessInverted(id,data_series,name){
 	});
 	$("#"+id).highcharts({
 		chart: {
-			type: 'spline',
+			type: 'line',
 			zoomType: 'x',
 			panning: true,
 			panKey: 'shift',
