@@ -48,6 +48,10 @@ body {
   min-width: 500px;
 }
 
+.carousel-caption {
+  color: #676767;
+}
+
 .notes h4{
 padding-top: 15px;
 }

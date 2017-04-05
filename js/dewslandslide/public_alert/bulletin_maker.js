@@ -71,7 +71,7 @@ page.open( args[1], function(status) {
 			console.log("Exiting...");
 			console.log("Success.");
 			phantom.exit();
-		}, 8000);
+		}, 3000);
 		
 	} else {
 
