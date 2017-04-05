@@ -889,7 +889,6 @@ $(document).ready(function() {
 				});
 			}
 		} else {
-			debugger;
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
