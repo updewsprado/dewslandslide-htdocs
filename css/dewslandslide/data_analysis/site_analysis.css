@@ -35,9 +35,11 @@
 #alert_div{
   height: 30px;
 }
+
 #site_collapse{
   padding-right: 0px !important
 }
+
 #ground_table thead tr th:nth-child(2) {
   display: none;
 }

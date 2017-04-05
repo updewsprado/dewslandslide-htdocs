@@ -137,22 +137,27 @@ function submit(){
 
 function submittedAccel(){
 	$('#tag_submit').click(function(){
-		var tag_name = $("#tag_ids").val(); ;
+		var tag_name = $("#tag_ids").tagsinput("items");
+		console.log(tag_name)
 		var tag_description = "node analysis";
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
 		var table_element_id = $("#node").val();
-		var table_used = $("#sitegeneral").val();
+		var table_used = ($("#sitegeneral").val()).toLowerCase();
 		var remarks = $("#tag_time").val()+"%"+$("#comment").val();
-		var dataSubmit = [{ 
-			'tag_name' : tag_name, 
-			'tag_description' : tag_description,
-			'timestamp' : timestamp,
-			'tagger' : tagger,
-			'table_element_id' :table_element_id,
-			'table_used' :  table_used,
-			'remarks' : remarks
-		}]
+		var dataSubmit = [];
+		for (var i = 0; i < tag_name.length; i++) {
+			dataSubmit.push({ 
+				'tag_name' : tag_name[i], 
+				'tag_description' : tag_description,
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' :table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks
+			})
+		}
+		console.log(dataSubmit)
 		let host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
@@ -626,6 +631,10 @@ function chartProcess(id,data_series,name,color){
 							}
 							else {
 								$("#annModal").modal("show");
+								$('#tag_ids').tagsinput('removeAll');
+								$('#tag_ids').tagsinput('add', '#Accel'+this.series.name);
+								$('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase()+"-"+$('#node').val());
+								$('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase());
 								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
