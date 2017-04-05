@@ -36,7 +36,9 @@ function loadBulletin(id1, id2) {
                     $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
                 }   
             }
-            bulletin_timestamp = moment(datetime, 'DD MMMM YYYY, h:mm A');
+            bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
+            bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+
             let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
 
             if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
@@ -160,6 +162,7 @@ function sendMail(text, subject, filename, recipients) {
                     });
 
                     let x = moment(bulletin_timestamp).hour() % 4 == 0  && moment(bulletin_timestamp).minute() == 0 ?  moment(bulletin_timestamp).format("hh:mm A") : moment(bulletin_timestamp).format("hh:mm A") + " onset";
+                    if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "MN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "NN");
                     let message = "Sent " + x + " EWI Bulletin to " + people.join(", ");
 
                     let narratives = [{ 
