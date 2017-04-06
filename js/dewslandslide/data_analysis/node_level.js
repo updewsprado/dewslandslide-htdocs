@@ -114,7 +114,7 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
-		console.log($("#sitegeneral").val() , $("#node").val() != "")
+		// console.log($("#sitegeneral").val() , $("#node").val() != "")
 		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
 			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
@@ -136,13 +136,14 @@ function submit(){
 function submittedAccel(){
 	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").tagsinput("items");
-		console.log(tag_name)
+		// console.log(tag_name)
 		var tag_description = "node analysis";
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
-		var table_element_id = $("#node").val();
+		var time = (($("#tag_time").val()).slice(2,10)).toString()
+		var table_element_id = $("#tag_series").val()+(time.replace(/-/g, ""));
 		var table_used = ($("#sitegeneral").val()).toLowerCase();
-		var remarks = $("#tag_value").val()+"%"+$("#tag_time").val()+"%"+$("#comment").val();
+		var remarks = $("#node").val()+"no/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -155,28 +156,33 @@ function submittedAccel(){
 				'remarks' : remarks
 			})
 		}
-		console.log(dataSubmit)
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
 		})
+		var curSite = $("#sitegeneral").val();
+		var node = $ ("#node").val();
+		var fromDate = $('#reportrange span').html().slice(0,10);
+		var toDate = $('#reportrange span').html().slice(13,23);
+		location = "/data_analysis/node/"+curSite+"/"+node+"/"+fromDate+"/"+toDate
 	});
 }
 
 function nodeAnnotationInitial(data){
-
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/getAllgintagsNodeTagID/"+data.site+"/"+data.fdate+"/"+moment(data.tdate).add(1,"days").format('YYYY-MM-DD'),success: function(result) {
-			console.log(result)
-		}
-	});
+	// $.ajax({ 
+	// 	dataType: "json",
+	// 	url: "/node_level_page/getAllgintagsNodeTagID/"+data.site+"/"+data.fdate+"/"+moment(data.tdate).add(1,"days").format('YYYY-MM-DD'),success: function(result) {
+	// 		console.log(result)
+	// 		// var data_value =[]
+	// 		// for (var i = 0; i < result.length; i++) {
+	// 		// 	var remarks_parse = (result[i].remarks).split("%")
+	// 		// 	console.log(remarks_parse)
+	// 		// 	 data_value.push({x:remarks_parse[0],text:"test",title:result[i].tag_name})
+	// 		// }
+	// 		// console.log(data_value)
+	// 	}
+	// });
 }
-
-
-
-
-
 function nodeSummary(data){
 	$.ajax({ 
 		dataType: "json",
@@ -196,7 +202,7 @@ function initialProcessGraph(data,id){
 		dataType: "json",
 		url: "/node_level_page/getDatafromSiteColumn/"+data.site,success: function(result) {
 			document.getElementById("header-site").innerHTML = data.site.toUpperCase()+" v"+ result[0].version +" (node "+ data.node +") Overview"
-			nodeAnnotationInitial(data)
+			
 			if(result[0].version != 1 ){
 				if( result[0].version == 2){
 					var ms_id = 32;
@@ -242,6 +248,7 @@ function initialProcessGraph(data,id){
 				$("#accel-c").hide();
 				$("#accel-r").hide();
 			}
+			nodeAnnotationInitial(data)
 			
 		}
 	});
@@ -269,8 +276,9 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 			var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
 			var series_name = ["xvalue","yvalue","zvalue","mvalue"];
 			var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
+			var ids =["dt1","dt2","dt3","dt4"]
 			for (i = 0; i < series_id.length; i++) {
-				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
+				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: ids[i]}])
 			}
 			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
 			series_id.pop()
@@ -299,10 +307,11 @@ function accelVersion1Filtered(data,series_data,id){
 			var series_name_id = ["x1(filterd)","y1(filterd)","z1(filterd)"];
 			var series_name=["Xvalue","Yvalue","Zvalue"]
 			var dataseries=[]
+			var ids =["dt1","dt2","dt3"]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
-				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
+				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: ids[i]})	
+				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: ids[i]})	
 				dataseries.push(data_push)
 			}
 
@@ -371,8 +380,9 @@ function accel2(data,series,msgid){
 			batt_series.push(series[3])
 			batt_series.push(series_id[3])
 			var visibility =[true,false]
+			var ids =["dt1","dt2"]
 			for (i = 0; i < batt_series.length; i++) {
-				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: 'dataseries',visible:visibility[i]});
+				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: ids[i],visible:visibility[i]});
 			}
 			var color_series = ["#d48a3b","#fff"]
 			chartProcess(data.id[3],dataseries_batt,"Batt",color_series)
@@ -432,6 +442,7 @@ function accel2filtered(data,series,msgid){
 			var visibility =[true,false,false,false,true,false,false,false,true,false,false,false]
 			var color_series = [["#5ff101","#9301f1","#fff","#01f193"],["#3362ff","#9301f1","#fff","#01f193"],["#ff4500","#9301f1","#fff","#01f193"],["#d48a3b","#fff",'#ff8000',"#ffbf00"]]
 			series.push(series_id)
+			var ids =["dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4"]
 			var process_dataseries = []; // sorthing by dataseries
 			for (i = 0; i < series.length-1; i++) {
 				for (a = 0; a < series[0].length; a++) {
@@ -443,15 +454,15 @@ function accel2filtered(data,series,msgid){
 			for (i = 0; i < process_dataseries.length; i++) { 
 				if (temp == "") {
 					temp = series_name[i].substring(0,1);
-					plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+					plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 				} else {
 					if (temp == series_name[i].substring(0,1)) {
-						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 					} else {
 						series_data.push(plot_data);
 						temp = series_name[i].substring(0,1);
 						plot_data = [];
-						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 					}
 				}
 			}
@@ -542,8 +553,9 @@ function somsfiltered(data,dataSoms,series){
 				series_data.push(series)
 				series_data.push(filterDataSeries)
 				var visibility =[true,false]
+				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
-					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
 					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
@@ -552,8 +564,9 @@ function somsfiltered(data,dataSoms,series){
 				var series_data=[] , data_series=[];
 				series_data.push(series)
 				var visibility =[true,false]
+				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
-					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
@@ -563,103 +576,126 @@ function somsfiltered(data,dataSoms,series){
 }
 
 function chartProcess(id,data_series,name,color){
-
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-		colors: color,
-	});
-
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			height: 300,
-			backgroundColor: {
-				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-				stops: [
-				[0, '#2a2a2b'],
-				[1, '#3e3e40']
-				]
-			},
-		},
-		title: {
-			text: name.toUpperCase(),
-			style: {
-				color: '#E0E0E3',
-				fontSize: '20px'
+	var site = ($('#sitegeneral').val()).toLowerCase();
+	var node = $('#node').val();
+	var fdate = $('#reportrange span').html().slice(0,10);
+	var tdate = $('#reportrange span').html().slice(13,23);
+	// console.log(site,node,fdate,tdate)
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
+			var data_value =[]
+			for (var i = 0; i < result.length; i++) {
+				var remarks_parse = (result[i].remarks).split("/")
+				// console.log(remarks_parse)
+				data_value.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
 			}
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%Y'
-			},
-			title: {
-				text: 'Date'
-			},
-			labels: {
-				style:{
-					color: 'white'
-				}
-
-			},
-			title: {
-				text: 'Date',
-				style:{
-					color: 'white'
-				}
-			}
-		},
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				marker: {
-					radius: 3
+			
+			var tag_series ={name:'Tag',type: 'flags',data:data_value,onSeries: 'dt1',width: 50}
+			data_series.push(tag_series)
+			// console.log(data_series)
+			Highcharts.setOptions({
+				global: {
+					timezoneOffset: -8 * 60
 				},
-				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name =="Comment"){
+				colors: color,
+			});
 
-								$("#anModal").modal("show");
-								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-							}else if(this.series.name =="Alert" ){
+			$("#"+id).highcharts({
+				chart: {
+					type: 'line',
+					zoomType: 'x',
+					height: 300,
+					backgroundColor: {
+						linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+						stops: [
+						[0, '#2a2a2b'],
+						[1, '#3e3e40']
+						]
+					},
+				},
+				title: {
+					text: name.toUpperCase(),
+					style: {
+						color: '#E0E0E3',
+						fontSize: '20px'
+					}
+				},
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { 
+						month: '%e. %b %Y',
+						year: '%Y'
+					},
+					title: {
+						text: 'Date'
+					},
+					labels: {
+						style:{
+							color: 'white'
+						}
 
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}else if(this.series.name =="Maintenace"){
-
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-							}
-							else {
-								$("#annModal").modal("show");
-								$("#tag_value").hide();
-								$('#tag_ids').tagsinput('removeAll');
-								// $('#tag_ids').tagsinput('add', '#Accel'+this.series.name);
-								// $('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase()+"-"+$('#node').val());
-								// $('#tag_ids').tagsinput('add', '#Accel'+($('#sitegeneral').val()).toLowerCase());
-								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-								$("#tag_value").val(this.y)
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							}
+					},
+					title: {
+						text: 'Date',
+						style:{
+							color: 'white'
 						}
 					}
-				}
-			},
-			area: {
-				marker: {
-					lineWidth: 3,
+				},
+				tooltip: {
+					shared: true,
+					crosshairs: true
+				},
+
+				plotOptions: {
+					series: {
+						marker: {
+							radius: 3
+						},
+						cursor: 'pointer',
+						point: {
+							events: {
+								click: function () {
+									if(this.series.name =="Comment"){
+
+										$("#anModal").modal("show");
+										$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
+									}else if(this.series.name =="Alert" ){
+
+										$("#anModal").modal("show");
+										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+									}else if(this.series.name =="Maintenace"){
+
+										$("#anModal").modal("show");
+										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+									}
+									else {
+										$("#annModal").modal("show");
+										$("#tag_value").hide();
+										$("#tag_series").hide();
+										$('#tag_ids').tagsinput('removeAll');
+										$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+										$("#tag_value").val(this.y)
+										if(this.series.name == "batt1" || this.series.name == "batt2"){
+											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+										}else if (this.series.name == "mvalue") {
+											var value_id = (this.series.name).slice(0,2)
+										}else{
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
+										}
+										$("#tag_series").val(value_id)
+										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+									}
+								}
+							}
+						}
+					},
+					area: {
+						marker: {
+							lineWidth: 3,
                                     lineColor: null // inherit from series
                                 }
                             }
@@ -686,4 +722,8 @@ function chartProcess(id,data_series,name,color){
                         series:data_series
                     }
                     );
+}
+});
+
+
 }
