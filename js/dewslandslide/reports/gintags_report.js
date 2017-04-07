@@ -3,16 +3,16 @@ $(document).ready(function() {
 		var response = JSON.parse(data);
 		var dataset = [];
 		var dataraw= [];
-        response.forEach(function(raw) {
-        	for (var i = 0; i < Object.keys(raw).length; i) {
-        		// dataraw.push();
-        		console.log(raw.Object.keys(raw));
-        	}
-        });
-		var sample_data = [["HEY","HEY","HEY","HEY","HEY","HEY","HEY","HEY"]];
-		console.log(sample_data);
+
+		for (var counter = 0; counter < response.length; counter++) {
+			var dataraw = $.map(response[counter], function(value, index) {
+			    return [value];
+			});
+			dataset.push(dataraw);
+		}
+
 		    $('#gintag_table').DataTable( {
-		        data: data,
+		        data: dataset,
 		        columns: [
 		            { title: "Gintag ID" },
 		            { title: "Tagger ID" },
