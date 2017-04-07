@@ -156,6 +156,7 @@ function submittedAccel(){
 				'remarks' : remarks
 			})
 		}
+		console.log(dataSubmit)
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
@@ -168,21 +169,7 @@ function submittedAccel(){
 	});
 }
 
-function nodeAnnotationInitial(data){
-	// $.ajax({ 
-	// 	dataType: "json",
-	// 	url: "/node_level_page/getAllgintagsNodeTagID/"+data.site+"/"+data.fdate+"/"+moment(data.tdate).add(1,"days").format('YYYY-MM-DD'),success: function(result) {
-	// 		console.log(result)
-	// 		// var data_value =[]
-	// 		// for (var i = 0; i < result.length; i++) {
-	// 		// 	var remarks_parse = (result[i].remarks).split("%")
-	// 		// 	console.log(remarks_parse)
-	// 		// 	 data_value.push({x:remarks_parse[0],text:"test",title:result[i].tag_name})
-	// 		// }
-	// 		// console.log(data_value)
-	// 	}
-	// });
-}
+
 function nodeSummary(data){
 	$.ajax({ 
 		dataType: "json",
@@ -248,7 +235,6 @@ function initialProcessGraph(data,id){
 				$("#accel-c").hide();
 				$("#accel-r").hide();
 			}
-			nodeAnnotationInitial(data)
 			
 		}
 	});
@@ -307,11 +293,12 @@ function accelVersion1Filtered(data,series_data,id){
 			var series_name_id = ["x1(filterd)","y1(filterd)","z1(filterd)"];
 			var series_name=["Xvalue","Yvalue","Zvalue"]
 			var dataseries=[]
+			var visibility =[true,false]
 			var ids =["dt1","dt2","dt3"]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: ids[i]})	
-				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: ids[i]})	
+				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: ids[i],visible:visibility[i]})	
+				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: ids[i],visible:visibility[i]})	
 				dataseries.push(data_push)
 			}
 
@@ -439,7 +426,7 @@ function accel2filtered(data,series,msgid){
 			var series_title = ["xvalue","yvalue","zvalue","batt"]
 			var series_name = ["x1(raw)","x2(raw)","x1(filterd)","x2(filterd)",
 			"y1(raw)","y2(raw)","y1(filterd)","y2(filterd)","z1(raw)","z2(raw)","z1(filterd)","z2(filterd)"];
-			var visibility =[true,false,false,false,true,false,false,false,true,false,false,false]
+			var visibility =[false,false,true,false,false,false,true,false,false,false,true,false]
 			var color_series = [["#5ff101","#9301f1","#fff","#01f193"],["#3362ff","#9301f1","#fff","#01f193"],["#ff4500","#9301f1","#fff","#01f193"],["#d48a3b","#fff",'#ff8000',"#ffbf00"]]
 			series.push(series_id)
 			var ids =["dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4"]
@@ -584,16 +571,86 @@ function chartProcess(id,data_series,name,color){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
-			var data_value =[]
+			var data_value =[],xRaw1=[],xRaw2=[],xFil1=[],xFil2=[];
+			var yRaw1=[],yRaw2=[],yFil2=[],yFil1=[];
+			var zRaw1=[],zRaw2=[],zFil2=[],zFil1=[];
+			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[];
 			for (var i = 0; i < result.length; i++) {
 				var remarks_parse = (result[i].remarks).split("/")
-				// console.log(remarks_parse)
-				data_value.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				if(result[i].table_element_id.slice(0,3) == "x1r"){
+					xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x2r"){
+					xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x1f"){
+					xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x2f"){
+					xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y1r"){
+					yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y2r"){
+					yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y1f"){
+					yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y2f"){
+					yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z1r"){
+					zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z2r"){
+					zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z1f"){
+					zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z2f"){
+					zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "bt1"){
+					batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "bt2"){
+					batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Cal"){
+					cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Caf"){
+					calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Raw"){
+					raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Raf"){
+					rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}
+				
 			}
-			
-			var tag_series ={name:'Tag',type: 'flags',data:data_value,onSeries: 'dt1',width: 50}
-			data_series.push(tag_series)
-			// console.log(data_series)
+			// console.log(name)
+			// console.log(result)
+			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
+			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
+			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
+			var data_batt = [batt1,batt2];
+			var data_cal =[cal,calFil];
+			var data_raw =[raw,rawFil];
+			if(name == "xvalue"){
+				for (var i = 0; i < data_x.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_x[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}else if(name == "yvalue"){
+				for (var i = 0; i < data_y.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_y[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}else if(name == "zvalue"){
+				for (var i = 0; i < data_y.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_z[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}else if(name == "Batt"){
+				for (var i = 0; i < data_batt.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_batt[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}else if(name == "Soms(cal)"){
+				for (var i = 0; i < data_cal.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_cal[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}else if(name == "Soms(raw)"){
+				for (var i = 0; i < data_raw.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+				}
+			}
+			data_series.push({name:'Tag'})
+			console.log(data_series)
 			Highcharts.setOptions({
 				global: {
 					timezoneOffset: -8 * 60
@@ -679,8 +736,13 @@ function chartProcess(id,data_series,name,color){
 										$('#tag_ids').tagsinput('removeAll');
 										$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
 										$("#tag_value").val(this.y)
+										// console.log(this.series.name)
 										if(this.series.name == "batt1" || this.series.name == "batt2"){
 											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+										}else if (this.series.name == "Cal" || this.series.name == "Raw") {
+											var value_id = (this.series.name).slice(0,3)
+										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
 										}else if (this.series.name == "mvalue") {
 											var value_id = (this.series.name).slice(0,2)
 										}else{
@@ -696,34 +758,86 @@ function chartProcess(id,data_series,name,color){
 					area: {
 						marker: {
 							lineWidth: 3,
-                                    lineColor: null // inherit from series
-                                }
-                            }
+							lineColor: null 
+						}
+					}
 
-                        },
-                        legend: {
-                        	layout: 'vertical',
-                        	align: 'right',
-                        	verticalAlign: 'middle',
-                        	borderWidth: 0,
-                        	itemStyle: {
-                        		color: '#E0E0E3'
-                        	},
-                        	itemHoverStyle: {
-                        		color: '#FFF'
-                        	},
-                        	itemHiddenStyle: {
-                        		color: '#606063'
-                        	}
-                        },
-                        credits: {
-                        	enabled: false
-                        },
-                        series:data_series
-                    }
-                    );
-}
-});
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0,
+					itemStyle: {
+						color: '#E0E0E3'
+					},
+					itemHoverStyle: {
+						color: '#FFF'
+					},
+					itemHiddenStyle: {
+						color: '#606063'
+					}
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series
+			});
+			var chart = $('#'+id).highcharts();
+			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+				var series4 = chart.series[(data_series.length-5)];
+				var series5 = chart.series[(data_series.length-4)];
+				var series6 = chart.series[(data_series.length-3)];
+				var series7 = chart.series[(data_series.length-2)];
+				var series = chart.series[(data_series.length-1)];
+				if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
+					if (series.visible) {
+						series6.update({
+							visible: true,
+						});
+						series7.update({
+							visible: true,
+						});
+					}else {
 
+						series6.update({
+							visible: false,
+						});
+						series7.update({
+							visible: false,
+						});
+					}
+				}else{
+					if (series.visible) {
+						series4.update({
+							visible: true,
+						});
+						series5.update({
+							visible: true,
+						});
+						series6.update({
+							visible: true,
+						});
+						series7.update({
+							visible: true,
+						});
+					}else {
+						series4.update({
+							visible: false,
+						});
+						series5.update({
+							visible: false,
+						});
+						series6.update({
+							visible: false,
+						});
+						series7.update({
+							visible: false,
+						});
+					}
+				}
+			});
+		}
+	});
 
 }
