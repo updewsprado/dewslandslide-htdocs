@@ -624,7 +624,7 @@ function chartProcess(id,data_series,name,color){
 				
 			}
 			// console.log(name)
-			console.log(result)
+			// console.log(result)
 			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
 			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
 			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
