@@ -22,3 +22,23 @@
 #convo-header div{
     text-align: right;
 }
+
+textarea {
+    resize: none;
+}
+
+.right-content {
+	text-align: right;
+}
+
+.left-content {
+	text-align: left;
+}
+
+div.awesomplete {
+	width: 100%;
+}
+
+.panel,.panel-heading {
+	border-radius: 0em;
+}

@@ -2525,10 +2525,10 @@ $('#btn-advanced-search').click(function(){
 var isFirstAdvancedSearchActivation = false;
 
 function disableCommands(){
-	$('#go-chat').attr("class","btn btn-xs btn-danger disabled");
-	$('#go-chat').attr("data-toggle","tooltip");
-	$('#go-chat').css("text-decoration","line-through");
-	$('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#go-chat').attr("class","btn btn-xs btn-danger disabled");
+	// $('#go-chat').attr("data-toggle","tooltip");
+	// $('#go-chat').css("text-decoration","line-through");
+	// $('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
 	$('#go-load-groups').attr("class","btn btn-danger disabled");
 	$('#go-load-groups').css("text-decoration","line-through");
@@ -2547,9 +2547,9 @@ function disableCommands(){
 }
 
 function enableCommands(){
-	$('#go-chat').attr("class","btn btn-xs btn-primary");
-	$('#go-chat').css("text-decoration","none");
-	$('#go-chat').attr("data-original-title","");
+	// $('#go-chat').attr("class","btn btn-xs btn-primary");
+	// $('#go-chat').css("text-decoration","none");
+	// $('#go-chat').attr("data-original-title","");
 
 	$('#go-load-groups').attr("class","btn btn-success");
 	$('#go-load-groups').css("text-decoration","none");
