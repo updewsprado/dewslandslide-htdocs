@@ -944,14 +944,35 @@ $(document).ready(function() {
 				});
 			}
 		} else {
-			
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
+			} else if (msg.type == "ackrpi"){
+				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
-				updateMessages(msg);
+				var select_raw_site = $("#current-contacts h4").text().substring(11);
+				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
+
+				var select_raw_office = select_raw_site.substring(select_raw_site.indexOf(']'));
+				var selected_office = select_raw_office.substring(13,select_raw_office.length-1).replace(/\s/g,'').split(",");
+
+				var sender = msg.name.split(" ");
+
+				for (var i = 0; i < selected_site.length; i++) {
+					console.log(selected_site[i]);
+					console.log(sender[0]);
+					if (selected_site[i] == sender[0]) {
+						for (var x = 0; x < selected_office.length; x++) {
+							console.log(selected_office[x]);
+							console.log(sender[1]);
+							if (selected_office[x] == sender[1]) {
+								updateMessages(msg);
+							}
+						}
+					}
+				}
 			} else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
