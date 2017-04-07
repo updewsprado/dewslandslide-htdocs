@@ -151,15 +151,16 @@ function submittedAccel(){
 				'tag_description' : tag_description,
 				'timestamp' : timestamp,
 				'tagger' : tagger,
-				'table_element_id' :table_element_id,
+				'table_element_id' : table_element_id,
 				'table_used' :  table_used,
 				'remarks' : remarks
 			})
 		}
-		console.log(dataSubmit)
+
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
+			// console.log(data);
 		})
 		var curSite = $("#sitegeneral").val();
 		var node = $ ("#node").val();
@@ -189,7 +190,7 @@ function initialProcessGraph(data,id){
 		dataType: "json",
 		url: "/node_level_page/getDatafromSiteColumn/"+data.site,success: function(result) {
 			document.getElementById("header-site").innerHTML = data.site.toUpperCase()+" v"+ result[0].version +" (node "+ data.node +") Overview"
-			
+			$("#tag_version").val(result[0].version);
 			if(result[0].version != 1 ){
 				if( result[0].version == 2){
 					var ms_id = 32;
@@ -243,7 +244,6 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
-			// console.log("/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node)
 			var result = data;
 			var series_data = [];
 			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -268,7 +268,13 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 			}
 			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
 			series_id.pop()
-			accelVersion1Filtered(data,series_id,id)
+			let dataSubmit = { 
+					site : curSite, 
+					fdate : fromDate,
+					tdate : toDate,
+					node: node,
+			}
+			accelVersion1Filtered(dataSubmit,series_id,id)
 		}
 	});
 }
@@ -276,8 +282,9 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 function accelVersion1Filtered(data,series_data,id){
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/AccelfilteredVersion1/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(result) {
+		url: "/api/AccelfilteredVersion1/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(result_value) {
 			var xDataSeriesfilterd=[] , yDataSeriesfilterd=[] , zDataSeriesfilterd=[] ;
+			var result = JSON.parse(result_value)
 			for (i = 0; i < result.length; i++) {
 				var xData=[] , yData=[] ,zData = [];
 				var time =  Date.parse(result[i].ts);
@@ -293,15 +300,13 @@ function accelVersion1Filtered(data,series_data,id){
 			var series_name_id = ["x1(filterd)","y1(filterd)","z1(filterd)"];
 			var series_name=["Xvalue","Yvalue","Zvalue"]
 			var dataseries=[]
-			var visibility =[true,false]
 			var ids =["dt1","dt2","dt3"]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: ids[i],visible:visibility[i]})	
-				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: ids[i],visible:visibility[i]})	
+				data_push.push({ name: series_name_data[i] , data:series_data[i] ,id: ids[i],visible:true})	
+				data_push.push({ name: series_name_id[i] , data:series_id[i] ,id: ids[i],visible:false})	
 				dataseries.push(data_push)
 			}
-
 			var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
 			for (i = 0; i < dataseries.length; i++) {
 				chartProcess(id[i],dataseries[i],series_name[i],color_series[i])
@@ -574,7 +579,7 @@ function chartProcess(id,data_series,name,color){
 			var data_value =[],xRaw1=[],xRaw2=[],xFil1=[],xFil2=[];
 			var yRaw1=[],yRaw2=[],yFil2=[],yFil1=[];
 			var zRaw1=[],zRaw2=[],zFil2=[],zFil1=[];
-			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[];
+			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[],mval=[];
 			for (var i = 0; i < result.length; i++) {
 				var remarks_parse = (result[i].remarks).split("/")
 				if(result[i].table_element_id.slice(0,3) == "x1r"){
@@ -613,44 +618,49 @@ function chartProcess(id,data_series,name,color){
 					raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
 				}else if(result[i].table_element_id.slice(0,3) == "Raf"){
 					rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "mva"){
+					mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
 				}
 				
 			}
 			// console.log(name)
-			// console.log(result)
+			console.log(result)
 			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
 			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
 			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
 			var data_batt = [batt1,batt2];
 			var data_cal =[cal,calFil];
 			var data_raw =[raw,rawFil];
-			if(name == "xvalue"){
+			if(name.toLowerCase() == "xvalue"){
 				for (var i = 0; i < data_x.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_x[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_x[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
-			}else if(name == "yvalue"){
+			}else if(name.toLowerCase() == "yvalue"){
 				for (var i = 0; i < data_y.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_y[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_y[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
-			}else if(name == "zvalue"){
+			}else if(name.toLowerCase() == "zvalue"){
 				for (var i = 0; i < data_y.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_z[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_z[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
 			}else if(name == "Batt"){
 				for (var i = 0; i < data_batt.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_batt[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_batt[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
 			}else if(name == "Soms(cal)"){
 				for (var i = 0; i < data_cal.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_cal[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_cal[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
 			}else if(name == "Soms(raw)"){
 				for (var i = 0; i < data_raw.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false})
+					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
+			}else if(name.toLowerCase() == "mvalue"){
+					data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
 			}
 			data_series.push({name:'Tag'})
-			console.log(data_series)
+			// console.log(name)
+			// console.log(data_series)
 			Highcharts.setOptions({
 				global: {
 					timezoneOffset: -8 * 60
@@ -733,6 +743,7 @@ function chartProcess(id,data_series,name,color){
 										$("#annModal").modal("show");
 										$("#tag_value").hide();
 										$("#tag_series").hide();
+										$("#tag_version").hide();
 										$('#tag_ids').tagsinput('removeAll');
 										$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
 										$("#tag_value").val(this.y)
@@ -744,7 +755,7 @@ function chartProcess(id,data_series,name,color){
 										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
 											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
 										}else if (this.series.name == "mvalue") {
-											var value_id = (this.series.name).slice(0,2)
+											var value_id = (this.series.name).slice(0,3)
 										}else{
 											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
 										}
@@ -790,50 +801,70 @@ function chartProcess(id,data_series,name,color){
 				var series6 = chart.series[(data_series.length-3)];
 				var series7 = chart.series[(data_series.length-2)];
 				var series = chart.series[(data_series.length-1)];
-				if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
+				if($("#tag_version").val() == "1"){
 					if (series.visible) {
-						series6.update({
+						series4.update({
 							visible: true,
 						});
-						series7.update({
+						series5.update({
 							visible: true,
 						});
 					}else {
-
-						series6.update({
+						series4.update({
 							visible: false,
 						});
-						series7.update({
+						series5.update({
 							visible: false,
 						});
+					
 					}
 				}else{
-					if (series.visible) {
-						series4.update({
-							visible: true,
-						});
-						series5.update({
-							visible: true,
-						});
-						series6.update({
-							visible: true,
-						});
-						series7.update({
-							visible: true,
-						});
-					}else {
-						series4.update({
-							visible: false,
-						});
-						series5.update({
-							visible: false,
-						});
-						series6.update({
-							visible: false,
-						});
-						series7.update({
-							visible: false,
-						});
+					if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
+						if (series.visible) {
+
+							series6.update({
+								visible: true,
+							});
+							series7.update({
+								visible: true,
+							});
+						}else {
+
+							series6.update({
+								visible: false,
+							});
+							series7.update({
+								visible: false,
+							});
+						}
+					}else{
+						if (series.visible) {
+							series4.update({
+								visible: true,
+							});
+							series5.update({
+								visible: true,
+							});
+							series6.update({
+								visible: true,
+							});
+							series7.update({
+								visible: true,
+							});
+						}else {
+							series4.update({
+								visible: false,
+							});
+							series5.update({
+								visible: false,
+							});
+							series6.update({
+								visible: false,
+							});
+							series7.update({
+								visible: false,
+							});
+						}
 					}
 				}
 			});
