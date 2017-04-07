@@ -7,6 +7,7 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
+
 	var values = window.location.href.split("/")
 	var current_site = values[5]
 	var currrent_node = values[6]
@@ -50,6 +51,7 @@ $(document).ready(function(e) {
 		sites("Select")
 		submit()
 	} 
+	submittedAccel()
 });
 
 function sites(site_selected){
@@ -86,10 +88,8 @@ function sites(site_selected){
 	submit();
 }
 function Time(start,end){
-	
-
 	$('#reportrange').daterangepicker({
-		maxDate: moment().add(1, 'days'),
+		maxDate: moment(),
 		autoUpdateInput: true,
 		startDate: start,
 		endDate: end,
@@ -114,7 +114,7 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
-		console.log($("#sitegeneral").val() , $("#node").val() != "")
+		// console.log($("#sitegeneral").val() , $("#node").val() != "")
 		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
 			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
@@ -131,6 +131,45 @@ function submit(){
 		}
 	});
 }
+
+
+function submittedAccel(){
+	$('#tag_submit').click(function(){
+		var tag_name = $("#tag_ids").tagsinput("items");
+		// console.log(tag_name)
+		var tag_description = "node analysis";
+		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		var tagger = $("#current_user_id").val();
+		var time = (($("#tag_time").val()).slice(2,10)).toString()
+		var table_element_id = $("#tag_series").val()+(time.replace(/-/g, ""));
+		var table_used = ($("#sitegeneral").val()).toLowerCase();
+		var remarks = $("#node").val()+"no/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var dataSubmit = [];
+		for (var i = 0; i < tag_name.length; i++) {
+			dataSubmit.push({ 
+				'tag_name' : tag_name[i], 
+				'tag_description' : tag_description,
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks
+			})
+		}
+
+		var host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+			// console.log(data);
+		})
+		var curSite = $("#sitegeneral").val();
+		var node = $ ("#node").val();
+		var fromDate = $('#reportrange span').html().slice(0,10);
+		var toDate = $('#reportrange span').html().slice(13,23);
+		location = "/data_analysis/node/"+curSite+"/"+node+"/"+fromDate+"/"+toDate
+	});
+}
+
 
 function nodeSummary(data){
 	$.ajax({ 
@@ -151,6 +190,7 @@ function initialProcessGraph(data,id){
 		dataType: "json",
 		url: "/node_level_page/getDatafromSiteColumn/"+data.site,success: function(result) {
 			document.getElementById("header-site").innerHTML = data.site.toUpperCase()+" v"+ result[0].version +" (node "+ data.node +") Overview"
+			$("#tag_version").val(result[0].version);
 			if(result[0].version != 1 ){
 				if( result[0].version == 2){
 					var ms_id = 32;
@@ -204,7 +244,6 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node,  success: function(data) {
-			// console.log("/node_level_page/getAllAccelVersion1/"+curSite+"/"+fromDate+"/"+toDate+"/"+node)
 			var result = data;
 			var series_data = [];
 			var xDataSeries=[] , yDataSeries=[] , zDataSeries=[] , mDataSeries=[];
@@ -223,12 +262,19 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 			var series_id = [xDataSeries,yDataSeries,zDataSeries,mDataSeries];
 			var series_name = ["xvalue","yvalue","zvalue","mvalue"];
 			var color_series = [["#3362ff"],["#9301f1"],["#fff"],["#01f193"]]
+			var ids =["dt1","dt2","dt3","dt4"]
 			for (i = 0; i < series_id.length; i++) {
-				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: 'dataseries'}])
+				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: ids[i]}])
 			}
 			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
 			series_id.pop()
-			accelVersion1Filtered(data,series_id,id)
+			let dataSubmit = { 
+					site : curSite, 
+					fdate : fromDate,
+					tdate : toDate,
+					node: node,
+			}
+			accelVersion1Filtered(dataSubmit,series_id,id)
 		}
 	});
 }
@@ -236,8 +282,9 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 function accelVersion1Filtered(data,series_data,id){
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/AccelfilteredVersion1/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(result) {
+		url: "/api/AccelfilteredVersion1/"+data.site+"/"+data.fdate+"/"+data.tdate+"/"+data.node,  success: function(result_value) {
 			var xDataSeriesfilterd=[] , yDataSeriesfilterd=[] , zDataSeriesfilterd=[] ;
+			var result = JSON.parse(result_value)
 			for (i = 0; i < result.length; i++) {
 				var xData=[] , yData=[] ,zData = [];
 				var time =  Date.parse(result[i].ts);
@@ -253,13 +300,13 @@ function accelVersion1Filtered(data,series_data,id){
 			var series_name_id = ["x1(filterd)","y1(filterd)","z1(filterd)"];
 			var series_name=["Xvalue","Yvalue","Zvalue"]
 			var dataseries=[]
+			var ids =["dt1","dt2","dt3"]
 			for (i = 0; i < series_data.length; i++) {
 				var data_push = []
-				data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
-				data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
+				data_push.push({ name: series_name_data[i] , data:series_data[i] ,id: ids[i],visible:true})	
+				data_push.push({ name: series_name_id[i] , data:series_id[i] ,id: ids[i],visible:false})	
 				dataseries.push(data_push)
 			}
-
 			var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
 			for (i = 0; i < dataseries.length; i++) {
 				chartProcess(id[i],dataseries[i],series_name[i],color_series[i])
@@ -325,8 +372,9 @@ function accel2(data,series,msgid){
 			batt_series.push(series[3])
 			batt_series.push(series_id[3])
 			var visibility =[true,false]
+			var ids =["dt1","dt2"]
 			for (i = 0; i < batt_series.length; i++) {
-				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: 'dataseries',visible:visibility[i]});
+				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: ids[i],visible:visibility[i]});
 			}
 			var color_series = ["#d48a3b","#fff"]
 			chartProcess(data.id[3],dataseries_batt,"Batt",color_series)
@@ -383,9 +431,10 @@ function accel2filtered(data,series,msgid){
 			var series_title = ["xvalue","yvalue","zvalue","batt"]
 			var series_name = ["x1(raw)","x2(raw)","x1(filterd)","x2(filterd)",
 			"y1(raw)","y2(raw)","y1(filterd)","y2(filterd)","z1(raw)","z2(raw)","z1(filterd)","z2(filterd)"];
-			var visibility =[true,false,false,false,true,false,false,false,true,false,false,false]
+			var visibility =[false,false,true,false,false,false,true,false,false,false,true,false]
 			var color_series = [["#5ff101","#9301f1","#fff","#01f193"],["#3362ff","#9301f1","#fff","#01f193"],["#ff4500","#9301f1","#fff","#01f193"],["#d48a3b","#fff",'#ff8000',"#ffbf00"]]
 			series.push(series_id)
+			var ids =["dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4","dt1","dt2","dt3","dt4"]
 			var process_dataseries = []; // sorthing by dataseries
 			for (i = 0; i < series.length-1; i++) {
 				for (a = 0; a < series[0].length; a++) {
@@ -397,15 +446,15 @@ function accel2filtered(data,series,msgid){
 			for (i = 0; i < process_dataseries.length; i++) { 
 				if (temp == "") {
 					temp = series_name[i].substring(0,1);
-					plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+					plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 				} else {
 					if (temp == series_name[i].substring(0,1)) {
-						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 					} else {
 						series_data.push(plot_data);
 						temp = series_name[i].substring(0,1);
 						plot_data = [];
-						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: 'dataseries',visible:visibility[i]});
+						plot_data.push({ name: series_name[i],data:process_dataseries[i] ,id: ids[i],visible:visibility[i]});
 					}
 				}
 			}
@@ -496,8 +545,9 @@ function somsfiltered(data,dataSoms,series){
 				series_data.push(series)
 				series_data.push(filterDataSeries)
 				var visibility =[true,false]
+				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
-					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
 					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
@@ -506,8 +556,9 @@ function somsfiltered(data,dataSoms,series){
 				var series_data=[] , data_series=[];
 				series_data.push(series)
 				var visibility =[true,false]
+				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
-					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]});
+					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
@@ -517,120 +568,307 @@ function somsfiltered(data,dataSoms,series){
 }
 
 function chartProcess(id,data_series,name,color){
-
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-		colors: color,
-	});
-
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			height: 300,
-			backgroundColor: {
-				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-				stops: [
-				[0, '#2a2a2b'],
-				[1, '#3e3e40']
-				]
-			},
-		},
-		title: {
-			text: name.toUpperCase(),
-			style: {
-				color: '#E0E0E3',
-				fontSize: '20px'
-			}
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%Y'
-			},
-			title: {
-				text: 'Date'
-			},
-			labels: {
-				style:{
-					color: 'white'
+	var site = ($('#sitegeneral').val()).toLowerCase();
+	var node = $('#node').val();
+	var fdate = $('#reportrange span').html().slice(0,10);
+	var tdate = $('#reportrange span').html().slice(13,23);
+	// console.log(site,node,fdate,tdate)
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
+			var data_value =[],xRaw1=[],xRaw2=[],xFil1=[],xFil2=[];
+			var yRaw1=[],yRaw2=[],yFil2=[],yFil1=[];
+			var zRaw1=[],zRaw2=[],zFil2=[],zFil1=[];
+			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[],mval=[];
+			for (var i = 0; i < result.length; i++) {
+				var remarks_parse = (result[i].remarks).split("/")
+				if(result[i].table_element_id.slice(0,3) == "x1r"){
+					xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x2r"){
+					xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x1f"){
+					xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "x2f"){
+					xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y1r"){
+					yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y2r"){
+					yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y1f"){
+					yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "y2f"){
+					yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z1r"){
+					zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z2r"){
+					zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z1f"){
+					zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "z2f"){
+					zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "bt1"){
+					batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "bt2"){
+					batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Cal"){
+					cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Caf"){
+					calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Raw"){
+					raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "Raf"){
+					rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				}else if(result[i].table_element_id.slice(0,3) == "mva"){
+					mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
 				}
-
-			},
-			title: {
-				text: 'Date',
-				style:{
-					color: 'white'
-				}
+				
 			}
-		},
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				marker: {
-					radius: 3
+			// console.log(name)
+			// console.log(result)
+			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
+			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
+			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
+			var data_batt = [batt1,batt2];
+			var data_cal =[cal,calFil];
+			var data_raw =[raw,rawFil];
+			if(name.toLowerCase() == "xvalue"){
+				for (var i = 0; i < data_x.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_x[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name.toLowerCase() == "yvalue"){
+				for (var i = 0; i < data_y.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_y[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name.toLowerCase() == "zvalue"){
+				for (var i = 0; i < data_y.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_z[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name == "Batt"){
+				for (var i = 0; i < data_batt.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_batt[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name == "Soms(cal)"){
+				for (var i = 0; i < data_cal.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_cal[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name == "Soms(raw)"){
+				for (var i = 0; i < data_raw.length; i++) {
+					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
+				}
+			}else if(name.toLowerCase() == "mvalue"){
+					data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
+			}
+			data_series.push({name:'Tag'})
+			// console.log(name)
+			// console.log(data_series)
+			Highcharts.setOptions({
+				global: {
+					timezoneOffset: -8 * 60
 				},
-				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name =="Comment"){
+				colors: color,
+			});
 
-								$("#anModal").modal("show");
-								$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-							}else if(this.series.name =="Alert" ){
+			$("#"+id).highcharts({
+				chart: {
+					type: 'line',
+					zoomType: 'x',
+					height: 300,
+					backgroundColor: {
+						linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+						stops: [
+						[0, '#2a2a2b'],
+						[1, '#3e3e40']
+						]
+					},
+				},
+				title: {
+					text: name.toUpperCase(),
+					style: {
+						color: '#E0E0E3',
+						fontSize: '20px'
+					}
+				},
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { 
+						month: '%e. %b %Y',
+						year: '%Y'
+					},
+					title: {
+						text: 'Date'
+					},
+					labels: {
+						style:{
+							color: 'white'
+						}
 
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+					},
+					title: {
+						text: 'Date',
+						style:{
+							color: 'white'
+						}
+					}
+				},
+				tooltip: {
+					shared: true,
+					crosshairs: true
+				},
 
-							}else if(this.series.name =="Maintenace"){
+				plotOptions: {
+					series: {
+						marker: {
+							radius: 3
+						},
+						cursor: 'pointer',
+						point: {
+							events: {
+								click: function () {
+									if(this.series.name =="Comment"){
 
-								$("#anModal").modal("show");
-								$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+										$("#anModal").modal("show");
+										$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
+									}else if(this.series.name =="Alert" ){
 
+										$("#anModal").modal("show");
+										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+									}else if(this.series.name =="Maintenace"){
+
+										$("#anModal").modal("show");
+										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
+
+									}
+									else {
+										$("#annModal").modal("show");
+										$("#tag_value").hide();
+										$("#tag_series").hide();
+										$("#tag_version").hide();
+										$('#tag_ids').tagsinput('removeAll');
+										$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+										$("#tag_value").val(this.y)
+										// console.log(this.series.name)
+										if(this.series.name == "batt1" || this.series.name == "batt2"){
+											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+										}else if (this.series.name == "Cal" || this.series.name == "Raw") {
+											var value_id = (this.series.name).slice(0,3)
+										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
+										}else if (this.series.name == "mvalue") {
+											var value_id = (this.series.name).slice(0,3)
+										}else{
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
+										}
+										$("#tag_series").val(value_id)
+										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+									}
+								}
 							}
-							else {
-								$("#annModal").modal("show");
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-							}
+						}
+					},
+					area: {
+						marker: {
+							lineWidth: 3,
+							lineColor: null 
+						}
+					}
+
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0,
+					itemStyle: {
+						color: '#E0E0E3'
+					},
+					itemHoverStyle: {
+						color: '#FFF'
+					},
+					itemHiddenStyle: {
+						color: '#606063'
+					}
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series
+			});
+			var chart = $('#'+id).highcharts();
+			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+				var series4 = chart.series[(data_series.length-5)];
+				var series5 = chart.series[(data_series.length-4)];
+				var series6 = chart.series[(data_series.length-3)];
+				var series7 = chart.series[(data_series.length-2)];
+				var series = chart.series[(data_series.length-1)];
+				if($("#tag_version").val() == "1"){
+					if (series.visible) {
+						series4.update({
+							visible: true,
+						});
+						series5.update({
+							visible: true,
+						});
+					}else {
+						series4.update({
+							visible: false,
+						});
+						series5.update({
+							visible: false,
+						});
+					
+					}
+				}else{
+					if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
+						if (series.visible) {
+
+							series6.update({
+								visible: true,
+							});
+							series7.update({
+								visible: true,
+							});
+						}else {
+
+							series6.update({
+								visible: false,
+							});
+							series7.update({
+								visible: false,
+							});
+						}
+					}else{
+						if (series.visible) {
+							series4.update({
+								visible: true,
+							});
+							series5.update({
+								visible: true,
+							});
+							series6.update({
+								visible: true,
+							});
+							series7.update({
+								visible: true,
+							});
+						}else {
+							series4.update({
+								visible: false,
+							});
+							series5.update({
+								visible: false,
+							});
+							series6.update({
+								visible: false,
+							});
+							series7.update({
+								visible: false,
+							});
 						}
 					}
 				}
-			},
-			area: {
-				marker: {
-					lineWidth: 3,
-                                    lineColor: null // inherit from series
-                                }
-                            }
+			});
+		}
+	});
 
-                        },
-                        legend: {
-                        	layout: 'vertical',
-                        	align: 'right',
-                        	verticalAlign: 'middle',
-                        	borderWidth: 0,
-                        	itemStyle: {
-                        		color: '#E0E0E3'
-                        	},
-                        	itemHoverStyle: {
-                        		color: '#FFF'
-                        	},
-                        	itemHiddenStyle: {
-                        		color: '#606063'
-                        	}
-                        },
-                        credits: {
-                        	enabled: false
-                        },
-                        series:data_series
-                    }
-                    );
 }
