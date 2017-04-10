@@ -272,6 +272,7 @@ $(document).ready(function() {
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 
 	} catch (err) {
+		console.log(err);
 		console.log("Chatterbox : monitoring dashboard mode");
 	}
 
@@ -463,13 +464,12 @@ $(document).ready(function() {
 	}
 
 	function updateQuickInbox(msg) {
+		// debugger;
 		if (msg.user == "You") {
 		}
 		else {
-
 			var targetInbox;
 			var quick_inbox_html;
-
 			if (msg.name == "unknown") {
 				try {
 					msg.isunknown = 1;
@@ -488,7 +488,6 @@ $(document).ready(function() {
 				} catch(err) {
 				}
 			}
-
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
 		}
@@ -2739,7 +2738,9 @@ function getInitialQuickInboxMessages () {
 
 
 				$('#response-contact-container').show();
-				$("#response-contact-container").DataTable();
+				$("#response-contact-container").DataTable({
+			        "scrollX": true
+			    });
 			}
 		});
 	}
@@ -2781,7 +2782,9 @@ function getInitialQuickInboxMessages () {
 				}
 
 				$('#response-contact-container').show();
-				$("#response-contact-container").DataTable();
+				$("#response-contact-container").DataTable({
+			        "scrollX": true
+			    });
 			}
 		});
 	}
