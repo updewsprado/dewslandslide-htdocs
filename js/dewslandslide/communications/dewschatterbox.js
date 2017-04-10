@@ -1,7 +1,13 @@
 function sendViaAlertMonitor(data){
-	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
-	.done(function(response) {
-		var contacts = JSON.parse(response);
+
+	$.ajax({
+	  type: "POST",
+	  url: "../chatterbox/getCommunityContactViaDashboard/",
+	  async: true,
+	  data: {site: data.name},
+	  success: function(response){
+
+	  	var contacts = JSON.parse(response);
 		var default_recipients = [];
 		var additional_recipients = [];
 
@@ -35,6 +41,7 @@ function sendViaAlertMonitor(data){
 		}
 		$('#default-recipients').val(default_recipients);
 		$('#additional-recipients').val(additional_recipients);
+	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -42,6 +49,8 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
+
+	
 
 	$.ajax({
 		type: "GET",
@@ -82,14 +91,15 @@ function sendViaAlertMonitor(data){
 
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
-					case 0:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangalawang araw");
-					break;
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangatlong araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw");
 					break;
 					case 2:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw");
+					break;
+					case 3:
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw");
+					break;
 					default:
 					return;
 				}	
@@ -197,9 +207,9 @@ function sendViaAlertMonitor(data){
 
 			$('#site-abbr').val(data["name"]);
 			$('#constructed-ewi-amd').val(finalEWI);
+			$('#ewi-asap-modal').modal('toggle');
 		}
 	});
-$('#ewi-asap-modal').modal('toggle');
 }
 
 $(document).ready(function() {
