@@ -881,8 +881,11 @@ $(document).ready(function() {
 							'narrative_template': "Sent Early Warning Information."
 						}
 						
-						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+						console.log(narrative_details);
+
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
+							debugger;
 							console.log(response);
 						});
 					} 
