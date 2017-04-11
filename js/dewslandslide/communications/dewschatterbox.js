@@ -116,13 +116,20 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			if (currentPanahon >= 12 && currentPanahon <= 18) {
+			var currentPanahonMinutes = d.getMinutes();
+
+			if ((currentPanahon >= 12 && currentPanahonMinutes >=1) && (currentPanahon <= 17 && currentPanahonMinutes <=59)) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
-			} else if (currentPanahon > 18 && currentPanahon <=23) {
+			} else if ((currentPanahon >= 18 && currentPanahonMinutes >=1) && (currentPanahon <=23 && currentPanahonMinutes <=59)) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else {
+			} else if ((currentPanahon >= 0 && currentPanahonMinutes >=1) && (currentPanahon <= 11 && currentPanahonMinutes <=59)){
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
+			} else if (currentPanahon == 12 && currentPanahonMinutes == 0) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","tanghali");
+			} else if (currentPanahon == 0 && currentPanahonMinutes == 0) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
 			}
+
 			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
 			var day = moment().locale('en').format("YYYY-MM-DD").substring(8, 10);
@@ -258,6 +265,7 @@ $(document).ready(function() {
 	var temp_ewi_template_holder = "";
 	var temp_msg_holder = "";
 	var socket = "";
+	var narrative_recipients = [];
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
