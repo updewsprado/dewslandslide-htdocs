@@ -724,22 +724,6 @@ function chartProcess(id,data_series,name,color){
 						point: {
 							events: {
 								click: function () {
-									if(this.series.name =="Comment"){
-
-										$("#anModal").modal("show");
-										$("#link").append('<table class="table"><label>'+this.series.name+' Report no. '+ this.text+'</label><tbody><tr><td><label>Site Id</label><input type="text" class="form-control" id="site_id" name="site_id" value="'+selectedSite+'" disabled= "disabled" ></td></tr><tr><td><label>Timestamp</label><div class="input-group date datetime" id="entry"><input type="text" class="form-control col-xs-3" id="tsAnnotation" name="tsAnnotation" placeholder="Enter timestamp (YYYY-MM-DD hh:mm:ss)" disabled= "disabled" value="'+moment(this.x).format('YYYY-MM-DD HH:mm:ss')+'" style="width: 256px;"/><div> </td></tr><tr><td><label>Report</label><textarea class="form-control" rows="3" id="comment"disabled= "disabled">'+this.report+'</textarea></td></tr><tr><td><label>Flagger</label><input type="text" class="form-control" id="flaggerAnn" value="'+this.flagger+'"disabled= "disabled"></td></tr></tbody></table>');
-									}else if(this.series.name =="Alert" ){
-
-										$("#anModal").modal("show");
-										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/publicrelease/event/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-									}else if(this.series.name =="Maintenace"){
-
-										$("#anModal").modal("show");
-										$("#link").append('For more info:<a href="http://www.dewslandslide.com/gold/sitemaintenancereport/individual/'+ this.text+'">'+this.series.name+' Report no. '+ this.text+'</a>'); 
-
-									}
-									else {
 										$("#annModal").modal("show");
 										$("#tag_value").hide();
 										$("#tag_series").hide();
@@ -761,7 +745,6 @@ function chartProcess(id,data_series,name,color){
 										}
 										$("#tag_series").val(value_id)
 										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-									}
 								}
 							}
 						}
