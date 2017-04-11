@@ -866,6 +866,7 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
+				debugger;
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -892,8 +893,12 @@ $(document).ready(function() {
 					}
 					gintags_collection.push(gintags)
 				}
+				console.log(gintags_collection);
+				debugger;
+
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
+					debugger;
 					var event_details = JSON.parse($('#event_details').val());
 					var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 					var tagOffices = [];
@@ -917,47 +922,28 @@ $(document).ready(function() {
 							}
 
 		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 
-
-						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-							var narrative_details = {
-								'event_id': event_details.event_id,
-								'site_id': event_details.site_id,
-								'municipality': event_details.municipality,
-								'province': event_details.province,
-								'barangay': event_details.barangay,
-								'sition': event_details.sition,
-								'ewi_sms_timestamp': current_timestamp,
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-						} 
+							if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+								var narrative_details = {
+									'event_id': event_details.event_id,
+									'site_id': event_details.site_id,
+									'municipality': event_details.municipality,
+									'province': event_details.province,
+									'barangay': event_details.barangay,
+									'sition': event_details.sition,
+									'ewi_sms_timestamp': current_timestamp,
+									'narrative_template': narrative_template
+								}
+								
+								$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+								.done(function(response) {
+									console.log(response);
+								});
+							} 
 							narrative_recipients = [];
 						} 
 			        }
-
-					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-						var narrative_details = {
-							'event_id': event_details.event_id,
-							'site_id': event_details.site_id,
-							'municipality': event_details.municipality,
-							'province': event_details.province,
-							'barangay': event_details.barangay,
-							'sition': event_details.sition,
-							'ewi_sms_timestamp': current_timestamp,
-							'narrative_template': "Sent Early Warning Information."
-						}
-						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-						.done(function(response) {
-							console.log(response);
-						});
-					} 
 				});
 			}
 		} else {
@@ -3302,42 +3288,6 @@ function getInitialQuickInboxMessages () {
 				});
 			}
 		}
-	}
-
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
-								narrative_template = "Sent Early warning information message.";
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-
-						}
-					}
-				}
-			});
-		});
 	}
 
 	function removeIndividualGintag(gintag_details){
