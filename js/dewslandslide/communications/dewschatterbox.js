@@ -2880,6 +2880,7 @@ function getInitialQuickInboxMessages () {
 		var tags = holdTags.split(',');
 		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
 		var diff = "";
+		$('#gintag-modal').modal('toggle');
 		if (tags.length > current_tags.length) {
 			diff = $(tags).not(current_tags).get();
 			removeGintagService(gintags_msg_details,diff);
@@ -3014,12 +3015,7 @@ function getInitialQuickInboxMessages () {
 		}
 	});
 
-	$("#cancel-narrative").on('click',function(){
-		$('#save-narrative-modal').modal('toggle');
-	});
-
 	function displayNarrativeConfirmation(gintag_details){
-		$('#save-narrative-modal').modal('toggle');
 		if (gintag_details.data[1] === "You") {
 			var summary = "";
 			var office = "Office(s): ";
@@ -3042,6 +3038,7 @@ function getInitialQuickInboxMessages () {
 			$('#save-narrative-content p').text("Saving an #EwiResponse tagged message will be permanently save to narratives.");
 			$('#ewi-tagged-msg').val(summary);
 		}
+		$('#save-narrative-modal').modal('toggle');
 	}
 
 	function insertGintagService(data){
@@ -3069,7 +3066,6 @@ function getInitialQuickInboxMessages () {
 				};
 
 				if ($.inArray("#EwiMessage", tags) != -1) {
-					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiMessage", tags),1);
@@ -3077,6 +3073,7 @@ function getInitialQuickInboxMessages () {
 					getGintagGroupContacts(gintag_details);
 					gintag_details.tags = "#EwiMessage";
 					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					getGintagGroupContacts(gintag_details);
 				}
@@ -3093,7 +3090,6 @@ function getInitialQuickInboxMessages () {
 					tags.splice($.inArray("#EwiResponse", tags),1);
 					$('#gintags').val(tags);
 					gintag_details.tags = "#EwiResponse";
-					$("#gintag_details_container").val(JSON.stringify(gintag_details));
 					if (tags[1] != "") {
 						for (var i = 0; i < tags.length;i++) {
 							gintags_collection = [];
@@ -3114,6 +3110,8 @@ function getInitialQuickInboxMessages () {
 							});
 						}
 					}
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					for (var i = 0; i < tags.length;i++) {
 						gintags_collection = [];
