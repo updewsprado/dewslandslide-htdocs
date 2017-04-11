@@ -258,6 +258,7 @@ $(document).ready(function() {
 	var temp_ewi_template_holder = "";
 	var temp_msg_holder = "";
 	var socket = "";
+	var narrative_recipients = [];
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
@@ -945,12 +946,8 @@ $(document).ready(function() {
 							'ewi_sms_timestamp': current_timestamp,
 							'narrative_template': "Sent Early Warning Information."
 						}
-						
-						console.log(narrative_details);
-
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							debugger;
 							console.log(response);
 						});
 					} 
