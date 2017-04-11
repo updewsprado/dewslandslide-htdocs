@@ -16,36 +16,88 @@ function loadBulletin(id1, id2) {
     release_id = id1;
     event_id = id2;
 
-    $.ajax({
-        url: '/../../bulletin/main/' + id1 + '/0', 
-        type: 'POST',
-        success: function(data) {
-            onEdit = false;
-            $("#bulletin_modal").html(data);
-            let loc = $("#location").text();
-            let alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
-            let datetime = $("#datetime").text();
-            let text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
-            $("#info").html(text);
-            if( location.hostname == "www.dewslandslide.com" )
-            {
-                $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
-                $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
-            } else {
-                if($('#recipients_span').html().length == 0) {
-                    $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
-                }   
-            }
-            bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
-            bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+    let loc = null, datetime = null, alert = null, text = null;
 
-            let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
-
-            if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
-            else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
-            $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
+    $.post('/../../bulletin/main/' + id1 + '/0', function(data) {
+        onEdit = false;
+        $("#bulletin_modal").html(data);
+        loc = $("#location").text().replace(/\s+/g,' ').trim();
+        alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
+        datetime = $("#datetime").text();
+        // let text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
+        text = "DEWS-L Bulletin for " + datetime + "\n" + alert + " - " + loc;
+        $("#info").val(text);
+        if( location.hostname == "www.dewslandslide.com" )
+        {
+            $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
+            $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
+        } else {
+            if($('#recipients_span').html().length == 0) {
+                $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
+            }   
         }
-    }); 
+        bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
+        bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+
+        let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
+
+        if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
+        else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
+        $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
+    })
+    .then(function (data) {
+        $.get('/../../monitoring/getFirstEventRelease/' + id2, function(data) {
+            console.log(data[0].release_id, release_id);
+            if(data[0].release_id == release_id) {
+                console.log("ONSET", data);
+                let basis = [];
+                data.forEach(function (row) {
+                    let x = row.cause + " at " + moment(row.timestamp).format("DD MMMM YYYY, h:mm A");
+                    basis.push(x);
+                });
+
+                let release_time = moment(data[0].data_timestamp).format("YYYY-MM-DD ") + data[0].release_time;
+                console.log(moment(data[0].release_time, ["HH:mm:ss, HH:mm:ss"]).hour());
+                release_time = moment(data[0].data_timestamp).hour() > moment(data[0].release_time, ["HH:mm:ss, HH:mm:ss"]).hour() ? moment(release_time).add(1, "day").format("DD MMMM YYYY, hh:mm A") : moment(release_time).format("DD MMMM YYYY, hh:mm A");
+
+                let str = "As of " + release_time + ", " + loc + " is under " + alert + " based on " + basis.join(", ") + ".";
+                $("#info").val( str + "\n\n" + text );
+            }
+
+        }, "json");
+    });
+
+    // $.ajax({
+    //     url: '/../../bulletin/main/' + id1 + '/0', 
+    //     type: 'POST',
+    //     success: function(data) {
+    //         onEdit = false;
+    //         $("#bulletin_modal").html(data);
+    //         let loc = $("#location").text().replace(/\s+/g,' ').trim();
+    //         let alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
+    //         let datetime = $("#datetime").text();
+    //         // let text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
+    //         let text = "DEWS-L Bulletin for " + datetime + "\n" + alert + " - " + loc;
+    //         $("#info").val(text);
+    //         if( location.hostname == "www.dewslandslide.com" )
+    //         {
+    //             $('#recipients').tagsinput('add', 'rusolidum@phivolcs.dost.gov.ph');
+    //             $('#recipients').tagsinput('add', 'asdaag@yahoo.com');
+    //         } else {
+    //             if($('#recipients_span').html().length == 0) {
+    //                 $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
+    //             }   
+    //         }
+    //         bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
+    //         bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+
+    //         let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
+
+    //         if(isBulletinSent == 1) $("#send").removeClass("btn-danger").addClass("btn-primary").text("Sent Already (Send Again)");
+    //         else $("#send").removeClass("btn-primary").addClass("btn-danger").text("Send");
+    //         $('#bulletinModal').modal({ backdrop: 'static', keyboard: false, show: true});
+    //     }
+    // }); 
 }
 
 function renderPDF(id) 

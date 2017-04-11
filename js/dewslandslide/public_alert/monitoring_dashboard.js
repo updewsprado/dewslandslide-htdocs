@@ -63,7 +63,10 @@ $(document).ready( function() {
                 let recipients = $("#recipients").tagsinput("items");
                 console.log(recipients);
 
-                text = $("#info").html();
+                text = $("#info").val();
+                let i = text.indexOf("DEWS");
+                text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
+
                 subject = $("#subject").text();
                 filename = $("#filename").text();
                 sendMail(text, subject, filename, recipients);
@@ -495,7 +498,7 @@ function buildTable( latest, extended, overdue, candidate )
         	},
         	{
         		"render": function (data, type, full) {
-            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0'></span></a>";
+            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
             	}
         	}
 		],
