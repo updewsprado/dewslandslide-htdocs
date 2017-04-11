@@ -41,9 +41,10 @@ $(document).ready(function(e) {
 			per_site_name.push(per_site[i].name)
 		}
 	})
+	submittedMeas()
 	$('#submit').on('click',function(){
 		if($("#sitegeneral").val() != ""){
-			$(".panel_alert").hide();
+			$(".panel_alert").hide();			
 			var subSites =[];
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
@@ -434,7 +435,6 @@ $(document).ready(function(e) {
 		});	
 }
 function surficialGraph(dataTableSubmit) {  
-	console.log(dataTableSubmit)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -468,11 +468,12 @@ function surficialGraph(dataTableSubmit) {
 
 
 			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
+				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,"")})
 			}
-			console.log(series_data)
 
 			chartProcess2('ground_graph',series_data,'Superimpose Surficial Graph')
+			$("#tag_series").val(JSON.stringify(series_data))
+			
 		}
 	});	
 }
@@ -609,47 +610,140 @@ function chartProcess(id,data_series,name){
 
 
 function chartProcess2(id,data_series,name){
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			height: 800,
-			width:1100
-		},
-		title: {
-			text: name,
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
-			},
-			title: {
-				text: 'Date'
-			},
-		},
-		tooltip: {
-			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			split: true,
-			crosshairs: true
-		},
-		plotOptions: {
-			spline: {
-				marker: {
-					enabled: true
-				}
+	var site = $('#sitegeneral').val();
+	var fdate = $('#reportrange span').html().slice(0,10);
+	var tdate = $('#reportrange span').html().slice(13,23);
+	$.ajax({ 
+		dataType: "json",
+		url: "/node_level_page/getAllgintagsNodeTagID/gndmeas/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+site,success: function(result) {
+			var all_crack_id = []
+			for (var i = 0; i < result.length; i++) {
+				var remark_parse = ((result[i].remarks).split("/"))
+				all_crack_id.push(remark_parse[1])
 			}
-		},
-		credits: {
-			enabled: false
-		},
-		series:data_series
+			var label_crack = removeDuplicates(all_crack_id);
+			var all_data_tag =[]
+			for (var a = 0; a < label_crack.length; a++) {
+				var collect =[]
+				for (var i = 0; i < result.length; i++) {
+					var remark_parse = ((result[i].remarks).split("/"))
+					if(remark_parse[1] == label_crack[a] ){
+						collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
+					}
+				}
+				all_data_tag.push(collect)
+			}
+
+			for (var a = 0; a < label_crack.length; a++) {
+				data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+			}
+			
+			Highcharts.setOptions({
+				global: {
+					timezoneOffset: -8 * 60
+				},
+			});
+			$("#"+id).highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x',
+					height: 800,
+					width:1100
+				},
+				title: {
+					text: name,
+				},
+				xAxis: {
+					type: 'datetime',
+					dateTimeLabelFormats: { 
+						month: '%e. %b %Y',
+						year: '%b'
+					},
+					title: {
+						text: 'Date'
+					},
+				},
+				tooltip: {
+					split: true,
+					crosshairs: true,
+				},
+				plotOptions: {
+					spline: {
+						marker: {
+							enabled: true
+						}
+					},
+					series: {
+						marker: {
+							radius: 3
+						},
+						cursor: 'pointer',
+						point: {
+							events: {
+								click: function () {
+									if(this.series.name == "Tag"){
+										$("#tagModal").modal("show");
+										$("#comment-model").empty();
+										$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+									}else{
+									$("#annModal").modal("show");
+									$("#tag_value").hide();
+									$("#tag_series").hide();
+									$("#tag_version").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
+									$("#tag_crack").val(this.series.name)
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+									}
+								}
+							}
+						}
+					},
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series
+			});
+			// console.log(data_series)
+		}
+	});
+}
+
+function submittedMeas(){
+
+	$('#tag_submit').click(function(){
+		var tag_name = $("#tag_ids").tagsinput("items");
+		var tag_description = "ground analysis";
+		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		var tagger = $("#current_user_id").val();
+		var time = (($("#tag_time").val()).slice(2,10)).toString()
+		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_used = "gndmeas";
+		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var dataSubmit = [];
+		for (var i = 0; i < tag_name.length; i++) {
+			dataSubmit.push({ 
+				'tag_name' : tag_name[i], 
+				'tag_description' : tag_description,
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks
+			})
+		}
+
+		var host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+		})
+		$("#graphS2").empty();
+		$("#graphS2").append('<div id="ground_graph" ></div>');
+		$("#annModal").modal("hide");
+		var series_data_tag = JSON.parse($("#tag_series").val())
+		chartProcess2('ground_graph',series_data_tag,'Superimpose Surficial Graph')
 	});
 }
 
@@ -685,3 +779,4 @@ function removeDuplicates(num) {
 	}
 	return out;
 }
+
