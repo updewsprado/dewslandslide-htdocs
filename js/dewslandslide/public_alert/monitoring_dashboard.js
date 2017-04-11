@@ -65,7 +65,9 @@ $(document).ready( function() {
 
                 text = $("#info").val();
                 let i = text.indexOf("DEWS");
-                text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
+                if( i > 0) 
+                	text = text.substr(0, i) + "<br/><br/><b>" + text.substr(i) + "</b>";
+                else text = "<b>" + text + "</b>";
 
                 subject = $("#subject").text();
                 filename = $("#filename").text();
