@@ -17,12 +17,16 @@ function getNormalAndLockedIssues(data) {
     $("#issuesAndRemindersModal").modal("hide");
     $(".modal-backdrop").remove();
 
-    let normal = data.normal.slice(0), locked = data.locked.slice(0)
+    console.log("HELOOO", data);
+
+    let normal = data.normal, locked = data.locked;
 
     iarList = data.normal.concat(data.locked);
     iarListCache = iarList.map( x => x.iar_id );
-    if(data.archived != "" && data.archived != null) iarArchived = data.archived.slice(0);
-    iarArchivedCache = iarArchived.map( x => x.iar_id )
+    if(data.archived != "" && data.archived != null) {
+        iarArchived = data.archived.slice(0);
+        iarArchivedCache = iarArchived.map( x => x.iar_id )
+    }
 
     let isPage = window.location.pathname.includes("issues_and_reminders");
 
