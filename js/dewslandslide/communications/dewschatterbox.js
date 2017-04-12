@@ -258,6 +258,7 @@ $(document).ready(function() {
 	var temp_ewi_template_holder = "";
 	var temp_msg_holder = "";
 	var socket = "";
+	var narrative_recipients = [];
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
@@ -893,6 +894,13 @@ $(document).ready(function() {
 						tagOffices.push(this.value);
 					});
 
+					var raw_recipient = $('#ewi-recipients-dashboard').val().split(',');
+					for (var recipient_counter = 0; recipient_counter < raw_recipient.length; recipient_counter++) {
+						if ($.inArray(raw_recipient[recipient_counter].slice(0, raw_recipient[recipient_counter].indexOf(':')), narrative_recipients) == -1) {
+							narrative_recipients.push(raw_recipient[recipient_counter].slice(0, raw_recipient[recipient_counter].indexOf(':')));
+						}
+					}
+
 			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_template = "";
@@ -910,25 +918,6 @@ $(document).ready(function() {
 		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-
-
-						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-							var narrative_details = {
-								'event_id': event_details.event_id,
-								'site_id': event_details.site_id,
-								'municipality': event_details.municipality,
-								'province': event_details.province,
-								'barangay': event_details.barangay,
-								'sition': event_details.sition,
-								'ewi_sms_timestamp': current_timestamp,
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-						} 
 							narrative_recipients = [];
 						} 
 			        }
@@ -942,14 +931,13 @@ $(document).ready(function() {
 							'barangay': event_details.barangay,
 							'sition': event_details.sition,
 							'ewi_sms_timestamp': current_timestamp,
-							'narrative_template': "Sent Early Warning Information."
+							'narrative_template': narrative_template
 						}
 						
 						console.log(narrative_details);
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							debugger;
 							console.log(response);
 						});
 					} 
@@ -2449,8 +2437,12 @@ $('#send-btn-ewi-amd').click(function(){
 		if (difference != null || difference.length != 0) {
 			var added_contacts = [];
 			difference.forEach(function(x){
-				var temp = x.split('|');
-				added_contacts.push(temp.splice(1,1));
+				if (x.indexOf("|") == -1) {
+					added_contacts.push([x]);
+				} else {
+					var temp = x.split('|');
+					added_contacts.push(temp.splice(1,1));
+				}
 			});
 
 			for (var counter = 0; counter < added_contacts.length;counter++) {
@@ -3022,6 +3014,11 @@ function getInitialQuickInboxMessages () {
 				$.notify("You cannot tag #EwiMessage if you are the recipient","error");
 			}
 		}
+	});
+
+	$('#gintags').on('itemAdded', function(event) {
+	  $('.bootstrap-tagsinput input').empty();
+	  $('.bootstrap-tagsinput input').val('');
 	});
 
 	$('#confirm-gintags').click(function(){
