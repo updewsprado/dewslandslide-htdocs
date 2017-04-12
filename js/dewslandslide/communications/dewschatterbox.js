@@ -1,9 +1,15 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
-	.done(function(response) {
-		var contacts = JSON.parse(response);
+
+	$.ajax({
+	  type: "POST",
+	  url: "../chatterbox/getCommunityContactViaDashboard/",
+	  async: true,
+	  data: {site: data.name},
+	  success: function(response){
+
+	  	var contacts = JSON.parse(response);
 		var default_recipients = [];
 		var additional_recipients = [];
 
@@ -37,6 +43,7 @@ function sendViaAlertMonitor(data){
 		}
 		$('#default-recipients').val(default_recipients);
 		$('#additional-recipients').val(additional_recipients);
+	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -44,6 +51,8 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
+
+	
 
 	$.ajax({
 		type: "GET",
@@ -84,14 +93,15 @@ function sendViaAlertMonitor(data){
 
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
-					case 0:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangalawang araw");
-					break;
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangatlong araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw");
 					break;
 					case 2:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw");
+					break;
+					case 3:
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw");
+					break;
 					default:
 					return;
 				}	
@@ -205,9 +215,9 @@ function sendViaAlertMonitor(data){
 
 			$('#site-abbr').val(data["name"]);
 			$('#constructed-ewi-amd').val(finalEWI);
+			$('#ewi-asap-modal').modal('toggle');
 		}
 	});
-$('#ewi-asap-modal').modal('toggle');
 }
 
 $(document).ready(function() {
@@ -935,20 +945,24 @@ $(document).ready(function() {
 							'narrative_template': "Sent Early Warning Information."
 						}
 						
-						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+						console.log(narrative_details);
+
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
+							debugger;
 							console.log(response);
 						});
 					} 
 				});
 			}
 		} else {
-			debugger;
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
+			} else if (msg.type == "ackrpi"){
+				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
 				var select_raw_site = $("#current-contacts h4").text().substring(11);
 				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
@@ -3014,6 +3028,7 @@ function getInitialQuickInboxMessages () {
 		var tags = holdTags.split(',');
 		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
 		var diff = "";
+		$('#gintag-modal').modal('toggle');
 		if (tags.length > current_tags.length) {
 			diff = $(tags).not(current_tags).get();
 			removeGintagService(gintags_msg_details,diff);
@@ -3148,12 +3163,7 @@ function getInitialQuickInboxMessages () {
 		}
 	});
 
-	$("#cancel-narrative").on('click',function(){
-		$('#save-narrative-modal').modal('toggle');
-	});
-
 	function displayNarrativeConfirmation(gintag_details){
-		$('#save-narrative-modal').modal('toggle');
 		if (gintag_details.data[1] === "You") {
 			var summary = "";
 			var office = "Office(s): ";
@@ -3176,6 +3186,7 @@ function getInitialQuickInboxMessages () {
 			$('#save-narrative-content p').text("Saving an #EwiResponse tagged message will be permanently save to narratives.");
 			$('#ewi-tagged-msg').val(summary);
 		}
+		$('#save-narrative-modal').modal('toggle');
 	}
 
 	function insertGintagService(data){
@@ -3203,7 +3214,6 @@ function getInitialQuickInboxMessages () {
 				};
 
 				if ($.inArray("#EwiMessage", tags) != -1) {
-					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiMessage", tags),1);
@@ -3211,6 +3221,7 @@ function getInitialQuickInboxMessages () {
 					getGintagGroupContacts(gintag_details);
 					gintag_details.tags = "#EwiMessage";
 					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					getGintagGroupContacts(gintag_details);
 				}
@@ -3227,7 +3238,6 @@ function getInitialQuickInboxMessages () {
 					tags.splice($.inArray("#EwiResponse", tags),1);
 					$('#gintags').val(tags);
 					gintag_details.tags = "#EwiResponse";
-					$("#gintag_details_container").val(JSON.stringify(gintag_details));
 					if (tags[1] != "") {
 						for (var i = 0; i < tags.length;i++) {
 							gintags_collection = [];
@@ -3248,6 +3258,8 @@ function getInitialQuickInboxMessages () {
 							});
 						}
 					}
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					for (var i = 0; i < tags.length;i++) {
 						gintags_collection = [];

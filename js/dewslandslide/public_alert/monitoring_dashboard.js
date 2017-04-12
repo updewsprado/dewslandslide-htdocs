@@ -168,7 +168,7 @@ $(document).ready( function() {
 			let y = lookup[x.retrigger];
 			$("#" + y[0] + "_area").show();
 			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["tech_info"] : row.tech_info[y[0] + "_tech"];
+			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["info"] : row.tech_info[y[0] + "_tech"];
 			$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
 			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
 			else if( y[2] == "E" ) {
@@ -787,7 +787,7 @@ function checkCandidateTriggers(cache) {
 					// Check if alert exists on database
 					// Mark isInvalid TRUE to prevent being pushed to final
 					// if alert is really invalid and has no active alert
-					if( merged_arr_sites.indexOf(invalid.site) == -1 )
+					if( merged_arr_sites.indexOf(invalid.site) == -1 && alerts_source.length == 1 )
 						{ isInvalid = true; }
 					else if (source == "sensor") {
 						let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
