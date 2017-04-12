@@ -3014,12 +3014,8 @@ function getInitialQuickInboxMessages () {
 		}
 	});
 
-	$('#gintags').on('itemAdded', function(event) {
-	  $('.bootstrap-tagsinput input').empty();
-	  $('.bootstrap-tagsinput input').val('');
-	});
-
 	$('#confirm-gintags').click(function(){
+		debugger;
 		var tags = holdTags.split(',');
 		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
 		var diff = "";
@@ -3185,6 +3181,7 @@ function getInitialQuickInboxMessages () {
 	}
 
 	function insertGintagService(data){
+		debugger;
 		var tags = $('#gintags').val();
 		var gintags;
 		var gintags_collection = [];
@@ -3227,7 +3224,6 @@ function getInitialQuickInboxMessages () {
 						"data": data,
 						"cmd": "insert"
 					};
-					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiResponse", tags),1);
