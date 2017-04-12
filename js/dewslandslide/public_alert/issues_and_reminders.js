@@ -17,8 +17,6 @@ function getNormalAndLockedIssues(data) {
     $("#issuesAndRemindersModal").modal("hide");
     $(".modal-backdrop").remove();
 
-    console.log("HELOOO", data);
-
     let normal = data.normal, locked = data.locked;
 
     iarList = data.normal.concat(data.locked);
@@ -81,11 +79,11 @@ function onLoadIssuesModal() {
     $("#lock").click(function () {
     	$(this).toggleClass("btn-info btn-danger");
     	if ($(this).text() == " Unlock") {
-    		$("#issue_validity").prop("disabled", false).val("");
+    		$("#issue_event").prop("disabled", false).val("");
        		$(this).attr("data-button-lock", 0).html('<span class="fa fa-lock" aria-hidden="true"></span> Lock');
     	}
     	else {
-    		$("#issue_validity").prop("disabled", true).val("---");
+    		$("#issue_event").prop("disabled", true).val("");
         	$(this).attr("data-button-lock", 1).html('<span class="fa fa-unlock" aria-hidden="true"></span> Unlock');
     	}
     });
@@ -112,7 +110,7 @@ function onLoadIssuesModal() {
             issue_detail: {
                 required: true,
             },
-            issue_validity: {
+            issue_event: {
                 required: {
                     depends: function () {
                         return $("#lock").attr("data-button-lock") == "0";
@@ -222,7 +220,7 @@ function onLoadIssuesModal() {
         $("#issue_detail").val(issue.detail);
         if(issue.status == "normal") {
             if($("#lock").attr("data-button-lock") == "1") lock_button("1");
-            $("#issue_validity").val(issue.validity);
+            $("#issue_event").val(issue.event_id);
         } else {
             lock_button("0");
         }
@@ -236,7 +234,7 @@ function onLoadIssuesModal() {
         $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "none");
         $("#issues-individual-view").hide();
 
-        $("#issue_detail, #issue_validity").val("");
+        $("#issue_detail, #issue_event").val("");
         if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
         if($(".show-bar a").attr("data-show") == "1") $(".form-body").show();
         else $(".form-body").hide();
@@ -298,7 +296,7 @@ function onLoadIssuesPage() {
             issue_detail: {
                 required: true,
             },
-            issue_validity: {
+            issue_event: {
                 required: {
                     depends: function () {
                         return $("#lock").attr("data-button-lock") == "0";
@@ -414,7 +412,7 @@ function onLoadIssuesPage() {
         $("#issue_detail").val(issue.detail);
         if(issue.status == "normal") {
             if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
-            $("#issue_validity").val(issue.validity);
+            $("#issue_event").val(issue.event_id);
         } else {
             if($("#lock").attr("data-button-lock") == "0") $("#lock").trigger("click");
         }
@@ -429,7 +427,7 @@ function onLoadIssuesPage() {
         $("#add-issue-modal, #close-issue-modal").css("display", "block");
         $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "none");
 
-        $("#issue_detail, #issue_validity").val("");
+        $("#issue_detail, #issue_event").val("");
         if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
         $("#issuesAndRemindersModal").modal("hide");
     });
@@ -467,12 +465,12 @@ function lock_button(bool) {
     else data = bool;
     if (data == "1") {
         $("#lock").removeClass("btn-danger").addClass("btn-info");
-        $("#issue_validity").prop("disabled", false).val("");
+        $("#issue_event").prop("disabled", false).val("");
         $("#lock").attr("data-button-lock", 0).html('<span class="fa fa-lock" aria-hidden="true"></span> Lock');
     }
     else {
         $("#lock").removeClass("btn-info").addClass("btn-danger");
-        $("#issue_validity").prop("disabled", true).val("---");
+        $("#issue_event").prop("disabled", true).val("---");
         $("#lock").attr("data-button-lock", 1).html('<span class="fa fa-unlock" aria-hidden="true"></span> Unlock');
     }
 }

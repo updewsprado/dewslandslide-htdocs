@@ -789,20 +789,26 @@ $(document).ready(function()
             {
                 temp.current_event_id = current_event.event_id;
 
+                if( temp.public_alert_level == "A0")
+                {
+                    if( moment(current_event.validity).isSameOrBefore(moment(temp.timestamp_entry).add(30, 'minutes')) )
+                    {
+                        temp.status = "extended";
+                        $.post("../issues_and_reminders/archiveIssuesFromLoweredEvents", {event_id: temp.current_event_id})
+                        .done(function (has_updated) {
+                            if(has_updated == 'true') { doSend("getNormalAndLockedIssues"); }
+                        });
+                    }
+                    else
+                        temp.status = "invalid";
+                }
                 // Check if needed for 4-hour extension if ND
-                if( temp.trigger_list == null && moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
+                else if( temp.trigger_list == null && moment(current_event.validity).isSame(moment(temp.timestamp_entry).add(30, 'minutes')) )
                 {
                     if( toExtendND ) temp.extend_ND = true;
                     else if ( typeof temp.cbox_trigger_rx !== "undefined" ) temp.extend_rain_x = true;
                 }
                 // If A0, check if legit lowered or invalid
-                else if( temp.public_alert_level == "A0")
-                {
-                    if( moment(current_event.validity).isSameOrAfter(moment(temp.timestamp_entry).add(30, 'minutes')) )
-                        temp.status = "extended";
-                    else
-                        temp.status = "invalid";
-                }
             }
             else if (status == "invalid") { temp.current_event_id = current_event.event_id; }
             else if (status == "routine")
