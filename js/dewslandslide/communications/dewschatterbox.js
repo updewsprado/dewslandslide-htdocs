@@ -933,8 +933,6 @@ $(document).ready(function() {
 							'ewi_sms_timestamp': current_timestamp,
 							'narrative_template': narrative_template
 						}
-						
-						console.log(narrative_details);
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
@@ -1091,7 +1089,7 @@ $(document).ready(function() {
 								'ewi_sms_timestamp': gintags_msg_details[2],
 								'narrative_template': narrative_template
 							}
-							
+							console.log(narrative_details);
 							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 							.done(function(response) {
 								console.log(response);
@@ -3299,42 +3297,6 @@ function getInitialQuickInboxMessages () {
 				});
 			}
 		}
-	}
-
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
-								narrative_template = "Sent Early warning information message.";
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-
-						}
-					}
-				}
-			});
-		});
 	}
 
 	function removeIndividualGintag(gintag_details){
