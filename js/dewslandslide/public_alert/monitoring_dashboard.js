@@ -787,7 +787,7 @@ function checkCandidateTriggers(cache) {
 					// Check if alert exists on database
 					// Mark isInvalid TRUE to prevent being pushed to final
 					// if alert is really invalid and has no active alert
-					if( merged_arr_sites.indexOf(invalid.site) == -1 && alert_source.length == 1 )
+					if( merged_arr_sites.indexOf(invalid.site) == -1 && alerts_source.length == 1 )
 						{ isInvalid = true; }
 					else if (source == "sensor") {
 						let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
