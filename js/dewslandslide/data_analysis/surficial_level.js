@@ -690,6 +690,7 @@ function chartProcess2(id,data_series,name){
 									$("#tag_value").hide();
 									$("#tag_series").hide();
 									$("#tag_version").hide();
+									$("#tag_crack").hide();
 									$('#tag_ids').tagsinput('removeAll');
 									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
 									$("#tag_value").val(this.y)
