@@ -1193,7 +1193,7 @@ function SelectedColumn(site,from,to) {
 		SiteInfo(selected_column)
 		DataPresence(selected_column,'data_presence')
 		NodeSumary(selected_column,'node_summary_div')
-		// mapGenerator(selected_column)
+		mapGenerator(selected_column)
 		// // siteMaintenance(selecte_column)
 		$('#communication_health_checkbox').prop('checked', true);
 		showCommHealthPlotGeneral(selected_column,'healthbars')
@@ -2014,6 +2014,7 @@ function siteMaintenance(curSite) {
 }
 
 function NodeSumary(site,siteDiv){ 
+	console.log(site,siteDiv)
 	$('#node_summary_checkbox').prop('checked', true);
 	let dataSubmit = { site:site.toLowerCase()}
 	
