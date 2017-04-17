@@ -233,7 +233,7 @@ $(document).ready(function(e) {
 				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
 			}		
 			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
-
+			gndmeasTableStats()
 		});
 	}
 
@@ -428,12 +428,14 @@ $(document).ready(function(e) {
 						$("#A2").show();
 					}
 				}
-				
-				
 			}
-			
 		});	
 }
+
+function gndmeasTableStats(site){
+
+}
+
 function surficialGraph(dataTableSubmit) {  
 	$.ajax({ 
 		dataType: "json",
