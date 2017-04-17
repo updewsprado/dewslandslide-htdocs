@@ -647,21 +647,21 @@ $(document).ready(function() {
 		console.log("Loading Old Messages");
 	}
 
-	$(window).scroll(function(){
-		var scroll = $(window).scrollTop();
-		if ($(document).height() > $(window).height()) {
-			if (scroll == 0 && convoFlagger == false){
-				console.log(msgType);
-				if (msgType == "smsload") {
-					getOldMessage();
-				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
-					getOldMessageGroup();
-				} else {
-					console.log("Invalid Request/End of the Conversation");
-				}
-			}
-		}
-	});
+	// $(window).scroll(function(){
+	// 	var scroll = $(window).scrollTop();
+	// 	if ($(document).height() > $(window).height()) {
+	// 		if (scroll == 0 && convoFlagger == false){
+	// 			console.log(msgType);
+	// 			if (msgType == "smsload") {
+	// 				getOldMessage();
+	// 			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+	// 				getOldMessageGroup();
+	// 			} else {
+	// 				console.log("Invalid Request/End of the Conversation");
+	// 			}
+	// 		}
+	// 	}
+	// });
 
 	function getOldMessage(){
 		if (lastMessageTimeStampYou == "") {
