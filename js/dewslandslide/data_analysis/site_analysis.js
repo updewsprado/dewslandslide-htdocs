@@ -1184,7 +1184,7 @@ function SelectedColumn(site,from,to) {
 		$(".column_level").empty()
 		SiteInfo(selected_column)
 		DataPresence(selected_column,'data_presence')
-		// NodeSumary(selected_column,'node_summary_div')
+		NodeSumary(selected_column,'node_summary_div')
 		// mapGenerator(selected_column)
 		// // siteMaintenance(selecte_column)
 		$('#communication_health_checkbox').prop('checked', true);
