@@ -1433,7 +1433,6 @@ function allSensorPosition(site,fdate,tdate) {
 		dataType: "json",
 		success: function(result){
 			SubOnSelectDay(site,tdate)
-			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c)
 			displacementPosition(data[0].d,data[0].v)
