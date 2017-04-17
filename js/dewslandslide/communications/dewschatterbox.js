@@ -3019,6 +3019,32 @@ function getInitialQuickInboxMessages () {
 		} 
 	});
 
+	$('#grouptags_ec').tagsinput({
+		typeahead: {
+			displayKey: 'text',
+			source: function (query) {
+				var group_tag = [];
+				$.ajax({
+					url : "../chatterbox/get_employee_contacts",
+					type : "GET",
+					async: false,
+					success : function(data) {
+						var data = JSON.parse(data);
+						for (var counter = 0; counter < data.length; counter ++) {
+							var raw_grouptags = data[counter].grouptags.split(",");
+							for (var raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter++) {
+								if ($.inArray(raw_grouptags[raw_counter],group_tag) == -1) {
+									group_tag.push(raw_grouptags[raw_counter]);
+								}
+							}
+						}
+					}
+				});
+				return group_tag;
+			}
+		} 
+	});
+
 	function removeGintagService(data,tags){
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
