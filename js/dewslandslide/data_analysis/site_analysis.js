@@ -1182,14 +1182,6 @@ function SelectedColumn(site,from,to) {
 		$('.collapseSite' ).switchClass( "in", "collapse");
 		$('#collapseNode' ).switchClass( "collapse", "in");
 		$(".column_level").empty()
-		$(".column_level").append('<div class="col-md-12" id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
-		$(".column_level").append('<br><br><br><div class="col-md-10"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
-		$(".column_level").append('<div class ="col-md-3 map-canvas" id="map-canvas"></div>')
-		$(".column_level").append('<br><div class="col-md-8 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
-			'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
-			'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
-			'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
-			'</div><div class="row" id="healthbars" style=" height: 300px;width:auto"></div></div>')
 		SiteInfo(selected_column)
 		DataPresence(selected_column,'data_presence')
 		NodeSumary(selected_column,'node_summary_div')
@@ -2014,12 +2006,17 @@ function siteMaintenance(curSite) {
 }
 
 function NodeSumary(site,siteDiv){ 
-	console.log(site,siteDiv)
 	$('#node_summary_checkbox').prop('checked', true);
 	let dataSubmit = { site:site.toLowerCase()}
-	
-	$.post("/node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
-		console.log(data)
+	$(".column_level").append('<div class="col-md-12" id="data_presence"><div id="data_presence_div"><h4><span class=""></span><b> Data Presence</b></h4></div></div>')
+	$(".column_level").append('<br><br><br><div class="col-md-10"><div  id="node_summary_div"><h4><span class=""></span><b> Node Summary</b></h4></div></div>')
+	$(".column_level").append('<div class ="col-md-3 map-canvas" id="map-canvas"></div>')
+	$(".column_level").append('<br><div class="col-md-8 " id="commhealth_div"><h4><span class=""></span><b>Communication Health</b><h5><input type="button" id="show" onclick="showLegends(this.form)" value="Show Legends" /></h5></h4><div  id="legends" style="visibility:hidden; display:none;">'+
+		'<input type="button" onclick="barTransition("red")" style="background-color:red; padding-right:5px;" /><strong><font color=colordata[170]>Last 7 Days</font> </strong><br/>'+
+		'<input type="button" onclick="barTransition("blue")" style="background-color:blue; padding-right:5px;" /><strong><font color=colordata[170]>Last 30 Days</font></strong><br/>'+
+		'<input type="button" onclick="barTransition("green")" style="background-color:green; padding-right:5px;" /><strong><font color=colordata[170]>Last 60 Days</font></strong>'+
+		'</div><div class="row" id="healthbars" style=" height: 300px;width:auto"></div></div>')
+	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
 		var result = JSON.parse(data);
 		nodeAlertJSON = JSON.parse(result.nodeAlerts)
 		maxNodesJSON = JSON.parse(result.siteMaxNodes)
