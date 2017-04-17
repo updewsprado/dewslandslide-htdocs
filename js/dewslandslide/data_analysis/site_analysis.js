@@ -2018,8 +2018,8 @@ function NodeSumary(site,siteDiv){
 	$('#node_summary_checkbox').prop('checked', true);
 	let dataSubmit = { site:site.toLowerCase()}
 	
-	$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
-
+	$.post("/node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
+		console.log(data)
 		var result = JSON.parse(data);
 		nodeAlertJSON = JSON.parse(result.nodeAlerts)
 		maxNodesJSON = JSON.parse(result.siteMaxNodes)
