@@ -1,7 +1,6 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-
 	$.ajax({
 	  type: "POST",
 	  url: "../chatterbox/getCommunityContactViaDashboard/",
@@ -51,8 +50,6 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
-
-	
 
 	$.ajax({
 		type: "GET",
@@ -139,26 +136,25 @@ function sendViaAlertMonitor(data){
 
 			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
 			var currentTime = moment().format("YYYY-MM-DD HH:mm");
-
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 07:55")).valueOf()) {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 AM");
 				} else {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
 				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-11:30 AM");	
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 11:55")).valueOf()) {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 NN");
 				} else {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
 				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-03:30PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 15:55")).valueOf()) {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","4:00 PM");
 				} else {
@@ -174,7 +170,7 @@ function sendViaAlertMonitor(data){
 				}
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).add(24,"hours").valueOf()){
 				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 23:55")).valueOf()) {
 					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 MN");
 				} else {
@@ -191,28 +187,28 @@ function sendViaAlertMonitor(data){
 			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",x);
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","04:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","08:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","12:00 NN");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","04:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","08:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%","12:00 MN");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
 			} else {
 				alert("Error Occured: Please contact Administrator");
 			}
-
-
+			
+			$('#msg').val(finalEWI);
 			$('#site-abbr').val(data["name"]);
 			$('#constructed-ewi-amd').val(finalEWI);
 			$('#ewi-asap-modal').modal('toggle');
@@ -475,7 +471,6 @@ $(document).ready(function() {
 	}
 
 	function updateQuickInbox(msg) {
-		// debugger;
 		if (msg.user == "You") {
 		}
 		else {
@@ -2183,6 +2178,11 @@ function reset_cc() {
 	$('#rel_cc').val('');
 	$('#numbers_cc').val('');
 	$('#numbers_cc').tagsinput("removeAll");
+	$('#office_cc').val("LLMC");
+	$('#sitename_cc').val("AGB");
+	$('#rel').val("Y");
+	$('#ewirecipient').val("1");
+
 	$('#other-officename').val('');
 	$('#other-sitename').val('');
 
@@ -2248,64 +2248,30 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#confirm-ewi').click(function(){
-
-	if ($('#ewi-date-picker').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
+	if ($('#ewi-date-picker input').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
 		alert('Invalid input, All fields must be filled');
 	} else {
-		groupTags = [];
-		user = "You";
-		var tagOffices = [];
-		var tagSitenames = [];
-
-		var tagOffices = [];
-		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
-		});
-
-		var counter = 0;
-		$('input[name="sitenames"]:checked').each(function() {
-			counter++;
-		});
-
-		if (counter == 1){
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"]').prop('checked', false);
-
-			$('input[name="sitenames"]').each(function() {
-				if ($('#sites').val() == this.value) {
-					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
-				}
-			});
-		} else if (counter > 1){
-			var tagSitenames = [];
-			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
-			});
-		} else {
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
-		}
-
-
-		tagSitenames.sort();
-		groupTags = {
-			'type': 'smsloadrequestgroup',
-			'offices': tagOffices,
-			'sitenames': tagSitenames
-		};
-
-		$('#main-container').removeClass('hidden');
-
-		getEWI(function(output){
-			if (counter == 1 || counter == 0){
-				var template = setEWILocation(output);
-			}else {
-				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-				$('#msg').val(nssEWITemplate);
+		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+		.done(function(response) {
+			var location = JSON.parse(response);
+			var toTemplate = {
+				'name': $('#sites').val(),
+				'internal_alert_level' : $('#alert-lvl').val(),
+				'sitio':location[0].sitio == null ? "" : location[0].sitio,
+				'barangay':location[0].barangay == null ? "" :location[0].barangay,
+				'municipality':location[0].municipality == null ? "" : location[0].municipality,
+				'province':location[0].province == null ? "" :location[0].province,
+				'data_timestamp': $('#ewi-date-picker input').val(),
 			}
+			sendViaAlertMonitor(toTemplate)
 		});
 	}
 });
+
+	$('#ewi-date-picker').datetimepicker({
+	    locale: 'en',
+	    format: 'YYYY-MM-DD HH:mm:ss'
+	});
 
 function getEWI(handledTemplate){
 	var constructedEWI = "";
@@ -2346,7 +2312,7 @@ function setEWILocation(consEWI){
 		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
 		.done(function(response) {
 			var location = JSON.parse(response);
-			var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+			var sbmp = location[0].sitio + ", " +  location[0].barangay + ", " + location[0].municipality + ", " + location[0].province;
 			var formatSbmp = sbmp.replace("null","");
 			if (formatSbmp.charAt(0) == ",") {
 				formatSbmp = formatSbmp.substr(1);
@@ -2625,7 +2591,9 @@ function getInitialQuickInboxMessages () {
 		for (var i = 0; i < tags.length; i++) {
 			var modIndex = i % 4;
 			var tag = tags[i];
-			$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+			if (tag != "" || tag != null) {
+				$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+			}	
 		}
 	}
 
@@ -3015,7 +2983,6 @@ function getInitialQuickInboxMessages () {
 	});
 
 	$('#confirm-gintags').click(function(){
-		debugger;
 		var tags = holdTags.split(',');
 		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
 		var diff = "";
@@ -3048,6 +3015,32 @@ function getInitialQuickInboxMessages () {
 					}
 				});
 				return tagname_collection;
+			}
+		} 
+	});
+
+	$('#grouptags_ec').tagsinput({
+		typeahead: {
+			displayKey: 'text',
+			source: function (query) {
+				var group_tag = [];
+				$.ajax({
+					url : "../chatterbox/get_employee_contacts",
+					type : "GET",
+					async: false,
+					success : function(data) {
+						var data = JSON.parse(data);
+						for (var counter = 0; counter < data.length; counter ++) {
+							var raw_grouptags = data[counter].grouptags.split(",");
+							for (var raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter++) {
+								if ($.inArray(raw_grouptags[raw_counter],group_tag) == -1) {
+									group_tag.push(raw_grouptags[raw_counter]);
+								}
+							}
+						}
+					}
+				});
+				return group_tag;
 			}
 		} 
 	});
@@ -3181,7 +3174,6 @@ function getInitialQuickInboxMessages () {
 	}
 
 	function insertGintagService(data){
-		debugger;
 		var tags = $('#gintags').val();
 		var gintags;
 		var gintags_collection = [];
