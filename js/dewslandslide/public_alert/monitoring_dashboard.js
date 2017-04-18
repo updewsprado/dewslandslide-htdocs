@@ -341,6 +341,13 @@ $(document).ready( function() {
 	        	}
 	        }
 
+	        if(entry.status == 'extended') {
+	        	$.post("../issues_and_reminders/archiveIssuesFromLoweredEvents", {event_id: entry.current_event_id})
+	        	.done(function (has_updated) {
+                    if(has_updated == 'true') { doSend("getNormalAndLockedIssues"); }
+                });
+	        }
+
 	        console.log(temp);
 	     	$.ajax({
 	            url: "../pubrelease/insert",
@@ -349,7 +356,6 @@ $(document).ready( function() {
 	            success: function(result, textStatus, jqXHR)
 	            {
 	                console.log(result);
-
 	                doSend("getOnGoingAndExtended");
 
 	                setTimeout(function () 
@@ -790,7 +796,7 @@ function checkCandidateTriggers(cache) {
 					// Check if alert exists on database
 					// Mark isInvalid TRUE to prevent being pushed to final
 					// if alert is really invalid and has no active alert
-					if( merged_arr_sites.indexOf(invalid.site) == -1 && alerts_source.length == 1)
+					if( merged_arr_sites.indexOf(invalid.site) == -1 && alerts_source.length == 1 )
 						{ isInvalid = true; }
 					else if (source == "sensor") {
 						let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
@@ -829,11 +835,13 @@ function checkCandidateTriggers(cache) {
 				}
 			});
 		});	
+
+		if(alert.internal_alert.length <= 3) isInvalid = true;
 		
 		let forUpdating = true;
 		retriggers = alert.retriggerTS;
 
-		if( !isValidButNeedsManual )
+		if( !isValidButNeedsManual && !isInvalid )
 		{
 			let maxDate = moment( Math.max.apply(null, retriggers.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
 			let max = null;
@@ -874,7 +882,7 @@ function checkCandidateTriggers(cache) {
 					alert.isManual = true;
 				}
 			}
-		} 
+		}
 
 		if(forUpdating && !isInvalid) final.push(alert);
 

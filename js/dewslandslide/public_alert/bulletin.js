@@ -63,7 +63,7 @@ function loadBulletin(id1, id2) {
                 let str = "As of " + release_time + ", " + loc + " is under " + alert + " based on " + basis.join(", ") + ".";
                 $("#info").val( str + "\n\n" + text );
             }
-
+            bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');          
         }, "json");
     });
 

@@ -1,7 +1,15 @@
+var data_timestamp;
+var latest_release_id;
 function sendViaAlertMonitor(data){
-	$.post( "../chatterbox/getCommunityContactViaDashboard/", {site: data.name})
-	.done(function(response) {
-		var contacts = JSON.parse(response);
+
+	$.ajax({
+	  type: "POST",
+	  url: "../chatterbox/getCommunityContactViaDashboard/",
+	  async: true,
+	  data: {site: data.name},
+	  success: function(response){
+
+	  	var contacts = JSON.parse(response);
 		var default_recipients = [];
 		var additional_recipients = [];
 
@@ -17,9 +25,13 @@ function sendViaAlertMonitor(data){
 		        	temp = temp+"|"+x;
 		        	number = temp;
 		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        default_recipients.push(detailed);
-				$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+
+		        if (contacts[counter].office != "GDAPD-PHIV") {
+			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+			        default_recipients.push(detailed);
+					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+		        }
+		        
 			} else {
 		        numbers.forEach(function(x) {
 		        	temp = temp+"|"+x;
@@ -31,6 +43,7 @@ function sendViaAlertMonitor(data){
 		}
 		$('#default-recipients').val(default_recipients);
 		$('#additional-recipients').val(additional_recipients);
+	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -38,6 +51,8 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
+
+	
 
 	$.ajax({
 		type: "GET",
@@ -78,14 +93,15 @@ function sendViaAlertMonitor(data){
 
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
-					case 0:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangalawang araw");
-					break;
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","pangatlong araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw");
 					break;
 					case 2:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","huling araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw");
+					break;
+					case 3:
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw");
+					break;
 					default:
 					return;
 				}	
@@ -168,6 +184,12 @@ function sendViaAlertMonitor(data){
 				alert("Error Occured: Please contact Administrator");
 			}
 
+			data_timestamp = data.data_timestamp;
+			latest_release_id = data.latest_release_id;
+
+			var x = moment(data.data_timestamp).hour() % 1 == 0  && moment(data.data_timestamp).minute() == 0 ?  moment(data.data_timestamp).format("hh:mm A").add(30,'m') : moment(data.data_timestamp).format("hh:mm A");
+			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",x);
+
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
@@ -193,9 +215,9 @@ function sendViaAlertMonitor(data){
 
 			$('#site-abbr').val(data["name"]);
 			$('#constructed-ewi-amd').val(finalEWI);
+			$('#ewi-asap-modal').modal('toggle');
 		}
 	});
-$('#ewi-asap-modal').modal('toggle');
 }
 
 $(document).ready(function() {
@@ -340,26 +362,42 @@ $(document).ready(function() {
 					msg.isyou = 0;
 					messages.push(msg);	
 				} else {
+
 					if (msg.name == "unknown") {
 						return;
 					}
+
 					var isTargetSite = false;
 					for (i in groupTags.sitenames) {
-						if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+						if (msg.name == null || msg.msg != null) {
+							msg.isyou = 0;
+							msg.user = "PASALOAD REQUEST";
 							isTargetSite = true;
 							continue;
+						} else {
+							if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+								isTargetSite = true;
+								continue;
+							}	
 						}
 					}
 
 					if (isTargetSite == false) {
 						return;
 					}
+
 					var isOffices = false;
 					for (i in groupTags.offices) {
-						if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+						if (msg.name == null){
+							msg.name = "PASALOAD REQUEST";
 							isOffices = true;
 							continue;
-						}
+						} else {
+							if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+								isOffices = true;
+								continue;
+							}	
+						}	
 					}
 
 					if (isOffices == false) {
@@ -376,6 +414,7 @@ $(document).ready(function() {
 						messages.push(msg);	
 					}
 				}
+
 			} else {
 				for (i in contactInfo) {
 					if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
@@ -401,15 +440,14 @@ $(document).ready(function() {
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
+
 			try {
 				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
 						lastMessageTimeStampYou = messages[counters]['timestamp'];
 					}
 				} else {
-
 					if (lastMessageTimeStamp == "") {
-
 						lastMessageTimeStamp = messages[counters]['timestamp'];
 					}
 				}
@@ -849,6 +887,53 @@ $(document).ready(function() {
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
 					var event_details = JSON.parse($('#event_details').val());
+					var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
+					var tagOffices = [];
+
+					$('input[name="offices"]:checked').each(function() {
+						tagOffices.push(this.value);
+					});
+
+			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+							var narrative_template = "";
+
+							if (narrative_recipients.length > 0) {
+								narrative_recipients.forEach(function(x) {
+									narrative_template = narrative_template+","+x;
+								});
+							} else {
+								tagOffices.forEach(function(x) {
+									narrative_template = narrative_template+","+x;
+								});
+							}
+
+		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+
+							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+
+
+						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+							var narrative_details = {
+								'event_id': event_details.event_id,
+								'site_id': event_details.site_id,
+								'municipality': event_details.municipality,
+								'province': event_details.province,
+								'barangay': event_details.barangay,
+								'sition': event_details.sition,
+								'ewi_sms_timestamp': current_timestamp,
+								'narrative_template': narrative_template
+							}
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+							.done(function(response) {
+								console.log(response);
+							});
+						} 
+							narrative_recipients = [];
+						} 
+			        }
+
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 						var narrative_details = {
 							'event_id': event_details.event_id,
@@ -861,26 +946,47 @@ $(document).ready(function() {
 							'narrative_template': "Sent Early Warning Information."
 						}
 						
-						$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
+						console.log(narrative_details);
+
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							// console.log(response);
+							debugger;
+							console.log(response);
 						});
 					} 
 				});
 			}
 		} else {
-
 			var numbers = /^[0-9]+$/; 
 			if (msg.type == "ackgsm") {
 				if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 					$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 				}
-			}
+			} else if (msg.type == "ackrpi"){
+				console.log("Status: "+msg.type);
+			} else if (contactInfo == "groups") {
+				var select_raw_site = $("#current-contacts h4").text().substring(11);
+				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
 
-			if (contactInfo == "groups") {
-				updateMessages(msg);
-			}
-			else {
+				var select_raw_office = select_raw_site.substring(select_raw_site.indexOf(']'));
+				var selected_office = select_raw_office.substring(13,select_raw_office.length-1).replace(/\s/g,'').split(",");
+
+				var sender = msg.name.split(" ");
+
+				for (var i = 0; i < selected_site.length; i++) {
+					console.log(selected_site[i]);
+					console.log(sender[0]);
+					if (selected_site[i] == sender[0]) {
+						for (var x = 0; x < selected_office.length; x++) {
+							console.log(selected_office[x]);
+							console.log(sender[1]);
+							if (selected_office[x] == sender[1]) {
+								updateMessages(msg);
+							}
+						}
+					}
+				}
+			} else {
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
 					updateQuickInbox(msg);
@@ -894,8 +1000,7 @@ $(document).ready(function() {
 							return;
 						}
 					}
-				}
-				else {
+				} else {
 					console.log("alphanumeric keywords for msg.user");
 					for (i in contactnumTrimmed) {
 						for (j in msg.numbers) {
@@ -954,6 +1059,63 @@ $(document).ready(function() {
 
 	return tempConn;
 }
+
+	function getOngoingEvents(sites){
+		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+			var events = JSON.parse(data);
+			console.log(events);
+			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+			.done(function(response) {
+				siteids = JSON.parse(response);
+				for (var counter = 0; counter < events.length; counter++) {
+					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+						if (events[counter].site_id == siteids[siteid_counter].id) {
+							var narrative_template = "";
+							if (gintags_msg_details.tags === "#EwiResponse") {
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+							} else if (gintags_msg_details.tags === "#EwiMessage"){
+
+								var tagOffices = [];
+								$('input[name="offices"]:checked').each(function() {
+									tagOffices.push(this.value);
+								});
+
+						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+									if (narrative_recipients.length > 0) {
+										narrative_recipients.forEach(function(x) {
+											narrative_template = narrative_template+","+x;
+										});
+									} else {
+										tagOffices.forEach(function(x) {
+											narrative_template = narrative_template+","+x;
+										});
+									}
+									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
+
+									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+						        }
+							} else {
+								$.notify("Invalid request, please try again.","warning");
+							}
+							var narrative_details = {
+								'event_id': events[counter].event_id,
+								'site_id': siteids[siteid_counter].id,
+								'ewi_sms_timestamp': gintags_msg_details[2],
+								'narrative_template': narrative_template
+							}
+							
+							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+							.done(function(response) {
+								console.log(response);
+							});
+
+						}
+					}
+				}
+			});
+		});
+	}
+
 function waitForSocketConnection() {
 	if (!window.timerID) {
 		window.timerID = setInterval(
@@ -2260,18 +2422,6 @@ $('#send-btn-ewi-amd').click(function(){
 		tagSitenames.push($('#site-abbr').val().toUpperCase());
 
 		switch(tagSitenames[0]) {
-			case "MNG":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "MAN":
-			tagSitenames[0] = "MAN/MNG";
-			break;
-			case "JOR":
-			tagSitenames[0] = "JOR/POB";
-			break;
-			case "POB":
-			tagSitenames[0] = "JOR/POB";
-			break;
 			case "MSL":
 			tagSitenames[0] = "MES";
 			break;
@@ -2279,7 +2429,6 @@ $('#send-btn-ewi-amd').click(function(){
 			tagSitenames[0] = "MES";
 			break;
 		}
-
 
 		var msg = {
 			'type': 'smssendgroup',
@@ -2323,6 +2472,7 @@ $('#send-btn-ewi-amd').click(function(){
 		$('#result-ewi-message').text('Early Warning Information sent successfully!');
 		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
+		$("#" + latest_release_id + "_sms").css("color", "red").attr("data-sent", 1);
 	} catch(err) {
 		$('#result-ewi-message').text('Failed!, Please check the template.');
 		alert(err.stack);
@@ -2874,6 +3024,7 @@ function getInitialQuickInboxMessages () {
 		var tags = holdTags.split(',');
 		var current_tags = $('#gintags').val().split(','); if(current_tags.length == 1 && current_tags[0] == 0) {current_tags = []};
 		var diff = "";
+		$('#gintag-modal').modal('toggle');
 		if (tags.length > current_tags.length) {
 			diff = $(tags).not(current_tags).get();
 			removeGintagService(gintags_msg_details,diff);
@@ -3008,12 +3159,7 @@ function getInitialQuickInboxMessages () {
 		}
 	});
 
-	$("#cancel-narrative").on('click',function(){
-		$('#save-narrative-modal').modal('toggle');
-	});
-
 	function displayNarrativeConfirmation(gintag_details){
-		$('#save-narrative-modal').modal('toggle');
 		if (gintag_details.data[1] === "You") {
 			var summary = "";
 			var office = "Office(s): ";
@@ -3036,6 +3182,7 @@ function getInitialQuickInboxMessages () {
 			$('#save-narrative-content p').text("Saving an #EwiResponse tagged message will be permanently save to narratives.");
 			$('#ewi-tagged-msg').val(summary);
 		}
+		$('#save-narrative-modal').modal('toggle');
 	}
 
 	function insertGintagService(data){
@@ -3063,7 +3210,6 @@ function getInitialQuickInboxMessages () {
 				};
 
 				if ($.inArray("#EwiMessage", tags) != -1) {
-					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiMessage", tags),1);
@@ -3071,6 +3217,7 @@ function getInitialQuickInboxMessages () {
 					getGintagGroupContacts(gintag_details);
 					gintag_details.tags = "#EwiMessage";
 					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					getGintagGroupContacts(gintag_details);
 				}
@@ -3087,7 +3234,6 @@ function getInitialQuickInboxMessages () {
 					tags.splice($.inArray("#EwiResponse", tags),1);
 					$('#gintags').val(tags);
 					gintag_details.tags = "#EwiResponse";
-					$("#gintag_details_container").val(JSON.stringify(gintag_details));
 					if (tags[1] != "") {
 						for (var i = 0; i < tags.length;i++) {
 							gintags_collection = [];
@@ -3108,6 +3254,8 @@ function getInitialQuickInboxMessages () {
 							});
 						}
 					}
+					$("#gintag_details_container").val(JSON.stringify(gintag_details));
+					displayNarrativeConfirmation(gintag_details);
 				} else {
 					for (var i = 0; i < tags.length;i++) {
 						gintags_collection = [];
