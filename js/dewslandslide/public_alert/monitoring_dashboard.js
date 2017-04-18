@@ -832,11 +832,13 @@ function checkCandidateTriggers(cache) {
 				}
 			});
 		});	
+
+		if(alert.internal_alert.length <= 3) isInvalid = true;
 		
 		let forUpdating = true;
 		retriggers = alert.retriggerTS;
 
-		if( !isValidButNeedsManual )
+		if( !isValidButNeedsManual && !isInvalid )
 		{
 			let maxDate = moment( Math.max.apply(null, retriggers.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
 			let max = null;
@@ -877,7 +879,7 @@ function checkCandidateTriggers(cache) {
 					alert.isManual = true;
 				}
 			}
-		} 
+		}
 
 		if(forUpdating && !isInvalid) final.push(alert);
 
