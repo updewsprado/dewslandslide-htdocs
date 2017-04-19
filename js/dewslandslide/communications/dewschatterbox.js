@@ -453,15 +453,13 @@ $(document).ready(function() {
 					var messages_html = messages_template_both({'messages': messages});
 					var htmlString = $('#messages').html();
 					$('#messages').html(htmlString+messages_html);
-					var maxScroll = $(document).height() - $(window).height();
-					$('html, body').scrollTop(maxScroll);
+					$('.chat-message').scrollTop($('#messages').height());
 					messages = [];
 
 				} else {
 					var messages_html = messages_template_both({'messages': messages});
 					$('#messages').html(messages_html);
-					var maxScroll = $(document).height() - $(window).height();
-					$('html, body').scrollTop(maxScroll);
+					$('.chat-message').scrollTop($('#messages').height());
 				}
 			} catch(err){
 				console.log(err);
@@ -1237,7 +1235,7 @@ function displayContactNamesForThread (source="normal") {
 			tempText = qiFullContact.slice(0, posDash);
 		}
 	}
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
 	$('#search-lbl').css('display', 'block')
 	$('#search-lbl h5').show();
@@ -1598,7 +1596,9 @@ function displayGroupTagsForThread () {
 	var tempText = "[Sitenames: ";
 	var titleSites = "";
 	var tempCountSitenames = groupTags.sitenames.length;
+	$("#convo-header .panel-body").text("");
 	for (i in groupTags.sitenames) {
+		displayDetailsForThread(groupTags.sitenames[i]);
 		if (i == tempCountSitenames - 1) {
 			tempText = tempText + groupTags.sitenames[i];
 			titleSites = titleSites + groupTags.sitenames[i];
@@ -1621,10 +1621,23 @@ function displayGroupTagsForThread () {
 	document.title = titleSites;
 
 	tempText = tempText + "]";
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
 	$('#search-lbl').css('display', 'block')
 	$('#search-lbl h5').show();
+}
+
+function displayDetailsForThread(siteabr){
+	$.post('../chatterbox/getsitbangprovmun', {sites: siteabr}).done(function(response){
+		var site_details = JSON.parse(response);
+		for (i in site_details) {
+			console.log(site_details);
+			var site = site_details[i].sitio+", "+site_details[i].barangay+", "+site_details[i].municipality+", "+site_details[i].province+" <b>("+siteabr+")</b>";
+			// $("#convo-header .panel-body").append("<span class='glyphicon glyphicon-menu-hamburger'></span>");
+			$("#convo-header .panel-body").append(site.replace("null,",""));
+			console.log($("#convo-header .panel-body").html().split("<b>").length-1);
+		}
+	});
 }
 
 function displayGroupTagsForDynaThread(tags) {
@@ -1640,7 +1653,7 @@ function displayGroupTagsForDynaThread(tags) {
 	}
 
 	tempText = tempText + "]";
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
 	$('#search-lbl').css('display', 'block')
 	$('#search-lbl h5').show();
@@ -2724,7 +2737,6 @@ function getInitialQuickInboxMessages () {
 			url: "../chatterbox/get_employee_contacts",        
 			success: function(response){
 				var data = JSON.parse(response);
-				console.log(data);
 				$("#response-contact-container").DataTable().clear();
 				$("#response-contact-container").DataTable().destroy();
 
