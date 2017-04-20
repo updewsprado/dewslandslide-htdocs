@@ -501,10 +501,14 @@ $(document).ready(function() {
 	}
 
 	function updateLatestPublicRelease(msg) {
-		quick_release.unshift(msg);
-		var quick_release_html = quick_release_template({'quick_release': quick_release});
-		$('#quick-release-display').html(quick_release_html);
-		$('#quick-release-display').scrollTop(0);
+		try {
+			quick_release.unshift(msg);
+			var quick_release_html = quick_release_template({'quick_release': quick_release});
+			$('#quick-release-display').html(quick_release_html);
+			$('#quick-release-display').scrollTop(0);
+		} catch(err) {
+			// Do nothing for now.
+		}
 	}
 
 	function loadMessageHistory(msg) {
@@ -799,6 +803,7 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
+			$('#loading').modal("toggle");
 			console.log("Connection established!");
 			enableCommands();
 
@@ -821,6 +826,7 @@ $(document).ready(function() {
 				window.timerID = 0;
 			}
 			$("#send-msg").removeClass("disabled");
+			$('#loading').modal("toggle");
 		};
 
 		tempConn.onmessage = function(e) {
@@ -846,7 +852,8 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 				msgType = "searchMessage";
 			} else if (msg.type == "searchMessageGlobal") {
-				loadSearchedMessage(msg);
+				// loadSearchedMessage(msg);
+				console.log(msg);
 			} else if (msg.type == "searchMessageGroup") {
 				loadSearchedMessage(msg);
 				msgType = "searchMessageGroup";
@@ -1281,7 +1288,7 @@ $('#btn-standard-search').click(function(){
 });
 
 $('#btn-search-global').click(function(){
-	switch($('.search-opt input[name="optradio"]:checked').val()) {
+	switch($('input[name="opt-search"]:checked').val()) {
 		case "gintag-search":
 		searchGintagMessages($('#search-global-keyword').val());
 		break;
@@ -1365,6 +1372,7 @@ function searchMessageGlobal(searchKey){
 		'type': "searchMessageGlobal",
 		'searchKey': searchKey
 	}
+	console.log(request);
 	conn.send(JSON.stringify(request));
 	$('#loading').modal('show');
 }
@@ -2514,8 +2522,8 @@ $('#btn-gbl-search').click(function(){
 		$('#search-global-message-modal').modal("toggle");
 		searchResults = [];
 		counter = 0;
-		var myNode = document.getElementById("search-global-result");
-		myNode.innerHTML = '';
+		// var myNode = document.getElementById("search-global-result");
+		// myNode.innerHTML = '';
 		$('#search-global-keyword').val('');
 	}
 });
@@ -2547,20 +2555,20 @@ function disableCommands(){
 	// $('#go-chat').css("text-decoration","line-through");
 	// $('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#go-load-groups').attr("class","btn btn-danger disabled");
-	$('#go-load-groups').css("text-decoration","line-through");
-	$('#load-groups-wrapper').attr("data-toggle","tooltip");
-	$('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#go-load-groups').attr("class","btn btn-danger disabled");
+	// $('#go-load-groups').css("text-decoration","line-through");
+	// $('#load-groups-wrapper').attr("data-toggle","tooltip");
+	// $('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#send-msg').attr("class","btn btn-danger no-rounded disabled");
-	$('#send-msg').css("text-decoration","line-through");
-	$('#sms-msg-wrapper').attr("data-toggle","tooltip");
-	$('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#send-msg').attr("class","btn btn-danger no-rounded disabled");
+	// $('#send-msg').css("text-decoration","line-through");
+	// $('#sms-msg-wrapper').attr("data-toggle","tooltip");
+	// $('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
-	$('#btn-gbl-search').attr("data-toggle","tooltip");
-	$('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-	$('#btn-gbl-search').css("color","coral");
+	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
+	// $('#btn-gbl-search').attr("data-toggle","tooltip");
+	// $('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#btn-gbl-search').css("color","coral");
 }
 
 function enableCommands(){
@@ -2568,18 +2576,19 @@ function enableCommands(){
 	// $('#go-chat').css("text-decoration","none");
 	// $('#go-chat').attr("data-original-title","");
 
-	$('#go-load-groups').attr("class","btn btn-success");
-	$('#go-load-groups').css("text-decoration","none");
-	$('#load-groups-wrapper').attr("data-original-title","");
+	// $('#go-load-groups').attr("class","btn btn-success");
+	// $('#go-load-groups').css("text-decoration","none");
+	// $('#load-groups-wrapper').attr("data-original-title","");
 
-	$('#send-msg').attr("class","btn btn-success no-rounded");
-	$('#send-msg').css("text-decoration","none");
-	$('#sms-msg-wrapper').attr("data-original-title","");
+	// $('#send-msg').attr("class","btn btn-success no-rounded");
+	// $('#send-msg').css("text-decoration","none");
+	// $('#sms-msg-wrapper').attr("data-original-title","");
 
-	$('#btn-gbl-search').attr("class","btn btn-link btn-sm");
-	$('#btn-gbl-search').attr("data-original-title","Search Message");
-	$('#btn-gbl-search').css("color","");
+	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm");
+	// $('#btn-gbl-search').attr("data-original-title","Search Message");
+	// $('#btn-gbl-search').css("color","");
 }
+
 function getOfficesAndSitenames () {
 	try {
 		var msg = {
