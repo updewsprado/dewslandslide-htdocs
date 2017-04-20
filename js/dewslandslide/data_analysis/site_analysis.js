@@ -285,6 +285,7 @@ function SelectdaysOption(id) {
 		}
 		if(id == "surperimpose"){
 			surficialGraph(dataTableSubmit)
+		
 		}else if(id ==  "rainfall" ){
 			RainFallProcess(site,fdate,tdate)
 			$('#rainfall_days').val(selected_days)
@@ -692,7 +693,6 @@ function dataTableProcess(dataSubmit,crack_name) {
 		}
 		surficialMeasurement(dataTableSubmit)
 		surficialGraph(dataTableSubmit1)
-
 	});
 
 }
@@ -990,59 +990,181 @@ function surficialGraph(dataTableSubmit) {
 
 
 			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
+				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,"")})
 			}
-			chartProcessSurficial('ground_graph',series_data,'Superimpose Surficial Graph')
+			$('#ground_graph').empty();
+			chartProcessSurficial('ground_graph',series_data,'Superimpose Surficial Graph',dataTableSubmit)
+			$("#tag_series").val(JSON.stringify(series_data))
 		}
 	});	
 }
-function chartProcessSurficial(id,data_series,name){
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 400,
-			width:$("#ground_graph").width()
-		},
-		title: {
-			text: name,
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
-			},
-			title: {
-				text: 'Date'
-			},
-		},
-		tooltip: {
-			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true,
-			split: true,
-		},
-		plotOptions: {
-			spline: {
-				marker: {
-					enabled: true
+function chartProcessSurficial(id,data_series,name,dataTableSubmit){
+	submittedMeas(dataTableSubmit);
+	var site = $('#sitegeneral').val();
+	var fdate = dataTableSubmit.fdate;
+	var tdate = dataTableSubmit.tdate;
+	var date1 = moment(fdate);
+	var date2 = moment(tdate);
+	var duration = moment.duration(date2.diff(date1));
+	var  list_dates =[];
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(site+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
+	let dataSubmit = { date:list_dates,table:'gndmeas'}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		var result = JSON.parse(data)
+		$('#'+id).empty();
+		var all_crack_id = []
+		for (var i = 0; i < result.length; i++) {
+			var remark_parse = ((result[i].remarks).split("/"))
+			all_crack_id.push(remark_parse[1])
+		}
+		var label_crack = removeDuplicates(all_crack_id);
+		var all_data_tag =[]
+		for (var a = 0; a < label_crack.length; a++) {
+			var collect =[]
+			for (var i = 0; i < result.length; i++) {
+				var remark_parse = ((result[i].remarks).split("/"))
+				if(remark_parse[1] == label_crack[a] ){
+					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
 				}
 			}
-		},
-		credits: {
-			enabled: false
-		},
-		series:data_series
+			all_data_tag.push(collect)
+		}
+
+		for (var a = 0; a < label_crack.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+		}
+		data_series.push({name:'Tag'})
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'spline',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				height: 400,
+				width:$("#ground_graph").width()
+			},
+			title: {
+				text: name,
+			},
+			xAxis: {
+
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				split: true,
+				crosshairs: true,
+			},
+			plotOptions: {
+				spline: {
+					marker: {
+						enabled: true
+					}
+				},
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+								}else{
+									$("#annModal").modal("show");
+									$("#tag_value").hide();
+									$("#tag_series").hide();
+									$("#tag_version").hide();
+									$("#tag_crack").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
+									$("#tag_crack").val(this.series.name)
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								}
+							}
+						}
+					}
+				},
+			},
+			credits: {
+				enabled: false
+			},
+			series:data_series
+		});
+			var chart = $('#'+id).highcharts();
+			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+				var series = chart.series[(data_series.length-1)];
+				for (var i = 0; i < label_crack.length; i++) {
+					if (series.visible) {
+						(chart.series[((data_series.length-(i+1))-1)]).update({
+							visible: true,
+						});
+					}else {
+						(chart.series[((data_series.length-(i+1))-1)]).update({
+							visible: false,
+						});
+					}
+				}
+					
+			});
+
+		});
+}
+
+function submittedMeas(dataTableSubmit){
+	$('#tag_submit').click(function(){
+		var tag_name = $("#tag_ids").tagsinput("items");
+		var tag_description = "ground analysis";
+		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		var tagger = $("#current_user_id").val();
+		var time = (($("#tag_time").val()).slice(2,10)).toString()
+		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_used = "gndmeas";
+		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var dataSubmit = [];
+		for (var i = 0; i < tag_name.length; i++) {
+			dataSubmit.push({ 
+				'tag_name' : tag_name[i], 
+				'tag_description' : tag_description,
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks
+			})
+		}
+
+		var host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+		})
+		$("#ground_graph").empty();
+		$("#graphS2").empty();
+		$("#graphS2").append('<div id="ground_graph" ></div>');
+		$("#annModal").modal("hide");
+		var series_data_tag = JSON.parse($("#tag_series").val())
+		chartProcessSurficial('ground_graph',series_data_tag,'Superimpose Surficial Graph',dataTableSubmit)
 	});
 }
+
+
 function surficialAnalysis(site,crack_id) {  
 	$.ajax({ 
 		dataType: "json",
