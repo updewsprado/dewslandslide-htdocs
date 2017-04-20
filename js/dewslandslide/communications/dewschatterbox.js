@@ -92,16 +92,17 @@ function sendViaAlertMonitor(data){
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw ");
 					break;
 					case 2:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw ");
 					break;
 					case 3:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw ");
 					break;
 					default:
-					return;
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","ati");
+					break;
 				}	
 				var ext_month = moment().add(1, 'days').format("MM");
 				var ext_day = moment().add(1, 'days').format("DD");
