@@ -228,6 +228,7 @@ $(document).ready(function() {
 	var searchResults = [];
 	var quick_inbox_registered = [];
 	var quick_inbox_unknown = [];
+	var quick_release = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -277,6 +278,7 @@ $(document).ready(function() {
 		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
 
 	} catch (err) {
 		console.log(err);
@@ -495,6 +497,13 @@ $(document).ready(function() {
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
 		}
+	}
+
+	function updateLatestPublicRelease(msg) {
+		quick_release.unshift(msg);
+		var quick_release_html = quick_release_template({'quick_release': quick_release});
+		$('#quick-release-display').html(quick_release_html);
+		$('#quick-release-display').scrollTop(0);
 	}
 
 	function loadMessageHistory(msg) {
@@ -745,6 +754,21 @@ $(document).ready(function() {
 		}
 	}
 
+	function initLoadLatestAlerts(latestAlerts){
+		if (latestAlerts.data == null) {
+			return;
+		}
+
+		console.log("Loading Latest Public Releases.");
+		var alerts = latestAlerts.data;
+		temp = latestAlerts.data;
+		var msg;
+		for (var i = alerts.length - 1; i >= 0; i--) {
+			msg = alerts[i];
+			updateLatestPublicRelease(msg);
+		}
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -786,6 +810,7 @@ $(document).ready(function() {
 				setTimeout(
 					function() {
 						getInitialQuickInboxMessages();
+						getLatestAlert();
 					}, 
 					500);
 				isFirstSuccessfulConnect = false;
@@ -832,6 +857,8 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
+			} else if (msg.type == "latestAlerts"){
+				initLoadLatestAlerts(msg);
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -2561,13 +2588,21 @@ function getOfficesAndSitenames () {
 	} catch(err) {
 	}
 }
-function getInitialQuickInboxMessages () {
-	var msg = {
-		'type': 'smsloadquickinboxrequest'
-	};
+	function getInitialQuickInboxMessages () {
+		var msg = {
+			'type': 'smsloadquickinboxrequest'
+		};
 		// $('#loading').modal('show');
 		conn.send(JSON.stringify(msg));
 	}
+
+	function getLatestAlert() {
+		var msg = {
+			'type' : 'latestAlerts'
+		};
+		conn.send(JSON.stringify(msg));
+	}
+
 
 	$('a[href="#emp-group"]').on('click',function(){
 		employeeTags = [];
