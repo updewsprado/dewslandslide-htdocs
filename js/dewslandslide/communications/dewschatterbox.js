@@ -3237,7 +3237,6 @@ function getOfficesAndSitenames () {
 	}
 
 	function insertGintagService(data){
-		debugger;
 		var tags = $('#gintags').val();
 		var gintags;
 		var gintags_collection = [];
