@@ -963,6 +963,12 @@ $(document).ready(function() {
 			} else if (msg.type == "ackrpi"){
 				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
+
+				if (msg.type == "smsrcv") {
+					$.notify("New Message Received!","info");
+					updateQuickInbox(msg);
+				} 
+
 				var select_raw_site = $("#current-contacts h4").text().substring(11);
 				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
 
@@ -1257,8 +1263,6 @@ function displayContactNamesForThread (source="normal") {
 	}
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
 }
 
 $('#btn-standard-search').click(function(){
@@ -1377,7 +1381,6 @@ var coloredTimestamp;
 $(document).on("click","#search-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 	console.log(($(this).closest('li')).find("input[id='msg_details']").val());
-	console.log(data);
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 })
 
@@ -1432,8 +1435,6 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 
 		$("#current-contacts h4").text(user);
 		document.title = user;
-		$('#search-lbl').css('display', 'block')
-		$('#search-lbl h5').show();
 		contactnumTrimmed = [];
 
 		request = {
@@ -1572,6 +1573,7 @@ function loadSearchedMessage(msg){
 		targetLi.style.borderColor = "#dff0d8";
 		targetLi.style.borderRadius = "3px";
 		targetLi.style.borderWidth = "5px";
+		console.log(targetLi.offsetTop);
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
 	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags"){
@@ -1642,8 +1644,6 @@ function displayGroupTagsForThread () {
 	tempText = tempText + "]";
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
 }
 
 function displayDetailsForThread(siteabr){
@@ -1681,8 +1681,6 @@ function displayGroupTagsForDynaThread(tags) {
 	tempText = tempText + "]";
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
 
 }
 
@@ -2505,8 +2503,6 @@ $('#btn-gbl-search').click(function(){
 		$('#search-global-message-modal').modal("toggle");
 		searchResults = [];
 		counter = 0;
-		// var myNode = document.getElementById("search-global-result");
-		// myNode.innerHTML = '';
 		$('#search-global-keyword').val('');
 	}
 });

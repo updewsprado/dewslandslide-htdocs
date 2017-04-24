@@ -158,6 +158,10 @@ div.awesomplete {
   position: fixed;
 }
 
+.panel-body {
+  padding-bottom: 0px;
+}
+
 .friend-list li img {
 	width: 45px;
 	height: 45px;
@@ -226,6 +230,7 @@ div.awesomplete {
   list-style-type: none;
   margin-top: 5px;
   padding: 0;
+  margin-bottom: 0px;
 }
 
 #search-global-result {
