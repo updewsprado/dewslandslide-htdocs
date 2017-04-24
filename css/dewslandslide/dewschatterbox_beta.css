@@ -228,6 +228,17 @@ div.awesomplete {
   padding: 0;
 }
 
+#search-global-result {
+  height: initial;
+  max-height: 200px;
+  overflow: hidden;
+  overflow-y: scroll;
+  list-style-type: none;
+  margin-top: 5px;
+  padding: 0;
+  margin-right: 0px;
+}
+
 #quick-release-display {
   margin: 0px;
 }
