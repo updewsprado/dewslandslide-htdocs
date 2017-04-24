@@ -145,7 +145,7 @@ function sendViaAlertMonitor(data){
 			if (onset_time != release_time) {
 				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30,'m').format("hh:mm A"));
 			} else {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",onset_time);
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.event_start).format("YYYY-MM-DD hh:mm A"));
 			}
 
 			data_timestamp = data.data_timestamp;
@@ -932,6 +932,12 @@ $(document).ready(function() {
 			} else if (msg.type == "ackrpi"){
 				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
+
+				if (msg.type == "smsrcv") {
+					$.notify("New Message Received!","info");
+					updateQuickInbox(msg);
+				} 
+
 				var select_raw_site = $("#current-contacts h4").text().substring(11);
 				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
 
@@ -945,8 +951,6 @@ $(document).ready(function() {
 					console.log(sender[0]);
 					if (selected_site[i] == sender[0]) {
 						for (var x = 0; x < selected_office.length; x++) {
-							console.log(selected_office[x]);
-							console.log(sender[1]);
 							if (selected_office[x] == sender[1]) {
 								updateMessages(msg);
 							}
