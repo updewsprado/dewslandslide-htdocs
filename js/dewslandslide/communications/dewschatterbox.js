@@ -115,12 +115,17 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			if (currentPanahon >= 12 && currentPanahon <= 18) {
+			console.log(currentPanahon);
+			if (currentPanahon >= 13 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
-			} else if (currentPanahon > 18 && currentPanahon <=23) {
+			} else if (currentPanahon >= 18 && currentPanahon <=23) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else {
+			} else if (currentPanahon >= 0 && currentPanahon <= 3) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
+			} else if (currentPanahon >= 4 && currentPanahon <= 11) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
+			} else {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","tanghali");
 			}
 			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
