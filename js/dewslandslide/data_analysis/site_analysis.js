@@ -1289,8 +1289,8 @@ function CheckBoxColumn(site,column,from,to){
 				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment().format('MM-DD-YYYYTHH:mm');
-			heatmapProcess(column,time,'3d')
+			var time = moment().format('MM-DD-YYYY');
+			heatmapProcess(column,time+'T00:00','3d')
 			HeatmapOnSelect(column)
 			HeatmapOnSelectDay(column)
 		}
