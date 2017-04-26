@@ -33,7 +33,6 @@ $(document).ready(function(e) {
 	});
 
 	$('#confirm-filter-btn').click(function(){
-
 		resetVariables();
 		if ($('#category-selection').val() != null) {
 			data['filterKey'] = $('#filter-key').val();
@@ -69,6 +68,7 @@ $(document).ready(function(e) {
 				data['period'] = moment().subtract(1,"years").format('YYYY-MM-DD HH:mm:ss');
 				break;
 			}
+
 			if ($('#category-selection').val() == 'allsites') {
 				getAnalyticsAllSites(data);
 			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null){
@@ -110,7 +110,7 @@ $(document).ready(function(e) {
 					useUTC: false
 				}
 			});
-			changePanelResolution();
+			// changePanelResolution();
 			$('#reliability-chart-container').highcharts({
 				chart: {
 					zoomType: 'x'
@@ -247,7 +247,7 @@ $(document).ready(function(e) {
 			});
 	    	//Generates Detailed information for each Node
 	    	detailedInfoGenerator();
-	    	changePanelResolution();
+	    	// changePanelResolution();
 	    	getRegion();
 
 	    	$('#average-delay-container').highcharts({
@@ -328,7 +328,7 @@ $(document).ready(function(e) {
 				}
 			});
 
-			changePanelResolution();
+			// changePanelResolution();
 			$('#reliability-chart-container').highcharts({
 				chart: {
 					zoomType: 'x'
@@ -468,20 +468,20 @@ $(document).ready(function(e) {
 		data = {};
 	}
 
-	function changePanelResolution(){
-		if ($('#category-selection').val() == "allsites"){
-			$("#reliability-pane").attr('class', 'col-md-12');
-			$("#adp-pane").attr('class', 'col-md-12');
-			$("#detailed-pane").attr('class', 'col-md-12');
-			$(".panel-group").attr('class', 'panel-group col-md-4');
+	// function changePanelResolution(){
+	// 	if ($('#category-selection').val() == "allsites"){
+	// 		$("#reliability-pane").attr('class', 'col-md-12');
+	// 		$("#adp-pane").attr('class', 'col-md-12');
+	// 		$("#detailed-pane").attr('class', 'col-md-12');
+	// 		$(".panel-group").attr('class', 'panel-group col-md-4');
 
-		} else {
-			$("#reliability-pane").attr('class', 'col-md-8');
-			$("#adp-pane").attr('class', 'col-md-6');
-			$("#detailed-pane").attr('class', 'col-md-6');
-			$(".panel-group").attr('class', 'panel-group');
-		}
-	}
+	// 	} else {
+	// 		$("#reliability-pane").attr('class', 'col-md-8');
+	// 		$("#adp-pane").attr('class', 'col-md-6');
+	// 		$("#detailed-pane").attr('class', 'col-md-6');
+	// 		$(".panel-group").attr('class', 'panel-group');
+	// 	}
+	// }
 
 	function analyzeNumberOfRepliesAllSites(data,resolution){
 		var temp_date = "";
@@ -1355,12 +1355,12 @@ $(document).ready(function(e) {
 		});
 	}
 
-	$('#from-date').datepicker({
-		format: 'yyyy-mm-dd'
+	$('#from-date').datetimepicker({
+		format: 'YYYY-MM-DD'
 	});
 
-	$('#to-date').datepicker({
-		format: 'yyyy-mm-dd'
+	$('#to-date').datetimepicker({
+		format: 'YYYY-MM-DD'
 	});
 
 	function getRegion(){
@@ -1560,7 +1560,7 @@ $(document).ready(function(e) {
 				analyzeAverageDelayReply(reconstructed_data);
 				generateAverageDelayChart();
 				detailedInfoGenerator();
-		    	changePanelResolution();
+		    	// changePanelResolution();
 			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
@@ -1594,7 +1594,7 @@ $(document).ready(function(e) {
 				analyzeAverageDelayReply(reconstructed_data);
 				generateAverageDelayChart();
 				detailedInfoGenerator();
-		    	changePanelResolution();
+		    	// changePanelResolution();
 			} else if ($('#category-selection').val() == 'site' && $('#filter-key').val() != ""  && $('#filter-key').val() != null) {
 				detailedInformation = [];
 				column_value = [];
