@@ -111,9 +111,11 @@ $(document).ready(function(e) {
 				}
 			});
 			// changePanelResolution();
+			console.log(period_range['percentReply']);
 			$('#reliability-chart-container').highcharts({
 				chart: {
-					zoomType: 'x'
+					zoomType: 'x',
+					type: 'column'
 				},
 				title: {
 					text: 'Percent of Reply for '+$('#filter-key').val(),
@@ -137,7 +139,12 @@ $(document).ready(function(e) {
 			        	}]
 			        },
 			        tooltip: {
-			        	valueSuffix: '%'
+				        headerFormat: '<span style="font-size:10px">TEST</span><table>',
+				        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+				            '<td style="padding:0"><b> mm</b></td></tr>',
+				        footerFormat: '</table>',
+				        shared: true,
+				        useHTML: true
 			        },
 			        legend: {
 			        	layout: 'vertical',
@@ -977,63 +984,64 @@ $(document).ready(function(e) {
 	}
 
 	function detailedInfoGenerator(){
-		$('#ntc-data-resolution').css("display", "block");
-		$('#div-data-validator').css("display", "block");
-		$('#div-data-resolution').css("opacity", "1");
-		var myNode = document.getElementById("detailed-info-container");
-		while (myNode.firstChild) {
-			myNode.removeChild(myNode.firstChild);
-		}
+		console.log(detailedInformation);
+		// $('#ntc-data-resolution').css("display", "block");
+		// $('#div-data-validator').css("display", "block");
+		// $('#div-data-resolution').css("opacity", "1");
+		// var myNode = document.getElementById("detailed-info-container");
+		// while (myNode.firstChild) {
+		// 	myNode.removeChild(myNode.firstChild);
+		// }
 
-		for (var x = 0; x < series_value.length;x++){
-			var detail_info_container = document.getElementById('detailed-info-container');
-			var panel_group = document.createElement('div');
-			panel_group.className = 'panel-group';
-			var panel_default = document.createElement('div');
-			panel_default.className = 'panel panel-default';
-			var panel_heading = document.createElement('div');
-			panel_heading.className = 'panel-heading';
-			var panel_title = document.createElement('h4');
-			panel_title.className = 'panel-title';
-			var toggle_link = document.createElement('a');
-			toggle_link.innerHTML = series_value[x].name;
-			var trimmed_id = series_value[x].name.replace(/ /g,'');
-			toggle_link.setAttribute("data-toggle", "collapse");
-			toggle_link.setAttribute("href", "#"+trimmed_id);
+		// for (var x = 0; x < series_value.length;x++){
+		// 	var detail_info_container = document.getElementById('detailed-info-container');
+		// 	var panel_group = document.createElement('div');
+		// 	panel_group.className = 'panel-group';
+		// 	var panel_default = document.createElement('div');
+		// 	panel_default.className = 'panel panel-default';
+		// 	var panel_heading = document.createElement('div');
+		// 	panel_heading.className = 'panel-heading';
+		// 	var panel_title = document.createElement('h4');
+		// 	panel_title.className = 'panel-title';
+		// 	var toggle_link = document.createElement('a');
+		// 	toggle_link.innerHTML = series_value[x].name;
+		// 	var trimmed_id = series_value[x].name.replace(/ /g,'');
+		// 	toggle_link.setAttribute("data-toggle", "collapse");
+		// 	toggle_link.setAttribute("href", "#"+trimmed_id);
 
-			var panel_collapse = document.createElement('div');
-			panel_collapse.className = 'panel-collapse collapse';
-			panel_collapse.id = trimmed_id;
-			var panel_body = document.createElement('div');
-			panel_body.className = 'panel-body';
-			var min_reply_delay = document.createElement('h5');
-			min_reply_delay.innerHTML = "<strong>Fastest Response Delay: </strong>"+Math.round(detailedInformation[x].min)+"<strong> (Minutes)</strong>";
-			var ave_reply_delay = document.createElement('h5');
-			ave_reply_delay.innerHTML = "<strong>Average Response Delay: </strong>"+Math.round(detailedInformation[x].ave)+"<strong> (Minutes)</strong>";
-			var max_reply_delay = document.createElement('h5');
-			max_reply_delay.innerHTML = "<strong>Slowest Response Delay: </strong>"+Math.round(detailedInformation[x].max)+"<strong> (Minutes)</strong>";
-			var deviation = document.createElement('h5');
-			deviation.innerHTML = "<strong>Standard Deviation: </strong>"+Math.round(detailedInformation[x].deviation)+"<strong> (Minutes)</strong>";
-			var total_res = document.createElement('h5');
-			total_res.innerHTML = "<strong>Total Response Count: </strong> "+total_message_and_response[x].total_response+" <strong> Message(s)</strong>";
-			var total_mes = document.createElement('h5');
-			total_mes.innerHTML = "<strong>Total Dynaslope Message Count: </strong> "+total_message_and_response[x].total_message+" <strong> Message(s)</strong>";
+		// 	var panel_collapse = document.createElement('div');
+		// 	panel_collapse.className = 'panel-collapse collapse';
+		// 	panel_collapse.id = trimmed_id;
+		// 	var panel_body = document.createElement('div');
+		// 	panel_body.className = 'panel-body';
+		// 	var min_reply_delay = document.createElement('h5');
+		// 	min_reply_delay.innerHTML = "<strong>Fastest Response Delay: </strong>"+Math.round(detailedInformation[x].min)+"<strong> (Minutes)</strong>";
+		// 	var ave_reply_delay = document.createElement('h5');
+		// 	ave_reply_delay.innerHTML = "<strong>Average Response Delay: </strong>"+Math.round(detailedInformation[x].ave)+"<strong> (Minutes)</strong>";
+		// 	var max_reply_delay = document.createElement('h5');
+		// 	max_reply_delay.innerHTML = "<strong>Slowest Response Delay: </strong>"+Math.round(detailedInformation[x].max)+"<strong> (Minutes)</strong>";
+		// 	var deviation = document.createElement('h5');
+		// 	deviation.innerHTML = "<strong>Standard Deviation: </strong>"+Math.round(detailedInformation[x].deviation)+"<strong> (Minutes)</strong>";
+		// 	var total_res = document.createElement('h5');
+		// 	total_res.innerHTML = "<strong>Total Response Count: </strong> "+total_message_and_response[x].total_response+" <strong> Message(s)</strong>";
+		// 	var total_mes = document.createElement('h5');
+		// 	total_mes.innerHTML = "<strong>Total Dynaslope Message Count: </strong> "+total_message_and_response[x].total_message+" <strong> Message(s)</strong>";
 
-			panel_body.appendChild(min_reply_delay);
-			panel_body.appendChild(ave_reply_delay);
-			panel_body.appendChild(max_reply_delay);
-			panel_body.appendChild(deviation);
-			panel_body.appendChild(total_res);
-			panel_body.appendChild(total_mes);
+		// 	panel_body.appendChild(min_reply_delay);
+		// 	panel_body.appendChild(ave_reply_delay);
+		// 	panel_body.appendChild(max_reply_delay);
+		// 	panel_body.appendChild(deviation);
+		// 	panel_body.appendChild(total_res);
+		// 	panel_body.appendChild(total_mes);
 
-			panel_title.appendChild(toggle_link);
-			panel_heading.appendChild(panel_title);
-			panel_default.appendChild(panel_heading);
-			panel_collapse.appendChild(panel_body);
-			panel_default.appendChild(panel_collapse);  
-			panel_group.appendChild(panel_default);
-			detail_info_container.appendChild(panel_group); 
-		}
+		// 	panel_title.appendChild(toggle_link);
+		// 	panel_heading.appendChild(panel_title);
+		// 	panel_default.appendChild(panel_heading);
+		// 	panel_collapse.appendChild(panel_body);
+		// 	panel_default.appendChild(panel_collapse);  
+		// 	panel_group.appendChild(panel_default);
+		// 	detail_info_container.appendChild(panel_group); 
+		// }
 	}
 
 	$('#data-resolution').change(function(){
@@ -1508,46 +1516,6 @@ $(document).ready(function(e) {
 			}]
 		});
 	}
-
-	// Resets the Period selector to default if the from-to function is used
-	$('#from-date').on('change',function(){
-		$('#period-selection option').prop('selected', function() {
-			return this.defaultSelected;
-		});
-
-		$('#period-selection').css("border-color", "#d6d6d6");
-		$('#period-selection').css("background-color", "inherit");
-
-		$('#from-date').css("border-color", "#3c763d");
-		$('#from-date').css("background-color", "#dff0d8");
-	});
-
-	// Resets the Period selector to default if the from-to function is used
-	$('#to-date').on('change',function(){
-		$('#period-selection option').prop('selected', function() {
-			return this.defaultSelected;
-		});
-		$('#period-selection').css("border-color", "#d6d6d6");
-		$('#period-selection').css("background-color", "inherit");
-
-		$('#to-date').css("border-color", "#3c763d");
-		$('#to-date').css("background-color", "#dff0d8");
-	});
-
-	$('#period-selection').on('change',function(){
-		$('#to-date').val('');
-		$('#from-date').val('');
-
-		$('#to-date').css("border-color", "#d6d6d6");
-		$('#to-date').css("background-color", "inherit");
-
-
-		$('#from-date').css("border-color", "#d6d6d6");
-		$('#from-date').css("background-color", "inherit");
-
-		$('#period-selection').css("border-color", "#3c763d");
-		$('#period-selection').css("background-color", "#dff0d8");
-	});
 
 	$('#data-validator').on('change',function(){
 		if ($('#data-validator').val() == "on") {
