@@ -1287,11 +1287,12 @@ function CheckBoxColumn(site,column,from,to){
 			$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
 				'<div class="pull-right"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/></div>'+
 				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
+			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment().format('YYYY-MM-DDTHH:mm');
-			heatmapProcess(column,time,'3d')
-			HeatmapOnSelect(column)
+			var time = moment().add(1,"days").format('MM-DD-YYYY');
+			heatmapProcess(column,time+'T00:00','3d')
+			// HeatmapOnSelect(column)
 			HeatmapOnSelectDay(column)
 		}
 	});
@@ -1846,7 +1847,7 @@ function SubOnSelectDay(column,tdate) {
 }
 function HeatmapOnSelect(column) {
 	$("#daygeneral").selectpicker();
-	var start = moment().format('MM-DD-YYYY HH:mm'); 
+	var start = moment().add(1,'days').format('MM-DD-YYYY HH:mm'); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
 		timePickerIncrement: 30,
@@ -1887,7 +1888,7 @@ function HeatmapOnSelectDay(column) {
 		}else if( selected_day == "30 days"){
 			var day = '30d'
 		}
-		heatmapProcess(column,(tdate+"T"+time),day)
+		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
 	})
 }
 
@@ -2035,10 +2036,11 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
+	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
-			HeatmapOnSelect(site)
+			// HeatmapOnSelect(site)
 			HeatmapOnSelectDay(site)
 			$("#heatmap_checkbox").empty()
 			$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
