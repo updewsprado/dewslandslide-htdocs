@@ -269,10 +269,10 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
 			series_id.pop()
 			let dataSubmit = { 
-					site : curSite, 
-					fdate : fromDate,
-					tdate : toDate,
-					node: node,
+				site : curSite, 
+				fdate : fromDate,
+				tdate : toDate,
+				node: node,
 			}
 			accelVersion1Filtered(dataSubmit,series_id,id)
 		}
@@ -572,7 +572,16 @@ function chartProcess(id,data_series,name,color){
 	var node = $('#node').val();
 	var fdate = $('#reportrange span').html().slice(0,10);
 	var tdate = $('#reportrange span').html().slice(13,23);
-	// console.log(site,node,fdate,tdate)
+	var date1 = moment(fdate);
+	var date2 = moment(tdate);
+	var duration = moment.duration(date2.diff(date1));
+	var list_id=["x1r","x2r","x1f","x2f","y1r","y2r","y1f","y2f","z1r","z2r","z1f","z2f","bt1","bt2",
+	"Cal","Caf","Raw","Raf","mva"];
+	var  list_dates =[];
+		for (var i = 1; i < duration.asDays(); i++) {
+			list_dates.push(((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+		}
+	
 	$.ajax({ 
 		dataType: "json",
 		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
@@ -582,45 +591,51 @@ function chartProcess(id,data_series,name,color){
 			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[],mval=[];
 			for (var i = 0; i < result.length; i++) {
 				var remarks_parse = (result[i].remarks).split("/")
-				if(result[i].table_element_id.slice(0,3) == "x1r"){
-					xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "x2r"){
-					xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "x1f"){
-					xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "x2f"){
-					xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "y1r"){
-					yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "y2r"){
-					yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "y1f"){
-					yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "y2f"){
-					yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "z1r"){
-					zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "z2r"){
-					zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "z1f"){
-					zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "z2f"){
-					zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "bt1"){
-					batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "bt2"){
-					batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "Cal"){
-					cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "Caf"){
-					calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "Raw"){
-					raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "Raf"){
-					rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-				}else if(result[i].table_element_id.slice(0,3) == "mva"){
-					mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+				for (var a = 0; a < list_dates.length; a++) {
+					if (result[i].table_element_id.slice(3,10) == list_dates[a]) {
+						if(result[i].table_element_id.slice(0,3) == "x1r"){
+							xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x2r"){
+							xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x1f"){
+							xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x2f"){
+							xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y1r"){
+							yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y2r"){
+							yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y1f"){
+							yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y2f"){
+							yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z1r"){
+							zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z2r"){
+							zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z1f"){
+							zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z2f"){
+							zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "bt1"){
+							batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "bt2"){
+							batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Cal"){
+							cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Caf"){
+							calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Raw"){
+							raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Raf"){
+							rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "mva"){
+							mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}
+					}
 				}
+				
+				
 				
 			}
 			// console.log(name)
@@ -656,7 +671,7 @@ function chartProcess(id,data_series,name,color){
 					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
 				}
 			}else if(name.toLowerCase() == "mvalue"){
-					data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
+				data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
 			}
 			data_series.push({name:'Tag'})
 			// console.log(name)
@@ -724,13 +739,13 @@ function chartProcess(id,data_series,name,color){
 						point: {
 							events: {
 								click: function () {
-										$("#annModal").modal("show");
-										$("#tag_value").hide();
-										$("#tag_series").hide();
-										$("#tag_version").hide();
-										$('#tag_ids').tagsinput('removeAll');
-										$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-										$("#tag_value").val(this.y)
+									$("#annModal").modal("show");
+									$("#tag_value").hide();
+									$("#tag_series").hide();
+									$("#tag_version").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
 										// console.log(this.series.name)
 										if(this.series.name == "batt1" || this.series.name == "batt2"){
 											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
@@ -745,38 +760,38 @@ function chartProcess(id,data_series,name,color){
 										}
 										$("#tag_series").val(value_id)
 										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+									}
 								}
 							}
+						},
+						area: {
+							marker: {
+								lineWidth: 3,
+								lineColor: null 
+							}
 						}
-					},
-					area: {
-						marker: {
-							lineWidth: 3,
-							lineColor: null 
-						}
-					}
 
-				},
-				legend: {
-					layout: 'vertical',
-					align: 'right',
-					verticalAlign: 'middle',
-					borderWidth: 0,
-					itemStyle: {
-						color: '#E0E0E3'
 					},
-					itemHoverStyle: {
-						color: '#FFF'
+					legend: {
+						layout: 'vertical',
+						align: 'right',
+						verticalAlign: 'middle',
+						borderWidth: 0,
+						itemStyle: {
+							color: '#E0E0E3'
+						},
+						itemHoverStyle: {
+							color: '#FFF'
+						},
+						itemHiddenStyle: {
+							color: '#606063'
+						}
 					},
-					itemHiddenStyle: {
-						color: '#606063'
-					}
-				},
-				credits: {
-					enabled: false
-				},
-				series:data_series
-			});
+					credits: {
+						enabled: false
+					},
+					series:data_series
+				});
 			var chart = $('#'+id).highcharts();
 			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 				var series4 = chart.series[(data_series.length-5)];
@@ -799,7 +814,7 @@ function chartProcess(id,data_series,name,color){
 						series5.update({
 							visible: false,
 						});
-					
+
 					}
 				}else{
 					if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){

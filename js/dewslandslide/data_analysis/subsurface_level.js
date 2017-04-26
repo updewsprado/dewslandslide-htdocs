@@ -65,7 +65,7 @@ $(document).ready(function(e) {
 		}
 	});
 	var start = moment().subtract(2, 'days'); 
-	var end = moment().add(1, 'days');
+	var end = moment();
 
 	$('#reportrange').daterangepicker({
 		autoUpdateInput: true,
@@ -89,7 +89,8 @@ $(document).ready(function(e) {
 	}
 
 	function allSensorPosition(data_result) {
-		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
+		// console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'))
+		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'),
 			dataType: "json",
 			success: function(result){
 				var data = JSON.parse(result);
@@ -369,7 +370,7 @@ $(document).ready(function(e) {
 		});
 		$("#"+id).highcharts({
 			chart: {
-				type: 'spline',
+				type: 'line',
 				zoomType: 'x',
 				height: 700,
 				width: 550

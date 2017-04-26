@@ -233,7 +233,7 @@ $(document).ready(function(e) {
 				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
 			}		
 			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
-
+			// gndmeasTableStats()
 		});
 	}
 
@@ -428,12 +428,14 @@ $(document).ready(function(e) {
 						$("#A2").show();
 					}
 				}
-				
-				
 			}
-			
 		});	
 }
+
+// function gndmeasTableStats(site){
+
+// }
+
 function surficialGraph(dataTableSubmit) {  
 	$.ajax({ 
 		dataType: "json",
@@ -613,79 +615,86 @@ function chartProcess2(id,data_series,name){
 	var site = $('#sitegeneral').val();
 	var fdate = $('#reportrange span').html().slice(0,10);
 	var tdate = $('#reportrange span').html().slice(13,23);
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/getAllgintagsNodeTagID/gndmeas/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+site,success: function(result) {
-			var all_crack_id = []
+	var date1 = moment(fdate);
+	var date2 = moment(tdate);
+	var duration = moment.duration(date2.diff(date1));
+	var  list_dates =[];
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(site+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
+	let dataSubmit = { date:list_dates,table:'gndmeas'}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		var result = JSON.parse(data)
+		var all_crack_id = []
+		for (var i = 0; i < result.length; i++) {
+			var remark_parse = ((result[i].remarks).split("/"))
+			all_crack_id.push(remark_parse[1])
+		}
+		var label_crack = removeDuplicates(all_crack_id);
+		var all_data_tag =[]
+		for (var a = 0; a < label_crack.length; a++) {
+			var collect =[]
 			for (var i = 0; i < result.length; i++) {
 				var remark_parse = ((result[i].remarks).split("/"))
-				all_crack_id.push(remark_parse[1])
-			}
-			var label_crack = removeDuplicates(all_crack_id);
-			var all_data_tag =[]
-			for (var a = 0; a < label_crack.length; a++) {
-				var collect =[]
-				for (var i = 0; i < result.length; i++) {
-					var remark_parse = ((result[i].remarks).split("/"))
-					if(remark_parse[1] == label_crack[a] ){
-						collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-					}
+				if(remark_parse[1] == label_crack[a] ){
+					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
 				}
-				all_data_tag.push(collect)
 			}
+			all_data_tag.push(collect)
+		}
 
-			for (var a = 0; a < label_crack.length; a++) {
-				data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-			}
-			
-			Highcharts.setOptions({
-				global: {
-					timezoneOffset: -8 * 60
-				},
-			});
-			$("#"+id).highcharts({
-				chart: {
-					type: 'spline',
-					zoomType: 'x',
-					height: 800,
-					width:1100
+		for (var a = 0; a < label_crack.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+		}
+		data_series.push({name:'Tag'})
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'spline',
+				zoomType: 'x',
+				height: 800,
+				width:1100
+			},
+			title: {
+				text: name,
+			},
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
 				},
 				title: {
-					text: name,
+					text: 'Date'
 				},
-				xAxis: {
-					type: 'datetime',
-					dateTimeLabelFormats: { 
-						month: '%e. %b %Y',
-						year: '%b'
-					},
-					title: {
-						text: 'Date'
-					},
+			},
+			tooltip: {
+				split: true,
+				crosshairs: true,
+			},
+			plotOptions: {
+				spline: {
+					marker: {
+						enabled: true
+					}
 				},
-				tooltip: {
-					split: true,
-					crosshairs: true,
-				},
-				plotOptions: {
-					spline: {
-						marker: {
-							enabled: true
-						}
+				series: {
+					marker: {
+						radius: 3
 					},
-					series: {
-						marker: {
-							radius: 3
-						},
-						cursor: 'pointer',
-						point: {
-							events: {
-								click: function () {
-									if(this.series.name == "Tag"){
-										$("#tagModal").modal("show");
-										$("#comment-model").empty();
-										$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-									}else{
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+								}else{
 									$("#annModal").modal("show");
 									$("#tag_value").hide();
 									$("#tag_series").hide();
@@ -696,19 +705,34 @@ function chartProcess2(id,data_series,name){
 									$("#tag_value").val(this.y)
 									$("#tag_crack").val(this.series.name)
 									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-									}
 								}
 							}
 						}
-					},
+					}
 				},
-				credits: {
-					enabled: false
-				},
-				series:data_series
-			});
-			// console.log(data_series)
-		}
+			},
+			credits: {
+				enabled: false
+			},
+			series:data_series
+		});
+		var chart = $('#'+id).highcharts();
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < label_crack.length; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
+			}
+			
+		});
+		
 	});
 }
 
