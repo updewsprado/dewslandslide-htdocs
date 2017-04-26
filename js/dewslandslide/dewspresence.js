@@ -159,8 +159,6 @@ function getDataPresence(xOffset,allSitesJSON) {
 
 	var  filtered_time= removeDuplicates(list_time);
 
-
-	console.log(allSitesJSON)
 	var pattern_nodata=[];
 	for (var i = 0; i < allSitesJSON.length; i++) {
 		for (var a = 0; a < filtered_time.length; a++) {
@@ -196,8 +194,6 @@ function getDataPresence(xOffset,allSitesJSON) {
 	for (var i = 0; i < all_nodata.length; i++) {
 		nodata_svgValue.push(pattern_nodata[all_nodata[i]])
 	}
-
-	console.log(nodata_svgValue)
 	presencePlot.svg.selectAll(".cell")
 	.data(siteMaxNodes)
 	.enter().append("rect")
