@@ -383,7 +383,7 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 							var n2 = nval[i+1];
 							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 						}
-						var divname =["15mins","24hrs" ,"72hrs"];
+						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -432,7 +432,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							var n2 = nval[i+1];
 							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 						}
-						var divname =["15mins","24hrs" ,"72hrs"];
+						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -489,7 +489,7 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 							var n2 = nval[i+1];
 							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 						}
-						var divname =["15mins","24hrs" ,"72hrs"];
+						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -1078,20 +1078,17 @@ function surficialAnalysis(site,crack_id) {
 				}
 
 				for(var i = 0; i < ground_analysis_data["av"].v_threshold.length; i++){
-					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i]]);
-					down.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_down[i]]);
+					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i],ground_analysis_data["av"].a_threshold_down[i]]);
 					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
 				}
-
 				var series_data_name_vel =[vGraph,up,down,line,last];
-				var series_name =["Data","TU","TD","TL","LPoint"];
-				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries'})
-				series_data_vel.push({name:series_name[3],data:series_data_name_vel[3],type:'line'})
-				series_data_vel.push({name:series_name[4],data:series_data_name_vel[4],type:'scatter',
+				var series_name =["Data","Threshold","TL","LPoint"];
+				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries',type:'line'})
+				series_data_vel.push({name:series_name[2],data:series_data_name_vel[3],type:'line'})
+				series_data_vel.push({name:series_name[3],data:series_data_name_vel[4],type:'line',
 					marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
-				for(var i = 1; i < series_data_name_vel.length-2; i++){
-					series_data_vel.push({name:series_name[i],data:series_data_name_vel[i],type:'line',dashStyle:'shotdot'})
-				}
+				series_data_vel.push({name:series_name[1],data:series_data_name_vel[1],type:'arearange', lineWidth: 0, fillOpacity: 0.2,zIndex: 0})
+
 				$('#surficialgeneral').val('analysisVelocity')
 				$('#surficialgeneral').selectpicker('refresh')
 				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
@@ -1290,10 +1287,10 @@ function CheckBoxColumn(site,column,from,to){
 			$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
 				'<div class="pull-right"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/></div>'+
 				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
-			$("#daygeneral").val('30d');
+			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
 			var time = moment().format('YYYY-MM-DDTHH:mm');
-			heatmapProcess(column,time,'30d')
+			heatmapProcess(column,time,'3d')
 			HeatmapOnSelect(column)
 			HeatmapOnSelectDay(column)
 		}
