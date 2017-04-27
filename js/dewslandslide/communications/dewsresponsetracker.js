@@ -143,21 +143,19 @@ $(document).ready(function(e) {
 			        tooltip: {
 			        	shared: true,
 		        	    formatter: function() {
-	                        for (var x=0; x<series_value.length; x++) {
-				        		tooltip = '<span style="font-size:10px">Statistics</span><table><br>'+
+			        		tooltip = '<span style="font-size:10px">Statistics</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
-						        	'<td style="padding:0"><b> '+series_value[x].fastest_reply+'</b></td></tr><br>'+
+						        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
-						            '<td style="padding:0"><b> '+series_value[x].ave_reply+'</b></td></tr><br>'+
+						            '<td style="padding:0"><b> '+this.point.series.options.data[0]["ave_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
-						            '<td style="padding:0"><b> '+series_value[x].slowest_reply+'</b></td></tr><br>'+
+						            '<td style="padding:0"><b> '+this.point.series.options.data[0]["slowest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
-						            '<td style="padding:0"><b> '+series_value[x].deviation+'</b></td></tr><br>'+
+						            '<td style="padding:0"><b> '+this.point.series.options.data[0]["deviation"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
-						            '<td style="padding:0"><b> '+series_value[x].total_response+'</b></td></tr><br>'+
+						            '<td style="padding:0"><b> '+this.point.series.options.data[0]["total_response"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
-						            '<td style="padding:0"><b> '+series_value[x].total_message+'</b></td></tr></table>';
-	                        }
+						            '<td style="padding:0"><b> '+this.point.series.options.data[0]["total_message"]+'</b></td></tr></table>';
 			                return tooltip;
 					    }
 			        },
@@ -340,14 +338,12 @@ $(document).ready(function(e) {
 			//Generates Detailed information for each Node
 			detailedInfoGenerator();
 
-			console.log(series_value);
 			Highcharts.setOptions({
 				global: {
 					useUTC: false
 				}
 			});
-			console.log(series_value);
-			// changePanelResolution();
+
 			$('#reliability-chart-container').highcharts({
 				chart: {
 					zoomType: 'x',
@@ -375,24 +371,23 @@ $(document).ready(function(e) {
 		        	}]
 		        },
 		        tooltip: {
-
-		        	shared: true,
-	        	    formatter: function() {
-		        		// tooltip = '<span style="font-size:10px">{series.name}</span><table><br>'+
-				        // 	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
-				        // 	'<td style="padding:0"><b> {series.ave_reply}</b></td></tr><br>'
-				            // '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
-				            // '<td style="padding:0"><b> '+series_value[x].ave_reply+'</b></td></tr><br>'+
-				            // '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
-				            // '<td style="padding:0"><b> '+series_value[x].slowest_reply+'</b></td></tr><br>'+
-				            // '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
-				            // '<td style="padding:0"><b> '+series_value[x].deviation+'</b></td></tr><br>'+
-				            // '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
-				            // '<td style="padding:0"><b> '+series_value[x].total_response+'</b></td></tr><br>'+
-				            // '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
-				            // '<td style="padding:0"><b> '+series_value[x].total_message+'</b></td></tr></table>';
+        		    formatter: function() {
+		        		tooltip = '<span style="font-size:10px">Statistics</span><table><br>'+
+					        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
+					        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
+					            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
+					            '<td style="padding:0"><b> '+this.point.series.options.data[0]["ave_reply"]+'</b></td></tr><br>'+
+					            '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
+					            '<td style="padding:0"><b> '+this.point.series.options.data[0]["slowest_reply"]+'</b></td></tr><br>'+
+					            '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
+					            '<td style="padding:0"><b> '+this.point.series.options.data[0]["deviation"]+'</b></td></tr><br>'+
+					            '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
+					            '<td style="padding:0"><b> '+this.point.series.options.data[0]["total_response"]+'</b></td></tr><br>'+
+					            '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
+					            '<td style="padding:0"><b> '+this.point.series.options.data[0]["total_message"]+'</b></td></tr></table>';
 		                return tooltip;
-		            }
+				    }
+
 		        },
 		        legend: {
 		        	layout: 'vertical',
@@ -1017,10 +1012,17 @@ $(document).ready(function(e) {
 			// series_value[x].deviation = Math.round(detailedInformation[x].deviation);
 			// series_value[x].total_response = total_message_and_response[x].total_response;
 			// series_value[x].total_message = total_message_and_response[x].total_message;
-			for (var y = 0; y < series_value[x].data.length; y++) {
-				series_value[x].data.push(Math.round(detailedInformation[y].min));
+			for (var ctr = 0; ctr < series_value[x].data.length;ctr++) {
+				series_value[x].data[ctr]['fastest_reply']=Math.round(detailedInformation[x].min);
+				series_value[x].data[ctr]['ave_reply']=Math.round(detailedInformation[x].ave);
+				series_value[x].data[ctr]['slowest_reply']=Math.round(detailedInformation[x].max);
+				series_value[x].data[ctr]['deviation']=Math.round(detailedInformation[x].deviation);
+				series_value[x].data[ctr]['total_response']=Math.round(total_message_and_response[x].total_response);
+				series_value[x].data[ctr]['total_message']=Math.round(total_message_and_response[x].total_message);
 			}
 		}
+
+		console.log(series_value);
 
         // headerFormat: '<span style="font-size:10px">Statistics</span><table>',
         // pointFormat: '<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
