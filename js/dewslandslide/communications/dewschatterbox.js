@@ -2558,12 +2558,16 @@ function getInitialQuickInboxMessages () {
 				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
 				if (employeeTags.length <= 0) {
 					for (var y = 0; y < parts.length; y++){
-						employeeTags.push(parts[y]);
+						if (parts[y].trim() != "") {
+							employeeTags.push(parts[y]);
+						}
 					}
 				} else {
 					for (var y = 0;y < parts.length;y++){
 						if (!(employeeTags.indexOf(parts[y]) > -1)) {
-							employeeTags.push(parts[y]);
+							if (parts[y].trim() != "") {
+								employeeTags.push(parts[y]);
+							}
 						}
 					}
 				}
