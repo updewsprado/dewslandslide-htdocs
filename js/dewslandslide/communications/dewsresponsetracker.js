@@ -10,6 +10,7 @@ $(document).ready(function(e) {
 	var chart_category = [];
 	var resolution = [];
 	var detailedInformation = [];
+	var point_format = "";
 	var data = {};
 	var data_resolution = ['hh','dd','ww','mm'];
 	var total_message_and_response = [];
@@ -104,14 +105,15 @@ $(document).ready(function(e) {
 			series_data = analyzeNumberOfReplies(sites);
 			averagedelay_data = analyzeAverageDelayReply(sites);
 			titleAndCategoryConstructors();
+	    	//Generates Detailed information for each Node
+	    	detailedInfoGenerator();
 
 			Highcharts.setOptions({
 				global: {
 					useUTC: false
 				}
 			});
-			// changePanelResolution();
-			console.log(period_range['percentReply']);
+
 			$('#reliability-chart-container').highcharts({
 				chart: {
 					zoomType: 'x',
@@ -139,12 +141,25 @@ $(document).ready(function(e) {
 			        	}]
 			        },
 			        tooltip: {
-				        headerFormat: '<span style="font-size:10px">TEST</span><table>',
-				        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-				            '<td style="padding:0"><b> mm</b></td></tr>',
-				        footerFormat: '</table>',
-				        shared: true,
-				        useHTML: true
+			        	shared: true,
+		        	    formatter: function() {
+	                        for (var x=0; x<series_value.length; x++) {
+				        		tooltip = '<span style="font-size:10px">Statistics</span><table><br>'+
+						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
+						        	'<td style="padding:0"><b> '+series_value[x].fastest_reply+'</b></td></tr><br>'+
+						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
+						            '<td style="padding:0"><b> '+series_value[x].ave_reply+'</b></td></tr><br>'+
+						            '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
+						            '<td style="padding:0"><b> '+series_value[x].slowest_reply+'</b></td></tr><br>'+
+						            '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
+						            '<td style="padding:0"><b> '+series_value[x].deviation+'</b></td></tr><br>'+
+						            '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
+						            '<td style="padding:0"><b> '+series_value[x].total_response+'</b></td></tr><br>'+
+						            '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
+						            '<td style="padding:0"><b> '+series_value[x].total_message+'</b></td></tr></table>';
+	                        }
+			                return tooltip;
+					    }
 			        },
 			        legend: {
 			        	layout: 'vertical',
@@ -198,8 +213,6 @@ $(document).ready(function(e) {
 				}]
 
 			});
-	    	//Generates Detailed information for each Node
-	    	detailedInfoGenerator();
 	    });
 	}
 
@@ -252,8 +265,6 @@ $(document).ready(function(e) {
 					useUTC: false
 				}
 			});
-	    	//Generates Detailed information for each Node
-	    	detailedInfoGenerator();
 	    	// changePanelResolution();
 	    	getRegion();
 
@@ -325,20 +336,22 @@ $(document).ready(function(e) {
 			analyzeNumberOfReplies(persons);
 			analyzeAverageDelayReply(persons);
 			analyzeReplyGroupPerSite(persons);
-			
-
 			titleAndCategoryConstructors();
+			//Generates Detailed information for each Node
+			detailedInfoGenerator();
 
+			console.log(series_value);
 			Highcharts.setOptions({
 				global: {
 					useUTC: false
 				}
 			});
-
+			console.log(series_value);
 			// changePanelResolution();
 			$('#reliability-chart-container').highcharts({
 				chart: {
-					zoomType: 'x'
+					zoomType: 'x',
+					type: 'column'
 				},
 				title: {
 					text: 'Percent of Reply for '+$('#filter-key').val(),
@@ -362,7 +375,24 @@ $(document).ready(function(e) {
 		        	}]
 		        },
 		        tooltip: {
-		        	valueSuffix: '%'
+
+		        	shared: true,
+	        	    formatter: function() {
+		        		// tooltip = '<span style="font-size:10px">{series.name}</span><table><br>'+
+				        // 	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
+				        // 	'<td style="padding:0"><b> {series.ave_reply}</b></td></tr><br>'
+				            // '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
+				            // '<td style="padding:0"><b> '+series_value[x].ave_reply+'</b></td></tr><br>'+
+				            // '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
+				            // '<td style="padding:0"><b> '+series_value[x].slowest_reply+'</b></td></tr><br>'+
+				            // '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
+				            // '<td style="padding:0"><b> '+series_value[x].deviation+'</b></td></tr><br>'+
+				            // '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
+				            // '<td style="padding:0"><b> '+series_value[x].total_response+'</b></td></tr><br>'+
+				            // '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
+				            // '<td style="padding:0"><b> '+series_value[x].total_message+'</b></td></tr></table>';
+		                return tooltip;
+		            }
 		        },
 		        legend: {
 		        	layout: 'vertical',
@@ -406,17 +436,14 @@ $(document).ready(function(e) {
 
 				tooltip: {
 					headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
-					pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>',
+					pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.summary}</b> Average<br/>'
 				},
-
 				series: [{
 					name: 'Time',
 					colorByPoint: true,
 					data: column_value
 				}]
 			});
-			//Generates Detailed information for each Node
-			detailedInfoGenerator();
 		});
 	}
 
@@ -921,7 +948,6 @@ $(document).ready(function(e) {
 				max: maximum,
 				deviation: standard_deviation
 			});
-			console.log(data_validator_replies);
 			tot = 0;
 			date_arr = [];
 			chatterbox_date = "";
@@ -984,7 +1010,51 @@ $(document).ready(function(e) {
 	}
 
 	function detailedInfoGenerator(){
-		console.log(detailedInformation);
+		for (var x = 0; x < series_value.length;x++) {
+			// series_value[x].fastest_reply = Math.round(detailedInformation[x].min);
+			// series_value[x].ave_reply = Math.round(detailedInformation[x].ave);
+			// series_value[x].slowest_reply = Math.round(detailedInformation[x].max);
+			// series_value[x].deviation = Math.round(detailedInformation[x].deviation);
+			// series_value[x].total_response = total_message_and_response[x].total_response;
+			// series_value[x].total_message = total_message_and_response[x].total_message;
+			for (var y = 0; y < series_value[x].data.length; y++) {
+				series_value[x].data.push(Math.round(detailedInformation[y].min));
+			}
+		}
+
+        // headerFormat: '<span style="font-size:10px">Statistics</span><table>',
+        // pointFormat: '<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>'+
+        //     '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>'+
+        //     '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>'+
+        //     '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>'+
+        //     '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>'+
+        //     '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
+        //     '<td style="padding:0"><b> 99 (Sample)</b></td></tr>',
+        // footerFormat: '</table>',
+        // shared: true,
+        // useHTML: true
+
+		// for (var x = 0; x < series_value.length;x++) {
+		// 	point_format = '<tr><td style="color:{series.color};padding:0">Name: </td>' +
+  //           '<td style="padding:0"><b> {series.name}</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
+  //           '<td style="padding:0"><b> '+Math.round(detailedInformation[x].min)+'</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
+  //           '<td style="padding:0"><b> '+Math.round(detailedInformation[x].ave)+'</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Slowest response delay: </td>' +
+  //           '<td style="padding:0"><b> '+Math.round(detailedInformation[x].max)+'</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Standard deviation: </td>' +
+  //           '<td style="padding:0"><b> '+Math.round(detailedInformation[x].deviation)+'</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Total response count: </td>' +
+  //           '<td style="padding:0"><b> '+total_message_and_response[x].total_response+'</b></td></tr>'+
+  //           '<tr><td style="color:{series.color};padding:0">Total DYNASLOPE message count: </td>' +
+  //           '<td style="padding:0"><b> '+total_message_and_response[x].total_message+'</b></td></tr>';
+		// }
 		// $('#ntc-data-resolution').css("display", "block");
 		// $('#div-data-validator').css("display", "block");
 		// $('#div-data-resolution').css("opacity", "1");
@@ -1102,7 +1172,6 @@ $(document).ready(function(e) {
 	}
 
 	function weeklyDataResolution(data,resolution){
-		console.log(data);
 		var tempDay = "";
 		var data_hc = [];
 		var temp_month_holder = "";
@@ -1273,7 +1342,8 @@ $(document).ready(function(e) {
 
 		$('#reliability-chart-container').highcharts({
 			chart: {
-				zoomType: 'x'
+				zoomType: 'x',
+				type: 'column'
 			},
 			title: {
 				text: 'Percent of Reply for '+$('#filter-key').val(),
@@ -1327,7 +1397,8 @@ $(document).ready(function(e) {
 		}
 		$('#reliability-chart-container').highcharts({
 			chart: {
-				zoomType: 'x'
+				zoomType: 'x',
+				type: 'column'
 			},
 			title: {
 				text: 'Percent of Reply for '+$('#filter-key').val(),
