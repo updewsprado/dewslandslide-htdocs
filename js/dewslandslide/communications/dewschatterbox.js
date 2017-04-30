@@ -1,11 +1,16 @@
 function sendViaAlertMonitor(data){
-
+	var alert_site_name = "";
+	if (data.name == "MSU" || "MSL") {
+		alert_site_name = "MES";
+	}
 	$.ajax({
 	  type: "POST",
 	  url: "../chatterbox/getCommunityContactViaDashboard/",
 	  async: true,
-	  data: {site: data.name},
+	  data: {site: alert_site_name},
 	  success: function(response){
+
+	  	console.log(response);
 
 	  	var contacts = JSON.parse(response);
 		var default_recipients = [];
