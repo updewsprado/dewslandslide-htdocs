@@ -755,7 +755,6 @@ function checkCandidateTriggers(cache) {
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
 	alerts.forEach( function (alert) {
-		console.log(alert)
 		let retriggers = alert.retriggerTS;
 
 		// Check sites if it is in invalid list 
@@ -834,6 +833,7 @@ function checkCandidateTriggers(cache) {
 		});	
 
 		if(alert.internal_alert.length <= 3) isInvalid = true;
+		console.log("alert", alert, isInvalid);
 		
 		let forUpdating = true;
 		retriggers = alert.retriggerTS;
