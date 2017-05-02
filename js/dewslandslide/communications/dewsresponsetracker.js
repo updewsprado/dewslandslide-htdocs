@@ -114,6 +114,8 @@ $(document).ready(function(e) {
 				}
 			});
 
+			console.log(series_value);
+
 			$('#reliability-chart-container').highcharts({
 				chart: {
 					zoomType: 'x',
@@ -141,7 +143,6 @@ $(document).ready(function(e) {
 			        	}]
 			        },
 			        tooltip: {
-			        	shared: true,
 		        	    formatter: function() {
 			        		tooltip = '<span style="font-size:10px">Statistics</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
