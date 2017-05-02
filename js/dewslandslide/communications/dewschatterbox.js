@@ -1,12 +1,19 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-	console.log(data);
+
+	var alert_site_name = "";
+	if (data.name == "msu" || data.name == "msl") {
+		alert_site_name = "mes";
+	} else {
+		alert_site_name = data.name;
+	}
+  
 	$.ajax({
 	  type: "POST",
 	  url: "../chatterbox/getCommunityContactViaDashboard/",
 	  async: true,
-	  data: {site: data.name},
+	  data: {site: alert_site_name},
 	  success: function(response){
 
 	  	var contacts = JSON.parse(response);

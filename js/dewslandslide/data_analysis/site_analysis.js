@@ -1522,7 +1522,6 @@ function CheckBoxColumn(site,column,from,to){
 			$("#daygeneral").selectpicker('refresh');
 			var time = moment().add(1,"days").format('MM-DD-YYYY');
 			heatmapProcess(column,time+'T00:00','3d')
-			// HeatmapOnSelect(column)
 			HeatmapOnSelectDay(column)
 		}
 	});
