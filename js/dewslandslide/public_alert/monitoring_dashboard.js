@@ -722,7 +722,6 @@ function getOnGoingAndExtended(data) {
 	ongoing = jQuery.extend(true, {}, data.ongoing);
 
 	try {
-		console.log(realtime_cache);
 		candidate = checkCandidateTriggers(realtime_cache);
 	} catch (err) {
 		console.log(err);
@@ -756,7 +755,7 @@ function checkCandidateTriggers(cache) {
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
 	alerts.forEach( function (alert) {
-
+		console.log(alert)
 		let retriggers = alert.retriggerTS;
 
 		// Check sites if it is in invalid list 
