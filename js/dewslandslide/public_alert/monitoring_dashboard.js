@@ -746,9 +746,9 @@ function getOnGoingAndExtended(data) {
 }
 
 function checkCandidateTriggers(cache) {
-	let alerts = cache.alerts,
-		invalids = cache.invalids,
-		no_alerts = cache.no_alerts,
+	let alerts = jQuery.extend(true, {}, cache.alerts);
+		invalids = jQuery.extend(true, {}, cache.invalids);
+		no_alerts = jQuery.extend(true, {}, cache.no_alerts);
 		final = [];
 
 	// Get all the latest and overdue releases on site
@@ -833,7 +833,6 @@ function checkCandidateTriggers(cache) {
 		});	
 
 		if(alert.internal_alert.length <= 3) isInvalid = true;
-		console.log("alert", alert, isInvalid);
 		
 		let forUpdating = true;
 		retriggers = alert.retriggerTS;
