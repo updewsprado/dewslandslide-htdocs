@@ -722,6 +722,7 @@ function getOnGoingAndExtended(data) {
 	ongoing = jQuery.extend(true, {}, data.ongoing);
 
 	try {
+		console.log(realtime_cache);
 		candidate = checkCandidateTriggers(realtime_cache);
 	} catch (err) {
 		console.log(err);
