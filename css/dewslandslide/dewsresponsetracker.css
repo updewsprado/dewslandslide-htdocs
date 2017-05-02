@@ -57,10 +57,6 @@
 	width: 100%;
 }
 
-#reliability-panel .panel-body {
-	padding:0px;
-}
-
 #period-selection, #confirm-btn {
 	margin: 10px 0px 10px 0px;
 }
@@ -71,6 +67,10 @@
 
 #div-data-resolution {
   text-align: center;
+}
+
+#filter-category,#date-selector-rtracker,#filter-category-submit {
+  margin-top: 1.5%;
 }
 
 #div-data-resolution label,#data-resolution {
