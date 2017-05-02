@@ -71,12 +71,15 @@ function sendViaAlertMonitor(data){
 			4: "April",5: "May",6: "June",
 			7: "July",8: "August", 9: "September",
 			10: "October", 11: "November", 12: "December"};
-
+			debugger;
+			console.log(data["internal_alert_level"].toUpperCase());
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
 				} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 					var preConstructedEWI = response["A3"];
+				} else if (data["internal_alert_level"].toUpperCase() == "ROUTINE") {
+					var preConstructedEWI = response["ROUTINE"];
 				} else {
 					var preConstructedEWI = response["A1"];
 				}
@@ -2213,6 +2216,12 @@ $('#btn-ewi').on('click',function(){
 				select.setAttribute("required","true");
 				select.appendChild(opt);
 			}
+			opt.value = "NSS";
+			opt.innerHTML = "NO ALERT SELECTED";
+			select.className = "form-control";
+			select.setAttribute("required","true");
+			select.appendChild(opt);
+			$("#alert-lvl").val(opt.value);
 		}
 	});
 
@@ -2236,17 +2245,13 @@ $('#btn-ewi').on('click',function(){
 			select.className = "form-control";
 			select.setAttribute("required","true");
 			select.appendChild(opt);
+			console.log(opt.value);
+			$("#sites").val(opt.value);
 
 			var counter = 0;
 			$('input[name="sitenames"]:checked').each(function() {
 				counter++;
 			});
-
-			if (counter == 1){
-				$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-			} else {
-				$('select option[value="NSS"]').attr("selected",true);
-			}
 		}
 	});
 });
@@ -2561,12 +2566,16 @@ function getInitialQuickInboxMessages () {
 				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
 				if (employeeTags.length <= 0) {
 					for (var y = 0; y < parts.length; y++){
-						employeeTags.push(parts[y]);
+						if (parts[y].trim() != "") {
+							employeeTags.push(parts[y]);
+						}
 					}
 				} else {
 					for (var y = 0;y < parts.length;y++){
 						if (!(employeeTags.indexOf(parts[y]) > -1)) {
-							employeeTags.push(parts[y]);
+							if (parts[y].trim() != "") {
+								employeeTags.push(parts[y]);
+							}
 						}
 					}
 				}
