@@ -1,12 +1,19 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-	console.log(data);
+
+	var alert_site_name = "";
+	if (data.name == "msu" || data.name == "msl") {
+		alert_site_name = "mes";
+	} else {
+		alert_site_name = data.name;
+	}
+  
 	$.ajax({
 	  type: "POST",
 	  url: "../chatterbox/getCommunityContactViaDashboard/",
 	  async: true,
-	  data: {site: data.name},
+	  data: {site: alert_site_name},
 	  success: function(response){
 
 	  	var contacts = JSON.parse(response);
@@ -115,12 +122,17 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			if (currentPanahon >= 12 && currentPanahon <= 18) {
+			console.log(currentPanahon);
+			if (currentPanahon >= 13 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
-			} else if (currentPanahon > 18 && currentPanahon <=23) {
+			} else if (currentPanahon >= 18 && currentPanahon <=23) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else {
+			} else if (currentPanahon >= 0 && currentPanahon <= 3) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
+			} else if (currentPanahon >= 4 && currentPanahon <= 11) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
+			} else {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","tanghali");
 			}
 			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
