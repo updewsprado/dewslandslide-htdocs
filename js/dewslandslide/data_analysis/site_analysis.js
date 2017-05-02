@@ -57,8 +57,17 @@ function cb(start, end) {
 	var parse_time = $('#reportrange0 span').text();
 	var fromDate = start.format('YYYY-MM-DD');
 	var toDate = moment(parse_time).add(1,'days').format('YYYY-MM-DD');
+	$('.checkbox').prop('disabled', true);
+	$('.checkbox').prop('checked', false);
+	$('.site_checkbox').prop('disabled', true);
+	$('.site_checkbox').prop('checked', false);
 	$('.site-panel').slideDown();
 	$('.sitegeneral').empty();
+	$('.site_collapse').slideUp()
+	$('.column_collapse').slideUp()
+	$('.node_collapse').slideUp()
+	$('.column-panel').slideUp();
+	$('.node-panel').slideUp();
 	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
 	$('#sitegeneral').selectpicker();
 	$('#sitegeneral').append('<option >Select Site</option>')
@@ -262,17 +271,17 @@ function SelectdaysOption(id) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
 		var fdate;
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 
 		var site = $("#sitegeneral").val();
@@ -508,33 +517,52 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 
 function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 	RainFallOnSelect()
-	var colors= ["#EBF5FB","#82b1ff","#448aff"]
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
+	submittedMeas(dataTableSubmit);
+	var fdate = dataTableSubmit.fdate;
+	var tdate = dataTableSubmit.tdate;
+	var date1 = moment(fdate);
+	var date2 = moment(tdate);
+	var duration = moment.duration(date2.diff(date1));
+	var  list_dates =[];
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(site.slice(0,3)+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
+	let dataSubmit = { date:list_dates,table:site}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		var result = JSON.parse(data);
+		var result_filtered = [];
+		for (var i = 0; i < result.length; i++) {
+			if(site == result[i].table_used){
+				result_filtered.push(result[i])
+			}
 		}
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'area',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 300,
-			width:($(".site_collapse").width()-80),
-			backgroundColor: {
-				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-				stops: [
-				[0, '#2a2a2b'],
-				[1, '#3e3e40']
-				]
-			},
-		},
-		title: {
-			text:' <b>Rainfall Data ' + data_source +'('+site+')</b>',
-			style: {
-				color: '#E0E0E3',
-				fontSize: '20px'
+		var label_crack = ["24hrs","72hrs","15mins"]
+		var all_data_tag =[]
+		for (var a = 0; a < label_crack.length; a++) {
+			var collect =[]
+			for (var i = 0; i < result_filtered.length; i++) {
+				var remark_parse = ((result_filtered[i].remarks).split("/"))
+
+				if(remark_parse[1] == label_crack[a] ){
+					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result_filtered[i].tag_name})
+				}
+			}
+
+			all_data_tag.push(collect)
+
+		}
+
+		// for (var a = 0; a < label_crack.length; a++) {
+		// 	series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
+		// }
+		// series_data.push({name:'Tag'})
+		// console.log(series_data)
+
+		var colors= ["#EBF5FB","#82b1ff","#448aff"]
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+
 			}
 		},
 		xAxis: {
@@ -583,8 +611,33 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 					style: { color: '#fff',}
 				}
 			}]
-
-		},
+			plotOptions: {
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+								}else{
+									// $("#annModal").modal("show");
+									$(".tag").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
+									$("#tag_crack").val(this.series.name)
+									$("#tag_description").val('rain analysis')
+									$("#tag_tableused").val(site)
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								}
+							}
+						}
+					}
 
 		tooltip: {
 			shared: true,
@@ -599,12 +652,39 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 				cursor: 'pointer',
 				
 			},
-			area: {
-				marker: {
-					lineWidth: 3,
-					lineColor: null 
-				}
-			}
+
+			series:series_data
+		});
+		var chart = $('#'+id).highcharts();
+		// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
+		// 	var series = chart.series[(series_data.length-1)];
+		// 	for (var i = 0; i < label_crack.length; i++) {
+		// 		if (series.visible) {
+		// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+		// 				visible: true,
+		// 			});
+		// 		}else {
+		// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+		// 				visible: false,
+		// 			});
+		// 		}
+		// 	}
+		// });
+		var show_div =($(".rain-breadcrumb").html()).split("\"")
+		var div_rainfall_name = (show_div[10].toString()).split("<")
+		var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
+		var rain_name =(filtered_rain_name[1]).toString()
+		var div_data_show = show_div[7].toString()
+		if(div_data_show== "#rain_arq"){
+			$("#rain_arq").addClass("in");
+			$('#rainfallgeneral').val(rain_name)
+		}else if(div_data_show== "#rain_senslope"){
+			$("#rain_senslope").addClass("in");
+			$('#rainfallgeneral').val(rain_name)
+		}else{
+			$(div_data_show).addClass("in");
+			$('#rainfallgeneral').val(rain_name)
+		}
 
 		},
 		legend: {
@@ -996,51 +1076,176 @@ function surficialGraph(dataTableSubmit) {
 		}
 	});	
 }
-function chartProcessSurficial(id,data_series,name){
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'spline',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 400,
-			width:$("#ground_graph").width()
-		},
-		title: {
-			text: name,
-		},
-		xAxis: {
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
-			},
-			title: {
-				text: 'Date'
-			},
-		},
-		tooltip: {
-			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true,
-			split: true,
-		},
-		plotOptions: {
-			spline: {
-				marker: {
-					enabled: true
+
+function chartProcessSurficial(id,data_series,name,dataTableSubmit){
+	submittedMeas(dataTableSubmit);
+	var site = $('#sitegeneral').val();
+	var fdate = dataTableSubmit.fdate;
+	var tdate = dataTableSubmit.tdate;
+	var date1 = moment(fdate);
+	var date2 = moment(tdate);
+	var duration = moment.duration(date2.diff(date1));
+	var  list_dates =[];
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(site+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
+	let dataSubmit = { date:list_dates,table:'gndmeas'}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		var result_unfiltered = JSON.parse(data)
+		var result = [];
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			if (result_unfiltered[i].tag_description == "ground analysis") {
+				result.push(result_unfiltered[i])
+			}
+		}
+		$('#'+id).empty();
+		var all_crack_id = []
+		for (var i = 0; i < result.length; i++) {
+			var remark_parse = ((result[i].remarks).split("/"))
+			all_crack_id.push(remark_parse[1])
+		}
+		var label_crack = removeDuplicates(all_crack_id);
+		var all_data_tag =[]
+		for (var a = 0; a < label_crack.length; a++) {
+			var collect =[]
+			for (var i = 0; i < result.length; i++) {
+				var remark_parse = ((result[i].remarks).split("/"))
+				if(remark_parse[1] == label_crack[a] ){
+					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
 				}
 			}
-		},
-		credits: {
-			enabled: false
-		},
-		series:data_series
+			all_data_tag.push(collect)
+		}
+
+		// for (var a = 0; a < label_crack.length; a++) {
+		// 	data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+		// }
+		// data_series.push({name:'Tag'})
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'spline',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				height: 400,
+				width:$("#ground_graph").width()
+			},
+			title: {
+				text: name,
+			},
+			xAxis: {
+
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				split: true,
+				crosshairs: true,
+			},
+			plotOptions: {
+				spline: {
+					marker: {
+						enabled: true
+					}
+				},
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+								}else{
+									// $("#annModal").modal("show");
+									$(".tag").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
+									$("#tag_crack").val(this.series.name)
+									$("#tag_description").val('ground analysis')
+									$("#tag_tableused").val('gndmeas')
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								}
+							}
+						}
+					}
+				},
+			},
+			credits: {
+				enabled: false
+			},
+			series:data_series
+		});
+		var chart = $('#'+id).highcharts();
+		// $( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		// 	var series = chart.series[(data_series.length-1)];
+		// 	for (var i = 0; i < label_crack.length; i++) {
+		// 		if (series.visible) {
+		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
+		// 				visible: true,
+		// 			});
+		// 		}else {
+		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
+		// 				visible: false,
+		// 			});
+		// 		}
+		// 	}
+		// });
+
+	});
+
+}
+
+function submittedMeas(dataTableSubmit){
+	$('#tag_submit').click(function(){
+		var tag_name = $("#tag_ids").tagsinput("items");
+		var tag_description = $("#tag_description").val();
+		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+		var tagger = $("#current_user_id").val();
+		var time = (($("#tag_time").val()).slice(2,10)).toString()
+		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_used = $("#tag_tableused").val();
+		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var dataSubmit = [];
+		for (var i = 0; i < tag_name.length; i++) {
+			dataSubmit.push({ 
+				'tag_name' : tag_name[i], 
+				'tag_description' : tag_description,
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks
+			})
+		}
+
+		var host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+		})
+		$("#ground_graph").empty();
+		$("#graphS2").empty();
+		$("#graphS2").append('<div id="ground_graph" ></div>');
+		$("#annModal").modal("hide");
+		var series_data_tag = JSON.parse($("#tag_series").val())
+		chartProcessSurficial('ground_graph',series_data_tag,'Superimpose Surficial Graph',dataTableSubmit)
+
 	});
 }
 function surficialAnalysis(site,crack_id) {  
@@ -1289,10 +1494,9 @@ function CheckBoxColumn(site,column,from,to){
 				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
-			$("#daygeneral").selectpicker('refresh');
-			var time = moment().add(1,"days").format('MM-DD-YYYY');
-			heatmapProcess(column,time+'T00:00','3d')
-			// HeatmapOnSelect(column)
+
+			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			heatmapProcess(column,time,'3d')
 			HeatmapOnSelectDay(column)
 		}
 	});
@@ -1847,7 +2051,7 @@ function SubOnSelectDay(column,tdate) {
 }
 function HeatmapOnSelect(column) {
 	$("#daygeneral").selectpicker();
-	var start = moment().add(1,'days').format('MM-DD-YYYY HH:mm'); 
+	var start = moment().add(1,'days').format('YYYY-MM-DD HH:mm'); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
 		timePickerIncrement: 30,
@@ -1878,7 +2082,7 @@ function HeatmapOnSelect(column) {
 function HeatmapOnSelectDay(column) {
 	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-		var timevalue = $("#reportrange3").val();
+		var timevalue = $("#reportrange0 span").text();
 		var tdate = timevalue.slice(0,10);
 		var time = timevalue.slice(11,16);
 		if(selected_day == "1 day"){
@@ -1888,7 +2092,7 @@ function HeatmapOnSelectDay(column) {
 		}else if( selected_day == "30 days"){
 			var day = '30d'
 		}
-		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
+		heatmapProcess(column,(moment(tdate).add(1,"days").format("YYYY-MM-DDTHH:mm")),day)
 	})
 }
 
@@ -2036,7 +2240,7 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
-	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
+	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -2362,8 +2566,8 @@ function CheckBoxNode(site,column,to){
 	$('#node_sumbit').on('click',function(){
 		$('#collapseColumn' ).switchClass( "in", "collapse");
 		$('#collapseSite' ).switchClass( "in", "collapse");
-		var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
-		var tdate = (moment().add(2,'days')).format('YYYY-MM-DD');
+		var fdate = (moment($("#reportrange0 span").text()).subtract(7,'days')).format('YYYY-MM-DD');
+		var tdate = (moment($("#reportrange0 span").text()).add(2,'days')).format('YYYY-MM-DD');
 		var node =  $('#nodegeneral').val();
 		var node_id = node
 		let dataSubmit = { 
@@ -2918,7 +3122,7 @@ function chartProcessAccel(id,data_series,name,color,list){
 
 							}
 							else {
-								$("#annModal").modal("show");
+								// $("#annModal").modal("show");
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
@@ -3060,7 +3264,7 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
 
 							}
 							else {
-								$("#annModal").modal("show");
+								// $("#annModal").modal("show");
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
@@ -3107,17 +3311,17 @@ function NodeOnSelectDay(column,tdate) {
 	$("#accel_dropdown_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days =($(this).find('option').eq(clickedIndex).val());
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 		let dataSubmit = { 
 			site : (column).toLowerCase(), 
