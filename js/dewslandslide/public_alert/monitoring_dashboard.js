@@ -836,7 +836,7 @@ function checkCandidateTriggers(cache) {
 		if(alert.internal_alert.length <= 3) isInvalid = true;
 		
 		let forUpdating = true;
-		retriggers = alert.retriggerTS;
+		//retriggers = alert.retriggerTS;
 
 		if( !isValidButNeedsManual && !isInvalid )
 		{
