@@ -19,6 +19,10 @@ body {
   margin-bottom: 10px;
 }
 
+#gintags {
+  display: none;
+}
+
 #testing-site-indicator {
   background-color: red;
   position: fixed;

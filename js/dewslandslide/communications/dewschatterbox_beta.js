@@ -1,19 +1,12 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-
-	var alert_site_name = "";
-	if (data.name == "msu" || data.name == "msl") {
-		alert_site_name = "mes";
-	} else {
-		alert_site_name = data.name;
-	}
-  
+	console.log(data);
 	$.ajax({
 	  type: "POST",
 	  url: "../chatterbox/getCommunityContactViaDashboard/",
 	  async: true,
-	  data: {site: alert_site_name},
+	  data: {site: data.name},
 	  success: function(response){
 
 	  	var contacts = JSON.parse(response);
@@ -95,8 +88,8 @@ function sendViaAlertMonitor(data){
 				}
 
 			}
-
 			if (data['status'] == 'extended') {
+				
 				switch(data['day']) {
 					case 1:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw ");
@@ -122,17 +115,12 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			console.log(currentPanahon);
-			if (currentPanahon >= 13 && currentPanahon <= 18) {
+			if (currentPanahon >= 12 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
-			} else if (currentPanahon >= 18 && currentPanahon <=23) {
+			} else if (currentPanahon > 18 && currentPanahon <=23) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else if (currentPanahon >= 0 && currentPanahon <= 3) {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else if (currentPanahon >= 4 && currentPanahon <= 11) {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
 			} else {
-				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","tanghali");
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
 			}
 			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
@@ -157,7 +145,7 @@ function sendViaAlertMonitor(data){
 			if (onset_time != release_time) {
 				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30,'m').format("hh:mm A"));
 			} else {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.event_start).format("YYYY-MM-DD hh:mm A"));
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",onset_time);
 			}
 
 			data_timestamp = data.data_timestamp;
@@ -227,6 +215,7 @@ $(document).ready(function() {
 	var searchResults = [];
 	var quick_inbox_registered = [];
 	var quick_inbox_unknown = [];
+	var quick_release = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -276,6 +265,7 @@ $(document).ready(function() {
 		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
 
 	} catch (err) {
 		console.log(err);
@@ -452,15 +442,13 @@ $(document).ready(function() {
 					var messages_html = messages_template_both({'messages': messages});
 					var htmlString = $('#messages').html();
 					$('#messages').html(htmlString+messages_html);
-					var maxScroll = $(document).height() - $(window).height();
-					$('html, body').scrollTop(maxScroll);
+					$('.chat-message').scrollTop($('#messages').height());
 					messages = [];
 
 				} else {
 					var messages_html = messages_template_both({'messages': messages});
 					$('#messages').html(messages_html);
-					var maxScroll = $(document).height() - $(window).height();
-					$('html, body').scrollTop(maxScroll);
+					$('.chat-message').scrollTop($('#messages').height());
 				}
 			} catch(err){
 				console.log(err);
@@ -495,6 +483,17 @@ $(document).ready(function() {
 			}
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
+		}
+	}
+
+	function updateLatestPublicRelease(msg) {
+		try {
+			quick_release.unshift(msg);
+			var quick_release_html = quick_release_template({'quick_release': quick_release});
+			$('#quick-release-display').html(quick_release_html);
+			$('#quick-release-display').scrollTop(0);
+		} catch(err) {
+			// Do nothing for now.
 		}
 	}
 
@@ -641,21 +640,21 @@ $(document).ready(function() {
 		console.log("Loading Old Messages");
 	}
 
-	$(window).scroll(function(){
-		var scroll = $(window).scrollTop();
-		if ($(document).height() > $(window).height()) {
-			if (scroll == 0 && convoFlagger == false){
-				console.log(msgType);
-				if (msgType == "smsload") {
-					getOldMessage();
-				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
-					getOldMessageGroup();
-				} else {
-					console.log("Invalid Request/End of the Conversation");
-				}
-			}
-		}
-	});
+	// $(window).scroll(function(){
+	// 	var scroll = $(window).scrollTop();
+	// 	if ($(document).height() > $(window).height()) {
+	// 		if (scroll == 0 && convoFlagger == false){
+	// 			console.log(msgType);
+	// 			if (msgType == "smsload") {
+	// 				getOldMessage();
+	// 			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+	// 				getOldMessageGroup();
+	// 			} else {
+	// 				console.log("Invalid Request/End of the Conversation");
+	// 			}
+	// 		}
+	// 	}
+	// });
 
 	function getOldMessage(){
 		if (lastMessageTimeStampYou == "") {
@@ -746,6 +745,21 @@ $(document).ready(function() {
 		}
 	}
 
+	function initLoadLatestAlerts(latestAlerts){
+		if (latestAlerts.data == null) {
+			return;
+		}
+
+		console.log("Loading Latest Public Releases.");
+		var alerts = latestAlerts.data;
+		temp = latestAlerts.data;
+		var msg;
+		for (var i = alerts.length - 1; i >= 0; i--) {
+			msg = alerts[i];
+			updateLatestPublicRelease(msg);
+		}
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -775,6 +789,7 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
+			$('#loading').modal("toggle");
 			console.log("Connection established!");
 			enableCommands();
 
@@ -787,6 +802,7 @@ $(document).ready(function() {
 				setTimeout(
 					function() {
 						getInitialQuickInboxMessages();
+						getLatestAlert();
 					}, 
 					500);
 				isFirstSuccessfulConnect = false;
@@ -796,6 +812,7 @@ $(document).ready(function() {
 				window.timerID = 0;
 			}
 			$("#send-msg").removeClass("disabled");
+			$('#loading').modal("toggle");
 		};
 
 		tempConn.onmessage = function(e) {
@@ -833,6 +850,8 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
+			} else if (msg.type == "latestAlerts"){
+				initLoadLatestAlerts(msg);
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -963,6 +982,8 @@ $(document).ready(function() {
 					console.log(sender[0]);
 					if (selected_site[i] == sender[0]) {
 						for (var x = 0; x < selected_office.length; x++) {
+							console.log(selected_office[x]);
+							console.log(sender[1]);
 							if (selected_office[x] == sender[1]) {
 								updateMessages(msg);
 							}
@@ -1240,10 +1261,8 @@ function displayContactNamesForThread (source="normal") {
 			tempText = qiFullContact.slice(0, posDash);
 		}
 	}
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
 }
 
 $('#btn-standard-search').click(function(){
@@ -1258,7 +1277,7 @@ $('#btn-standard-search').click(function(){
 });
 
 $('#btn-search-global').click(function(){
-	switch($('.search-opt input[name="optradio"]:checked').val()) {
+	switch($('input[name="opt-search"]:checked').val()) {
 		case "gintag-search":
 		searchGintagMessages($('#search-global-keyword').val());
 		break;
@@ -1342,6 +1361,7 @@ function searchMessageGlobal(searchKey){
 		'type': "searchMessageGlobal",
 		'searchKey': searchKey
 	}
+	console.log(request);
 	conn.send(JSON.stringify(request));
 	$('#loading').modal('show');
 }
@@ -1361,14 +1381,11 @@ var coloredTimestamp;
 $(document).on("click","#search-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 	console.log(($(this).closest('li')).find("input[id='msg_details']").val());
-	console.log(data);
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 })
 
 $(document).on("click","#search-global-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
-	console.log(data);
-	console.log(($(this).closest('li')).find("input[id='msg_details']").val());
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 })
 
@@ -1418,8 +1435,6 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 
 		$("#current-contacts h4").text(user);
 		document.title = user;
-		$('#search-lbl').css('display', 'block')
-		$('#search-lbl h5').show();
 		contactnumTrimmed = [];
 
 		request = {
@@ -1436,6 +1451,7 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 
 	}
 }
+
 try {
 	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5,options) {
 		if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5) {
@@ -1526,7 +1542,6 @@ function loadSearchedMessage(msg){
 		var searchedResult = msg.data;
 		var res;
 		var contact_header = "";
-		console.log(searchedResult);
 		try {
 			for (var i = searchedResult.length - 1; i >= 0; i--) {
 				res = searchedResult[i];
@@ -1558,6 +1573,7 @@ function loadSearchedMessage(msg){
 		targetLi.style.borderColor = "#dff0d8";
 		targetLi.style.borderRadius = "3px";
 		targetLi.style.borderWidth = "5px";
+		console.log(targetLi.offsetTop);
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
 	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags"){
@@ -1587,7 +1603,6 @@ function loadSearchedMessage(msg){
 }
 
 function updateGlobalMessage(msg){
-	console.log(msg);
 	if (msg.user == "You") {
 		msg.isyou = 1;
 		searchResults.push(msg);
@@ -1602,7 +1617,9 @@ function displayGroupTagsForThread () {
 	var tempText = "[Sitenames: ";
 	var titleSites = "";
 	var tempCountSitenames = groupTags.sitenames.length;
+	$("#convo-header .panel-body").text("");
 	for (i in groupTags.sitenames) {
+		displayDetailsForThread(groupTags.sitenames[i]);
 		if (i == tempCountSitenames - 1) {
 			tempText = tempText + groupTags.sitenames[i];
 			titleSites = titleSites + groupTags.sitenames[i];
@@ -1625,10 +1642,28 @@ function displayGroupTagsForThread () {
 	document.title = titleSites;
 
 	tempText = tempText + "]";
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
+}
+
+function displayDetailsForThread(siteabr){
+	$.post('../chatterbox/getsitbangprovmun', {sites: siteabr}).done(function(response){
+		var site_details = JSON.parse(response);
+		for (i in site_details) {
+			var site = site_details[i].sitio+", "+site_details[i].barangay+", "+site_details[i].municipality+", "+site_details[i].province+" <b>("+siteabr+")</b>";
+			if ($("#convo-header .panel-body").html().split("<b>").length <= 3) {
+				$("#convo-header .panel-body").append(site.replace("null,",""));
+			} else {
+				if ($("#convo-header .panel-body").html().split("glyphicon glyphicon-th-list").length != 2) {
+					$("#convo-header .panel-body").append("&nbsp;&nbsp;<span class='glyphicon glyphicon glyphicon-th-list' data-toggle='tooltip' data-placement='bottom''></span>");
+					$('#convo-header .panel-body span').attr('title',site)
+				} else {
+					var more_details = $('#convo-header .panel-body span').attr('title');
+					$('#convo-header .panel-body span').attr('title',site.replace("null,","").replace("<b>","").replace("</b>","")+more_details);
+				}
+			}
+		}
+	});
 }
 
 function displayGroupTagsForDynaThread(tags) {
@@ -1644,10 +1679,8 @@ function displayGroupTagsForDynaThread(tags) {
 	}
 
 	tempText = tempText + "]";
-	$("#current-contacts h4").text(tempText);
+	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
-	$('#search-lbl').css('display', 'block')
-	$('#search-lbl h5').show();
 
 }
 
@@ -2470,8 +2503,6 @@ $('#btn-gbl-search').click(function(){
 		$('#search-global-message-modal').modal("toggle");
 		searchResults = [];
 		counter = 0;
-		var myNode = document.getElementById("search-global-result");
-		myNode.innerHTML = '';
 		$('#search-global-keyword').val('');
 	}
 });
@@ -2503,20 +2534,20 @@ function disableCommands(){
 	// $('#go-chat').css("text-decoration","line-through");
 	// $('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#go-load-groups').attr("class","btn btn-danger disabled");
-	$('#go-load-groups').css("text-decoration","line-through");
-	$('#load-groups-wrapper').attr("data-toggle","tooltip");
-	$('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#go-load-groups').attr("class","btn btn-danger disabled");
+	// $('#go-load-groups').css("text-decoration","line-through");
+	// $('#load-groups-wrapper').attr("data-toggle","tooltip");
+	// $('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#send-msg').attr("class","btn btn-danger no-rounded disabled");
-	$('#send-msg').css("text-decoration","line-through");
-	$('#sms-msg-wrapper').attr("data-toggle","tooltip");
-	$('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#send-msg').attr("class","btn btn-danger no-rounded disabled");
+	// $('#send-msg').css("text-decoration","line-through");
+	// $('#sms-msg-wrapper').attr("data-toggle","tooltip");
+	// $('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
-	$('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
-	$('#btn-gbl-search').attr("data-toggle","tooltip");
-	$('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-	$('#btn-gbl-search').css("color","coral");
+	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
+	// $('#btn-gbl-search').attr("data-toggle","tooltip");
+	// $('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#btn-gbl-search').css("color","coral");
 }
 
 function enableCommands(){
@@ -2524,18 +2555,19 @@ function enableCommands(){
 	// $('#go-chat').css("text-decoration","none");
 	// $('#go-chat').attr("data-original-title","");
 
-	$('#go-load-groups').attr("class","btn btn-success");
-	$('#go-load-groups').css("text-decoration","none");
-	$('#load-groups-wrapper').attr("data-original-title","");
+	// $('#go-load-groups').attr("class","btn btn-success");
+	// $('#go-load-groups').css("text-decoration","none");
+	// $('#load-groups-wrapper').attr("data-original-title","");
 
-	$('#send-msg').attr("class","btn btn-success no-rounded");
-	$('#send-msg').css("text-decoration","none");
-	$('#sms-msg-wrapper').attr("data-original-title","");
+	// $('#send-msg').attr("class","btn btn-success no-rounded");
+	// $('#send-msg').css("text-decoration","none");
+	// $('#sms-msg-wrapper').attr("data-original-title","");
 
-	$('#btn-gbl-search').attr("class","btn btn-link btn-sm");
-	$('#btn-gbl-search').attr("data-original-title","Search Message");
-	$('#btn-gbl-search').css("color","");
+	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm");
+	// $('#btn-gbl-search').attr("data-original-title","Search Message");
+	// $('#btn-gbl-search').css("color","");
 }
+
 function getOfficesAndSitenames () {
 	try {
 		var msg = {
@@ -2545,13 +2577,21 @@ function getOfficesAndSitenames () {
 	} catch(err) {
 	}
 }
-function getInitialQuickInboxMessages () {
-	var msg = {
-		'type': 'smsloadquickinboxrequest'
-	};
+	function getInitialQuickInboxMessages () {
+		var msg = {
+			'type': 'smsloadquickinboxrequest'
+		};
 		// $('#loading').modal('show');
 		conn.send(JSON.stringify(msg));
 	}
+
+	function getLatestAlert() {
+		var msg = {
+			'type' : 'latestAlerts'
+		};
+		conn.send(JSON.stringify(msg));
+	}
+
 
 	$('a[href="#emp-group"]').on('click',function(){
 		employeeTags = [];
@@ -2728,7 +2768,6 @@ function getInitialQuickInboxMessages () {
 			url: "../chatterbox/get_employee_contacts",        
 			success: function(response){
 				var data = JSON.parse(response);
-				console.log(data);
 				$("#response-contact-container").DataTable().clear();
 				$("#response-contact-container").DataTable().destroy();
 
@@ -2964,7 +3003,6 @@ function getInitialQuickInboxMessages () {
 	$(document).on("click","#messages li",function(){
 		message_li_index = $(this).index();
 		gintags_msg_details = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
-		reposition('#gintag-modal');
 		current_gintags = getGintagService(gintags_msg_details[5]);
 		$('#gintag-modal').modal('toggle');
 		$('.bootstrap-tagsinput').prop("disabled", true );
