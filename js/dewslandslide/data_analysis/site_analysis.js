@@ -11,10 +11,13 @@ $(document).ajaxStop(function () {
 	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
+		
 	});
+
 });
 
 $(document).ready(function(e) {
+	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -25,7 +28,10 @@ $(document).ready(function(e) {
 	$('.column-panel').hide();
 	$('.node-panel').hide();
 	$('.crackgeneral').hide()
+	$('.download').hide()
+
 	dateselection();
+
 });
 
 
@@ -78,7 +84,7 @@ function cb(start, end) {
 		}
 	})
 	SelectedSite(fromDate,toDate);
-
+	
 }
 
 function daysOption(id) {
@@ -105,6 +111,8 @@ function removeDuplicates(num) {
 	}
 	return out;
 }
+
+
 
 /************************/
 /***SITE LEVEL PROCESS***/
@@ -148,7 +156,7 @@ function SelectedSite(from,to) {
 		$('.column_checkbox').prop('checked', false);
 		$('.column_checkbox').prop('disabled', true);
 		$('.node-panel').hide();
-
+		$('.download').show()
 		SelectdaysOption('surperimpose')
 		CheckBoxSite(selected_site,from,to)
 		RainFallProcess(selected_site,from,to)
@@ -294,6 +302,7 @@ function SelectdaysOption(id) {
 		}
 		if(id == "surperimpose"){
 			surficialGraph(dataTableSubmit)
+
 		}else if(id ==  "rainfall" ){
 			RainFallProcess(site,fdate,tdate)
 			$('#rainfall_days').val(selected_days)
@@ -397,9 +406,14 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: 'dataseries',fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: divname[i],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
-						chartProcessRain(series_data,id,'Senslope',site,max_rain,negative );
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : fdate,
+							tdate : tdate
+						}
+						chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit);
 					}else{
 						$('#'+id).hide()
 
@@ -446,9 +460,14 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : 'dataseries',fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : divname[i],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
-						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative );
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : fdate,
+							tdate : tdate
+						}
+						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit );
 					}else{
 						$('#'+id).hide()
 
@@ -503,9 +522,14 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						for (i = 0; i < divname.length; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: 'dataseries', fillOpacity: 0.4 , zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: 1, lineWidth: 1, color: colors[i],zIndex:i+1})
 						}
-						chartProcessRain(series_data,id,'Noah',site,max_rain,negative );
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : fdate,
+							tdate : tdate
+						}
+						chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit );
 					}else{
 						$('#'+id).hide()
 
@@ -515,7 +539,7 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 	}
 }
 
-function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
+function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit ){
 	RainFallOnSelect()
 	submittedMeas(dataTableSubmit);
 	var fdate = dataTableSubmit.fdate;
@@ -562,55 +586,85 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 		Highcharts.setOptions({
 			global: {
 				timezoneOffset: -8 * 60
-
 			}
-		},
-		xAxis: {
-			plotBands: negative,
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'area',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				height: 300,
+				width:($(".site_collapse").width()-80),
+				backgroundColor: {
+					linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+					stops: [
+					[0, '#2a2a2b'],
+					[1, '#3e3e40']
+					]
+				},
 			},
 			title: {
-				text: 'Date'
-			},
-			labels: {
-				style:{
-					color: 'white'
+				text:' <b>Rainfall Data ' + data_source +'('+site+')</b>',
+				style: {
+					color: '#E0E0E3',
+					fontSize: '20px'
 				}
+			},
+			xAxis: {
+				plotBands: negative,
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
+				},
+				title: {
+					text: 'Date'
+				},
+				labels: {
+					style:{
+						color: 'white'
+					}
+
+				},
+				title: {
+					text: 'Date',
+					style:{
+						color: 'white'
+					}
+				}
+			},
+
+			yAxis:{
+				plotBands: [{
+					value: max/2,
+					color: colors[1],
+					dashStyle: 'shortdash',
+					width: 2,
+					zIndex: 0,
+					label: {
+						text: '24hrs threshold (' + max/2 +')',
+						style: { color: '#fff',}
+					}
+				},{
+					value: max,
+					color: colors[2],
+					dashStyle: 'shortdash',
+					width: 2,
+					zIndex: 0,
+					label: {
+						text: '72hrs threshold (' + max +')',
+						style: { color: '#fff',}
+					}
+				}]
 
 			},
-			title: {
-				text: 'Date',
-				style:{
-					color: 'white'
-				}
-			}
-		},
 
-		yAxis:{
-			plotBands: [{
-				value: max/2,
-				color: colors[1],
-				dashStyle: 'shortdash',
-				width: 2,
-				zIndex: 0,
-				label: {
-					text: '24hrs threshold (' + max/2 +')',
-					style: { color: '#fff',}
-				}
-			},{
-				value: max,
-				color: colors[2],
-				dashStyle: 'shortdash',
-				width: 2,
-				zIndex: 0,
-				label: {
-					text: '72hrs threshold (' + max +')',
-					style: { color: '#fff',}
-				}
-			}]
+			tooltip: {
+				shared: true,
+				crosshairs: true
+			},
+
 			plotOptions: {
 				series: {
 					marker: {
@@ -639,20 +693,30 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 						}
 					}
 
-		tooltip: {
-			shared: true,
-			crosshairs: true
-		},
-
-		plotOptions: {
-			series: {
-				marker: {
-					radius: 3
 				},
-				cursor: 'pointer',
-				
-			},
+				area: {
+					marker: {
+						lineWidth: 3,
+						lineColor: null 
+					}
+				}
 
+			},
+			legend: {
+				layout: 'vertical',
+				align: 'right',
+				verticalAlign: 'middle',
+				borderWidth: 0,
+				itemStyle: {
+					color: '#E0E0E3'
+				},
+				itemHoverStyle: {
+					color: '#FFF'
+				},
+				itemHiddenStyle: {
+					color: '#606063'
+				}
+			},
 			series:series_data
 		});
 		var chart = $('#'+id).highcharts();
@@ -686,41 +750,8 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative ){
 			$('#rainfallgeneral').val(rain_name)
 		}
 
-		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#E0E0E3'
-			},
-			itemHoverStyle: {
-				color: '#FFF'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
-		},
-		series:series_data
+		$('#rainfallgeneral').selectpicker('refresh')
 	});
-	var show_div =($(".rain-breadcrumb").html()).split("\"")
-	var div_rainfall_name = (show_div[10].toString()).split("<")
-	var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
-	var rain_name =(filtered_rain_name[1]).toString()
-	var div_data_show = show_div[7].toString()
-	if(div_data_show== "#rain_arq"){
-		$("#rain_arq").addClass("in");
-		$('#rainfallgeneral').val(rain_name)
-	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
-		$('#rainfallgeneral').val(rain_name)
-	}else{
-		$(div_data_show).addClass("in");
-		$('#rainfallgeneral').val(rain_name)
-	}
-
-	$('#rainfallgeneral').selectpicker('refresh')
 
 }
 
@@ -1070,13 +1101,14 @@ function surficialGraph(dataTableSubmit) {
 
 
 			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),})
+				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,"")})
 			}
-			chartProcessSurficial('ground_graph',series_data,'Superimpose Surficial Graph')
+			$('#ground_graph').empty();
+			chartProcessSurficial('ground_graph',series_data,'Superimpose Surficial Graph',dataTableSubmit)
+			$("#tag_series").val(JSON.stringify(series_data))
 		}
 	});	
 }
-
 function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 	submittedMeas(dataTableSubmit);
 	var site = $('#sitegeneral').val();
@@ -1245,9 +1277,10 @@ function submittedMeas(dataTableSubmit){
 		$("#annModal").modal("hide");
 		var series_data_tag = JSON.parse($("#tag_series").val())
 		chartProcessSurficial('ground_graph',series_data_tag,'Superimpose Surficial Graph',dataTableSubmit)
-
 	});
 }
+
+
 function surficialAnalysis(site,crack_id) {  
 	$.ajax({ 
 		dataType: "json",
@@ -1368,6 +1401,7 @@ function chartProcessSurficialAnalysis(id,data_series,name){
 		series:data_series
 	});
 	$("#analysisVelocity").addClass("in");
+
 }
 
 /************************/
@@ -1494,7 +1528,7 @@ function CheckBoxColumn(site,column,from,to){
 				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
-
+			$("#daygeneral").selectpicker('refresh');
 			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
 			heatmapProcess(column,time,'3d')
 			HeatmapOnSelectDay(column)
@@ -1610,6 +1644,7 @@ function chartProcessPiezo(id,data_series,name){
 			},
 			series:data_series
 		});
+
 }
 function PiezoOnSelect() {
 	var name = ['Frequency','Temperature']
@@ -1911,6 +1946,7 @@ function chartProcessDis(id,data_series,name){
 		},
 		series:data_series
 	});
+
 }
 
 function chartProcessInverted(id,data_series,name){
@@ -1964,6 +2000,7 @@ function chartProcessInverted(id,data_series,name){
 		},
 		series:data_series
 	});
+
 }
 
 function chartProcessbase(id,data_series,name){
@@ -2015,6 +2052,7 @@ function chartProcessbase(id,data_series,name){
 		},
 		series:data_series
 	});
+
 }
 
 function SubOnSelect() {
@@ -3158,6 +3196,7 @@ function chartProcessAccel(id,data_series,name,color,list){
                         series:data_series
                     }
                     );
+
 }
 function chartProcessbattSoms(id,data_series,name,color,list,column){
 	$("."+list+"_checkbox").empty()
@@ -3300,6 +3339,7 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
                         series:data_series
                     }
                     );
+
 }
 
 function NodeOnSelectDay(column,tdate) {
@@ -3331,4 +3371,29 @@ function NodeOnSelectDay(column,tdate) {
 		}
 		NodeProcess(dataSubmit,list_checkbox)
 	})
+}
+
+
+/************************/
+/**DOWNLOAD SVG PROCESS**/
+/************************/
+
+function downloadSvg() {
+	$("#download").on('click',function(){
+		var all_data=[]
+		var ids = $('.highcharts-container').map(function() {
+			return this.id;
+		}).get();
+		for (var i = 0; i < ids.length; i++) {
+			all_data.push($('#'+ids[i]).html());
+		}
+		
+		if($('#healthbars').html() != undefined){
+			all_data.push($('#healthbars').html())
+		}
+		if($('#heatmap_container').html() != undefined){
+			all_data.push($('#heatmap_container').html())
+		}
+		console.log(all_data)
+	});
 }
