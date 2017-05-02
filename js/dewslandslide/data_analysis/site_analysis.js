@@ -3386,5 +3386,15 @@ function downloadSvg() {
 			all_data.push($('#heatmap_container').html())
 		}
 		console.log(all_data)
+
+		$.post("/../chart_export/renderChart", { charts : all_data } )
+		.done(function (data) {
+			// alert(data)
+			if(data == "Finished")
+			{
+				
+				window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+			}
+		})
 	});
 }
