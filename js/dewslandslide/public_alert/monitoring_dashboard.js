@@ -836,7 +836,7 @@ function checkCandidateTriggers(cache) {
 		if(alert.internal_alert.length <= 3) isInvalid = true;
 		
 		let forUpdating = true;
-		//retriggers = alert.retriggerTS;
+		retriggers = alert.retriggerTS;
 
 		if( !isValidButNeedsManual && !isInvalid )
 		{
@@ -845,7 +845,7 @@ function checkCandidateTriggers(cache) {
 			for (let i = 0; i < retriggers.length; i++) {
 				if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
 			}
-			//console.log(max, retriggers);
+			console.log("MAX", max, "RETRIGGERS", retriggers);
 			alert.latest_trigger_timestamp = max.timestamp;
 			alert.trigger = max.retrigger;
 		}
