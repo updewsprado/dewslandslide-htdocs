@@ -746,17 +746,17 @@ function getOnGoingAndExtended(data) {
 }
 
 function checkCandidateTriggers(cache) {
-	let alerts = jQuery.extend(true, {}, cache.alerts);
-		invalids = jQuery.extend(true, {}, cache.invalids);
-		no_alerts = jQuery.extend(true, {}, cache.no_alerts);
-		final = [];
+	let alerts = JSON.parse(JSON.stringify(cache.alerts));
+	let invalids = JSON.parse(JSON.stringify(cache.invalids));
+	let no_alerts = JSON.parse(JSON.stringify(cache.no_alerts));
+	let final = [];
 
 	// Get all the latest and overdue releases on site
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
 	alerts.forEach( function (alert) {
 		let retriggers = alert.retriggerTS;
-
+		
 		// Check sites if it is in invalid list 
 		// yet have legitimate alerts
 		function getAllInvalids(arr, val) {
