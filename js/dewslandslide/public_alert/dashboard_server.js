@@ -110,7 +110,7 @@ function onMessage(evt) {
                 $("#bulletin_sending").prop("checked", true);
                 $("#bulletin_sending_staff").text("(Activated by " + data.bulletin_sending.staff_name + ")" );
             }
-            else { $("#alert_release").prop("checked", false); $("#bulletin_sending_staff").text(""); }
+            else { $("#bulletin_sending").prop("checked", false); $("#bulletin_sending_staff").text(""); }
         }
 
         // if(code == "getJSONandLastRelease")
