@@ -99,10 +99,18 @@ function onMessage(evt) {
             buildDashboardTables(data);
         } else if( code == "showAutomationMenu" ) {
             $("#automation-row").show();
-            if(data.alert_release.switch) $("#alert_release_staff").text("(Activated by " + data.alert_release.staff_name + ")" );
-            else $("#alert_release_staff").text("");
-            if(data.bulletin_sending.switch) $("#bulletin_sending_staff").text("(Activated by " + data.bulletin_sending.staff_name + ")" );
-            else $("#bulletin_sending_staff").text("");
+            if(data.alert_release.switch) 
+            {
+                $("#alert_release").prop("checked", true);
+                $("#alert_release_staff").text("(Activated by " + data.alert_release.staff_name + ")" );
+            }
+            else { $("#alert_release").prop("checked", false); $("#alert_release_staff").text(""); }
+            if(data.bulletin_sending.switch) 
+            {
+                $("#bulletin_sending").prop("checked", true);
+                $("#bulletin_sending_staff").text("(Activated by " + data.bulletin_sending.staff_name + ")" );
+            }
+            else { $("#alert_release").prop("checked", false); $("#bulletin_sending_staff").text(""); }
         }
 
         // if(code == "getJSONandLastRelease")
