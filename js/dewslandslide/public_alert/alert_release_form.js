@@ -866,7 +866,7 @@ $(document).ready(function()
                     }, 1000);
 
                     // Send to websocket to refresh all dashboards
-                    doSend("getOnGoingAndExtended");
+                    doSend("updateDashboardTables");
                 },
                 error: function(xhr, status, error) {
                   var err = eval("(" + xhr.responseText + ")");

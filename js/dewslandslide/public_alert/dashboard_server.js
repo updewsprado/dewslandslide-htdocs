@@ -11,7 +11,6 @@
 ****/
 
 var wsUri = "ws://" + window.location.hostname + ":5070/";
-var output;
 var attributes_log;
 var websocket;
 
@@ -21,15 +20,27 @@ let reconnect = 10000, isConnected = false;
 $(document).ready(function () {
     $("#loading").modal("show");
     init();
+
+    // AUTOMATION SCRIPTS
+    $("#automation-row #alert_release, #automation-row #bulletin_sending").click(function () {
+        let data = {
+            "staff_name" : $("#user_name").text(),
+            "staff_id" : $("#current_user_id").val()
+        }
+
+        if(this.checked) { data.switch = true; }
+        else { data.switch = false; }
+
+        if( this.id == "alert_release") doSend("toggleAutomatedAlertRelease", data);
+        else doSend("toggleAutomatedBulletinSending", data);
+    });
 });
 
 
 function init() {
-    output = document.getElementById("output");
-    attributes_log = document.getElementById("attributes_log");
     if (browserSupportsWebSockets() === false) {
         console.log("Sorry! your web browser does not support WebSockets. Try using Google Chrome or Firefox Latest Versions");
-        return; //
+        return; 
     }
 
     websocket = new WebSocket(wsUri);
@@ -38,6 +49,7 @@ function init() {
         console.log("DASHBOARD SERVER: CONNECTION TO " + wsUri + " has been successfully established");
 
         isConnected = true;
+        doSend("sendIdentification", {"name" : $("#user_name").text(), "staff_id": $("#current_user_id").val()});
         $("#loading").modal("hide");
 
         // if (window.timerID) {
@@ -68,6 +80,7 @@ function onClose(evt) {
 
 function onMessage(evt) {
     let data = JSON.parse(evt.data);
+    let code = data.code;
     let pathname = window.location.pathname;
 
     console.log('DASHBOARD SERVER: onMessage Event Fired');
@@ -78,24 +91,38 @@ function onMessage(evt) {
     };
 
     if( pathname.includes("dashboard") || pathname.includes("home") ) {
-        if(data.code == "getJSONandLastRelease")
-        {
-            let temp = data.alert_json.slice(0);
-            temp = temp.pop();
-            if(json_cache == null || json_cache !== JSON.stringify(temp))
-            {
-                getRealtimeAlerts(data);
-                json_cache = JSON.stringify(temp);
-                doSend("getOnGoingAndExtended");
-            } else {
-                console.log("DASHBOARD SERVER: No new JSON data.");
-            }
+        
+        if( code == "candidateAlerts" ) {
+            buildDashboardTables(data);
         }
-        else if(data.code == "getOnGoingAndExtended")
-            getOnGoingAndExtended(data);
+        else if( code == "existingAlerts" ) {
+            buildDashboardTables(data);
+        } else if( code == "showAutomationMenu" ) {
+            $("#automation-row").show();
+            if(data.alert_release.switch) $("#alert_release_staff").text("(Activated by " + data.alert_release.staff_name + ")" );
+            else $("#alert_release_staff").text("");
+            if(data.bulletin_sending.switch) $("#bulletin_sending_staff").text("(Activated by " + data.bulletin_sending.staff_name + ")" );
+            else $("#bulletin_sending_staff").text("");
+        }
+
+        // if(code == "getJSONandLastRelease")
+        // {
+        //     let temp = data.alert_json.slice(0);
+        //     temp = temp.pop();
+        //     if(json_cache == null || json_cache !== JSON.stringify(temp))
+        //     {
+        //         getRealtimeAlerts(temp);
+        //         json_cache = JSON.stringify(temp);
+        //         doSend("getOnGoingAndExtended");
+        //     } else {
+        //         console.log("DASHBOARD SERVER: No new JSON data.");
+        //     }
+        // }
+        // else if(code == "getOnGoingAndExtended")
+        //     getOnGoingAndExtended(data);
     }
 
-    if(data.code == "getNormalAndLockedIssues") {
+    if(code == "getNormalAndLockedIssues") {
         getNormalAndLockedIssues(data);
     }
 
@@ -124,10 +151,15 @@ function browserSupportsWebSockets() {
     }
 }
 
-function doSend(message) {
-    websocket.send(message);
+function doSend(code, data) {
+    let x = typeof data == "undefined" ? null : data;
+    let message = {
+        code: code,
+        data: x
+    }
+    websocket.send( JSON.stringify(message) );
     console.log('DASHBOARD SERVER: onSend Event Fired');
-    console.log("SENT: " + message);
+    console.log("SENT: " + code);
 }
 
 function waitForConnection() {
@@ -152,3 +184,5 @@ function waitForConnection() {
         }, reconnect);
     }
 }
+
+//***** AUTOMATION FUNCTIONS ******//

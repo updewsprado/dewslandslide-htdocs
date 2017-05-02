@@ -14,38 +14,47 @@ let current_iar_id = null;
 
 function getNormalAndLockedIssues(data) {
 
-    $("#issuesAndRemindersModal").modal("hide");
-    $(".modal-backdrop").remove();
-
-    let normal = data.normal, locked = data.locked;
-
-    iarList = data.normal.concat(data.locked);
-    iarListCache = iarList.map( x => x.iar_id );
-    if(data.archived != "" && data.archived != null) {
-        iarArchived = data.archived.slice(0);
-        iarArchivedCache = iarArchived.map( x => x.iar_id )
+    if ( ($("#issuesAndRemindersModal").data('bs.modal') || {}).isShown ) {
+        $("#issuesAndRemindersModal").modal("hide");
+        $('#issuesAndRemindersModal').on('hidden.bs.modal', function (e) {
+            openModal();
+        })
+    } else {
+        openModal();
     }
+    
+    function openModal() 
+    {
+        let normal = data.normal, locked = data.locked;
 
-    let isPage = window.location.pathname.includes("issues_and_reminders");
+        iarList = data.normal.concat(data.locked);
+        iarListCache = iarList.map( x => x.iar_id );
+        if(data.archived != "" && data.archived != null) {
+            iarArchived = data.archived.slice(0);
+            iarArchivedCache = iarArchived.map( x => x.iar_id )
+        }
 
-    $.get("/../issues_and_reminders/modal", {normal: data.normal, locked: data.locked})
-    .done(function (data) {
-        if( $("#issues_and_reminders_modal").length == 0 ) {
-            $("#page-wrapper .container").append("<div id='issues_and_reminders_modal'></div>")
-        }
-        $("#issues_and_reminders_modal").html(data);
-        reposition("#issuesAndRemindersModal");
-        if(!isPage) {
-            $("#issuesAndRemindersModal").modal("show");
-            onLoadIssuesModal();
-        } else {
-            $.get("/../issues_and_reminders/panel_div", {normal: normal, locked: locked, archived: data.archived})
-            .done(function (data) {
-                $("#issues_and_reminders_panels").html(data);
-                onLoadIssuesPage();
-            });
-        }
-    });
+        let isPage = window.location.pathname.includes("issues_and_reminders");
+
+        $.get("/../issues_and_reminders/modal", {normal: data.normal, locked: data.locked})
+        .done(function (data) {
+            if( $("#issues_and_reminders_modal").length == 0 ) {
+                $("#page-wrapper .container").append("<div id='issues_and_reminders_modal'></div>")
+            }
+            $("#issues_and_reminders_modal").html(data);
+            reposition("#issuesAndRemindersModal");
+            if(!isPage) {
+                    $("#issuesAndRemindersModal").modal("show");
+                    onLoadIssuesModal();
+            } else {
+                $.get("/../issues_and_reminders/panel_div", {normal: normal, locked: locked, archived: data.archived})
+                .done(function (data) {
+                    $("#issues_and_reminders_panels").html(data);
+                    onLoadIssuesPage();
+                });
+            }
+        });
+    }
 }
 
 function onLoadIssuesModal() {
@@ -70,7 +79,7 @@ function onLoadIssuesModal() {
 	let original_height = $('#issuesAndRemindersModal .modal-body.overflow').height();
 	let height = $(window).height()* 0.5 > original_height ? original_height : $(window).height()* 0.5;
 	$('#issuesAndRemindersModal .modal-body.overflow').height(height);
-    $(window).trigger("resize");
+    //$(window).trigger("resize");
 	$(window).on('resize', function() {
 		let height = $(window).height()* 0.5 > original_height ? original_height : $(window).height()* 0.5;
         $('#issuesAndRemindersModal .modal-body.overflow').height(height);
