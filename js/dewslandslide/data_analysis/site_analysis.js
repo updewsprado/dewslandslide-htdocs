@@ -3380,6 +3380,7 @@ function NodeOnSelectDay(column,tdate) {
 
 function downloadSvg() {
 	$("#download").on('click',function(){
+		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 		var all_data=[]
 		var ids = $('.highcharts-container').map(function() {
 			return this.id;
@@ -3387,21 +3388,19 @@ function downloadSvg() {
 		for (var i = 0; i < ids.length; i++) {
 			all_data.push($('#'+ids[i]).html());
 		}
-		
-		if($('#healthbars').html() != undefined){
-			all_data.push($('#healthbars').html())
-		}
 		if($('#heatmap_container').html() != undefined){
 			all_data.push($('#heatmap_container').html())
 		}
-		console.log(all_data)
 
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
-			// alert(data)
+			// $( "#pdfsvg" ).append(all_data[0])
+			// $("#pdfModal").modal('show')
+			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
-				window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+				// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+				$("#pdfModal").modal('show')
 			}
 		})
 	});
