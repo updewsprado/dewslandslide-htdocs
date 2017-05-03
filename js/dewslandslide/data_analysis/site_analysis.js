@@ -1,4 +1,5 @@
 $(document).ajaxStart(function () {
+	downloadSvg();
 	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
