@@ -1,4 +1,5 @@
 $(document).ajaxStart(function () {
+	downloadSvg();
 	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -17,7 +18,7 @@ $(document).ajaxStop(function () {
 });
 
 $(document).ready(function(e) {
-	downloadSvg();
+	
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -716,6 +717,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 				itemHiddenStyle: {
 					color: '#606063'
 				}
+			},
+			credits: {
+				enabled: false
 			},
 			series:series_data
 		});
