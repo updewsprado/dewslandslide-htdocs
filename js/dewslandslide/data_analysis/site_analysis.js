@@ -63,8 +63,17 @@ function cb(start, end) {
 	var parse_time = $('#reportrange0 span').text();
 	var fromDate = start.format('YYYY-MM-DD');
 	var toDate = moment(parse_time).add(1,'days').format('YYYY-MM-DD');
+	$('.checkbox').prop('disabled', true);
+	$('.checkbox').prop('checked', false);
+	$('.site_checkbox').prop('disabled', true);
+	$('.site_checkbox').prop('checked', false);
 	$('.site-panel').slideDown();
 	$('.sitegeneral').empty();
+	$('.site_collapse').slideUp()
+	$('.column_collapse').slideUp()
+	$('.node_collapse').slideUp()
+	$('.column-panel').slideUp();
+	$('.node-panel').slideUp();
 	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
 	$('#sitegeneral').selectpicker();
 	$('#sitegeneral').append('<option >Select Site</option>')
@@ -270,17 +279,17 @@ function SelectdaysOption(id) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
 		var fdate;
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 
 		var site = $("#sitegeneral").val();
@@ -1520,8 +1529,8 @@ function CheckBoxColumn(site,column,from,to){
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment().add(1,"days").format('MM-DD-YYYY');
-			heatmapProcess(column,time+'T00:00','3d')
+			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			heatmapProcess(column,time,'3d')
 			HeatmapOnSelectDay(column)
 		}
 	});
@@ -2111,7 +2120,7 @@ function HeatmapOnSelect(column) {
 function HeatmapOnSelectDay(column) {
 	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-		var timevalue = $("#reportrange3").val();
+		var timevalue = $("#reportrange0 span").text();
 		var tdate = timevalue.slice(0,10);
 		var time = timevalue.slice(11,16);
 		if(selected_day == "1 day"){
@@ -2595,8 +2604,8 @@ function CheckBoxNode(site,column,to){
 	$('#node_sumbit').on('click',function(){
 		$('#collapseColumn' ).switchClass( "in", "collapse");
 		$('#collapseSite' ).switchClass( "in", "collapse");
-		var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
-		var tdate = (moment().add(2,'days')).format('YYYY-MM-DD');
+		var fdate = (moment($("#reportrange0 span").text()).subtract(7,'days')).format('YYYY-MM-DD');
+		var tdate = (moment($("#reportrange0 span").text()).add(2,'days')).format('YYYY-MM-DD');
 		var node =  $('#nodegeneral').val();
 		var node_id = node
 		let dataSubmit = { 
@@ -3342,17 +3351,17 @@ function NodeOnSelectDay(column,tdate) {
 	$("#accel_dropdown_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days =($(this).find('option').eq(clickedIndex).val());
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 		let dataSubmit = { 
 			site : (column).toLowerCase(), 
@@ -3392,7 +3401,6 @@ function downloadSvg() {
 			// alert(data)
 			if(data == "Finished")
 			{
-				
 				window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
 			}
 		})
