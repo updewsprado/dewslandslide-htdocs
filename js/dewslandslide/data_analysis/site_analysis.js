@@ -3385,7 +3385,7 @@ function NodeOnSelectDay(column,tdate) {
 function downloadSvg() {
 	$("#download").on('click',function(){
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-		$( "#pdfsvg" ).empty()
+		$( "#pdfsvg" ).empty();
 		$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
 		var all_data=[]
 		var ids = $('.highcharts-container').map(function() {
