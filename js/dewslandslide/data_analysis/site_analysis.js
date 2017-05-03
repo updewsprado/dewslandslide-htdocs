@@ -3381,6 +3381,8 @@ function NodeOnSelectDay(column,tdate) {
 function downloadSvg() {
 	$("#download").on('click',function(){
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
+		$( "#pdfsvg" ).empty()
+		$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
 		var all_data=[]
 		var ids = $('.highcharts-container').map(function() {
 			return this.id;
@@ -3392,7 +3394,7 @@ function downloadSvg() {
 			all_data.push($('#heatmap_container').html())
 		}
 
-		
+		console.log(all_data)
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			// $( "#pdfsvg" ).append(all_data[0])
@@ -3407,6 +3409,7 @@ function downloadSvg() {
 	});
 
 	$("#downloadPDF").on('click',function(){
+		$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
 		$( "#renamePdf" ).attr( "download", "Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 	});
 }
