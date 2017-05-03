@@ -1,5 +1,5 @@
 $(document).ajaxStart(function () {
-	downloadSvg();
+
 	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -10,7 +10,6 @@ $(document).ajaxStart(function () {
 });
 $(document).ajaxStop(function () {
 	$('#loading').modal('toggle');
-	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 		
@@ -18,8 +17,9 @@ $(document).ajaxStop(function () {
 
 });
 
+
 $(document).ready(function(e) {
-	
+	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
@@ -3408,13 +3408,14 @@ function downloadSvg() {
 			if(data == "Finished")
 			{
 				// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
-				$("#pdfModal").modal('show')
+				$("#pdfModal").modal('show');
+				$("#downloadPDF").on('click',function(){
+					$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
+					$( "#renamePdf" ).attr( "download", "Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
+				});
 			}
 		})
 	});
 
-	$("#downloadPDF").on('click',function(){
-		$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
-		$( "#renamePdf" ).attr( "download", "Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
-	});
+
 }
