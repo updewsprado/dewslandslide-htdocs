@@ -1,5 +1,4 @@
 $(document).ajaxStart(function () {
-	downloadSvg();
 	$('#loading').modal('toggle');
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -10,6 +9,7 @@ $(document).ajaxStart(function () {
 });
 $(document).ajaxStop(function () {
 	$('#loading').modal('toggle');
+	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 		
