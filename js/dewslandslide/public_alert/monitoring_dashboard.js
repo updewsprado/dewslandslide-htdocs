@@ -913,6 +913,7 @@ function getSites() {
 
 function checkIfAlreadySent(release_id, event_id, timestamp) 
 {
+	console.log("CHECK IF SENT", timestamp);
 	$.get( "/../../accomplishment/getNarrativesForShift", 
     { event_id: event_id, start: moment(timestamp).format("YYYY-MM-DD HH:mm:ss"), end: moment(timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
     .done(function (data) {
@@ -920,8 +921,10 @@ function checkIfAlreadySent(release_id, event_id, timestamp)
         let isBulletinSent = false;
         let isEWISent = false;
         for( let i = 0; i < temp.length; i++) {
+		console.log(temp[i]);
             if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(moment(timestamp).format("hh:mm A")))
             {
+		console.log("IS SENT!");
             	isBulletinSent = true;
                 $("#" + release_id).css("color", "red").attr("data-sent", 1);
             }
