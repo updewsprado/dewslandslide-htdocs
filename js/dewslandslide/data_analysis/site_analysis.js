@@ -3392,10 +3392,11 @@ function downloadSvg() {
 			all_data.push($('#heatmap_container').html())
 		}
 
+		
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			// $( "#pdfsvg" ).append(all_data[0])
-			// $("#pdfModal").modal('show')
+			$("#pdfModal").modal('show')
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
@@ -3403,5 +3404,9 @@ function downloadSvg() {
 				$("#pdfModal").modal('show')
 			}
 		})
+	});
+
+	$("#downloadPDF").on('click',function(){
+		$( "#renamePdf" ).attr( "download", "Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 	});
 }
