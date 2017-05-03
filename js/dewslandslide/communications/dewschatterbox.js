@@ -157,6 +157,7 @@ function sendViaAlertMonitor(data){
 			var release_time = moment(data.data_timestamp).format("YYYY-MM-DD hh:mm A");
 			var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
 
+			debugger;
 			if (onset_time != release_time) {
 				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30,'m').format("hh:mm A"));
 			} else {
@@ -166,7 +167,7 @@ function sendViaAlertMonitor(data){
 			data_timestamp = data.data_timestamp;
 			latest_release_id = data.latest_release_id;
 
-			formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
+			formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
 			formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 
 
@@ -195,7 +196,7 @@ function sendViaAlertMonitor(data){
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","04:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
+				formGroundTime = formGroundTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas");
 
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","08:00 PM");
