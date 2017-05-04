@@ -1508,7 +1508,7 @@ function CheckBoxColumn(site,column,from,to){
 			for(var a = 0; a < title.length; a++){
 				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
-					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
+					'<div class="col-md-6" style="padding-left: 0px;"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6" style="padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
 			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
 			SubOnSelect()
@@ -1925,7 +1925,7 @@ function chartProcessDis(id,data_series,name,site){
 			panning: true,
 			panKey: 'shift',
 			height: 800,
-			width:375
+			width:400
 		},
 		title: {
 			text: name,
@@ -1991,7 +1991,7 @@ function chartProcessInverted(id,data_series,name,site){
 			panning: true,
 			panKey: 'shift',
 			height: 600,
-			width: 375
+			width: 400
 		},
 		title: {
 			text: name,
@@ -2057,7 +2057,7 @@ function chartProcessbase(id,data_series,name,site){
 			panning: true,
 			panKey: 'shift',
 			height: 500,
-			width: 375
+			width: 400
 		},
 		title: {
 			text: name
