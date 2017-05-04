@@ -3419,14 +3419,7 @@ function NodeOnSelectDay(column,tdate) {
 /************************/
 
 function downloadSvg() {
-	$("#download").on('click',function(){
-		var name_site = ((($( "tspan" ).text()).split('.')))
-		var extracted_name = (name_site[0]).split(' ');
-		console.log(extracted_name[3].slice(0,3))
-		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-		$( "#pdfsvg" ).empty();
-		$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
-		var all_data=[]
+	var all_data=[]
 		var ids = $('.highcharts-container').map(function() {
 			return this.id;
 		}).get();
@@ -3445,14 +3438,49 @@ function downloadSvg() {
 			if(data == "Finished")
 			{
 				// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
-				$("#pdfModal").modal('show');
-				$("#downloadPDF").on('click',function(){
+				
+				$("#download").on('click',function(){
 					$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
 					$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 				});
+					// $("#download").on('click',function(){})
 			}
 		})
-	});
+	// $("#download").on('click',function(){
+	// 	$("#pdfModal").modal('show');
+	// 	var name_site = ((($( "tspan" ).text()).split('.')))
+	// 	var extracted_name = (name_site[0]).split(' ');
+	// 	console.log(extracted_name[3].slice(0,3))
+	// 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
+	// 	$( "#pdfsvg" ).empty();
+	// 	$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
+	// 	var all_data=[]
+	// 	var ids = $('.highcharts-container').map(function() {
+	// 		return this.id;
+	// 	}).get();
+	// 	for (var i = 0; i < ids.length; i++) {
+	// 		all_data.push($('#'+ids[i]).html());
+	// 	}
+	// 	if($('#heatmap_container').html() != undefined){
+	// 		all_data.push($('#heatmap_container').html())
+	// 	}
+
+	// 	$.post("/../chart_export/renderChart", { charts : all_data } )
+	// 	.done(function (data) {
+	// 		// $( "#pdfsvg" ).append(all_data[0])
+	// 		// $("#pdfModal").modal('show')
+	// 		$( ".highcharts-contextbutton" ).attr( "visibility", "" );
+	// 		if(data == "Finished")
+	// 		{
+	// 			// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+				
+	// 			$("#downloadPDF").on('click',function(){
+	// 				$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
+	// 				$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
+	// 			});
+	// 		}
+	// 	})
+	// });
 
 
 }
