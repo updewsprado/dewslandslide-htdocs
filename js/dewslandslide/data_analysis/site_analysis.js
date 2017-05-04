@@ -76,6 +76,7 @@ function cb(start, end) {
 	$('.node_collapse').slideUp()
 	$('.column-panel').slideUp();
 	$('.node-panel').slideUp();
+	$('#download').hide();
 	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
 	$('#sitegeneral').selectpicker();
 	$('#sitegeneral').append('<option >Select Site</option>')
@@ -143,6 +144,7 @@ function SelectedSite(from,to) {
 		$("#surficial_graph").append('<h4><span class="glyphicon "></span><b>Superimpose Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
 			'</select></b></h4><br><div id="ground_graph"><div>')
 		daysOption('surperimpose')
+		$('#download').show();
 		$(".ground_table").empty()
 		$(".ground_table").append(' <table id="ground_table" class="display table" cellspacing="0"></table>')
 		$("#analysis_panel").empty();
@@ -333,11 +335,11 @@ function RainFallProcess(curSite,fromDate,toDate){
 	$('.rain_graph_checkbox').empty()
 	$.post("../site_level_page/getDatafromRainProps", {data : dataSubmit} ).done(function(data){ // <------------ Data for Site Rain gauge datas
 		var result = JSON.parse(data);
-		getRainSenslope(result[0].rain_senslope , fromDate ,toDate , result[0].max_rain_2year,'rain_senslope');
-		getRainArq(result[0].rain_arq , fromDate ,toDate , result[0].max_rain_2year,'rain_arq');
-		getDistanceRainSite(result[0].RG1, fromDate ,toDate , result[0].max_rain_2year ,'rain1');
-		getDistanceRainSite(result[0].RG2, fromDate ,toDate , result[0].max_rain_2year,'rain2');
-		getDistanceRainSite(result[0].RG3, fromDate ,toDate , result[0].max_rain_2year,'rain3');
+		getRainSenslope(result[0].rain_senslope , dataSubmit, result[0].max_rain_2year,'rain_senslope');
+		getRainArq(result[0].rain_arq , dataSubmit, result[0].max_rain_2year,'rain_arq');
+		getDistanceRainSite(result[0].RG1, dataSubmit, result[0].max_rain_2year ,'rain1');
+		getDistanceRainSite(result[0].RG2, dataSubmit , result[0].max_rain_2year,'rain2');
+		getDistanceRainSite(result[0].RG3, dataSubmit , result[0].max_rain_2year,'rain3');
 		$('.rain_graph_checkbox').append('<input id="rain_graph_checkbox" type="checkbox" class="checkbox"><label for="rain_graph_checkbox">Rainfall Graphs</label>')
 		$('#rain_graph_checkbox').prop('checked', true);
 		$('input[id="rain_graph_checkbox"]').on('click',function () {
@@ -351,19 +353,19 @@ function RainFallProcess(curSite,fromDate,toDate){
 
 }
 
-function getDistanceRainSite(site,fdate,tdate,max_rain,id) { 
+function getDistanceRainSite(site,dataSubmit,max_rain,id) { 
 	if(site.slice(0,1) == "r" ){
-		getRainNoah(site, fdate ,tdate , max_rain,id);
+		getRainNoah(site, dataSubmit , max_rain,id);
 	}else if(site.length == 4){
-		getRainSenslope(site, fdate ,tdate , max_rain,id);
+		getRainSenslope(site, dataSubmit , max_rain,id);
 	}else if(site.length == 6){
-		getRainArq(site, fdate ,tdate , max_rain,id);
+		getRainArq(site, dataSubmit , max_rain,id);
 	}
 }
-function getRainSenslope(site,fdate,tdate,max_rain,id) {
+function getRainSenslope(site,dataSubmit,max_rain,id) {
 	if(site != null){
 		$.ajax({
-			url:"/api/RainSenslope/"+site+"/"+fdate+"/"+tdate,
+			url:"/api/RainSenslope/"+site+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
 				console.log(errorThrown)},
 				success: function(data)
@@ -412,8 +414,9 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 						}
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : fdate,
-							tdate : tdate
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site
 						}
 						chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit);
 					}else{
@@ -426,10 +429,10 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 	}
 }
 
-function getRainArq(site,fdate,tdate,max_rain,id) {
+function getRainArq(site,dataSubmit,max_rain,id) {
 	if(site != null){
 		$.ajax({
-			url:"/api/RainARQ/"+site+"/"+fdate+"/"+tdate,
+			url:"/api/RainARQ/"+site+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
 				console.log(errorThrown)},
 				success: function(data)
@@ -466,8 +469,9 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 						}
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : fdate,
-							tdate : tdate
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit );
 					}else{
@@ -479,11 +483,11 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 	}
 }
 
-function getRainNoah(site,fdate,tdate,max_rain,id) {
+function getRainNoah(site,dataSubmit,max_rain,id) {
 	if(site != null){
 		var rain_noah_number = site.slice(10,20)
 		$.ajax({
-			url:"/api/RainNoah/"+rain_noah_number+"/"+fdate+"/"+tdate,
+			url:"/api/RainNoah/"+rain_noah_number+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
 				console.log(errorThrown)},
 				success: function(data)
@@ -528,8 +532,9 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 						}
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : fdate,
-							tdate : tdate
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit );
 					}else{
@@ -612,6 +617,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 					color: '#E0E0E3',
 					fontSize: '20px'
 				}
+			},
+			subtitle: {
+				text: 'Source :  '+(dataTableSubmit.current_site).toUpperCase()
 			},
 			xAxis: {
 				plotBands: negative,
@@ -1175,6 +1183,9 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 			title: {
 				text: name,
 			},
+			subtitle: {
+				text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
+			},
 			xAxis: {
 
 				type: 'datetime',
@@ -1334,10 +1345,10 @@ function surficialAnalysis(site,crack_id) {
 
 				$('#surficialgeneral').val('analysisVelocity')
 				$('#surficialgeneral').selectpicker('refresh')
-				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
+				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id,site)
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
-				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
+				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id,site)
 				$(".surficial_velocity_checkbox").empty()
 				$(".surficial_velocity_checkbox").append('<input id="surficial_velocity_checkbox" type="checkbox" class="checkbox">'
 					+'<label for="surficial_velocity_checkbox"> Surficial Analysis Graph</label>')
@@ -1360,7 +1371,7 @@ function surficialAnalysis(site,crack_id) {
 	});	
 }
 
-function chartProcessSurficialAnalysis(id,data_series,name){
+function chartProcessSurficialAnalysis(id,data_series,name,site){
 	SurficialOnSelect()
 	Highcharts.setOptions({
 		global: {
@@ -1377,6 +1388,9 @@ function chartProcessSurficialAnalysis(id,data_series,name){
 		},
 		title: {
 			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
 		},
 		xAxis: {
 			type: 'datetime',
@@ -1545,14 +1559,14 @@ function CheckBoxColumn(site,column,from,to){
 			$(".column_level").append('<div class="col-md-12" id="piezometer_div"></div>')
 			$("#piezometer_div").empty()
 			$("#piezometer_div").append('<br><h4><span class=""></span><b>Piezometer Graph </b><select class="selectpicker pull-right"  id="piezogeneral" multiple></select></h4><ol class="breadcrumb piezo-breadcrumb" id="piezo-breadcrumb"></ol>')
-			piezometer(column)
+			piezometer(column,site)
 		}else{
 			$("#piezometer_div").empty()
 		}
 	});
 
 }
-function piezometer(curSite){
+function piezometer(curSite,site){
 	$.ajax({
 		dataType: "json",
 		url: "/api/PiezometerAllData/"+curSite+"pzpz",error: function(xhr, textStatus, errorThrown){
@@ -1588,8 +1602,8 @@ function piezometer(curSite){
 
 				freqDataseries.push({name:'frequency',data:freq_data})
 				tempDataseries.push({name:'Temperature',data:temp_data})
-				chartProcessPiezo('freq_div',freqDataseries,'Piezometer frequency')
-				chartProcessPiezo('temp_div',tempDataseries,'Piezometer Temperature')
+				chartProcessPiezo('freq_div',freqDataseries,'Piezometer frequency',site)
+				chartProcessPiezo('temp_div',tempDataseries,'Piezometer Temperature',site)
 				$(".piezo_checkbox").empty()
 				$(".piezo_checkbox").append('<input id="piezo_checkbox" type="checkbox" class="checkbox">'
 					+'<label for="piezo_checkbox"> Piezometer Graph</label>')
@@ -1604,7 +1618,7 @@ function piezometer(curSite){
 			} 
 		});	
 }
-function chartProcessPiezo(id,data_series,name){
+function chartProcessPiezo(id,data_series,name,site){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1621,6 +1635,9 @@ function chartProcessPiezo(id,data_series,name){
 			},
 			title: {
 				text: name,
+			},
+			subtitle: {
+				text: 'Source: ' + (site).toUpperCase()
 			},
 			xAxis: {
 				type: 'datetime',
@@ -1676,8 +1693,8 @@ function allSensorPosition(site,fdate,tdate) {
 		success: function(result){
 			SubOnSelectDay(site,tdate)
 			var data = JSON.parse(result);
-			columnPosition(data[0].c)
-			displacementPosition(data[0].d,data[0].v)
+			columnPosition(data[0].c,site)
+			displacementPosition(data[0].d,data[0].v,site)
 			$("#reportrange2").popover('hide')
 			$("#sub_title").popover('show')
 			$(".sub_surface_analysis_checkbox").empty()
@@ -1694,7 +1711,7 @@ function allSensorPosition(site,fdate,tdate) {
 		}
 	});
 }
-function columnPosition(data_result) {
+function columnPosition(data_result,site) {
 	if(data_result!= "error"){
 		var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
@@ -1743,15 +1760,14 @@ function columnPosition(data_result) {
 			fseries.push({name:listDate[a], data:fAlldown[a]})
 			fseries2.push({name:listDate[a],  data:fAlllat[a]})
 		}
-		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
-		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
+		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)",site)
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
 
-function displacementPosition(data_result,data_result_v) {
+function displacementPosition(data_result,data_result_v,site) {
 	if(data_result != "error"){
-		
 		var data = data_result;
 		var totalId =[] , listid = [0] ,allTime=[] ,allId=[] , totId = [];
 		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
@@ -1808,14 +1824,14 @@ function displacementPosition(data_result,data_result_v) {
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
 		}
-		velocityPosition(data_result_v,totalId.length,disData1[0]); 
-		chartProcessDis("dis1",fseries,"Displacement, downslope")
-		chartProcessDis("dis2",fseries2,"Displacement , across slope")
+		velocityPosition(data_result_v,totalId.length,disData1[0],site); 
+		chartProcessDis("dis1",fseries,"Displacement, downslope",site)
+		chartProcessDis("dis2",fseries2,"Displacement , across slope",site)
 
 	}     
 
 }
-function velocityPosition(data_result,id,date) {
+function velocityPosition(data_result,id,date,site) {
 	if(data_result != "error"){
 		var data = data_result;
 		var allTime = [] , dataset= [] , sliceData =[];
@@ -1887,11 +1903,11 @@ function velocityPosition(data_result,id,date) {
 				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
 			}					
 		}
-		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
-		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
+		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope",site)
+		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope",site)   
 	}  
 }
-function chartProcessDis(id,data_series,name){
+function chartProcessDis(id,data_series,name,site){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1908,6 +1924,9 @@ function chartProcessDis(id,data_series,name){
 		},
 		title: {
 			text: name,
+		},
+		subtitle: {
+			text: 'Source: ' + (site).toUpperCase()
 		},
 		xAxis: {
 			type: 'datetime',
@@ -1954,7 +1973,7 @@ function chartProcessDis(id,data_series,name){
 
 }
 
-function chartProcessInverted(id,data_series,name){
+function chartProcessInverted(id,data_series,name,site){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1971,6 +1990,9 @@ function chartProcessInverted(id,data_series,name){
 		},
 		title: {
 			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+(site).toUpperCase()
 		},
 		tooltip: {
 			crosshairs: true
@@ -2008,7 +2030,7 @@ function chartProcessInverted(id,data_series,name){
 
 }
 
-function chartProcessbase(id,data_series,name){
+function chartProcessbase(id,data_series,name,site){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -2026,7 +2048,9 @@ function chartProcessbase(id,data_series,name){
 		title: {
 			text: name
 		},
-
+		subtitle: {
+			text: 'Source: ' + (site).toUpperCase()
+		},
 		tooltip: {
 			headerFormat: '{point.key}',
 			pointFormat: ' ',
@@ -2378,12 +2402,12 @@ function heatmapProcess(site,tdate,day){
 					obj_list_id.push({index:l,id:list_id[l]})
 				}
 
-				heatmapVisual(series_data,obj_list_time,obj_list_id)
+				heatmapVisual(series_data,obj_list_time,obj_list_id,site)
 			}
 		}
 	});	
 }
-function heatmapVisual(series_data,list_time,list_id){
+function heatmapVisual(series_data,list_time,list_id,site){
 	for(var i=0;i<series_data.length;i++){
 		if(series_data[i].id == "null" || series_data[i].value == NaN ){
 			series_data.splice(i,1);
@@ -2496,6 +2520,11 @@ function heatmapVisual(series_data,list_time,list_id){
 		.style("text-anchor", "middle")
 		.text("Soms Heatmap");
 
+		svg.append("text")
+		.attr("x", width/2)
+		.attr("y", -20)
+		.style("text-anchor", "middle")
+		.text('Source : '+(site).toUpperCase());
 
 		var countScale = d3.scale.linear()
 		.domain([0, 255])
@@ -2733,7 +2762,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 		var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 		$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
 		$("#batt_div").append('<br><div id="'+id[3]+'"></div>')
-		chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt')
+		chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt',site)
 	});
 	$.ajax({ 
 		dataType: "json",
@@ -2787,7 +2816,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
 				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"></div>')
-				chartProcessAccel(id[a],series_filtered[a],series_name[a],color_series,node_series_name[a])
+				chartProcessAccel(id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],site)
 			}
 		}
 	});	
@@ -2879,7 +2908,7 @@ function accel2(data,series,msgid,list){
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
 			$("#batt_div").append('<br><div id="'+data.id[3]+'"></div>')
-			chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt")
+			chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt",data.site)
 		}
 	});	
 }
@@ -2985,7 +3014,7 @@ function accel2filtered(data,series,msgid,list){
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
 				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"></div>')
-				chartProcessAccel(data.id[a],series_filtered[a],series_name[a],color_series,node_series_name[a])
+				chartProcessAccel(data.id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],data.site)
 			}
 		}
 	});	
@@ -3071,7 +3100,7 @@ function somsfiltered(data,dataSoms,series){
 	});	
 }
 
-function chartProcessAccel(id,data_series,name,color,list){
+function chartProcessAccel(id,data_series,name,color,list,site){
 	$("."+list+"_accel_checkbox").empty()
 	$("."+list+"_accel_checkbox").append('<input id="'+list+'_accel_checkbox" type="checkbox" class="checkbox">'
 		+'<label for="'+list+'_accel_checkbox">'+list.toUpperCase()+' Accel Graph</label>')
@@ -3111,6 +3140,9 @@ function chartProcessAccel(id,data_series,name,color,list){
 				color: '#E0E0E3',
 				fontSize: '20px'
 			}
+		},
+		subtitle: {
+			text: 'Source :  '+(site).toUpperCase()
 		},
 		xAxis: {
 			type: 'datetime',
@@ -3255,6 +3287,9 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
 				fontSize: '20px'
 			}
 		},
+		subtitle: {
+			text: 'Source :  '+(column).toUpperCase()
+		},
 		xAxis: {
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -3385,6 +3420,9 @@ function NodeOnSelectDay(column,tdate) {
 
 function downloadSvg() {
 	$("#download").on('click',function(){
+		var name_site = ((($( "tspan" ).text()).split('.')))
+		var extracted_name = (name_site[0]).split(' ');
+		console.log(extracted_name[3].slice(0,3))
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 		$( "#pdfsvg" ).empty();
 		$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
@@ -3399,11 +3437,10 @@ function downloadSvg() {
 			all_data.push($('#heatmap_container').html())
 		}
 
-		console.log(all_data)
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			// $( "#pdfsvg" ).append(all_data[0])
-			$("#pdfModal").modal('show')
+			// $("#pdfModal").modal('show')
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
@@ -3411,7 +3448,7 @@ function downloadSvg() {
 				$("#pdfModal").modal('show');
 				$("#downloadPDF").on('click',function(){
 					$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
-					$( "#renamePdf" ).attr( "download", "Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
+					$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 				});
 			}
 		})
