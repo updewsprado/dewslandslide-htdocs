@@ -106,7 +106,6 @@ $(document).ready(function(e) {
 	}
 
 	function allSensorPosition(data_result) {
-		console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate)
 		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
@@ -166,8 +165,9 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 0; a < fAlldown.length; a++){
-				fseries.push({name:listDate[a], data:fAlldown[a]})
-				fseries2.push({name:listDate[a],  data:fAlllat[a]})
+				var color = Math.abs((inferno.length-((a+1) * 40)))
+				fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
+				fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
 			}
 			chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 			chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -232,8 +232,9 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 1; a < disData1.length+1; a++){
-				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+				var color = Math.abs((inferno.length-((a+1) * 20)))
+				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
 			velocityPosition(data_result_v,totalId.length,disData1[0]); 
 			chartProcess("dis1",fseries,"Displacement, downslope")
@@ -312,8 +313,9 @@ $(document).ready(function(e) {
 
 				for(var a = 0; a < sliceData.length-1; a++){
 					catNum.push((sliceData.length-2)-(a+1)+2)
-					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+					var color = Math.abs((inferno.length-((a+1) * 20)))
+					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}					
 			}
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
@@ -417,21 +419,21 @@ $(document).ready(function(e) {
 			credits: {
 				enabled: false
 			},
-			legend: {
-				layout: 'vertical',
-				align: 'right',
-				verticalAlign: 'middle',
-				borderWidth: 0,
-				itemStyle: {
-					color: '#222'
-				},
-				itemHoverStyle: {
-					color: '#E0E0E3'
-				},
-				itemHiddenStyle: {
-					color: '#606063'
-				}
-			},
+			// legend: {
+			// 	layout: 'vertical',
+			// 	align: 'right',
+			// 	verticalAlign: 'middle',
+			// 	borderWidth: 0,
+			// 	itemStyle: {
+			// 		color: '#222'
+			// 	},
+			// 	itemHoverStyle: {
+			// 		color: '#E0E0E3'
+			// 	},
+			// 	itemHiddenStyle: {
+			// 		color: '#606063'
+			// 	}
+			// },
 			credits: {
 				enabled: false
 			},
