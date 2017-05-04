@@ -251,7 +251,7 @@ $(document).ready(function()
                 { 
                     "data": "timestamp",
                     "render": function (data, type, full) {
-                        return full.timestamp == null ? "N/A" : moment(full.timestamp).format("DD MMMM YYYY, HH:mm:ss");
+                        return full.timestamp == null ? "N/A" : moment(full.timestamp).format("MM/DD/YYYY HH:mm:ss");
                     },
                     "name": "timestamp",
                     className: "text-right"
