@@ -1507,7 +1507,7 @@ function CheckBoxColumn(site,column,from,to){
 			var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
 			for(var a = 0; a < title.length; a++){
 				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
-				$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="'+id_title[a]+'_sub" class="collapse">'+
+				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
 			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
@@ -1757,8 +1757,10 @@ function columnPosition(data_result,site) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			fseries.push({name:listDate[a], data:fAlldown[a]})
-			fseries2.push({name:listDate[a],  data:fAlllat[a]})
+			var color = Math.abs((inferno.length-((a+1) * 40)))
+			fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
+			// console.log(inferno[color] ,color)
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)",site)
@@ -1821,8 +1823,9 @@ function displacementPosition(data_result,data_result_v,site) {
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+			var color = Math.abs((inferno.length-((a+1) * 20)))
+			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
 		velocityPosition(data_result_v,totalId.length,disData1[0],site); 
 		chartProcessDis("dis1",fseries,"Displacement, downslope",site)
@@ -1879,8 +1882,9 @@ function velocityPosition(data_result,id,date,site) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = Math.abs((inferno.length-((a+1) * 20)))
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
 		}else{
 			var catNum=[];
@@ -1899,8 +1903,9 @@ function velocityPosition(data_result,id,date,site) {
 
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
-				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = Math.abs((inferno.length-((a+1) * 20)))
+				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
 		}
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope",site)
@@ -1953,21 +1958,21 @@ function chartProcessDis(id,data_series,name,site){
 		credits: {
 			enabled: false
 		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#0000'
-			},
-			itemHoverStyle: {
-				color: '#0000'
-			},
-			itemHiddenStyle: {
-				color: '#222'
-			}
-		},
+		// legend: {
+		// 	layout: 'vertical',
+		// 	align: 'right',
+		// 	verticalAlign: 'middle',
+		// 	borderWidth: 0,
+		// 	itemStyle: {
+		// 		color: '#0000'
+		// 	},
+		// 	itemHoverStyle: {
+		// 		color: '#0000'
+		// 	},
+		// 	itemHiddenStyle: {
+		// 		color: '#222'
+		// 	}
+		// },
 		series:data_series
 	});
 
@@ -1997,6 +2002,15 @@ function chartProcessInverted(id,data_series,name,site){
 		tooltip: {
 			crosshairs: true
 		},
+		xAxis:{
+			 gridLineWidth: 1,
+			
+		},
+		yAxis:{
+			 title: {
+                text: 'Dept'
+            }
+		},
 		plotOptions: {
 			spline: {
 				marker: {
@@ -2007,21 +2021,21 @@ function chartProcessInverted(id,data_series,name,site){
 		credits: {
 			enabled: false
 		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#222'
-			},
-			itemHoverStyle: {
-				color: '#E0E0E3'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
-		},
+		// legend: {
+		// 	layout: 'vertical',
+		// 	align: 'right',
+		// 	verticalAlign: 'middle',
+		// 	borderWidth: 0,
+		// 	itemStyle: {
+		// 		color: '#222'
+		// 	},
+		// 	itemHoverStyle: {
+		// 		color: '#E0E0E3'
+		// 	},
+		// 	itemHiddenStyle: {
+		// 		color: '#606063'
+		// 	}
+		// },
 		credits: {
 			enabled: false
 		},
@@ -3451,6 +3465,10 @@ function downloadSvg() {
 					$( "#renamePdf" ).attr( "href", "/temp/charts_render/compiled.pdf" );
 					$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 				});
+			}else{
+				$( "#pdfsvg" ).append('<H3>ERROR</H3>')
+				$("#pdfModal").modal('show');
+				$("#downloadPDF").hide();
 			}
 		})
 	});
