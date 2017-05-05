@@ -39,12 +39,14 @@ $(document).ready(function(e) {
 			per_site_name.push(per_site[i].name)
 		}
 	})
-	$('#submit').on('click',function(){
-		if($("#sitegeneral").val() != ""){
+	$('#sitegeneral').on('change',function(){
+		if($("#sitegeneral").val() != "SELECT"){
 			var subSites =[];
 			var curSite = $("#sitegeneral").val();
-			var fromDate = $('#reportrange span').html().slice(0,10);
-			var toDate = $('#reportrange span').html().slice(13,23);
+			// var fromDate = $('#reportrange span').html().slice(0,10);
+			// var toDate = $('#reportrange span').html().slice(13,23);
+			var fromDate = 'n';
+			var toDate = 'n';
 			// dataPresencePerSite(curSite)
 			document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Column Overview"
 			for (i = 0; i <  per_site_name.length; i++) {
@@ -85,16 +87,31 @@ $(document).ready(function(e) {
 	cb(start, end);
 
 	function cb(start, end) {
-		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));   
+		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
+		// alert($("#sitegeneral").val()) 
+		if($("#sitegeneral").val() != null){
+
+			var curSite = $("#sitegeneral").val();
+			var fromDate = $('#reportrange span').html().slice(0,10);
+			var toDate = $('#reportrange span').html().slice(13,23);
+
+			let dataSubmit = { 
+				site : curSite, 
+				fdate : fromDate,
+				tdate : toDate
+			}
+
+			allSensorPosition(dataSubmit)
+		}
 	}
 
 	function allSensorPosition(data_result) {
-		// console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'))
-		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'),
+		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
 				var data = JSON.parse(result);
 				columnPosition(data[0].c)
+				// console.log(data)
 				displacementPosition(data[0].d,data[0].v)
 			}
 		});
@@ -148,8 +165,9 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 0; a < fAlldown.length; a++){
-				fseries.push({name:listDate[a], data:fAlldown[a]})
-				fseries2.push({name:listDate[a],  data:fAlllat[a]})
+				var color = Math.abs((inferno.length-((a+1) * 40)))
+				fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
+				fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
 			}
 			chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 			chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -214,8 +232,9 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 1; a < disData1.length+1; a++){
-				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+				var color = Math.abs((inferno.length-((a+1) * 20)))
+				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
 			velocityPosition(data_result_v,totalId.length,disData1[0]); 
 			chartProcess("dis1",fseries,"Displacement, downslope")
@@ -294,8 +313,9 @@ $(document).ready(function(e) {
 
 				for(var a = 0; a < sliceData.length-1; a++){
 					catNum.push((sliceData.length-2)-(a+1)+2)
-					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+					var color = Math.abs((inferno.length-((a+1) * 20)))
+					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}					
 			}
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
@@ -378,6 +398,14 @@ $(document).ready(function(e) {
 			title: {
 				text: name,
 			},
+			xAxis: {
+				gridLineWidth: 1,
+			},
+			yAxis: {
+				title: {
+					text: 'Dept'
+				},
+			},
 			tooltip: {
 				crosshairs: true
 			},
@@ -391,21 +419,21 @@ $(document).ready(function(e) {
 			credits: {
 				enabled: false
 			},
-			legend: {
-				layout: 'vertical',
-				align: 'right',
-				verticalAlign: 'middle',
-				borderWidth: 0,
-				itemStyle: {
-					color: '#222'
-				},
-				itemHoverStyle: {
-					color: '#E0E0E3'
-				},
-				itemHiddenStyle: {
-					color: '#606063'
-				}
-			},
+			// legend: {
+			// 	layout: 'vertical',
+			// 	align: 'right',
+			// 	verticalAlign: 'middle',
+			// 	borderWidth: 0,
+			// 	itemStyle: {
+			// 		color: '#222'
+			// 	},
+			// 	itemHoverStyle: {
+			// 		color: '#E0E0E3'
+			// 	},
+			// 	itemHiddenStyle: {
+			// 		color: '#606063'
+			// 	}
+			// },
 			credits: {
 				enabled: false
 			},
@@ -525,25 +553,25 @@ $(document).ready(function(e) {
      //            .style("text-anchor", "middle")
      //            .attr("transform", "translate(11, -6)")
      //            .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
-                  
-                  svg.call(tip);
 
-                
-				var rectangles = svg.selectAll("rect")
-				.data(pattern)
-				.enter().append("rect");
+     svg.call(tip);
 
-				rectangles.attr("x", function(d) {
-					return d.index_x * 17;})
-				.attr("y", function(d) {
-					return d.index_y * 17;})
-				.attr("width", 15)
-				.attr("height", 15).
-				style("fill", function(d) {
-					return colorScale(d.index_x);})
-				.on('mouseover', tip.show)
-				.on('mouseout', tip.hide)
-			}
-		});
+
+     var rectangles = svg.selectAll("rect")
+     .data(pattern)
+     .enter().append("rect");
+
+     rectangles.attr("x", function(d) {
+     	return d.index_x * 17;})
+     .attr("y", function(d) {
+     	return d.index_y * 17;})
+     .attr("width", 15)
+     .attr("height", 15).
+     style("fill", function(d) {
+     	return colorScale(d.index_x);})
+     .on('mouseover', tip.show)
+     .on('mouseout', tip.hide)
+ }
+});
 	}
 });
