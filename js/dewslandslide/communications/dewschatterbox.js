@@ -27,18 +27,25 @@ function sendViaAlertMonitor(data){
 				var numbers = contacts[counter].number.split(',');
 				var number = "";
 				var temp = "";
+
 				if (contacts[counter].ewirecipient != 0) {
 					numbers.forEach(function(x) {
 						temp = temp+"|"+x;
 						number = temp;
 					});
-
-					if (contacts[counter].office != "GDAPD-PHIV") {
-						var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-						default_recipients.push(detailed);
-						$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+					if (data.status == "extended") {
+						if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
+					} else {
+						if (contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
 					}
-
 				} else {
 					numbers.forEach(function(x) {
 						temp = temp+"|"+x;
@@ -72,7 +79,6 @@ function sendViaAlertMonitor(data){
 			7: "July",8: "August", 9: "September",
 			10: "October", 11: "November", 12: "December"};
 
-			console.log(data["internal_alert_level"].toUpperCase());
 			if (data["internal_alert_level"].toUpperCase().length > 4) {
 				if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A2") {
 					var preConstructedEWI = response["A2"];
@@ -99,6 +105,7 @@ function sendViaAlertMonitor(data){
 
 			}
 
+			
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
 					case 1:
@@ -133,7 +140,7 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			console.log(currentPanahon);
+
 			if (currentPanahon >= 13 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
 			} else if (currentPanahon >= 18 && currentPanahon <=23) {
@@ -2390,7 +2397,13 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = [];
+		for (var counter = 0; counter < current_recipients.length; counter ++) {
+			var office = current_recipients[counter].substring(0, current_recipients[counter].indexOf(':')).trim();
+			if ($.inArray(office, tagOffices) == -1) {
+				tagOffices.push(office);
+			}
+		}
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
