@@ -8,49 +8,49 @@ function sendViaAlertMonitor(data){
 	} else {
 		alert_site_name = data.name;
 	}
-  
+
 	$.ajax({
-	  type: "POST",
-	  url: "../chatterbox/getCommunityContactViaDashboard/",
-	  async: true,
-	  data: {site: alert_site_name},
-	  success: function(response){
+		type: "POST",
+		url: "../chatterbox/getCommunityContactViaDashboard/",
+		async: true,
+		data: {site: alert_site_name},
+		success: function(response){
 
-	  	var contacts = JSON.parse(response);
-		var default_recipients = [];
-		var additional_recipients = [];
+			var contacts = JSON.parse(response);
+			var default_recipients = [];
+			var additional_recipients = [];
 
-		$('#ewi-recipients-dashboard').tagsinput('removeAll');
-		$('#ewi-recipients-dashboard').val('');
+			$('#ewi-recipients-dashboard').tagsinput('removeAll');
+			$('#ewi-recipients-dashboard').val('');
 
-		for (var counter = 0; counter < contacts.length; counter++) {
-			var numbers = contacts[counter].number.split(',');
-			var number = "";
-			var temp = "";
-			if (contacts[counter].ewirecipient != 0) {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
+			for (var counter = 0; counter < contacts.length; counter++) {
+				var numbers = contacts[counter].number.split(',');
+				var number = "";
+				var temp = "";
+				if (contacts[counter].ewirecipient != 0) {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
 
-		        if (contacts[counter].office != "GDAPD-PHIV") {
-			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-			        default_recipients.push(detailed);
-					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
-		        }
-		        
-			} else {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        additional_recipients.push(detailed);
+					if (contacts[counter].office != "GDAPD-PHIV") {
+						var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+						default_recipients.push(detailed);
+						$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+					}
+
+				} else {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
+					var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+					additional_recipients.push(detailed);
+				}
 			}
+			$('#default-recipients').val(default_recipients);
+			$('#additional-recipients').val(additional_recipients);
 		}
-		$('#default-recipients').val(default_recipients);
-		$('#additional-recipients').val(additional_recipients);
-	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -103,15 +103,23 @@ function sendViaAlertMonitor(data){
 				switch(data['day']) {
 					case 1:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 2:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 3:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					default:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","ati");
+					var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+					if (meridiem == "12:00 AM") {
+						meridiem = meridiem.replace("AM","MN");
+					}
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%",meridiem);
 					break;
 				}	
 				var ext_month = moment().add(1, 'days').format("MM");
@@ -158,9 +166,17 @@ function sendViaAlertMonitor(data){
 			var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
 
 			if (onset_time != release_time) {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30,'m').format("hh:mm A"));
+				var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+				if (meridiem == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
+				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			} else {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.event_start).format("YYYY-MM-DD hh:mm A"));
+				var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+				if (meridiem.slice(-8) == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
+				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			}
 
 			data_timestamp = data.data_timestamp;
@@ -898,7 +914,7 @@ $(document).ready(function() {
 						}
 					}
 
-			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+					if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_template = "";
 
@@ -912,12 +928,12 @@ $(document).ready(function() {
 								});
 							}
 
-		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							narrative_recipients = [];
 						} 
-			        }
+					}
 
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 						var narrative_details = {
@@ -1047,61 +1063,61 @@ $(document).ready(function() {
 	return tempConn;
 }
 
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			console.log(events);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
+function getOngoingEvents(sites){
+	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+		var events = JSON.parse(data);
+		console.log(events);
+		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+		.done(function(response) {
+			siteids = JSON.parse(response);
+			for (var counter = 0; counter < events.length; counter++) {
+				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+					if (events[counter].site_id == siteids[siteid_counter].id) {
+						var narrative_template = "";
+						if (gintags_msg_details.tags === "#EwiResponse") {
+							narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+						} else if (gintags_msg_details.tags === "#EwiMessage"){
 
-								var tagOffices = [];
-								$('input[name="offices"]:checked').each(function() {
-									tagOffices.push(this.value);
-								});
-
-						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-									if (narrative_recipients.length > 0) {
-										narrative_recipients.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									} else {
-										tagOffices.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									}
-									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
-									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-						        }
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							console.log(narrative_details);
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-							.done(function(response) {
-								console.log(response);
+							var tagOffices = [];
+							$('input[name="offices"]:checked').each(function() {
+								tagOffices.push(this.value);
 							});
 
+							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+								if (narrative_recipients.length > 0) {
+									narrative_recipients.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								} else {
+									tagOffices.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								}
+								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
+
+								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+							}
+						} else {
+							$.notify("Invalid request, please try again.","warning");
 						}
+						var narrative_details = {
+							'event_id': events[counter].event_id,
+							'site_id': siteids[siteid_counter].id,
+							'ewi_sms_timestamp': gintags_msg_details[2],
+							'narrative_template': narrative_template
+						}
+						console.log(narrative_details);
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+						.done(function(response) {
+							console.log(response);
+						});
+
 					}
 				}
-			});
+			}
 		});
-	}
+	});
+}
 
 function waitForSocketConnection() {
 	if (!window.timerID) {
@@ -1896,14 +1912,14 @@ $('#send-msg').on('click',function(){
 				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-				console.log(temp_msg_holder);
-				conn.send(JSON.stringify(temp_msg_holder));
-				$('#msg').val('');
-			}
-
-			updateRemainingCharacters();
+			console.log(temp_msg_holder);
+			conn.send(JSON.stringify(temp_msg_holder));
+			$('#msg').val('');
 		}
-	});
+
+		updateRemainingCharacters();
+	}
+});
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2277,10 +2293,10 @@ $('#confirm-ewi').click(function(){
 	}
 });
 
-	$('#ewi-date-picker').datetimepicker({
-	    locale: 'en',
-	    format: 'YYYY-MM-DD HH:mm:ss'
-	});
+$('#ewi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD HH:mm:ss'
+});
 
 function getEWI(handledTemplate){
 	var constructedEWI = "";
@@ -2363,7 +2379,7 @@ $('#send-btn-ewi-amd').click(function(){
 	var difference = [];
 
 	$.grep(current_recipients, function(el) {
-	        if ($.inArray(el, default_recipients) == -1) difference.push(el);
+		if ($.inArray(el, default_recipients) == -1) difference.push(el);
 	});
 
 	ewiFlagger = true;
@@ -2724,8 +2740,8 @@ function getInitialQuickInboxMessages () {
 
 				$('#response-contact-container').show();
 				$("#response-contact-container").DataTable({
-			        "scrollX": true
-			    });
+					"scrollX": true
+				});
 			}
 		});
 	}
@@ -2768,8 +2784,8 @@ function getInitialQuickInboxMessages () {
 
 				$('#response-contact-container').show();
 				$("#response-contact-container").DataTable({
-			        "scrollX": true
-			    });
+					"scrollX": true
+				});
 			}
 		});
 	}
