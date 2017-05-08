@@ -403,7 +403,7 @@ $(document).ready(function(e) {
 			},
 			yAxis: {
 				title: {
-					text: 'Dept'
+					text: 'DeptH'
 				},
 			},
 			tooltip: {
