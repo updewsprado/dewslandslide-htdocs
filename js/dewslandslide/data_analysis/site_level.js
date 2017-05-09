@@ -869,7 +869,7 @@ function chartProcess(id,data_series,name){
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
+			split: true,
 			crosshairs: true
 		},
 		plotOptions: {
@@ -926,7 +926,8 @@ function chartProcessInverted(id,data_series,name){
 			},
 		},
 		tooltip: {
-			crosshairs: true
+			crosshairs: true,
+			split: true,
 		},
 		plotOptions: {
 			spline: {
@@ -978,9 +979,9 @@ function chartProcessbase(id,data_series,name){
 		},
 
 		tooltip: {
-			headerFormat: '{point.key}',
-			pointFormat: ' ',
-			crosshairs: true
+			// headerFormat: 'point.key',
+			// pointFormat: ' ',
+			split: true,
 		},
 
 		credits: {

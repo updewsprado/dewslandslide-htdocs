@@ -1757,7 +1757,7 @@ function columnPosition(data_result,site) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			var color = Math.abs((inferno.length-((a+1) * 40)))
+			var color = Math.floor((Math.random() * 255) + 1)
 			fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
 			// console.log(inferno[color] ,color)
@@ -1823,7 +1823,7 @@ function displacementPosition(data_result,data_result_v,site) {
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			var color = Math.abs((inferno.length-((a+1) * 20)))
+			var color = Math.floor((Math.random() * 255) + 1)
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
@@ -1882,7 +1882,7 @@ function velocityPosition(data_result,id,date,site) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				var color = Math.abs((inferno.length-((a+1) * 20)))
+				var color = Math.floor((Math.random() * 255) + 1)
 				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
@@ -1945,7 +1945,7 @@ function chartProcessDis(id,data_series,name,site){
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
+			split: true,
 			crosshairs: true
 		},
 		plotOptions: {
@@ -2000,7 +2000,8 @@ function chartProcessInverted(id,data_series,name,site){
 			text: 'Source: '+(site).toUpperCase()
 		},
 		tooltip: {
-			crosshairs: true
+			crosshairs: true,
+			split: true,
 		},
 		xAxis:{
 			 gridLineWidth: 1,
@@ -2008,7 +2009,7 @@ function chartProcessInverted(id,data_series,name,site){
 		},
 		yAxis:{
 			 title: {
-                text: 'Dept'
+                text: 'Depth'
             }
 		},
 		plotOptions: {
@@ -2066,8 +2067,7 @@ function chartProcessbase(id,data_series,name,site){
 			text: 'Source: ' + (site).toUpperCase()
 		},
 		tooltip: {
-			headerFormat: '{point.key}',
-			pointFormat: ' ',
+			split: true,
 			crosshairs: true
 		},
 
