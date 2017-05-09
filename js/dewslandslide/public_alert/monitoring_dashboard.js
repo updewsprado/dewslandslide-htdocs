@@ -913,6 +913,7 @@ function getSites() {
 
 function checkIfAlreadySent(release_id, event_id, timestamp) 
 {
+	timestamp = moment(timestamp).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss")
 	$.get( "/../../accomplishment/getNarrativesForShift", 
     { event_id: event_id, start: moment(timestamp).format("YYYY-MM-DD HH:mm:ss"), end: moment(timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
     .done(function (data) {
