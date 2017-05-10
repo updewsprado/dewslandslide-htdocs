@@ -383,18 +383,18 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
 
-							// 	}else{
-							// 		nval.push(i);
-							// 		break;
-							// 	}
-							// }
+								}else{
+									nval.push(i);
+									break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -449,6 +449,19 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
+
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+
+								}else{
+									nval.push(i);
+									break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -503,14 +516,14 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// }
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
