@@ -237,7 +237,10 @@ $(document).ready(function()
                 let recipients = $("#recipients").tagsinput("items");
                 console.log(recipients);
 
-                text = $("#info").html();
+                text = $("#info").val();
+                let i = text.indexOf("DEWS");
+                text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
+                
                 subject = $("#subject").text();
                 filename = $("#filename").text();
                 sendMail(text, subject, filename, recipients);
