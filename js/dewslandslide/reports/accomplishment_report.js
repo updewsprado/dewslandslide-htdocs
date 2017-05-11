@@ -437,7 +437,7 @@ $(document).ready(function()
             $("#loading .progress-bar").text("Saving...");
             $("#loading").modal("show");
 
-            let data = { narratives: narratives };
+            let data = { narratives: JSON.stringify(narratives) };
             $.ajax({
                 url: "../../accomplishment/insertNarratives",
                 type: "POST",
