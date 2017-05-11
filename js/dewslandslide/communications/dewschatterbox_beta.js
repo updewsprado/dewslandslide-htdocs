@@ -266,6 +266,7 @@ $(document).ready(function() {
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var ewi_template = Handlebars.compile($('#ewi_template').html());
 
 	} catch (err) {
 		console.log(err);

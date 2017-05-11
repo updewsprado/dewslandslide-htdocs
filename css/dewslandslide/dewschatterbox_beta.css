@@ -248,6 +248,10 @@ div.awesomplete {
   margin: 0px;
 }
 
+#page-wrapper {
+  background-color: transparent;
+}
+
 .no-padding {
   margin: 0px;
   padding: 0px;
@@ -259,6 +263,10 @@ div.awesomplete {
 
 p {
 	padding: 10px 15px 0px 15px;
+}
+
+textarea {
+  font-style: italic;
 }
 
 #modal-select-recipients {
