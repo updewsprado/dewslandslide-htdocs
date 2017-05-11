@@ -1,0 +1,138 @@
+#bg-img-chatterbox {
+	z-index: -1;
+	max-width: 100%;
+	max-height: 100%;  
+	position: absolute;
+	margin:auto;
+	top:0;
+	bottom:0;
+	left:0;
+	right:0;
+	opacity: .7;
+}
+
+.nav-margin {
+	margin-top: 100px;
+}
+
+.division {
+	height: 100%;
+}
+
+#convo-header div{
+    text-align: right;
+}
+
+.dropdown-input {
+	margin-top: 5px;
+}
+
+textarea {
+    resize: none;
+}
+
+.right-content {
+	text-align: right;
+}
+
+.left-content {
+	text-align: left;
+}
+
+.align-center {
+	text-align: center;
+}
+
+div.awesomplete {
+	width: 100%;
+}
+
+.panel,.panel-heading {
+	border-radius: 0em;
+}
+
+.friend-list-header {
+  position: fixed;
+}
+
+.friend-list li img {
+	width: 45px;
+	height: 45px;
+}
+
+.friend-list li {
+  border-bottom: 1px solid #eee;
+}
+
+.friend-list li a img {
+  float: left;
+  width: 45px;
+  height: 45px;
+  margin-right: 0px;
+}
+
+.friend-list li a {
+  position: relative;
+  display: block;
+  padding: 10px;
+  transition: all .2s ease;
+  -webkit-transition: all .2s ease;
+  -moz-transition: all .2s ease;
+  -ms-transition: all .2s ease;
+  -o-transition: all .2s ease;
+}
+
+.friend-list li.active a {
+  background-color: #f1f5fc;
+}
+
+.friend-list li a .friend-name, 
+.friend-list li a .friend-name:hover {
+  color: #777;
+}
+
+.friend-list li a .unknown-number {
+  color: #7F0D13;
+}
+
+.friend-list li a .last-message {
+  width: 70%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.friend-list li a .time {
+  position: absolute;
+  top: 0px;
+  right: 8px;
+}
+
+.friend-list li a .chat-alert {
+  position: absolute;
+  right: 8px;
+  top: 27px;
+  font-size: 10px;
+  padding: 3px 5px;
+}
+
+#quick-inbox-display,#quick-inbox-unknown-display {
+    height: 555px;
+    overflow: hidden;
+    overflow-y: scroll;
+    list-style-type: none;
+    margin-top: 5px;
+    padding: 0;
+}
+
+.bootstrap-tagsinput {
+	width: 100%;
+}
+
+p {
+	padding: 10px 15px 0px 15px;
+}
+
+#modal-select-recipients {
+    padding-left: 15px;
+}
