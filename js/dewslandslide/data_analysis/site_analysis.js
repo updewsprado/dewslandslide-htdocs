@@ -63,8 +63,17 @@ function cb(start, end) {
 	var parse_time = $('#reportrange0 span').text();
 	var fromDate = start.format('YYYY-MM-DD');
 	var toDate = moment(parse_time).add(1,'days').format('YYYY-MM-DD');
+	$('.checkbox').prop('disabled', true);
+	$('.checkbox').prop('checked', false);
+	$('.site_checkbox').prop('disabled', true);
+	$('.site_checkbox').prop('checked', false);
 	$('.site-panel').slideDown();
 	$('.sitegeneral').empty();
+	$('.site_collapse').slideUp()
+	$('.column_collapse').slideUp()
+	$('.node_collapse').slideUp()
+	$('.column-panel').slideUp();
+	$('.node-panel').slideUp();
 	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
 	$('#sitegeneral').selectpicker();
 	$('#sitegeneral').append('<option >Select Site</option>')
@@ -103,7 +112,20 @@ function removeDuplicates(num) {
 	return out;
 }
 
-
+function doSortDates(dates){
+	var swapped;
+	do {
+		swapped = false;
+		for (var i=0; i < dates.length-1; i++) {
+			if (dates[i][0] > dates[i+1][0]) {
+				var temp = dates[i][0];
+				dates[i][0] = dates[i+1][0];
+				dates[i+1][0] = temp;
+				swapped = true;
+			}
+		}
+	} while (swapped);
+}
 
 /************************/
 /***SITE LEVEL PROCESS***/
@@ -270,17 +292,17 @@ function SelectdaysOption(id) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
 		var fdate;
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 
 		var site = $("#sitegeneral").val();
@@ -374,18 +396,18 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
 
-							// 	}else{
-							// 		nval.push(i);
-							// 		break;
-							// 	}
-							// }
+								}else{
+									nval.push(i);
+									break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -440,6 +462,19 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
+
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+
+								}else{
+									nval.push(i);
+									break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -494,14 +529,14 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// }
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
@@ -567,10 +602,10 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 
 		}
 
-		for (var a = 0; a < label_crack.length; a++) {
-			series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
-		}
-		series_data.push({name:'Tag'})
+		// for (var a = 0; a < label_crack.length; a++) {
+		// 	series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
+		// }
+		// series_data.push({name:'Tag'})
 		// console.log(series_data)
 
 		var colors= ["#EBF5FB","#82b1ff","#448aff"]
@@ -670,7 +705,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 									$("#comment-model").empty();
 									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
 								}else{
-									$("#annModal").modal("show");
+									// $("#annModal").modal("show");
 									$(".tag").hide();
 									$('#tag_ids').tagsinput('removeAll');
 									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
@@ -711,20 +746,20 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			series:series_data
 		});
 		var chart = $('#'+id).highcharts();
-		$( ".highcharts-series-"+(series_data.length-1) ).click(function() {
-			var series = chart.series[(series_data.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
-				if (series.visible) {
-					(chart.series[((series_data.length-(i+1))-1)]).update({
-						visible: true,
-					});
-				}else {
-					(chart.series[((series_data.length-(i+1))-1)]).update({
-						visible: false,
-					});
-				}
-			}
-		});
+		// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
+		// 	var series = chart.series[(series_data.length-1)];
+		// 	for (var i = 0; i < label_crack.length; i++) {
+		// 		if (series.visible) {
+		// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+		// 				visible: true,
+		// 			});
+		// 		}else {
+		// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+		// 				visible: false,
+		// 			});
+		// 		}
+		// 	}
+		// });
 		var show_div =($(".rain-breadcrumb").html()).split("\"")
 		var div_rainfall_name = (show_div[10].toString()).split("<")
 		var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
@@ -1140,10 +1175,10 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 			all_data_tag.push(collect)
 		}
 
-		for (var a = 0; a < label_crack.length; a++) {
-			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-		}
-		data_series.push({name:'Tag'})
+		// for (var a = 0; a < label_crack.length; a++) {
+		// 	data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+		// }
+		// data_series.push({name:'Tag'})
 		Highcharts.setOptions({
 			global: {
 				timezoneOffset: -8 * 60
@@ -1195,7 +1230,7 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 									$("#comment-model").empty();
 									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
 								}else{
-									$("#annModal").modal("show");
+									// $("#annModal").modal("show");
 									$(".tag").hide();
 									$('#tag_ids').tagsinput('removeAll');
 									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
@@ -1216,20 +1251,20 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 			series:data_series
 		});
 		var chart = $('#'+id).highcharts();
-		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-			var series = chart.series[(data_series.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
-				if (series.visible) {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: true,
-					});
-				}else {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: false,
-					});
-				}
-			}
-		});
+		// $( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		// 	var series = chart.series[(data_series.length-1)];
+		// 	for (var i = 0; i < label_crack.length; i++) {
+		// 		if (series.visible) {
+		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
+		// 				visible: true,
+		// 			});
+		// 		}else {
+		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
+		// 				visible: false,
+		// 			});
+		// 		}
+		// 	}
+		// });
 
 	});
 
@@ -1482,7 +1517,7 @@ function CheckBoxColumn(site,column,from,to){
 				$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
-			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
+			allSensorPosition(column,'n','n')
 			SubOnSelect()
 		}else{
 			$(".subsurface_analysis_div").empty()
@@ -1520,8 +1555,8 @@ function CheckBoxColumn(site,column,from,to){
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment().add(1,"days").format('MM-DD-YYYY');
-			heatmapProcess(column,time+'T00:00','3d')
+			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			heatmapProcess(column,time,'3d')
 			HeatmapOnSelectDay(column)
 		}
 	});
@@ -1704,11 +1739,13 @@ function columnPosition(data_result) {
 				listId.push(AlllistId[i])
 			}
 		}
+
+		var sortlist = listDate.sort()
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
-				if(listDate[i] == data[a].ts){
-					fdatadown.push([data[a].downslope,data[a].depth])
-					fdatalat.push([data[a].latslope,data[a].depth])
+				if(sortlist[i] == data[a].ts){
+					fdatadown.push([data[a].downslope*1000,data[a].depth])
+					fdatalat.push([data[a].latslope*1000,data[a].depth])
 				}
 			}
 		}
@@ -1726,8 +1763,9 @@ function columnPosition(data_result) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			fseries.push({name:listDate[a], data:fAlldown[a]})
-			fseries2.push({name:listDate[a],  data:fAlllat[a]})
+			var color =  parseInt((255 / fAlldown.length)*(a+1))
+			fseries.push({name:sortlist[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:sortlist[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -1791,8 +1829,9 @@ function displacementPosition(data_result,data_result_v) {
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+			var color =  parseInt((255 / disData1.length)*a)
+			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
 		velocityPosition(data_result_v,totalId.length,disData1[0]); 
 		chartProcessDis("dis1",fseries,"Displacement, downslope")
@@ -1814,14 +1853,14 @@ function velocityPosition(data_result,id,date) {
 				allTime.push(data[0].L2[a].ts)
 				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
 			}
-			var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
+			var symbolD = 'url(http://icons.iconarchive.com/icons/kyo-tux/soft/32/Alert-icon.png)';
 			for(var a = 0; a < data[0].L2.length; a++){
 				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 				fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -1849,8 +1888,9 @@ function velocityPosition(data_result,id,date) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
 		}else{
 			var catNum=[];
@@ -1869,9 +1909,15 @@ function velocityPosition(data_result,id,date) {
 
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
-				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
+		}
+		var sorted_fseries =[]
+		for (var counter = 0; counter < fseries.length;counter++){
+			sorted_fseries.push(doSortDates(fseries[counter].data));
+
 		}
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
@@ -1907,8 +1953,8 @@ function chartProcessDis(id,data_series,name){
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true
+			// shared: true,
+			// crosshairs: true
 		},
 		plotOptions: {
 			spline: {
@@ -1952,7 +1998,7 @@ function chartProcessInverted(id,data_series,name){
 			zoomType: 'x',
 			panning: true,
 			panKey: 'shift',
-			height: 600,
+			height: 1000,
 			width: 375
 		},
 		title: {
@@ -1960,6 +2006,11 @@ function chartProcessInverted(id,data_series,name){
 		},
 		tooltip: {
 			crosshairs: true
+		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
 		},
 		plotOptions: {
 			spline: {
@@ -1971,21 +2022,21 @@ function chartProcessInverted(id,data_series,name){
 		credits: {
 			enabled: false
 		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#222'
-			},
-			itemHoverStyle: {
-				color: '#E0E0E3'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
-		},
+		// legend: {
+		// 	layout: 'vertical',
+		// 	align: 'right',
+		// 	verticalAlign: 'middle',
+		// 	borderWidth: 0,
+		// 	itemStyle: {
+		// 		color: '#222'
+		// 	},
+		// 	itemHoverStyle: {
+		// 		color: '#E0E0E3'
+		// 	},
+		// 	itemHiddenStyle: {
+		// 		color: '#606063'
+		// 	}
+		// },
 		credits: {
 			enabled: false
 		},
@@ -2014,8 +2065,7 @@ function chartProcessbase(id,data_series,name){
 		},
 
 		tooltip: {
-			headerFormat: '{point.key}',
-			pointFormat: ' ',
+
 			crosshairs: true
 		},
 
@@ -2080,7 +2130,7 @@ function SubOnSelectDay(column,tdate) {
 }
 function HeatmapOnSelect(column) {
 	$("#daygeneral").selectpicker();
-	var start = moment().add(1,'days').format('MM-DD-YYYY HH:mm'); 
+	var start = moment().add(1,'days').format('YYYY-MM-DD HH:mm'); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
 		timePickerIncrement: 30,
@@ -2111,7 +2161,7 @@ function HeatmapOnSelect(column) {
 function HeatmapOnSelectDay(column) {
 	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-		var timevalue = $("#reportrange3").val();
+		var timevalue = $("#reportrange0 span").text();
 		var tdate = timevalue.slice(0,10);
 		var time = timevalue.slice(11,16);
 		if(selected_day == "1 day"){
@@ -2121,7 +2171,7 @@ function HeatmapOnSelectDay(column) {
 		}else if( selected_day == "30 days"){
 			var day = '30d'
 		}
-		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
+		heatmapProcess(column,(moment(tdate).add(1,"days").format("YYYY-MM-DDTHH:mm")),day)
 	})
 }
 
@@ -2269,7 +2319,7 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
-	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
+	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -2595,8 +2645,8 @@ function CheckBoxNode(site,column,to){
 	$('#node_sumbit').on('click',function(){
 		$('#collapseColumn' ).switchClass( "in", "collapse");
 		$('#collapseSite' ).switchClass( "in", "collapse");
-		var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
-		var tdate = (moment().add(2,'days')).format('YYYY-MM-DD');
+		var fdate = (moment($("#reportrange0 span").text()).subtract(7,'days')).format('YYYY-MM-DD');
+		var tdate = (moment($("#reportrange0 span").text()).add(2,'days')).format('YYYY-MM-DD');
 		var node =  $('#nodegeneral').val();
 		var node_id = node
 		let dataSubmit = { 
@@ -3151,7 +3201,7 @@ function chartProcessAccel(id,data_series,name,color,list){
 
 							}
 							else {
-								$("#annModal").modal("show");
+								// $("#annModal").modal("show");
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
@@ -3294,7 +3344,7 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
 
 							}
 							else {
-								$("#annModal").modal("show");
+								// $("#annModal").modal("show");
 								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
 							}
 						}
@@ -3342,17 +3392,17 @@ function NodeOnSelectDay(column,tdate) {
 	$("#accel_dropdown_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days =($(this).find('option').eq(clickedIndex).val());
 		if(selected_days == "7 days"){
-			fdate = moment().subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment().subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment().subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment().subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment().subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment().subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
 		}
 		let dataSubmit = { 
 			site : (column).toLowerCase(), 

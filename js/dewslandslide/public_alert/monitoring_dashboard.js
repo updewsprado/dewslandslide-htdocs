@@ -746,18 +746,17 @@ function getOnGoingAndExtended(data) {
 }
 
 function checkCandidateTriggers(cache) {
-	let alerts = cache.alerts,
-		invalids = cache.invalids,
-		no_alerts = cache.no_alerts,
-		final = [];
+	let alerts = JSON.parse(JSON.stringify(cache.alerts));
+	let invalids = JSON.parse(JSON.stringify(cache.invalids));
+	let no_alerts = JSON.parse(JSON.stringify(cache.no_alerts));
+	let final = [];
 
 	// Get all the latest and overdue releases on site
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
 	alerts.forEach( function (alert) {
-
 		let retriggers = alert.retriggerTS;
-
+		
 		// Check sites if it is in invalid list 
 		// yet have legitimate alerts
 		function getAllInvalids(arr, val) {
@@ -845,7 +844,7 @@ function checkCandidateTriggers(cache) {
 			for (let i = 0; i < retriggers.length; i++) {
 				if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
 			}
-			//console.log(max, retriggers);
+			console.log("MAX", max, "RETRIGGERS", retriggers);
 			alert.latest_trigger_timestamp = max.timestamp;
 			alert.trigger = max.retrigger;
 		}
@@ -914,6 +913,7 @@ function getSites() {
 
 function checkIfAlreadySent(release_id, event_id, timestamp) 
 {
+	timestamp = moment(timestamp).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss")
 	$.get( "/../../accomplishment/getNarrativesForShift", 
     { event_id: event_id, start: moment(timestamp).format("YYYY-MM-DD HH:mm:ss"), end: moment(timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
     .done(function (data) {
