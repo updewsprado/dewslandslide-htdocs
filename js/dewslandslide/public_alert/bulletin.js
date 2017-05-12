@@ -225,7 +225,7 @@ function sendMail(text, subject, filename, recipients) {
 
                     $("#" + release_id).css("color", "red").attr("data-sent", 1);
 
-                    $.post("/../../accomplishment/insertNarratives", {narratives: narratives} )
+                    $.post("/../../accomplishment/insertNarratives", {narratives: JSON.stringify(narratives)} )
                     .fail(function (x, y) {
                         console.log(y);
                     });
