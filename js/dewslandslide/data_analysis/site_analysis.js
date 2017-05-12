@@ -1773,8 +1773,8 @@ function columnPosition(data_result,site) {
 		}
 		for(var a = 0; a < fAlldown.length; a++){
 			var color = parseInt((255 / fAlldown.length)*(a+1))
-			fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
-			fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
+			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			// console.log(inferno[color] ,color)
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)",site)
