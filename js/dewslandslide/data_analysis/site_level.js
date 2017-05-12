@@ -12,13 +12,28 @@ $(document).ready(function(e) {
 	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)
 		ValueProcess(current_site)
-		$("#soms_search_tool").slideDown()
+		if(current_site.slice(3,4) != 's'){
+			$("#soms_panel").hide()
+		}
 	}else{
 		columnSelect("Select");
 	}
 
 });
-
+function doSortDates(dates){
+		var swapped;
+		do {
+			swapped = false;
+			for (var i=0; i < dates.length-1; i++) {
+				if (dates[i][0] > dates[i+1][0]) {
+					var temp = dates[i][0];
+					dates[i][0] = dates[i+1][0];
+					dates[i+1][0] = temp;
+					swapped = true;
+				}
+			}
+		} while (swapped);
+	}
 function columnSelect(site_selected) {
 	$.ajax({ 
 		dataType: "json",
@@ -137,6 +152,7 @@ function ValueProcess(curSite) {
 	allSensorPosition(dataSubmit)
 	var start = moment().subtract(2, 'days'); 
 	var end = moment();
+	
 
 	$('#reportrange').daterangepicker({
 		autoUpdateInput: true,
@@ -607,17 +623,17 @@ function heatmapVisual(series_data,list_time,list_id){
 
 function cb(start, end) {
 	$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
-	// alert($("#sitegeneral").val()) 
+	// alert(time) 
 	if($("#sitegeneral").val() != null){
 
 		var curSite = $("#sitegeneral").val();
 		var fromDate = $('#reportrange span').html().slice(0,10);
 		var toDate = $('#reportrange span').html().slice(13,23);
-
+		var time = moment().format('HH:mm:ss')
 		let dataSubmit = { 
 			site : curSite, 
-			fdate : fromDate,
-			tdate : toDate
+			fdate : fromDate+"T"+time,
+			tdate : toDate+"T"+time
 		}
 
 		allSensorPosition(dataSubmit)
@@ -662,9 +678,11 @@ function columnPosition(data_result) {
 				listId.push(AlllistId[i])
 			}
 		}
+
+		var sortlist = listDate.sort()
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
-				if(listDate[i] == data[a].ts){
+				if(sortlist[i] == data[a].ts){
 					fdatadown.push([data[a].downslope*1000,data[a].depth])
 					fdatalat.push([data[a].latslope*1000,data[a].depth])
 				}
@@ -684,9 +702,9 @@ function columnPosition(data_result) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			var color = Math.floor((Math.random() * 255) + 1)
-			fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
-			fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
+			var color = parseInt((255 / fAlldown.length)*(a+1))
+			fseries.push({name:sortlist[a], data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:sortlist[a],  data:fAlllat[a],color:inferno[color]})
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -751,7 +769,7 @@ function displacementPosition(data_result,data_result_v) {
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			var color = Math.floor((Math.random() * 255) + 1)
+			var color = parseInt((255 / disData1.length)*(a))
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
@@ -777,14 +795,14 @@ function velocityPosition(data_result,id,date) {
 				allTime.push(data[0].L2[a].ts)
 				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
 			}
-			var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
+			var symbolD = 'url(http://icons.iconarchive.com/icons/kyo-tux/soft/32/Alert-icon.png)';
 			for(var a = 0; a < data[0].L2.length; a++){
 				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 				fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -812,8 +830,9 @@ function velocityPosition(data_result,id,date) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
 		}else{
 			var catNum=[];
@@ -832,11 +851,17 @@ function velocityPosition(data_result,id,date) {
 
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
-				var color = Math.floor((Math.random() * 255) + 1)
+				var color = parseInt((255 / sliceData.length)*(a+1))
 				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
 		}
+
+		var sorted_fseries =[]
+			for (var counter = 0; counter < fseries.length;counter++){
+				 sorted_fseries.push(doSortDates(fseries[counter].data));
+			}
+
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
 	}  
@@ -870,7 +895,7 @@ function chartProcess(id,data_series,name){
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			split: true,
-			crosshairs: true
+			
 		},
 		plotOptions: {
 			spline: {
@@ -911,7 +936,7 @@ function chartProcessInverted(id,data_series,name){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
-			height: 700,
+			height: 1000,
 			width: 550
 		},
 		title: {
@@ -926,7 +951,7 @@ function chartProcessInverted(id,data_series,name){
 			},
 		},
 		tooltip: {
-			crosshairs: true,
+			
 			split: true,
 		},
 		plotOptions: {
@@ -939,21 +964,21 @@ function chartProcessInverted(id,data_series,name){
 		credits: {
 			enabled: false
 		},
-		// legend: {
-		// 	layout: 'vertical',
-		// 	align: 'right',
-		// 	verticalAlign: 'middle',
-		// 	borderWidth: 0,
-		// 	itemStyle: {
-		// 		color: '#222'
-		// 	},
-		// 	itemHoverStyle: {
-		// 		color: '#E0E0E3'
-		// 	},
-		// 	itemHiddenStyle: {
-		// 		color: '#606063'
-		// 	}
-		// },
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#222'
+			},
+			itemHoverStyle: {
+				color: '#E0E0E3'
+			},
+			itemHiddenStyle: {
+				color: '#606063'
+			}
+		},
 		credits: {
 			enabled: false
 		},

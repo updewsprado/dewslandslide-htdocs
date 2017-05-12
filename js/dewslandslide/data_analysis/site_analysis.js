@@ -117,6 +117,21 @@ function removeDuplicates(num) {
 
 
 
+function doSortDates(dates){
+	var swapped;
+	do {
+		swapped = false;
+		for (var i=0; i < dates.length-1; i++) {
+			if (dates[i][0] > dates[i+1][0]) {
+				var temp = dates[i][0];
+				dates[i][0] = dates[i+1][0];
+				dates[i+1][0] = temp;
+				swapped = true;
+			}
+		}
+	} while (swapped);
+}
+
 /************************/
 /***SITE LEVEL PROCESS***/
 /************************/
@@ -129,7 +144,7 @@ function SelectedSite(from,to) {
 		$("#analysis_panel_body").empty();
 		for(var a = 0; a < panel_div_name.length; a++){
 			$("#analysis_panel_body").append('<div class=" panel panel-info '+panel_div_name[a]+'_collapse"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Overview</h1>'+
-				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
+				'<h3 id="info_'+panel_div_name[a]+'"></h3></div><div style="padding-right: 0px;" id="'+panel_div_name[a]+'_collapse" class="panel-body '+panel_div_name[a]+'_level "></div></div>')
 			$('.'+panel_div_name[a]+'_collapse').hide()
 		}
 		var panel_alert_colors =['panel-success','panel-warning','panel-danger']
@@ -1508,7 +1523,7 @@ function CheckBoxColumn(site,column,from,to){
 			for(var a = 0; a < title.length; a++){
 				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
-					'<div class="col-md-6" style="padding-left: 0px;"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6" style="padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
+					'<div class="col-md-12" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-12" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
 			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
 			SubOnSelect()
@@ -1757,7 +1772,7 @@ function columnPosition(data_result,site) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			var color = Math.floor((Math.random() * 255) + 1)
+			var color = parseInt((255 / fAlldown.length)*(a+1))
 			fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
 			// console.log(inferno[color] ,color)
@@ -1823,7 +1838,7 @@ function displacementPosition(data_result,data_result_v,site) {
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			var color = Math.floor((Math.random() * 255) + 1)
+			var color = parseInt((255 / disData1.length)*(a))
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
@@ -1854,7 +1869,7 @@ function velocityPosition(data_result,id,date,site) {
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -1882,7 +1897,7 @@ function velocityPosition(data_result,id,date,site) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				var color = Math.floor((Math.random() * 255) + 1)
+				var color = parseInt((255 / sliceData.length)*(a+1))
 				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
@@ -1903,11 +1918,17 @@ function velocityPosition(data_result,id,date,site) {
 
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
-				var color = Math.abs((inferno.length-((a+1) * 20)))
+				var color = parseInt((255 / sliceData.length)*(a+1))
 				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
 		}
+		var sorted_fseries =[]
+		for (var counter = 0; counter < fseries.length;counter++){
+			sorted_fseries.push(doSortDates(fseries[counter].data));
+
+		}
+
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope",site)
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope",site)   
 	}  
@@ -1924,8 +1945,8 @@ function chartProcessDis(id,data_series,name,site){
 			zoomType: 'x',
 			panning: true,
 			panKey: 'shift',
-			height: 800,
-			width:400
+			height: 500,
+			width: 800
 		},
 		title: {
 			text: name,
@@ -1946,7 +1967,7 @@ function chartProcessDis(id,data_series,name,site){
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			split: true,
-			crosshairs: true
+			// crosshairs: true
 		},
 		plotOptions: {
 			spline: {
@@ -1958,21 +1979,21 @@ function chartProcessDis(id,data_series,name,site){
 		credits: {
 			enabled: false
 		},
-		// legend: {
-		// 	layout: 'vertical',
-		// 	align: 'right',
-		// 	verticalAlign: 'middle',
-		// 	borderWidth: 0,
-		// 	itemStyle: {
-		// 		color: '#0000'
-		// 	},
-		// 	itemHoverStyle: {
-		// 		color: '#0000'
-		// 	},
-		// 	itemHiddenStyle: {
-		// 		color: '#222'
-		// 	}
-		// },
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#0000'
+			},
+			itemHoverStyle: {
+				color: '#0000'
+			},
+			itemHiddenStyle: {
+				color: '#222'
+			}
+		},
 		series:data_series
 	});
 
@@ -1988,10 +2009,8 @@ function chartProcessInverted(id,data_series,name,site){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 600,
-			width: 400
+			height: 700,
+			width: 600
 		},
 		title: {
 			text: name,
@@ -2000,17 +2019,17 @@ function chartProcessInverted(id,data_series,name,site){
 			text: 'Source: '+(site).toUpperCase()
 		},
 		tooltip: {
-			crosshairs: true,
+			// crosshairs: true,
 			split: true,
 		},
 		xAxis:{
-			 gridLineWidth: 1,
+			gridLineWidth: 1,
 			
 		},
 		yAxis:{
-			 title: {
-                text: 'Depth'
-            }
+			title: {
+				text: 'Depth'
+			}
 		},
 		plotOptions: {
 			spline: {
@@ -2022,21 +2041,21 @@ function chartProcessInverted(id,data_series,name,site){
 		credits: {
 			enabled: false
 		},
-		// legend: {
-		// 	layout: 'vertical',
-		// 	align: 'right',
-		// 	verticalAlign: 'middle',
-		// 	borderWidth: 0,
-		// 	itemStyle: {
-		// 		color: '#222'
-		// 	},
-		// 	itemHoverStyle: {
-		// 		color: '#E0E0E3'
-		// 	},
-		// 	itemHiddenStyle: {
-		// 		color: '#606063'
-		// 	}
-		// },
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'middle',
+			borderWidth: 0,
+			itemStyle: {
+				color: '#222'
+			},
+			itemHoverStyle: {
+				color: '#E0E0E3'
+			},
+			itemHiddenStyle: {
+				color: '#606063'
+			}
+		},
 		credits: {
 			enabled: false
 		},
@@ -2058,7 +2077,7 @@ function chartProcessbase(id,data_series,name,site){
 			panning: true,
 			panKey: 'shift',
 			height: 500,
-			width: 400
+			width: 800
 		},
 		title: {
 			text: name
@@ -2068,7 +2087,7 @@ function chartProcessbase(id,data_series,name,site){
 		},
 		tooltip: {
 			split: true,
-			crosshairs: true
+			// crosshairs: true
 		},
 
 		credits: {
@@ -2127,7 +2146,8 @@ function SubOnSelectDay(column,tdate) {
 		}else if(selected_day =="7d"){
 			var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
 		}
-		allSensorPosition(column,fdate,tdate)
+		var time = moment().format('HH:mm:ss')
+		allSensorPosition(column,fdate+"T"+time,tdate+"T"+time)
 	})
 }
 function HeatmapOnSelect(column) {

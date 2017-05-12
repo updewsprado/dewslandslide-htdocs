@@ -86,6 +86,22 @@ $(document).ready(function(e) {
 
 	cb(start, end);
 
+
+	function doSortDates(dates){
+		var swapped;
+		do {
+			swapped = false;
+			for (var i=0; i < dates.length-1; i++) {
+				if (dates[i][0] > dates[i+1][0]) {
+					var temp = dates[i][0];
+					dates[i][0] = dates[i+1][0];
+					dates[i+1][0] = temp;
+					swapped = true;
+				}
+			}
+		} while (swapped);
+	}
+
 	function cb(start, end) {
 		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
 		// alert($("#sitegeneral").val()) 
@@ -106,6 +122,7 @@ $(document).ready(function(e) {
 	}
 
 	function allSensorPosition(data_result) {
+		console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate)
 		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
@@ -165,7 +182,7 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 0; a < fAlldown.length; a++){
-				var color = Math.abs((inferno.length-((a+1) * 40)))
+				var color =  parseInt((255 / fAlldown.length)*(a+1))
 				fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
 				fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
 			}
@@ -232,7 +249,7 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 1; a < disData1.length+1; a++){
-				var color = Math.abs((inferno.length-((a+1) * 20)))
+				var color =  parseInt((255 / disData1.length)*(a))
 				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
@@ -293,8 +310,9 @@ $(document).ready(function(e) {
 				}
 				for(var a = 0; a < sliceData.length; a++){
 					catNum.push((sliceData.length-1)-(a+1)+2)
-					fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-					fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+					var color =  parseInt((255 / sliceData.length)*(a+1))
+					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}
 			}else{
 				var catNum=[];
@@ -313,10 +331,16 @@ $(document).ready(function(e) {
 
 				for(var a = 0; a < sliceData.length-1; a++){
 					catNum.push((sliceData.length-2)-(a+1)+2)
-					var color = Math.abs((inferno.length-((a+1) * 20)))
+					var color =  parseInt((255 / sliceData.length)*(a+1))
 					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}					
+			}
+			
+			var sorted_fseries =[]
+			for (var counter = 0; counter < fseries.length;counter++){
+				 sorted_fseries.push(doSortDates(fseries[counter].data));
+				 
 			}
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 			chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
