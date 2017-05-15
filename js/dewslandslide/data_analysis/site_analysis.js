@@ -1966,6 +1966,11 @@ function chartProcessDis(id,data_series,name,site){
 				text: 'Date'
 			},
 		},
+		yAxis:{
+			title: {
+				text: 'Depth'
+			}
+		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			split: true,
@@ -2125,7 +2130,7 @@ function chartProcessbase(id,data_series,name,site){
 		},
 		yAxis: {
 			title: {
-				text: 'Values'
+				text: 'Depth'
 			},
 
 		},
