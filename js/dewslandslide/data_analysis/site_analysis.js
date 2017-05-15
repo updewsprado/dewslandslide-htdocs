@@ -1843,6 +1843,8 @@ function displacementPosition(data_result,data_result_v,site) {
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
 		velocityPosition(data_result_v,totalId.length,disData1[0],site); 
+		fseries.push({name:'unselect'})
+		fseries2.push({name:'unselect'})
 		chartProcessDis("dis1",fseries,"Displacement, downslope",site)
 		chartProcessDis("dis2",fseries2,"Displacement , across slope",site)
 
@@ -1995,6 +1997,21 @@ function chartProcessDis(id,data_series,name,site){
 			}
 		},
 		series:data_series
+	});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < data_series.length-1; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
+			}
+		}
 	});
 
 }
