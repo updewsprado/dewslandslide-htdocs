@@ -8,49 +8,56 @@ function sendViaAlertMonitor(data){
 	} else {
 		alert_site_name = data.name;
 	}
-  
+
 	$.ajax({
-	  type: "POST",
-	  url: "../chatterbox/getCommunityContactViaDashboard/",
-	  async: true,
-	  data: {site: alert_site_name},
-	  success: function(response){
+		type: "POST",
+		url: "../chatterbox/getCommunityContactViaDashboard/",
+		async: true,
+		data: {site: alert_site_name},
+		success: function(response){
 
-	  	var contacts = JSON.parse(response);
-		var default_recipients = [];
-		var additional_recipients = [];
+			var contacts = JSON.parse(response);
+			var default_recipients = [];
+			var additional_recipients = [];
 
-		$('#ewi-recipients-dashboard').tagsinput('removeAll');
-		$('#ewi-recipients-dashboard').val('');
+			$('#ewi-recipients-dashboard').tagsinput('removeAll');
+			$('#ewi-recipients-dashboard').val('');
 
-		for (var counter = 0; counter < contacts.length; counter++) {
-			var numbers = contacts[counter].number.split(',');
-			var number = "";
-			var temp = "";
-			if (contacts[counter].ewirecipient != 0) {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
+			for (var counter = 0; counter < contacts.length; counter++) {
+				var numbers = contacts[counter].number.split(',');
+				var number = "";
+				var temp = "";
 
-		        if (contacts[counter].office != "GDAPD-PHIV") {
-			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-			        default_recipients.push(detailed);
-					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
-		        }
-		        
-			} else {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        additional_recipients.push(detailed);
+				if (contacts[counter].ewirecipient != 0) {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
+					if (data.status == "extended") {
+						if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
+					} else {
+						if (contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
+					}
+				} else {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
+					var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+					additional_recipients.push(detailed);
+				}
 			}
+			$('#default-recipients').val(default_recipients);
+			$('#additional-recipients').val(additional_recipients);
 		}
-		$('#default-recipients').val(default_recipients);
-		$('#additional-recipients').val(additional_recipients);
-	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -77,6 +84,8 @@ function sendViaAlertMonitor(data){
 					var preConstructedEWI = response["A2"];
 				} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 					var preConstructedEWI = response["A3"];
+				} else if (data["internal_alert_level"].toUpperCase() == "ROUTINE") {
+					var preConstructedEWI = response["ROUTINE"];
 				} else {
 					var preConstructedEWI = response["A1"];
 				}
@@ -96,19 +105,28 @@ function sendViaAlertMonitor(data){
 
 			}
 
+			
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
 					case 1:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 2:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 3:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					default:
 					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","ati");
+					var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+					if (meridiem == "12:00 AM") {
+						meridiem = meridiem.replace("AM","MN");
+					}
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%",meridiem);
 					break;
 				}	
 				var ext_month = moment().add(1, 'days').format("MM");
@@ -122,7 +140,7 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			console.log(currentPanahon);
+
 			if (currentPanahon >= 13 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
 			} else if (currentPanahon >= 18 && currentPanahon <=23) {
@@ -155,15 +173,23 @@ function sendViaAlertMonitor(data){
 			var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
 
 			if (onset_time != release_time) {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.data_timestamp).add(30,'m').format("hh:mm A"));
+				var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+				if (meridiem == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
+				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			} else {
-				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",moment(data.event_start).format("YYYY-MM-DD hh:mm A"));
+				var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+				if (meridiem.slice(-8) == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
+				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			}
 
 			data_timestamp = data.data_timestamp;
 			latest_release_id = data.latest_release_id;
 
-			formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
+			formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
 			formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 
 
@@ -192,7 +218,7 @@ function sendViaAlertMonitor(data){
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","04:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas");
 
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","08:00 PM");
@@ -895,7 +921,7 @@ $(document).ready(function() {
 						}
 					}
 
-			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+					if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_template = "";
 
@@ -909,12 +935,12 @@ $(document).ready(function() {
 								});
 							}
 
-		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							narrative_recipients = [];
 						} 
-			        }
+					}
 
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 						var narrative_details = {
@@ -1044,61 +1070,61 @@ $(document).ready(function() {
 	return tempConn;
 }
 
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			console.log(events);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
+function getOngoingEvents(sites){
+	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+		var events = JSON.parse(data);
+		console.log(events);
+		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+		.done(function(response) {
+			siteids = JSON.parse(response);
+			for (var counter = 0; counter < events.length; counter++) {
+				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+					if (events[counter].site_id == siteids[siteid_counter].id) {
+						var narrative_template = "";
+						if (gintags_msg_details.tags === "#EwiResponse") {
+							narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+						} else if (gintags_msg_details.tags === "#EwiMessage"){
 
-								var tagOffices = [];
-								$('input[name="offices"]:checked').each(function() {
-									tagOffices.push(this.value);
-								});
-
-						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-									if (narrative_recipients.length > 0) {
-										narrative_recipients.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									} else {
-										tagOffices.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									}
-									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
-									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-						        }
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							console.log(narrative_details);
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-							.done(function(response) {
-								console.log(response);
+							var tagOffices = [];
+							$('input[name="offices"]:checked').each(function() {
+								tagOffices.push(this.value);
 							});
 
+							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+								if (narrative_recipients.length > 0) {
+									narrative_recipients.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								} else {
+									tagOffices.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								}
+								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
+
+								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+							}
+						} else {
+							$.notify("Invalid request, please try again.","warning");
 						}
+						var narrative_details = {
+							'event_id': events[counter].event_id,
+							'site_id': siteids[siteid_counter].id,
+							'ewi_sms_timestamp': gintags_msg_details[2],
+							'narrative_template': narrative_template
+						}
+						console.log(narrative_details);
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+						.done(function(response) {
+							console.log(response);
+						});
+
 					}
 				}
-			});
+			}
 		});
-	}
+	});
+}
 
 function waitForSocketConnection() {
 	if (!window.timerID) {
@@ -1893,14 +1919,14 @@ $('#send-msg').on('click',function(){
 				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-				console.log(temp_msg_holder);
-				conn.send(JSON.stringify(temp_msg_holder));
-				$('#msg').val('');
-			}
-
-			updateRemainingCharacters();
+			console.log(temp_msg_holder);
+			conn.send(JSON.stringify(temp_msg_holder));
+			$('#msg').val('');
 		}
-	});
+
+		updateRemainingCharacters();
+	}
+});
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2213,6 +2239,12 @@ $('#btn-ewi').on('click',function(){
 				select.setAttribute("required","true");
 				select.appendChild(opt);
 			}
+			opt.value = "NSS";
+			opt.innerHTML = "NO ALERT SELECTED";
+			select.className = "form-control";
+			select.setAttribute("required","true");
+			select.appendChild(opt);
+			$("#alert-lvl").val(opt.value);
 		}
 	});
 
@@ -2236,17 +2268,13 @@ $('#btn-ewi').on('click',function(){
 			select.className = "form-control";
 			select.setAttribute("required","true");
 			select.appendChild(opt);
+			console.log(opt.value);
+			$("#sites").val(opt.value);
 
 			var counter = 0;
 			$('input[name="sitenames"]:checked').each(function() {
 				counter++;
 			});
-
-			if (counter == 1){
-				$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-			} else {
-				$('select option[value="NSS"]').attr("selected",true);
-			}
 		}
 	});
 });
@@ -2272,10 +2300,10 @@ $('#confirm-ewi').click(function(){
 	}
 });
 
-	$('#ewi-date-picker').datetimepicker({
-	    locale: 'en',
-	    format: 'YYYY-MM-DD HH:mm:ss'
-	});
+$('#ewi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD HH:mm:ss'
+});
 
 function getEWI(handledTemplate){
 	var constructedEWI = "";
@@ -2358,7 +2386,7 @@ $('#send-btn-ewi-amd').click(function(){
 	var difference = [];
 
 	$.grep(current_recipients, function(el) {
-	        if ($.inArray(el, default_recipients) == -1) difference.push(el);
+		if ($.inArray(el, default_recipients) == -1) difference.push(el);
 	});
 
 	ewiFlagger = true;
@@ -2369,7 +2397,13 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = [];
+		for (var counter = 0; counter < current_recipients.length; counter ++) {
+			var office = current_recipients[counter].substring(0, current_recipients[counter].indexOf(':')).trim();
+			if ($.inArray(office, tagOffices) == -1) {
+				tagOffices.push(office);
+			}
+		}
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
@@ -2561,12 +2595,16 @@ function getInitialQuickInboxMessages () {
 				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
 				if (employeeTags.length <= 0) {
 					for (var y = 0; y < parts.length; y++){
-						employeeTags.push(parts[y]);
+						if (parts[y].trim() != "") {
+							employeeTags.push(parts[y]);
+						}
 					}
 				} else {
 					for (var y = 0;y < parts.length;y++){
 						if (!(employeeTags.indexOf(parts[y]) > -1)) {
-							employeeTags.push(parts[y]);
+							if (parts[y].trim() != "") {
+								employeeTags.push(parts[y]);
+							}
 						}
 					}
 				}
@@ -2715,8 +2753,8 @@ function getInitialQuickInboxMessages () {
 
 				$('#response-contact-container').show();
 				$("#response-contact-container").DataTable({
-			        "scrollX": true
-			    });
+					"scrollX": true
+				});
 			}
 		});
 	}
@@ -2759,8 +2797,8 @@ function getInitialQuickInboxMessages () {
 
 				$('#response-contact-container').show();
 				$("#response-contact-container").DataTable({
-			        "scrollX": true
-			    });
+					"scrollX": true
+				});
 			}
 		});
 	}

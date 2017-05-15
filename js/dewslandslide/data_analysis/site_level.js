@@ -884,6 +884,11 @@ function chartProcess(id,data_series,name){
 		title: {
 			text: name,
 		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
+		},
 		xAxis: {
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -1044,7 +1049,7 @@ function chartProcessbase(id,data_series,name){
 		},
 		yAxis: {
 			title: {
-				text: 'Values'
+				text: 'Depth'
 			},
 
 		},
