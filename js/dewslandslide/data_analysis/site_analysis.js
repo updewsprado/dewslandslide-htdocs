@@ -44,7 +44,7 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 
 
 function dateselection() {
-	var start = moment().subtract(30, 'days'); 
+	var start = moment().subtract(7, 'days'); 
 	var end = moment();
 
 	$('#reportrange0').daterangepicker({
@@ -402,23 +402,24 @@ function getRainSenslope(site,dataSubmit,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
 
-							// 	}else{
-							// 		nval.push(i);
-							// 		break;
-							// 	}
-							// }
+								}else{
+									nval.push(i);
+								}
+							}
 						}
-						for (var i = 0; i < nval.length; i=i+2) {
+						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(jsonRespo[n2].ts != undefined){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -469,13 +470,25 @@ function getRainArq(site,dataSubmit,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+
+								}else{
+									nval.push(i);
+								}
+							}
 						}
-						for (var i = 0; i < nval.length; i=i+2) {
+						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-						}
-						var divname =["24hrs","72hrs" ,"15mins"];
+							if(jsonRespo[n2].ts != undefined){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+						}						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -524,19 +537,24 @@ function getRainNoah(site,dataSubmit,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// }
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+
+								}else{
+									nval.push(i);
+								}
+							}
 						}
-						for (var i = 0; i < nval.length; i=i+2) {
+						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(jsonRespo[n2].ts != undefined){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
