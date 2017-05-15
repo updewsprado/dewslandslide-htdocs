@@ -1833,6 +1833,9 @@ function displacementPosition(data_result,data_result_v) {
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
+
+		fseries.push({name:'unselect'})
+		fseries2.push({name:'unselect'})
 		velocityPosition(data_result_v,totalId.length,disData1[0]); 
 		chartProcessDis("dis1",fseries,"Displacement, downslope")
 		chartProcessDis("dis2",fseries2,"Displacement , across slope")
@@ -1951,6 +1954,11 @@ function chartProcessDis(id,data_series,name){
 				text: 'Date'
 			},
 		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
+		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			// shared: true,
@@ -1982,6 +1990,21 @@ function chartProcessDis(id,data_series,name){
 			}
 		},
 		series:data_series
+	});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < data_series.length-1; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
+			}
+		}
 	});
 
 }
@@ -2087,9 +2110,8 @@ function chartProcessbase(id,data_series,name){
 		},
 		yAxis: {
 			title: {
-				text: 'Values'
+				text: 'Depth'
 			},
-
 		},
 		series:data_series
 	});
