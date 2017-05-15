@@ -1,12 +1,15 @@
 var templateData = {};
 var templateTable;
+var backboneTable;
 var tableId;
+var template;
 $(document).ready(function(e){
 
     templateTable = $('#template_table').DataTable( {
         "processing": true,
+        "bSort" : false,
+        "scrollCollapse": true,
         "serverSide": false,
-        "scrollX": true,
         "ajax": '../communications/fetchalltemplate',
         columns: [
             { "data" : "id" , title:"ID"},
@@ -14,9 +17,33 @@ $(document).ready(function(e){
             { "data" : "internal_alert", title:"INTERNAL ALERT"},
             { "data" : "possible_scenario", title:"POSSIBLE SCENARIO"},
             { "data" : "recommended_response", title:"RECOMMENDED RESPONSE"},
+            { "data" : "bb_scenario", title:"Backbone Message Category"},
             { "data" : "last_update_by", title:"LATEST MODIFICATION"},
             { "data" : "functions", title: "*"}
         ]
+    });
+
+    backboneTable = $('#backbone_table').DataTable({
+    	"processing": true,
+    	"bSort" : false,
+    	"scrollCollapse": true,
+    	"serverSide": false,
+    	"ajax": '../communications/fetchallbackbonetemplate',
+    	columns: [
+    		{ "data" : "id", title: "ID"},
+    		{ "data" : "category", title: "CATEGORY"},
+    		{ "data" : "template", title: "BACKBONE MESSAGE"},
+    		{ "data" : "last_modified_by", title: "LAST UPDATE"},
+    		{ "data" : "functions", title : "*"}
+    	]
+    });
+
+    $('#key_input_tab').on('click',function(){
+    	reloadTable();
+    });
+
+    $('#message_backbone_tab').on('click',function(){
+    	reloadBackboneTable();
     });
 
     $('#add_template').on('click',function(){
@@ -26,11 +53,19 @@ $(document).ready(function(e){
     	$('#template_modal').modal('toggle');
     });
 
+    $('#add_backbone').on('click',function(){
+    	$('form').trigger('reset');
+    	$('#modal-title').text('Create Message Backbone');
+    	// $('#submit_template').text("CREATE");
+    	$('#backbone_modal').modal('toggle');
+    });
+
     $('#submit_template').on('click',function(){
     	templateData['alert_lvl'] = $('#alert_lvl').val();
     	templateData['internal_alert'] = $('#internal_alert').val();
     	templateData['scenario'] = $('#scenario').val();
     	templateData['response'] = $('#response').val();
+    	templateData['bb_scenario'] = $('#bb_scenario').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
 
     	if ($('#submit_template').text() == "CREATE") {
@@ -62,6 +97,24 @@ $(document).ready(function(e){
     	templateData = {};
     });
 
+    $('#submit_backbone').on('click',function(){
+    	templateData['category'] = $('#category').val();
+    	templateData['backbone_message'] = $('#msg_backbone').val();
+    	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
+    	if ($('#submit_backbone').text() == "CREATE") {
+    		$.post('../communications/addbackbonemessage',{backbone_message: JSON.stringify(templateData)})
+    		.done(function(data){
+
+    		});
+    	} else {
+    		$.post('../communications/updatebackbonemessage',{backbone_message: JSON.stringify(templateData)})
+    		.done(function(data){
+
+    		});
+    	}
+    	templateData = {};
+    });
+
     $('#delete_template').on('click',function(){
     	templateData['id'] = tableId;
 		$.post("../communications/deletetemplate", {template : JSON.stringify(templateData)})
@@ -78,9 +131,8 @@ $(document).ready(function(e){
     })
 
     $('#template_table tbody').on('click','.update',function(){
-		var closestRow = $(this).closest('tr');
-		var data = templateTable.row(closestRow).data();
-		console.log(data);
+    	var table = $('#template_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		$('#modal-title').text('Update Template');
 		$('#alert_lvl').val(data.alert_lvl);
@@ -91,13 +143,9 @@ $(document).ready(function(e){
 		$('#template_modal').modal('toggle');
     });
 
- //    	var table = $('#response-contact-container').DataTable();
-	// var data = table.row(this).data();
-
-    $('#template_table tbody').on('click','.delete',function(){
-		var data = $(this).closest('tr');
-		// var data = templateTable.row(closestRow).data();
-		console.log(data);
+    $('#template_table tbody').on('click','tr:has(td) .delete',function(){
+    	var table = $('#template_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		var to_be_deleted = "Alert Level: "+data.alert_lvl+"\n"+
 							"Internal Alert: "+data.internal_alert+"\n"+
@@ -107,15 +155,19 @@ $(document).ready(function(e){
 		$('#submit_template').text("UPDATE");
 		$('#delete_template_modal').modal('toggle');
     });
+
+    $('#msg_backbone').on('input',function(){
+    	loadBackboneView($('#msg_backbone').val());
+    })
 });
 
 function reloadTable() {
+	var templateTable = $('#template_table').DataTable();
 	$('#template_table').DataTable().clear();
 	$('#template_table').DataTable().destroy();
     template_table = $('#template_table').DataTable( {
-        "processing": true,
-        "serverSide": false,
-        "scrollX": true,
+    	"processing": true,
+    	"serverSide": false,
         "ajax": '../communications/fetchalltemplate',
         columns: [
             { "data" : "id" , title:"ID"},
@@ -123,8 +175,44 @@ function reloadTable() {
             { "data" : "internal_alert", title:"INTERNAL ALERT"},
             { "data" : "possible_scenario", title:"POSSIBLE SCENARIO"},
             { "data" : "recommended_response", title:"RECOMMENDED RESPONSE"},
+            { "data" : "bb_scenario", title:"Backbone Message Category"},
             { "data" : "last_update_by", title:"LATEST MODIFICATION"},
             { "data" : "functions", title: "*"}
         ]
     });
+}
+
+function reloadBackboneTable() {
+	var backboneTable = $('#backbone_table').DataTable();
+	$('#backbone_table').DataTable().clear();
+	$('#backbone_table').DataTable().destroy();
+    backbone_table = $('#backbone_table').DataTable( {
+    	"processing": true,
+    	"serverSide": false,
+        "ajax": '../communications/fetchallbackbonetemplate',
+        columns: [
+    		{ "data" : "id", title: "ID"},
+    		{ "data" : "category", title: "CATEGORY"},
+    		{ "data" : "template", title: "BACKBONE MESSAGE"},
+    		{ "data" : "last_modified_by", title: "LAST UPDATE"},
+    		{ "data" : "functions", title : "*"}
+        ]
+    });
+}
+
+function loadBackboneView(real_time_value) {
+	template = real_time_value;
+	var key = {
+		'keypoint' : $('#category').val()
+	};
+
+	$.post('../communications/getkeypointsviacategory',{template_key : JSON.stringify(key)})
+	.done(function(data){
+		var response = JSON.parse(data);
+		template = template.replace("%%ALERT_LVL%%",response[0].alert_lvl);
+		template = template.replace("%%POSSIBLE_SCENARIO%%", response[0].possible_scenario);
+		template = template.replace("%%RECOMMENDED_RESPONSE%%",response[0].recommended_response);
+
+		$('#backbone_preview').val(template);
+	});
 }
