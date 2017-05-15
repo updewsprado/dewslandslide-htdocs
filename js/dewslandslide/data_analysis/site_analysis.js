@@ -2026,8 +2026,8 @@ function chartProcessInverted(id,data_series,name,site){
 		chart: {
 			type: 'line',
 			zoomType: 'x',
-			height: 700,
-			width: 600
+			height: 800,
+			width: 500
 		},
 		title: {
 			text: name,
@@ -2058,21 +2058,21 @@ function chartProcessInverted(id,data_series,name,site){
 		credits: {
 			enabled: false
 		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#222'
-			},
-			itemHoverStyle: {
-				color: '#E0E0E3'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
-		},
+		// legend: {
+		// 	layout: 'vertical',
+		// 	align: 'right',
+		// 	verticalAlign: 'middle',
+		// 	borderWidth: 0,
+		// 	itemStyle: {
+		// 		color: '#222'
+		// 	},
+		// 	itemHoverStyle: {
+		// 		color: '#E0E0E3'
+		// 	},
+		// 	itemHiddenStyle: {
+		// 		color: '#606063'
+		// 	}
+		// },
 		credits: {
 			enabled: false
 		},
@@ -3473,7 +3473,6 @@ function downloadSvg() {
 	$("#download").on('click',function(){
 		var name_site = ((($( "tspan" ).text()).split('.')))
 		var extracted_name = (name_site[0]).split(' ');
-		console.log(extracted_name[3].slice(0,3))
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 		$( "#pdfsvg" ).empty();
 		
