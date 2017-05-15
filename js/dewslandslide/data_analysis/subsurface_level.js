@@ -60,7 +60,7 @@ $(document).ready(function(e) {
 				fdate : fromDate,
 				tdate : toDate
 			}
-
+			$('#reportrange span').text( moment().subtract(2, 'days').format('YYYY-MM-DD') + ' - ' +  moment().format('YYYY-MM-DD')); 
 			allSensorPosition(dataSubmit)
 		}else{
 			$("#errorMsg").modal('show')
@@ -109,11 +109,11 @@ $(document).ready(function(e) {
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
-
+			var time = moment().format('HH:mm:ss')
 			let dataSubmit = { 
 				site : curSite, 
-				fdate : fromDate,
-				tdate : toDate
+				fdate : fromDate+"T"+time,
+				tdate : toDate+"T"+time
 			}
 
 			allSensorPosition(dataSubmit)
@@ -251,6 +251,8 @@ $(document).ready(function(e) {
 				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
+			fseries.push({name:'unselect'})
+			fseries2.push({name:'unselect'})
 			velocityPosition(data_result_v,totalId.length,disData1[0]); 
 			chartProcess("dis1",fseries,"Displacement, downslope")
 			chartProcess("dis2",fseries2,"Displacement , across slope")
@@ -340,8 +342,8 @@ $(document).ready(function(e) {
 
 			var sorted_fseries =[]
 			for (var counter = 0; counter < fseries.length;counter++){
-				 sorted_fseries.push(doSortDates(fseries[counter].data));
-				 
+				sorted_fseries.push(doSortDates(fseries[counter].data));
+
 			}
 
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
@@ -386,6 +388,11 @@ $(document).ready(function(e) {
 					}
 				}
 			},
+			yAxis: {
+				title: {
+					text: 'Depth'
+				},
+			},
 			credits: {
 				enabled: false
 			},
@@ -405,6 +412,21 @@ $(document).ready(function(e) {
 				}
 			},
 			series:data_series
+		});
+		var chart = $('#'+id).highcharts();
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < data_series.length-1; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
+			}
 		});
 	}
 
@@ -489,7 +511,11 @@ $(document).ready(function(e) {
 				// crosshairs: true,
 				// split: true,
 			},
-
+			yAxis: {
+				title: {
+					text: 'Depth'
+				},
+			},
 			credits: {
 				enabled: false
 			},
@@ -506,12 +532,7 @@ $(document).ready(function(e) {
 			legend: {
 				enabled: false
 			},
-			yAxis: {
-				title: {
-					text: 'Values'
-				},
-
-			},
+			
 			series:data_series
 		});
 	}
