@@ -372,7 +372,7 @@ function getDistanceRainSite(site,fdate,tdate,max_rain,id) {
 	}
 }
 function getRainSenslope(site,fdate,tdate,max_rain,id) {
-	// console.log("/api/RainSenslope/"+site+"/"+fdate+"/"+tdate)
+	console.log("/api/RainSenslope/"+site+"/"+fdate+"/"+tdate)
 	if(site != null){
 		$.ajax({
 			url:"/api/RainSenslope/"+site+"/"+fdate+"/"+tdate,
@@ -406,7 +406,7 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 
 								}else{
 									nval.push(i);
-									break;
+									// break;
 								}
 							}
 						}
@@ -439,7 +439,6 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 }
 
 function getRainArq(site,fdate,tdate,max_rain,id) {
-	// console.log("/api/RainARQ/"+site+"/"+fdate+"/"+tdate)
 	if(site != null){
 		$.ajax({
 			url:"/api/RainARQ/"+site+"/"+fdate+"/"+tdate,
@@ -474,7 +473,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 
 								}else{
 									nval.push(i);
-									break;
+									// break;
 								}
 							}
 						}
@@ -496,6 +495,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							tdate : tdate
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit );
+						
 					}else{
 						$('#'+id).hide()
 
@@ -2343,7 +2343,6 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
-	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
