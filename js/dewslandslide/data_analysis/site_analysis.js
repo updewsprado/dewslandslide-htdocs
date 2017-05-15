@@ -2303,6 +2303,7 @@ function mapGenerator(site) {
 			center: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		});
+		
 		var marker = new google.maps.Marker({
 			position: new google.maps.LatLng(parseFloat(result[0].lat),parseFloat(result[0].lon)),
 			map: map
@@ -3516,3 +3517,4 @@ function downloadSvg() {
 
 
 }
+
