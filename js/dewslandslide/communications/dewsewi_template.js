@@ -55,9 +55,13 @@ $(document).ready(function(e){
 
     $('#add_backbone').on('click',function(){
     	$('form').trigger('reset');
-    	$('#modal-title').text('Create Message Backbone');
-    	// $('#submit_template').text("CREATE");
+    	$('#modal-title-backbone').text('Create Message Backbone');
+    	$('#submit_backbone').text("CREATE");
     	$('#backbone_modal').modal('toggle');
+    });
+
+    $('#show_key_inputs').on('click',function(){
+    	$('#key_input_display').modal('toggle');
     });
 
     $('#submit_template').on('click',function(){
@@ -101,15 +105,33 @@ $(document).ready(function(e){
     	templateData['category'] = $('#category').val();
     	templateData['backbone_message'] = $('#msg_backbone').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
+
     	if ($('#submit_backbone').text() == "CREATE") {
     		$.post('../communications/addbackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
+    			console.log(data);
+    			var response = JSON.parse(data);
+				if (response == 1 || response == true) {
+					$.notify("Successfully added a new backbone message.","success");
+					reloadBackboneTable();
+					$('#backbone_modal').modal('toggle');
+				} else {
+					$.notify("Failed to add a new backbone message, Duplicate entry.","error");
+				}
 
     		});
     	} else {
+    		templateData['id'] = tableId;
     		$.post('../communications/updatebackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
-
+    			var response = JSON.parse(data);
+                if (response == 1 || response == true) {
+                    $.notify("Successfully updated a backbone message.","success");
+                    reloadBackboneTable();
+                    $('#backbone_modal').modal('toggle');
+                } else {
+                    $.notify("Failed to update a backbone message, Please recheck input fields.","error");
+                }
     		});
     	}
     	templateData = {};
@@ -134,12 +156,15 @@ $(document).ready(function(e){
     	var table = $('#template_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
+		$('form').trigger('reset');
 		$('#modal-title').text('Update Template');
 		$('#alert_lvl').val(data.alert_lvl);
 		$('#internal_alert').val(data.internal_alert);
 		$('#scenario').val(data.possible_scenario);
 		$('#response').val(data.recommended_response);
+		$('#bb_scenario').val(data.bb_scenario);
 		$('#submit_template').text("UPDATE");
+		$('form').trigger('reset');
 		$('#template_modal').modal('toggle');
     });
 
@@ -158,7 +183,30 @@ $(document).ready(function(e){
 
     $('#msg_backbone').on('input',function(){
     	loadBackboneView($('#msg_backbone').val());
-    })
+    });
+
+    $('#backbone_table tbody').on('click','.update',function(){
+    	var table = $('#backbone_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
+		tableId = data.id;
+		$('form').trigger('reset');
+		$('#modal-title-backbone').text('Update Message Backbone');
+		$('#category').val(data.category);
+		$('#msg_backbone').val(data.template);
+		$('#submit_backbone').text("UPDATE");
+		$('#backbone_modal').modal('toggle');
+		loadBackboneView(data.template);
+    });
+
+    $('#backbone_table tbody').on('click','tr:has(td) .delete',function(){
+    	var table = $('#backbone_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
+		tableId = data.id;
+		console.log(data);
+		$('#submit_backbone').text("UPDATE");
+        $('#delete_backbone_modal').modal('toggle');
+    });	
+
 });
 
 function reloadTable() {
@@ -194,7 +242,7 @@ function reloadBackboneTable() {
     		{ "data" : "id", title: "ID"},
     		{ "data" : "category", title: "CATEGORY"},
     		{ "data" : "template", title: "BACKBONE MESSAGE"},
-    		{ "data" : "last_modified_by", title: "LAST UPDATE"},
+    		{ "data" : "last_modified_by", title: "LASTEST MODIFICATION"},
     		{ "data" : "functions", title : "*"}
         ]
     });
@@ -209,10 +257,14 @@ function loadBackboneView(real_time_value) {
 	$.post('../communications/getkeypointsviacategory',{template_key : JSON.stringify(key)})
 	.done(function(data){
 		var response = JSON.parse(data);
-		template = template.replace("%%ALERT_LVL%%",response[0].alert_lvl);
-		template = template.replace("%%POSSIBLE_SCENARIO%%", response[0].possible_scenario);
-		template = template.replace("%%RECOMMENDED_RESPONSE%%",response[0].recommended_response);
-
-		$('#backbone_preview').val(template);
+		if (response.length == 0) {
+			$('#no-key-input').show();
+		} else {
+			$('#no-key-input').hide();
+			template = template.replace("%%ALERT_LVL%%",response[0].alert_lvl);
+			template = template.replace("%%POSSIBLE_SCENARIO%%", response[0].possible_scenario);
+			template = template.replace("%%RECOMMENDED_RESPONSE%%",response[0].recommended_response);	
+			$('#backbone_preview').val(template);
+		}		
 	});
 }
