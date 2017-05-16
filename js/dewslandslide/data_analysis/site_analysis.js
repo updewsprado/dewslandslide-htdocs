@@ -1826,8 +1826,8 @@ function displacementPosition(data_result,data_result_v) {
 		}
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope])
-				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope])
+				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope*1000])
+				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope*1000])
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
@@ -1958,7 +1958,7 @@ function chartProcessDis(id,data_series,name){
 		},
 		yAxis: {
 			title: {
-				text: 'Depth'
+				text: 'Displacement'
 			},
 		},
 		tooltip: {
