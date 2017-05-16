@@ -417,7 +417,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id) {
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							if(jsonRespo[n2].ts != undefined){
+							if(n2 < nval.length){
 								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
 						}
@@ -485,7 +485,7 @@ function getRainArq(site,dataSubmit,max_rain,id) {
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							if(jsonRespo[n2].ts != undefined){
+							if(n2 < nval.length){
 								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
 						}						var divname =["24hrs","72hrs" ,"15mins"];
@@ -552,10 +552,10 @@ function getRainNoah(site,dataSubmit,max_rain,id) {
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							if(jsonRespo[n2].ts != undefined){
+							if(n2 < nval.length){
 								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-							}
-						}
+							}		
+											}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
