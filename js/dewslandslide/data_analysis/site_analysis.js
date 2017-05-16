@@ -372,7 +372,6 @@ function getDistanceRainSite(site,fdate,tdate,max_rain,id) {
 	}
 }
 function getRainSenslope(site,fdate,tdate,max_rain,id) {
-	console.log("/api/RainSenslope/"+site+"/"+fdate+"/"+tdate)
 	if(site != null){
 		$.ajax({
 			url:"/api/RainSenslope/"+site+"/"+fdate+"/"+tdate,
@@ -413,7 +412,11 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -480,7 +483,9 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -543,7 +548,9 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
