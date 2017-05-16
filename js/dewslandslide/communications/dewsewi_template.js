@@ -152,6 +152,21 @@ $(document).ready(function(e){
 		});	
     })
 
+    $('#delete_backbone').on('click',function(){
+        templateData['id'] = tableId;
+        $.post("../communications/deletebackbone", {backbone_message : JSON.stringify(templateData)})
+        .done(function(data) {
+            var response = JSON.parse(data);
+            if (response == 1 || response == true) {
+                $.notify("Successfully deleted the backbone message.","success");
+                reloadBackboneTable();
+                $('#delete_backbone_modal').modal('toggle');
+            } else {
+                $.notify("Failed to delete backbone message. Please contact one of the SWAT member.","error");
+            }
+        }); 
+    });
+
     $('#template_table tbody').on('click','.update',function(){
     	var table = $('#template_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
@@ -203,6 +218,9 @@ $(document).ready(function(e){
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		console.log(data);
+        var to_be_deleted = "Category: "+data.category+"\n"+
+                            "Template: "+data.template+"\n";
+        $('#delete-backbone').val(to_be_deleted);
 		$('#submit_backbone').text("UPDATE");
         $('#delete_backbone_modal').modal('toggle');
     });	
