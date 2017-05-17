@@ -400,7 +400,7 @@ function rainScannerBar(data,id) {
         yAxis: [{
             min: 0,
             title: {
-                text: 'Threshold'
+                text: 'Threshold ratio'
             },
         }],
         legend: {
