@@ -95,17 +95,15 @@ function ValueProcess(curSite) {
 	getAlertmini(curSite,'graph')
 	ColumnDataProcess(curSite)
 	DataPresence(curSite)
-	heatmapProcess(curSite,moment().format('YYYY-MM-DDTHH:mm'),'30d')
+	heatmapProcess(curSite,moment().format('YYYY-MM-DDTHH:00'),'30d')
 	$('.daygeneral').val('30d')
-	$('#reportrange3').val(moment().format('YYYY-MM-DD HH:mm'))
+	$('#reportrange3').val(moment().add(1,'h').format('YYYY-MM-DD HH:00'))
 	$(".soms_heatmap").append('<div class="col-md-12" id="heatmap_div"></div>')
 	// $('.daygeneral').prop('disabled', true);
 	var start = moment(); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
 		autoUpdateInput: false,
-		timePickerIncrement: 30,
-		maxDate: new Date(),
 		opens: "right",
 		startDate: start,
 		locale: {
@@ -323,6 +321,7 @@ function DataPresence(site){
 
 
 function heatmapProcess(site,tdate,day){		
+	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
