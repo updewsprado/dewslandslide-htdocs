@@ -104,16 +104,28 @@ $(document).ready(function(e) {
 
 	function cb(start, end) {
 		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
+<<<<<<< HEAD
+=======
+		// alert($("#sitegeneral").val()) 
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 		if($("#sitegeneral").val() != null){
 
 			var curSite = $("#sitegeneral").val();
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
+<<<<<<< HEAD
 			var time = moment().format('HH:mm:ss')
 			let dataSubmit = { 
 				site : curSite, 
 				fdate : fromDate+"T"+time,
 				tdate : toDate+"T"+time
+=======
+
+			let dataSubmit = { 
+				site : curSite, 
+				fdate : fromDate,
+				tdate : toDate
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 			}
 
 			allSensorPosition(dataSubmit)
@@ -121,11 +133,16 @@ $(document).ready(function(e) {
 	}
 
 	function allSensorPosition(data_result) {
+<<<<<<< HEAD
+=======
+		console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate)
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
 				var data = JSON.parse(result);
 				columnPosition(data[0].c)
+				// console.log(data)
 				displacementPosition(data[0].d,data[0].v)
 			}
 		});
@@ -181,8 +198,13 @@ $(document).ready(function(e) {
 			}
 			for(var a = 0; a < fAlldown.length; a++){
 				var color =  parseInt((255 / fAlldown.length)*(a+1))
+<<<<<<< HEAD
 				fseries.push({name:sortlist[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 				fseries2.push({name:sortlist[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
+=======
+				fseries.push({name:listDate[a], data:fAlldown[a] ,color:inferno[color]})
+				fseries2.push({name:listDate[a],  data:fAlllat[a],color:inferno[color]})
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 			}
 			chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 			chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -247,7 +269,11 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 1; a < disData1.length+1; a++){
+<<<<<<< HEAD
 				var color =  parseInt((255 / disData1.length)*a)
+=======
+				var color =  parseInt((255 / disData1.length)*(a))
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
@@ -313,9 +339,15 @@ $(document).ready(function(e) {
 				}
 				for(var a = 0; a < sliceData.length; a++){
 					catNum.push((sliceData.length-1)-(a+1)+2)
+<<<<<<< HEAD
 					var color = parseInt((255 / sliceData.length)*(a+1))
 					fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 					fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+=======
+					var color =  parseInt((255 / sliceData.length)*(a+1))
+					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 				}
 			}else{
 				var catNum=[];
@@ -334,11 +366,16 @@ $(document).ready(function(e) {
 
 				for(var a = 0; a < sliceData.length-1; a++){
 					catNum.push((sliceData.length-2)-(a+1)+2)
+<<<<<<< HEAD
 					var color = parseInt((255 / sliceData.length)*(a+1))
+=======
+					var color =  parseInt((255 / sliceData.length)*(a+1))
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}					
 			}
+<<<<<<< HEAD
 
 			var sorted_fseries =[]
 			for (var counter = 0; counter < fseries.length;counter++){
@@ -346,6 +383,14 @@ $(document).ready(function(e) {
 
 			}
 
+=======
+			
+			var sorted_fseries =[]
+			for (var counter = 0; counter < fseries.length;counter++){
+				 sorted_fseries.push(doSortDates(fseries[counter].data));
+				 
+			}
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 			chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
 		}  
@@ -451,7 +496,11 @@ $(document).ready(function(e) {
 			},
 			yAxis: {
 				title: {
+<<<<<<< HEAD
 					text: 'Depth'
+=======
+					text: 'DeptH'
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 				},
 			},
 			tooltip: {
@@ -467,21 +516,21 @@ $(document).ready(function(e) {
 			credits: {
 				enabled: false
 			},
-			legend: {
-				layout: 'vertical',
-				align: 'right',
-				verticalAlign: 'middle',
-				borderWidth: 0,
-				itemStyle: {
-					color: '#222'
-				},
-				itemHoverStyle: {
-					color: '#E0E0E3'
-				},
-				itemHiddenStyle: {
-					color: '#606063'
-				}
-			},
+			// legend: {
+			// 	layout: 'vertical',
+			// 	align: 'right',
+			// 	verticalAlign: 'middle',
+			// 	borderWidth: 0,
+			// 	itemStyle: {
+			// 		color: '#222'
+			// 	},
+			// 	itemHoverStyle: {
+			// 		color: '#E0E0E3'
+			// 	},
+			// 	itemHiddenStyle: {
+			// 		color: '#606063'
+			// 	}
+			// },
 			credits: {
 				enabled: false
 			},
@@ -591,6 +640,7 @@ $(document).ready(function(e) {
 				svg.call(tip);
 
 
+<<<<<<< HEAD
 				var rectangles = svg.selectAll("rect")
 				.data(pattern)
 				.enter().append("rect");
@@ -607,6 +657,39 @@ $(document).ready(function(e) {
 				.on('mouseout', tip.hide)
 			}
 		});
+=======
+ 				// var timeLabels = svg.selectAll(".timeLabel")
+     //          	.data(time_index_obj)
+     //          	.enter().append("text")
+     //            .text(function(d) { return d.time.slice(11,16); })
+     //            .attr("x", function(d) {
+					// return d.index * 25; })
+     //            .attr("y",  function(d) {
+					// return 25;})
+     //            .style("text-anchor", "middle")
+     //            .attr("transform", "translate(11, -6)")
+     //            .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
+
+     svg.call(tip);
+
+
+     var rectangles = svg.selectAll("rect")
+     .data(pattern)
+     .enter().append("rect");
+
+     rectangles.attr("x", function(d) {
+     	return d.index_x * 17;})
+     .attr("y", function(d) {
+     	return d.index_y * 17;})
+     .attr("width", 15)
+     .attr("height", 15).
+     style("fill", function(d) {
+     	return colorScale(d.index_x);})
+     .on('mouseover', tip.show)
+     .on('mouseout', tip.hide)
+ }
+});
+>>>>>>> 60887f0c2a57a4e6ed7337edad0b9d0295080eac
 	}
 });
 
