@@ -2801,6 +2801,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 		tdate : tdate,
 		nid: node
 	}
+	console.log(dataVersion1)
 	$.post("../node_level_page/getAllAccelVersion1In", {data : dataVersion1} ).done(function(data){
 		var result = JSON.parse(data);
 		var seperated_num =[]
