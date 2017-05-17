@@ -4,7 +4,6 @@ var backboneTable;
 var tableId;
 var template;
 $(document).ready(function(e){
-
     templateTable = $('#template_table').DataTable( {
         "processing": true,
         "bSort" : false,
@@ -51,6 +50,7 @@ $(document).ready(function(e){
     	$('#modal-title').text('Create Template');
     	$('#submit_template').text("CREATE");
     	$('#template_modal').modal('toggle');
+        keyInputAutocomplete();
     });
 
     $('#add_backbone').on('click',function(){
@@ -58,6 +58,7 @@ $(document).ready(function(e){
     	$('#modal-title-backbone').text('Create Message Backbone');
     	$('#submit_backbone').text("CREATE");
     	$('#backbone_modal').modal('toggle');
+        backboneAutocomplete();
     });
 
     $('#show_key_inputs').on('click',function(){
@@ -94,7 +95,7 @@ $(document).ready(function(e){
 					reloadTable();
 					$('#template_modal').modal('toggle');
 				} else {
-					$.notify("Failed to update a template, Please recheck input fields.","error");
+					$.notify("Failed to update a template, template already exist.","error");
 				}
 			});	
     	}
@@ -130,7 +131,7 @@ $(document).ready(function(e){
                     reloadBackboneTable();
                     $('#backbone_modal').modal('toggle');
                 } else {
-                    $.notify("Failed to update a backbone message, Please recheck input fields.","error");
+                    $.notify("Failed to update a backbone message, backbone category already exist.","error");
                 }
     		});
     	}
@@ -168,10 +169,10 @@ $(document).ready(function(e){
     });
 
     $('#template_table tbody').on('click','.update',function(){
+        keyInputAutocomplete();
     	var table = $('#template_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
-		$('form').trigger('reset');
 		$('#modal-title').text('Update Template');
 		$('#alert_lvl').val(data.alert_lvl);
 		$('#internal_alert').val(data.internal_alert);
@@ -179,8 +180,10 @@ $(document).ready(function(e){
 		$('#response').val(data.recommended_response);
 		$('#bb_scenario').val(data.bb_scenario);
 		$('#submit_template').text("UPDATE");
-		$('form').trigger('reset');
 		$('#template_modal').modal('toggle');
+        console.log($('#alert_lvl').val());
+        console.log($('#internal_alert').val());
+        console.log($('#bb_scenario').val());
     });
 
     $('#template_table tbody').on('click','tr:has(td) .delete',function(){
@@ -201,10 +204,10 @@ $(document).ready(function(e){
     });
 
     $('#backbone_table tbody').on('click','.update',function(){
+        backboneAutocomplete();
     	var table = $('#backbone_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
-		$('form').trigger('reset');
 		$('#modal-title-backbone').text('Update Message Backbone');
 		$('#category').val(data.category);
 		$('#msg_backbone').val(data.template);
@@ -223,7 +226,7 @@ $(document).ready(function(e){
         $('#delete-backbone').val(to_be_deleted);
 		$('#submit_backbone').text("UPDATE");
         $('#delete_backbone_modal').modal('toggle');
-    });	
+    });
 
 });
 
@@ -245,6 +248,74 @@ function reloadTable() {
             { "data" : "last_update_by", title:"LATEST MODIFICATION"},
             { "data" : "functions", title: "*"}
         ]
+    });
+}
+
+function keyInputAutocomplete() {
+    $.get('../communications/fetchalltemplate',function(data){
+        var response = JSON.parse(data);
+        alertLevelAutocomplete(response);
+        internalAlertAutocomplete(response);
+        backboneCategoryAutocomplete(response);
+    });
+}
+
+function alertLevelAutocomplete(response) {
+    var alert_lvls = [];
+    for (var counter=0;counter < response.data.length;counter++){
+        if ($.inArray(response.data[counter].alert_lvl,alert_lvls) == -1) {
+           alert_lvls.push(response.data[counter].alert_lvl); 
+        }
+    }
+    var input = document.getElementById("alert_lvl");
+    var awesomplete = new Awesomplete(input, {
+        minChars: 1,
+    });
+    awesomplete.list = alert_lvls;
+}
+
+function internalAlertAutocomplete(response) {
+    var internal_alerts = [];
+    for (var counter=0;counter < response.data.length;counter++){
+        if ($.inArray(response.data[counter].internal_alert,internal_alerts) == -1) {
+           internal_alerts.push(response.data[counter].internal_alert); 
+        }
+    }
+    var input = document.getElementById("internal_alert");
+    var awesomplete = new Awesomplete(input, {
+        minChars: 1,
+    });
+    awesomplete.list = internal_alerts;
+}
+
+function backboneCategoryAutocomplete(response) {
+    var backbone_category = [];
+    for (var counter=0;counter < response.data.length;counter++){
+        if ($.inArray(response.data[counter].bb_scenario,backbone_category) == -1) {
+           backbone_category.push(response.data[counter].bb_scenario); 
+        }
+    }
+    var input = document.getElementById("bb_scenario");
+    var awesomplete = new Awesomplete(input, {
+        minChars: 1,
+    });
+    awesomplete.list = backbone_category;
+}
+
+function backboneAutocomplete() {
+    $.get('../communications/fetchallbackbonetemplate').done(function(data){
+        var response = JSON.parse(data);
+        var category = [];
+        for (var counter =0; counter < response.data.length;counter++) {
+            if ($.inArray(response.data[counter].category,category) == -1){
+                category.push(response.data[counter].category);
+            }
+        }
+        var input = document.getElementById("category");
+        var awesomplete = new Awesomplete(input, {
+            minChars: 1,
+        });
+        awesomplete.list = category;
     });
 }
 
