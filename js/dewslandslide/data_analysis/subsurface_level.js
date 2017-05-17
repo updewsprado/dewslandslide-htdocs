@@ -39,12 +39,14 @@ $(document).ready(function(e) {
 			per_site_name.push(per_site[i].name)
 		}
 	})
-	$('#submit').on('click',function(){
-		if($("#sitegeneral").val() != ""){
+	$('#sitegeneral').on('change',function(){
+		if($("#sitegeneral").val() != "SELECT"){
 			var subSites =[];
 			var curSite = $("#sitegeneral").val();
-			var fromDate = $('#reportrange span').html().slice(0,10);
-			var toDate = $('#reportrange span').html().slice(13,23);
+			// var fromDate = $('#reportrange span').html().slice(0,10);
+			// var toDate = $('#reportrange span').html().slice(13,23);
+			var fromDate = 'n';
+			var toDate = 'n';
 			// dataPresencePerSite(curSite)
 			document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Column Overview"
 			for (i = 0; i <  per_site_name.length; i++) {
@@ -58,7 +60,7 @@ $(document).ready(function(e) {
 				fdate : fromDate,
 				tdate : toDate
 			}
-
+			$('#reportrange span').text( moment().subtract(2, 'days').format('YYYY-MM-DD') + ' - ' +  moment().format('YYYY-MM-DD')); 
 			allSensorPosition(dataSubmit)
 		}else{
 			$("#errorMsg").modal('show')
@@ -84,13 +86,42 @@ $(document).ready(function(e) {
 
 	cb(start, end);
 
+
+	function doSortDates(dates){
+		var swapped;
+		do {
+			swapped = false;
+			for (var i=0; i < dates.length-1; i++) {
+				if (dates[i][0] > dates[i+1][0]) {
+					var temp = dates[i][0];
+					dates[i][0] = dates[i+1][0];
+					dates[i+1][0] = temp;
+					swapped = true;
+				}
+			}
+		} while (swapped);
+	}
+
 	function cb(start, end) {
-		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));   
+		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
+		if($("#sitegeneral").val() != null){
+
+			var curSite = $("#sitegeneral").val();
+			var fromDate = $('#reportrange span').html().slice(0,10);
+			var toDate = $('#reportrange span').html().slice(13,23);
+			var time = moment().format('HH:mm:ss')
+			let dataSubmit = { 
+				site : curSite, 
+				fdate : fromDate+"T"+time,
+				tdate : toDate+"T"+time
+			}
+
+			allSensorPosition(dataSubmit)
+		}
 	}
 
 	function allSensorPosition(data_result) {
-		// console.log("/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'))
-		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+moment(data_result.tdate).add(1, 'days').format('YYYY-MM-DD'),
+		$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
 			dataType: "json",
 			success: function(result){
 				var data = JSON.parse(result);
@@ -126,11 +157,12 @@ $(document).ready(function(e) {
 					listId.push(AlllistId[i])
 				}
 			}
+			var sortlist = listDate.sort()
 			for(var i = 0; i < listDate.length; i++){
 				for(var a = 0; a < data.length; a++){
-					if(listDate[i] == data[a].ts){
-						fdatadown.push([data[a].downslope,data[a].depth])
-						fdatalat.push([data[a].latslope,data[a].depth])
+					if(sortlist[i] == data[a].ts){
+						fdatadown.push([data[a].downslope * 1000,data[a].depth])
+						fdatalat.push([data[a].latslope * 1000,data[a].depth])
 					}
 				}
 			}
@@ -148,12 +180,13 @@ $(document).ready(function(e) {
 				}
 			}
 			for(var a = 0; a < fAlldown.length; a++){
-				fseries.push({name:listDate[a], data:fAlldown[a]})
-				fseries2.push({name:listDate[a],  data:fAlllat[a]})
+				var color =  parseInt((255 / fAlldown.length)*(a+1))
+				fseries.push({name:sortlist[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
+				fseries2.push({name:sortlist[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			}
 			chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 			chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
-			// console.log(bubble_Sort(fseries2));
+
 		}     
 	}
 
@@ -209,20 +242,23 @@ $(document).ready(function(e) {
 			}
 			for(var a = 0; a < disData1.length; a++){
 				for(var i = 0; i < disData1[0].length; i++){
-					d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope])
-					d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope])
+					d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope*1000])
+					d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope*1000])
 				}
 			}
 			for(var a = 1; a < disData1.length+1; a++){
-				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+				var color =  parseInt((255 / disData1.length)*a)
+				fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+				fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 			}
+			fseries.push({name:'unselect'})
+			fseries2.push({name:'unselect'})
 			velocityPosition(data_result_v,totalId.length,disData1[0]); 
 			chartProcess("dis1",fseries,"Displacement, downslope")
 			chartProcess("dis2",fseries2,"Displacement , across slope")
 
 		}     
-		
+
 	}
 	function velocityPosition(data_result,id,date) {
 		if(data_result == "error"){
@@ -239,15 +275,18 @@ $(document).ready(function(e) {
 					allTime.push(data[0].L2[a].ts)
 					l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
 				}
-				var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
+
+				var symbolD = 'url(http://icons.iconarchive.com/icons/kyo-tux/soft/32/Alert-icon.png)';
 				for(var a = 0; a < data[0].L2.length; a++){
 					fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 					fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 				}
 				for(var a = 0; a < data[0].L3.length; a++){
 					allTime.push(data[0].L3[a].ts)
-					l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+					l3.push([Date.parse(data[0].L3[a].ts) , (((id)+1)-parseInt(data[0].L3[a].id))]);
+
 				}
+
 				var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 				for(var a = 0; a < data[0].L3.length; a++){
 					fseries.push({ type: 'scatter', zIndex:5 , name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
@@ -274,8 +313,9 @@ $(document).ready(function(e) {
 				}
 				for(var a = 0; a < sliceData.length; a++){
 					catNum.push((sliceData.length-1)-(a+1)+2)
-					fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-					fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+					var color = parseInt((255 / sliceData.length)*(a+1))
+					fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}
 			}else{
 				var catNum=[];
@@ -294,10 +334,18 @@ $(document).ready(function(e) {
 
 				for(var a = 0; a < sliceData.length-1; a++){
 					catNum.push((sliceData.length-2)-(a+1)+2)
-					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+					var color = parseInt((255 / sliceData.length)*(a+1))
+					fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+					fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 				}					
 			}
+
+			var sorted_fseries =[]
+			for (var counter = 0; counter < fseries.length;counter++){
+				sorted_fseries.push(doSortDates(fseries[counter].data));
+
+			}
+
 			chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 			chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
 		}  
@@ -330,8 +378,8 @@ $(document).ready(function(e) {
 			},
 			tooltip: {
 				header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-				shared: true,
-				crosshairs: true
+				// split: true,
+				// crosshairs: true
 			},
 			plotOptions: {
 				spline: {
@@ -339,6 +387,11 @@ $(document).ready(function(e) {
 						enabled: true
 					}
 				}
+			},
+			yAxis: {
+				title: {
+					text: 'Displacement'
+				},
 			},
 			credits: {
 				enabled: false
@@ -360,6 +413,21 @@ $(document).ready(function(e) {
 			},
 			series:data_series
 		});
+		var chart = $('#'+id).highcharts();
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < data_series.length-1; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
+			}
+		});
 	}
 
 	function chartProcessInverted(id,data_series,name){
@@ -372,11 +440,19 @@ $(document).ready(function(e) {
 			chart: {
 				type: 'line',
 				zoomType: 'x',
-				height: 700,
+				height: 1000,
 				width: 550
 			},
 			title: {
 				text: name,
+			},
+			xAxis: {
+				gridLineWidth: 1,
+			},
+			yAxis: {
+				title: {
+					text: 'Depth'
+				},
 			},
 			tooltip: {
 				crosshairs: true
@@ -432,10 +508,14 @@ $(document).ready(function(e) {
 
 			tooltip: {
 				headerFormat: '{point.key}',
-				pointFormat: ' ',
-				crosshairs: true
+				// crosshairs: true,
+				// split: true,
 			},
-
+			yAxis: {
+				title: {
+					text: 'Depth'
+				},
+			},
 			credits: {
 				enabled: false
 			},
@@ -452,12 +532,7 @@ $(document).ready(function(e) {
 			legend: {
 				enabled: false
 			},
-			yAxis: {
-				title: {
-					text: 'Values'
-				},
-
-			},
+			
 			series:data_series
 		});
 	}
@@ -490,7 +565,7 @@ $(document).ready(function(e) {
 				for (e = 0; e < time_data.length; e++) {
 					pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
 				}
-				
+
 
 				var colorDomain = d3.extent(pattern, function(d) {
 					return d.time;
@@ -513,22 +588,9 @@ $(document).ready(function(e) {
 				.attr("width", 48 * 25)
 				.attr("height", 100);
 
+				svg.call(tip);
 
- 				// var timeLabels = svg.selectAll(".timeLabel")
-     //          	.data(time_index_obj)
-     //          	.enter().append("text")
-     //            .text(function(d) { return d.time.slice(11,16); })
-     //            .attr("x", function(d) {
-					// return d.index * 25; })
-     //            .attr("y",  function(d) {
-					// return 25;})
-     //            .style("text-anchor", "middle")
-     //            .attr("transform", "translate(11, -6)")
-     //            .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
-                  
-                  svg.call(tip);
 
-                
 				var rectangles = svg.selectAll("rect")
 				.data(pattern)
 				.enter().append("rect");
@@ -547,3 +609,5 @@ $(document).ready(function(e) {
 		});
 	}
 });
+
+

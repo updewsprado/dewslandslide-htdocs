@@ -12,7 +12,11 @@ $(document).ready(function(e) {
 	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)
 		ValueProcess(current_site)
-		$("#soms_search_tool").slideDown()
+		if(current_site.slice(3,4) == 's'){
+			$("#soms_search_tool").slideDown()
+		}else{
+			$("#heatmap_li").hide()
+		}
 	}else{
 		columnSelect("Select");
 	}
@@ -76,7 +80,7 @@ function ValueProcess(curSite) {
 	ColumnDataProcess(curSite)
 	DataPresence(curSite)
 	$(".soms_heatmap").append('<div class="col-md-12" id="heatmap_div"></div>')
-	$('.daygeneral').prop('disabled', true);
+	// $('.daygeneral').prop('disabled', true);
 	var start = moment().subtract(2, 'days'); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
@@ -98,7 +102,7 @@ function ValueProcess(curSite) {
 		var timevalue =time.context.value
 		var tdate = timevalue.slice(0,10);
 		var time = timevalue.slice(11,16);
-		$('.daygeneral').prop('disabled', false);
+		// $('.daygeneral').prop('disabled', false);
 		$(".heatmapClass").empty()
 		$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
 			'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
@@ -357,7 +361,8 @@ function heatmapProcess(site,tdate,day){
 					}
 				});
 			}else{
-				$(".daygeneral").hide()
+				// $(".daygeneral").hide()
+				$("#heatmap_div").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
 			}
 		}
@@ -549,7 +554,8 @@ function heatmapVisual(series_data,list_time,list_id){
 		.attr("transform", "translate(0," + (10) + ")")
 		.call(xAxis);
 	}else{
-		$(".daygeneral").hide();
+		// $(".daygeneral").hide();
+		$("#heatmap_div").empty()
 		$("#heatmap_div").append('<div id="heatmap_container"><h3 style="text-align: center"> NO DATA </h3></div>')
 	}
 }

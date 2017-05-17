@@ -42,7 +42,7 @@ function dropdowlistAppendValue(newitemnum, newitemdesc ,id) {
 
 
 function dateselection() {
-	var start = moment().subtract(30, 'days'); 
+	var start = moment().subtract(7, 'days'); 
 	var end = moment();
 
 	$('#reportrange0').daterangepicker({
@@ -112,7 +112,20 @@ function removeDuplicates(num) {
 	return out;
 }
 
-
+function doSortDates(dates){
+	var swapped;
+	do {
+		swapped = false;
+		for (var i=0; i < dates.length-1; i++) {
+			if (dates[i][0] > dates[i+1][0]) {
+				var temp = dates[i][0];
+				dates[i][0] = dates[i+1][0];
+				dates[i+1][0] = temp;
+				swapped = true;
+			}
+		}
+	} while (swapped);
+}
 
 /************************/
 /***SITE LEVEL PROCESS***/
@@ -383,23 +396,27 @@ function getRainSenslope(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
 
-							// 	}else{
-							// 		nval.push(i);
-							// 		break;
-							// 	}
-							// }
+								}else{
+									nval.push(i);
+									// break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -449,11 +466,26 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
+
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+
+								}else{
+									nval.push(i);
+									// break;
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -468,6 +500,7 @@ function getRainArq(site,fdate,tdate,max_rain,id) {
 							tdate : tdate
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit );
+						
 					}else{
 						$('#'+id).hide()
 
@@ -503,19 +536,21 @@ function getRainNoah(site,fdate,tdate,max_rain,id) {
 							DataSeries72h.push(Data72h);
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
-							// if(jsonRespo[i].hrs24 == null){
-							// 	if(jsonRespo[i-1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// 	if(jsonRespo[i+1].hrs24 != null && jsonRespo[i].hrs24 == null ){
-							// 		nval.push(i);
-							// 	}
-							// }
+							if(jsonRespo[i].rval == null){
+								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
+									nval.push(i);
+								}
+							}
 						}
 						for (var i = 0; i < nval.length; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
-							negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							if(n2 < nval.length){
+								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
@@ -1491,7 +1526,7 @@ function CheckBoxColumn(site,column,from,to){
 				$("#subsurface_analysis_div").append('<div class="col-md-12"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6"><div id="'+id_div[a][0]+'"></div></div><div class="col-md-6"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
-			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
+			allSensorPosition(column,'n','n')
 			SubOnSelect()
 		}else{
 			$(".subsurface_analysis_div").empty()
@@ -1713,11 +1748,13 @@ function columnPosition(data_result) {
 				listId.push(AlllistId[i])
 			}
 		}
+
+		var sortlist = listDate.sort()
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
-				if(listDate[i] == data[a].ts){
-					fdatadown.push([data[a].downslope,data[a].depth])
-					fdatalat.push([data[a].latslope,data[a].depth])
+				if(sortlist[i] == data[a].ts){
+					fdatadown.push([data[a].downslope*1000,data[a].depth])
+					fdatalat.push([data[a].latslope*1000,data[a].depth])
 				}
 			}
 		}
@@ -1735,8 +1772,9 @@ function columnPosition(data_result) {
 			}
 		}
 		for(var a = 0; a < fAlldown.length; a++){
-			fseries.push({name:listDate[a], data:fAlldown[a]})
-			fseries2.push({name:listDate[a],  data:fAlllat[a]})
+			var color =  parseInt((255 / fAlldown.length)*(a+1))
+			fseries.push({name:sortlist[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:sortlist[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
@@ -1795,14 +1833,18 @@ function displacementPosition(data_result,data_result_v) {
 		}
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope])
-				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope])
+				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope*1000])
+				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope*1000])
 			}
 		}
 		for(var a = 1; a < disData1.length+1; a++){
-			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1])})
-			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1])})
+			var color =  parseInt((255 / disData1.length)*a)
+			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
+
+		fseries.push({name:'unselect'})
+		fseries2.push({name:'unselect'})
 		velocityPosition(data_result_v,totalId.length,disData1[0]); 
 		chartProcessDis("dis1",fseries,"Displacement, downslope")
 		chartProcessDis("dis2",fseries2,"Displacement , across slope")
@@ -1823,14 +1865,14 @@ function velocityPosition(data_result,id,date) {
 				allTime.push(data[0].L2[a].ts)
 				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
 			}
-			var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
+			var symbolD = 'url(http://icons.iconarchive.com/icons/kyo-tux/soft/32/Alert-icon.png)';
 			for(var a = 0; a < data[0].L2.length; a++){
 				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 				fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L2[a].id)]);
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -1858,8 +1900,9 @@ function velocityPosition(data_result,id,date) {
 			}
 			for(var a = 0; a < sliceData.length; a++){
 				catNum.push((sliceData.length-1)-(a+1)+2)
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
 		}else{
 			var catNum=[];
@@ -1878,9 +1921,15 @@ function velocityPosition(data_result,id,date) {
 
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
-				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
-				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1])})
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
+		}
+		var sorted_fseries =[]
+		for (var counter = 0; counter < fseries.length;counter++){
+			sorted_fseries.push(doSortDates(fseries[counter].data));
+
 		}
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
@@ -1914,10 +1963,15 @@ function chartProcessDis(id,data_series,name){
 				text: 'Date'
 			},
 		},
+		yAxis: {
+			title: {
+				text: 'Displacement'
+			},
+		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true
+			// shared: true,
+			// crosshairs: true
 		},
 		plotOptions: {
 			spline: {
@@ -1946,6 +2000,21 @@ function chartProcessDis(id,data_series,name){
 		},
 		series:data_series
 	});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < data_series.length-1; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
+			}
+		}
+	});
 
 }
 
@@ -1961,7 +2030,7 @@ function chartProcessInverted(id,data_series,name){
 			zoomType: 'x',
 			panning: true,
 			panKey: 'shift',
-			height: 600,
+			height: 1000,
 			width: 375
 		},
 		title: {
@@ -1969,6 +2038,11 @@ function chartProcessInverted(id,data_series,name){
 		},
 		tooltip: {
 			crosshairs: true
+		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
 		},
 		plotOptions: {
 			spline: {
@@ -1980,21 +2054,21 @@ function chartProcessInverted(id,data_series,name){
 		credits: {
 			enabled: false
 		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#222'
-			},
-			itemHoverStyle: {
-				color: '#E0E0E3'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
-		},
+		// legend: {
+		// 	layout: 'vertical',
+		// 	align: 'right',
+		// 	verticalAlign: 'middle',
+		// 	borderWidth: 0,
+		// 	itemStyle: {
+		// 		color: '#222'
+		// 	},
+		// 	itemHoverStyle: {
+		// 		color: '#E0E0E3'
+		// 	},
+		// 	itemHiddenStyle: {
+		// 		color: '#606063'
+		// 	}
+		// },
 		credits: {
 			enabled: false
 		},
@@ -2023,8 +2097,7 @@ function chartProcessbase(id,data_series,name){
 		},
 
 		tooltip: {
-			headerFormat: '{point.key}',
-			pointFormat: ' ',
+
 			crosshairs: true
 		},
 
@@ -2046,9 +2119,8 @@ function chartProcessbase(id,data_series,name){
 		},
 		yAxis: {
 			title: {
-				text: 'Values'
+				text: 'Depth'
 			},
-
 		},
 		series:data_series
 	});
@@ -2278,7 +2350,6 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
-	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
