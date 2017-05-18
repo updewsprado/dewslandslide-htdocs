@@ -332,7 +332,14 @@ $(document).ready( function() {
 	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) )
 	        	{
 	        		if( extend ) temp.extend_ND = true;
-	        		else if ( entry.rain_alert == "rx" ) temp.extend_rain_x = true;
+	        		if ( entry.rain_alert == "rx" ) {
+	        			let internal = temp.internal_alert_level;
+	        			if( internal.indexOf("x") > -1 ) {
+	        				if( internal.indexOf("R") > -1 ) temp.internal_alert_level.replace(/R/g, "Rx");
+	        				else temp.internal_alert_level += "rx";
+	        			}
+	        			temp.extend_rain_x = true;
+	        		}
 	        	}
 	        }
 
