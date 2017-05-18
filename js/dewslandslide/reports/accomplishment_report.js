@@ -135,7 +135,7 @@ $(document).ready(function()
         }, "json");
     }
 
-    let index_global = null;
+    let index_global = null, narrative_id = null;
     jQuery.validator.addMethod("isUniqueTimestamp", function(value, element, param) {
     	let timestamp = null;
     	if( $(element).prop('id') == "timestamp_time" )
@@ -264,9 +264,12 @@ $(document).ready(function()
                 {
                     data: "id",
                     "render": function (data, type, full) {
-                        if (typeof data == 'undefined')
-                            return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
-                        else return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>';
+                        // if (typeof data == 'undefined')
+                        //     return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
+                        // else return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>';
+                        
+                        let x = typeof data == 'undefined' ? -1 : data;
+                        return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i id='+ x +' class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
                     },
                     className: "text-center"
                 }
@@ -274,6 +277,11 @@ $(document).ready(function()
             "columnDefs": [
                 { "orderable": false, "targets": [1, 2] }
             ],
+            "rowCallback": function( row, data, index ) 
+            {
+                if( typeof data.id == "undefined" )
+                    $(row).css("background-color", "rgba(255, 32, 0, 0.5)" );
+            },
             dom: 'Bfrtip',
             "buttons": [
                 {
@@ -310,8 +318,8 @@ $(document).ready(function()
             }
         }
         index_global = temp.id = index;
-        console.log(temp);
-        console.log(narratives);
+        // console.log(temp);
+        // console.log(narratives);
         for (var key in temp) {
             if (temp.hasOwnProperty(key)) {
                 $("#" + key + "_edit").val(temp[key]);
@@ -323,6 +331,8 @@ $(document).ready(function()
 
     $("#narrativeTable tbody").on("click", "tr .glyphicon-trash", function (e) {
         let self = $(this);
+        narrative_id = this.id;
+        console.log(narrative_id);
         delegate(self);
         $(".delete-warning").show();
         $("#editModal input, #editModal textarea").prop("disabled", true);
@@ -334,6 +344,13 @@ $(document).ready(function()
         narratives.splice(index_global, 1);
         narrativeTable.clear();
         narrativeTable.rows.add(narratives).draw();
+        if( narrative_id != -1 ) {
+            $.post("../../accomplishment/deleteNarrative", { narrative_id: narrative_id } )
+            .fail(function(xhr, status, error) {
+              let err = eval("(" + xhr.responseText + ")");
+              console.log(err.Message);
+            });
+        }
     });
 
     $("#narrativeTable tbody").on("click", "tr .glyphicon-edit", function (e) {
