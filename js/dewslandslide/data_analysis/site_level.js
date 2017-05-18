@@ -321,7 +321,7 @@ function DataPresence(site){
 
 
 function heatmapProcess(site,tdate,day){		
-	console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
+	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
