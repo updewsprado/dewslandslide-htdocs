@@ -555,7 +555,7 @@ function getRainNoah(site,dataSubmit,max_rain,id) {
 							if(n2 < nval.length){
 								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 							}		
-											}
+						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
@@ -1219,6 +1219,11 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 			subtitle: {
 				text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
 			},
+			yAxis:{
+				title: {
+					text: 'Displacement (cm)'
+				}
+			},
 			xAxis: {
 
 				type: 'datetime',
@@ -1434,6 +1439,11 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 			title: {
 				text: 'Date'
 			},
+		},
+		yAxis:{
+			title: {
+				text: 'Acceleration'
+			}
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
@@ -1986,7 +1996,7 @@ function chartProcessDis(id,data_series,name,site){
 		},
 		yAxis:{
 			title: {
-				text: 'Displacement'
+				text: 'Relative Displacement (mm)'
 			}
 		},
 		tooltip: {
@@ -2068,7 +2078,7 @@ function chartProcessInverted(id,data_series,name,site){
 		},
 		yAxis:{
 			title: {
-				text: 'Depth'
+				text: 'Depth (m)'
 			}
 		},
 		plotOptions: {
@@ -2148,7 +2158,7 @@ function chartProcessbase(id,data_series,name,site){
 		},
 		yAxis: {
 			title: {
-				text: 'Depth'
+				text: 'Depth (m)'
 			},
 
 		},
@@ -3241,6 +3251,11 @@ function chartProcessAccel(id,data_series,name,color,list,site){
 				}
 			}
 		},
+		yAxis:{
+			title: {
+				text: 'Raw ADC Value'
+			}
+		},
 		tooltip: {
 			shared: true,
 			crosshairs: true,
@@ -3364,6 +3379,11 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
 		},
 		subtitle: {
 			text: 'Source :  '+(column).toUpperCase()
+		},
+		yAxis:{
+			title: {
+				text: 'Raw ADC Value'
+			}
 		},
 		xAxis: {
 			type: 'datetime',
