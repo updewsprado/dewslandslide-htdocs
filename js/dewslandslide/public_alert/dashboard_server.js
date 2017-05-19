@@ -22,7 +22,7 @@ $(document).ready(function () {
     init();
 
     // AUTOMATION SCRIPTS
-    $("#automation-row #alert_release, #automation-row #bulletin_sending").click(function () {
+    /*$("#automation-row #alert_release, #automation-row #bulletin_sending").click(function () {
         let data = {
             "staff_name" : $("#user_name").text(),
             "staff_id" : $("#current_user_id").val()
@@ -33,7 +33,7 @@ $(document).ready(function () {
 
         if( this.id == "alert_release") doSend("toggleAutomatedAlertRelease", data);
         else doSend("toggleAutomatedBulletinSending", data);
-    });
+    });*/
 });
 
 
@@ -49,7 +49,7 @@ function init() {
         console.log("DASHBOARD SERVER: CONNECTION TO " + wsUri + " has been successfully established");
 
         isConnected = true;
-        doSend("sendIdentification", {"name" : $("#user_name").text(), "staff_id": $("#current_user_id").val()});
+        /*doSend("sendIdentification", {"name" : $("#user_name").text(), "staff_id": $("#current_user_id").val()});*/
         $("#loading").modal("hide");
 
         // if (window.timerID) {
@@ -112,22 +112,6 @@ function onMessage(evt) {
             }
             else { $("#bulletin_sending").prop("checked", false); $("#bulletin_sending_staff").text(""); }
         }
-
-        // if(code == "getJSONandLastRelease")
-        // {
-        //     let temp = data.alert_json.slice(0);
-        //     temp = temp.pop();
-        //     if(json_cache == null || json_cache !== JSON.stringify(temp))
-        //     {
-        //         getRealtimeAlerts(temp);
-        //         json_cache = JSON.stringify(temp);
-        //         doSend("getOnGoingAndExtended");
-        //     } else {
-        //         console.log("DASHBOARD SERVER: No new JSON data.");
-        //     }
-        // }
-        // else if(code == "getOnGoingAndExtended")
-        //     getOnGoingAndExtended(data);
     }
 
     if(code == "getNormalAndLockedIssues") {

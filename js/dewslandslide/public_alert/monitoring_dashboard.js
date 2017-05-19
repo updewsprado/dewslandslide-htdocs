@@ -63,10 +63,10 @@ $(document).ready( function() {
                 let recipients = $("#recipients").tagsinput("items");
                 console.log(recipients);
 
-                text = $("#info").val();
+                text = $("#info").val().replace(/\n/g, '<br/>');
                 let i = text.indexOf("DEWS");
                 if( i > 0) 
-                	text = text.substr(0, i) + "<br/><br/><b>" + text.substr(i) + "</b>";
+                	text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
                 else text = "<b>" + text + "</b>";
 
                 subject = $("#subject").text();
@@ -337,7 +337,14 @@ $(document).ready( function() {
 	        	if( temp.trigger_list == null && moment(entry.previous_validity).isSame( moment(temp.timestamp_entry).add(30, 'minutes') ) )
 	        	{
 	        		if( extend ) temp.extend_ND = true;
-	        		else if ( entry.rain_alert == "rx" ) temp.extend_rain_x = true;
+	        		if ( entry.rain_alert == "rx" ) {
+	        			let internal = temp.internal_alert_level;
+	        			if( internal.indexOf("x") > -1 ) {
+	        				if( internal.indexOf("R") > -1 ) temp.internal_alert_level.replace(/R/g, "Rx");
+	        				else temp.internal_alert_level += "rx";
+	        			}
+	        			temp.extend_rain_x = true;
+	        		}
 	        	}
 	        }
 
@@ -772,7 +779,7 @@ function getOnGoingAndExtended(data) {
 }
 
 function checkCandidateTriggers(cache) {
-
+  
 	console.log(JSON.stringify(cache));
 	console.log(JSON.stringify(ongoing));
 
@@ -785,9 +792,8 @@ function checkCandidateTriggers(cache) {
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 
 	alerts.forEach( function (alert) {
-
 		let retriggers = alert.retriggerTS;
-
+		
 		// Check sites if it is in invalid list 
 		// yet have legitimate alerts
 		function getAllInvalids(arr, val) {
@@ -873,7 +879,7 @@ function checkCandidateTriggers(cache) {
 			for (let i = 0; i < retriggers.length; i++) {
 				if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
 			}
-			//console.log(max, retriggers);
+			console.log("MAX", max, "RETRIGGERS", retriggers);
 			alert.latest_trigger_timestamp = max.timestamp;
 			alert.trigger = max.retrigger;
 		}
@@ -942,20 +948,25 @@ function getSites() {
 
 function checkIfAlreadySent(release_id, event_id, timestamp) 
 {
+	timestamp = moment(timestamp).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss")
 	$.get( "/../../accomplishment/getNarrativesForShift", 
     { event_id: event_id, start: moment(timestamp).format("YYYY-MM-DD HH:mm:ss"), end: moment(timestamp).add(4, "hours").format("YYYY-MM-DD HH:mm:ss") } )
     .done(function (data) {
         let temp = JSON.parse(data);
         let isBulletinSent = false;
         let isEWISent = false;
+        
+        let hour_min = moment(timestamp).format("hh:mm A");
+        if(/12:\d{2} PM/g.test(hour_min)) hour_min = hour_min.replace("PM", "MN"); else if (/12:\d{2} AM/g.test(hour_min)) hour_min = hour_min.replace("AM", "NN");
+        
         for( let i = 0; i < temp.length; i++) {
-            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(moment(timestamp).format("hh:mm A")))
+            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(hour_min))
             {
             	isBulletinSent = true;
                 $("#" + release_id).css("color", "red").attr("data-sent", 1);
             }
 
-            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(moment(timestamp).format("hh:mm A")))
+            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(hour_min))
             {
             	isEWISent = true;
                 $("#" + release_id + "_sms").css("color", "red").attr("data-sent", 1);

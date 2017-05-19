@@ -2,48 +2,62 @@ var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
 
+	var alert_site_name = "";
+	if (data.name == "msu" || data.name == "msl") {
+		alert_site_name = "mes";
+	} else {
+		alert_site_name = data.name;
+	}
+
 	$.ajax({
-	  type: "POST",
-	  url: "../chatterbox/getCommunityContactViaDashboard/",
-	  async: true,
-	  data: {site: data.name},
-	  success: function(response){
+		type: "POST",
+		url: "../chatterbox/getCommunityContactViaDashboard/",
+		async: true,
+		data: {site: alert_site_name},
+		success: function(response){
 
-	  	var contacts = JSON.parse(response);
-		var default_recipients = [];
-		var additional_recipients = [];
+			var contacts = JSON.parse(response);
+			var default_recipients = [];
+			var additional_recipients = [];
 
-		$('#ewi-recipients-dashboard').tagsinput('removeAll');
-		$('#ewi-recipients-dashboard').val('');
+			$('#ewi-recipients-dashboard').tagsinput('removeAll');
+			$('#ewi-recipients-dashboard').val('');
 
-		for (var counter = 0; counter < contacts.length; counter++) {
-			var numbers = contacts[counter].number.split(',');
-			var number = "";
-			var temp = "";
-			if (contacts[counter].ewirecipient != 0) {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
+			for (var counter = 0; counter < contacts.length; counter++) {
+				var numbers = contacts[counter].number.split(',');
+				var number = "";
+				var temp = "";
 
-		        if (contacts[counter].office != "GDAPD-PHIV") {
-			        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-			        default_recipients.push(detailed);
-					$('#ewi-recipients-dashboard').tagsinput('add',detailed);
-		        }
-		        
-			} else {
-		        numbers.forEach(function(x) {
-		        	temp = temp+"|"+x;
-		        	number = temp;
-		        });
-		        var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
-		        additional_recipients.push(detailed);
+				if (contacts[counter].ewirecipient != 0) {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
+					if (data.status == "extended") {
+						if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
+					} else {
+						if (contacts[counter].office != "GDAPD-PHIV") {
+							var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+							default_recipients.push(detailed);
+							$('#ewi-recipients-dashboard').tagsinput('add',detailed);
+						}
+					}
+				} else {
+					numbers.forEach(function(x) {
+						temp = temp+"|"+x;
+						number = temp;
+					});
+					var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
+					additional_recipients.push(detailed);
+				}
 			}
+			$('#default-recipients').val(default_recipients);
+			$('#additional-recipients').val(additional_recipients);
 		}
-		$('#default-recipients').val(default_recipients);
-		$('#additional-recipients').val(additional_recipients);
-	  }
 	});
 
 	$('#constructed-ewi-amd').prop("disabled", true );
@@ -51,8 +65,6 @@ function sendViaAlertMonitor(data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(data));
-
-	
 
 	$.ajax({
 		type: "GET",
@@ -72,6 +84,8 @@ function sendViaAlertMonitor(data){
 					var preConstructedEWI = response["A2"];
 				} else if (data["internal_alert_level"].toUpperCase().substring(0, 2) == "A3"){
 					var preConstructedEWI = response["A3"];
+				} else if (data["internal_alert_level"].toUpperCase() == "ROUTINE") {
+					var preConstructedEWI = response["ROUTINE"];
 				} else {
 					var preConstructedEWI = response["A1"];
 				}
@@ -91,19 +105,29 @@ function sendViaAlertMonitor(data){
 
 			}
 
+			
 			if (data['status'] == 'extended') {
 				switch(data['day']) {
 					case 1:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Unang araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 2:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Pangalawa araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					case 3:
-					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw");
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","Ikatlong araw ");
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%","12:00 NN");
 					break;
 					default:
-					return;
+					preConstructedEWI = preConstructedEWI.replace("%%EXT_DAY%%","ati");
+					var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+					if (meridiem == "12:00 AM") {
+						meridiem = meridiem.replace("AM","MN");
+					}
+					preConstructedEWI = preConstructedEWI.replace("%%LOWERING_EXTENDED%%",meridiem);
+					break;
 				}	
 				var ext_month = moment().add(1, 'days').format("MM");
 				var ext_day = moment().add(1, 'days').format("DD");
@@ -116,12 +140,17 @@ function sendViaAlertMonitor(data){
 			var finalEWI = ""
 			var d = new Date();
 			var currentPanahon = d.getHours();
-			if (currentPanahon >= 12 && currentPanahon <= 18) {
+
+			if (currentPanahon >= 13 && currentPanahon <= 18) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","hapon");
-			} else if (currentPanahon > 18 && currentPanahon <=23) {
+			} else if (currentPanahon >= 18 && currentPanahon <=23) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
-			} else {
+			} else if (currentPanahon >= 0 && currentPanahon <= 3) {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","gabi");
+			} else if (currentPanahon >= 4 && currentPanahon <= 11) {
 				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","umaga");
+			} else {
+				constructedEWIDate = preConstructedEWI.replace("%%PANAHON%%","tanghali");
 			}
 			var year = moment().locale('en').format("YYYY-MM-DD").substring(0, 4);
 			var month = moment().locale('en').format("YYYY-MM-DD").substring(5, 7);
@@ -140,79 +169,71 @@ function sendViaAlertMonitor(data){
 			var formSBMP = constructedEWIDate.replace("%%SBMP%%",formatSbmp);
 			var currentTime = moment().format("YYYY-MM-DD HH:mm");
 
-			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-7:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 07:55")).valueOf()) {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 AM");
-				} else {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
+			var release_time = moment(data.data_timestamp).format("YYYY-MM-DD hh:mm A");
+			var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+
+			if (onset_time != release_time) {
+				var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+				if (meridiem == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
 				}
-			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 07:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-11:30 AM");	
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 11:55")).valueOf()) {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 NN");
-				} else {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
-				}
-			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 11:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf()) {
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",day+" "+months[parseInt(month)]+" bago mag-03:30PM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 15:55")).valueOf()) {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","4:00 PM");
-				} else {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
-				}
-			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 15:30")).valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD 23:59")).valueOf()){
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-07:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas ng");
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 19:55")).valueOf()) {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","8:00 PM");
-				} else {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
-				}
-			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD 00:00")).add(24,"hours").valueOf()){
-				formGroundTime = formSBMP.replace("%%GROUND_DATA_TIME%%",(parseInt(day)+1)+" "+months[parseInt(month)]+" bago mag-7:30AM");
-				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamayang");
-				if (moment(currentTime).valueOf() > moment(moment().locale('en').format("YYYY-MM-DD 23:55")).valueOf()) {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%","12:00 MN");
-				} else {
-					formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",moment().locale('en').format("hh:mm A"));
-				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			} else {
-				alert("Error Occured: Please contact Administrator");
+				var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+				if (meridiem.slice(-8) == "12:00 AM") {
+					meridiem = meridiem.replace("AM","MN");
+				}
+				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			}
 
 			data_timestamp = data.data_timestamp;
 			latest_release_id = data.latest_release_id;
 
-			var x = moment(data.data_timestamp).hour() % 1 == 0  && moment(data.data_timestamp).minute() == 0 ?  moment(data.data_timestamp).format("hh:mm A").add(30,'m') : moment(data.data_timestamp).format("hh:mm A");
-			formCurrentTime = formGroundTime.replace("%%CURRENT_TIME%%",x);
+			formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30AM");
+			formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
+
 
 			if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 AM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 07:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","04:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 AM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 07:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","08:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 NN");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 11:30 PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","12:00 NN");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 04:00 PM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 3:30 PM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","04:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 08:00 PM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","08:00 PM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
-				finalEWI = formCurrentTime.replace("%%NEXT_EWI%%"," 12:00 MN");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag-7:30 AM");
+				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","bukas");
+
+				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","12:00 MN");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","bukas ng");
 			} else {
 				alert("Error Occured: Please contact Administrator");
 			}
-
-
+			
+			$('#msg').val(finalEWI);
 			$('#site-abbr').val(data["name"]);
 			$('#constructed-ewi-amd').val(finalEWI);
 			$('#ewi-asap-modal').modal('toggle');
@@ -258,6 +279,7 @@ $(document).ready(function() {
 	var temp_ewi_template_holder = "";
 	var temp_msg_holder = "";
 	var socket = "";
+	var narrative_recipients = [];
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
@@ -282,6 +304,7 @@ $(document).ready(function() {
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 
 	} catch (err) {
+		console.log(err);
 		console.log("Chatterbox : monitoring dashboard mode");
 	}
 
@@ -476,10 +499,8 @@ $(document).ready(function() {
 		if (msg.user == "You") {
 		}
 		else {
-
 			var targetInbox;
 			var quick_inbox_html;
-
 			if (msg.name == "unknown") {
 				try {
 					msg.isunknown = 1;
@@ -498,7 +519,6 @@ $(document).ready(function() {
 				} catch(err) {
 				}
 			}
-
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
 		}
@@ -894,7 +914,14 @@ $(document).ready(function() {
 						tagOffices.push(this.value);
 					});
 
-			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+					var raw_recipient = $('#ewi-recipients-dashboard').val().split(',');
+					for (var recipient_counter = 0; recipient_counter < raw_recipient.length; recipient_counter++) {
+						if ($.inArray(raw_recipient[recipient_counter].slice(0, raw_recipient[recipient_counter].indexOf(':')), narrative_recipients) == -1) {
+							narrative_recipients.push(raw_recipient[recipient_counter].slice(0, raw_recipient[recipient_counter].indexOf(':')));
+						}
+					}
+
+					if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_template = "";
 
@@ -908,31 +935,12 @@ $(document).ready(function() {
 								});
 							}
 
-		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-
-
-						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-							var narrative_details = {
-								'event_id': event_details.event_id,
-								'site_id': event_details.site_id,
-								'municipality': event_details.municipality,
-								'province': event_details.province,
-								'barangay': event_details.barangay,
-								'sition': event_details.sition,
-								'ewi_sms_timestamp': current_timestamp,
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-						} 
 							narrative_recipients = [];
 						} 
-			        }
+					}
 
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 						var narrative_details = {
@@ -943,14 +951,11 @@ $(document).ready(function() {
 							'barangay': event_details.barangay,
 							'sition': event_details.sition,
 							'ewi_sms_timestamp': current_timestamp,
-							'narrative_template': "Sent Early Warning Information."
+							'narrative_template': narrative_template
 						}
-						
-						console.log(narrative_details);
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							debugger;
 							console.log(response);
 						});
 					} 
@@ -965,6 +970,12 @@ $(document).ready(function() {
 			} else if (msg.type == "ackrpi"){
 				console.log("Status: "+msg.type);
 			} else if (contactInfo == "groups") {
+
+				if (msg.type == "smsrcv") {
+					$.notify("New Message Received!","info");
+					updateQuickInbox(msg);
+				} 
+
 				var select_raw_site = $("#current-contacts h4").text().substring(11);
 				var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
 
@@ -978,8 +989,6 @@ $(document).ready(function() {
 					console.log(sender[0]);
 					if (selected_site[i] == sender[0]) {
 						for (var x = 0; x < selected_office.length; x++) {
-							console.log(selected_office[x]);
-							console.log(sender[1]);
 							if (selected_office[x] == sender[1]) {
 								updateMessages(msg);
 							}
@@ -987,10 +996,11 @@ $(document).ready(function() {
 					}
 				}
 			} else {
+
 				if (msg.type == "smsrcv") {
 					$.notify("New Message Received!","info");
 					updateQuickInbox(msg);
-				}
+				} 
 
 				if(msg.user.match(numbers)) {
 					console.log("all numbers");
@@ -1060,61 +1070,61 @@ $(document).ready(function() {
 	return tempConn;
 }
 
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			console.log(events);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
+function getOngoingEvents(sites){
+	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+		var events = JSON.parse(data);
+		console.log(events);
+		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+		.done(function(response) {
+			siteids = JSON.parse(response);
+			for (var counter = 0; counter < events.length; counter++) {
+				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+					if (events[counter].site_id == siteids[siteid_counter].id) {
+						var narrative_template = "";
+						if (gintags_msg_details.tags === "#EwiResponse") {
+							narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+						} else if (gintags_msg_details.tags === "#EwiMessage"){
 
-								var tagOffices = [];
-								$('input[name="offices"]:checked').each(function() {
-									tagOffices.push(this.value);
-								});
-
-						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-									if (narrative_recipients.length > 0) {
-										narrative_recipients.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									} else {
-										tagOffices.forEach(function(x) {
-											narrative_template = narrative_template+","+x;
-										});
-									}
-									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
-									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-						        }
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-							.done(function(response) {
-								console.log(response);
+							var tagOffices = [];
+							$('input[name="offices"]:checked').each(function() {
+								tagOffices.push(this.value);
 							});
 
+							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+								if (narrative_recipients.length > 0) {
+									narrative_recipients.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								} else {
+									tagOffices.forEach(function(x) {
+										narrative_template = narrative_template+","+x;
+									});
+								}
+								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
+
+								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+							}
+						} else {
+							$.notify("Invalid request, please try again.","warning");
 						}
+						var narrative_details = {
+							'event_id': events[counter].event_id,
+							'site_id': siteids[siteid_counter].id,
+							'ewi_sms_timestamp': gintags_msg_details[2],
+							'narrative_template': narrative_template
+						}
+						console.log(narrative_details);
+						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+						.done(function(response) {
+							console.log(response);
+						});
+
 					}
 				}
-			});
+			}
 		});
-	}
+	});
+}
 
 function waitForSocketConnection() {
 	if (!window.timerID) {
@@ -1603,12 +1613,13 @@ function loadSearchedMessage(msg){
 }
 
 function updateGlobalMessage(msg){
+	console.log(msg);
 	if (msg.user == "You") {
 		msg.isyou = 1;
 		searchResults.push(msg);
 	} else {
 		msg.isyou = 0;
-		msg.user = msg.user + " - " + msg.user_number;
+		msg.user = msg.user;
 		searchResults.push(msg);
 	}
 }
@@ -1908,14 +1919,14 @@ $('#send-msg').on('click',function(){
 				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-				console.log(temp_msg_holder);
-				conn.send(JSON.stringify(temp_msg_holder));
-				$('#msg').val('');
-			}
-
-			updateRemainingCharacters();
+			console.log(temp_msg_holder);
+			conn.send(JSON.stringify(temp_msg_holder));
+			$('#msg').val('');
 		}
-	});
+
+		updateRemainingCharacters();
+	}
+});
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2197,6 +2208,11 @@ function reset_cc() {
 	$('#rel_cc').val('');
 	$('#numbers_cc').val('');
 	$('#numbers_cc').tagsinput("removeAll");
+	$('#office_cc').val("LLMC");
+	$('#sitename_cc').val("AGB");
+	$('#rel').val("Y");
+	$('#ewirecipient').val("1");
+
 	$('#other-officename').val('');
 	$('#other-sitename').val('');
 
@@ -2223,6 +2239,12 @@ $('#btn-ewi').on('click',function(){
 				select.setAttribute("required","true");
 				select.appendChild(opt);
 			}
+			opt.value = "NSS";
+			opt.innerHTML = "NO ALERT SELECTED";
+			select.className = "form-control";
+			select.setAttribute("required","true");
+			select.appendChild(opt);
+			$("#alert-lvl").val(opt.value);
 		}
 	});
 
@@ -2246,79 +2268,41 @@ $('#btn-ewi').on('click',function(){
 			select.className = "form-control";
 			select.setAttribute("required","true");
 			select.appendChild(opt);
+			console.log(opt.value);
+			$("#sites").val(opt.value);
 
 			var counter = 0;
 			$('input[name="sitenames"]:checked').each(function() {
 				counter++;
 			});
-
-			if (counter == 1){
-				$('select option[value="'+$('input[name="sitenames"]:checked').val()+'"]').attr("selected",true);
-			} else {
-				$('select option[value="NSS"]').attr("selected",true);
-			}
 		}
 	});
 });
 
 $('#confirm-ewi').click(function(){
-
-	if ($('#ewi-date-picker').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
+	if ($('#ewi-date-picker input').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
 		alert('Invalid input, All fields must be filled');
 	} else {
-		groupTags = [];
-		user = "You";
-		var tagOffices = [];
-		var tagSitenames = [];
-
-		var tagOffices = [];
-		$('input[name="offices"]:checked').each(function() {
-			tagOffices.push(this.value);
-		});
-
-		var counter = 0;
-		$('input[name="sitenames"]:checked').each(function() {
-			counter++;
-		});
-
-		if (counter == 1){
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"]').prop('checked', false);
-
-			$('input[name="sitenames"]').each(function() {
-				if ($('#sites').val() == this.value) {
-					$('input[name="sitenames"][value="'+this.value+'"]').prop('checked', true);
-				}
-			});
-		} else if (counter > 1){
-			var tagSitenames = [];
-			$('input[name="sitenames"]:checked').each(function() {
-				tagSitenames.push(this.value);
-			});
-		} else {
-			tagSitenames.push($('#sites').val());
-			$('input[name="sitenames"][value="'+$('#sites').val()+'"]').prop('checked', true);
-		}
-
-
-		tagSitenames.sort();
-		groupTags = {
-			'type': 'smsloadrequestgroup',
-			'offices': tagOffices,
-			'sitenames': tagSitenames
-		};
-
-		$('#main-container').removeClass('hidden');
-
-		getEWI(function(output){
-			if (counter == 1 || counter == 0){
-				var template = setEWILocation(output);
-			}else {
-				var nssEWITemplate = output.replace("%%SBMP%%","<Sition,Barangay,Municpality,Province>");
-				$('#msg').val(nssEWITemplate);
+		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+		.done(function(response) {
+			var location = JSON.parse(response);
+			var toTemplate = {
+				'name': $('#sites').val(),
+				'internal_alert_level' : $('#alert-lvl').val(),
+				'sitio':location[0].sitio == null ? "" : location[0].sitio,
+				'barangay':location[0].barangay == null ? "" :location[0].barangay,
+				'municipality':location[0].municipality == null ? "" : location[0].municipality,
+				'province':location[0].province == null ? "" :location[0].province,
+				'data_timestamp': $('#ewi-date-picker input').val(),
 			}
+			sendViaAlertMonitor(toTemplate)
 		});
 	}
+});
+
+$('#ewi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD HH:mm:ss'
 });
 
 function getEWI(handledTemplate){
@@ -2360,7 +2344,7 @@ function setEWILocation(consEWI){
 		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
 		.done(function(response) {
 			var location = JSON.parse(response);
-			var sbmp = location[0].sitio + "," +  location[0].barangay + "," + location[0].municipality + "," + location[0].province;
+			var sbmp = location[0].sitio + ", " +  location[0].barangay + ", " + location[0].municipality + ", " + location[0].province;
 			var formatSbmp = sbmp.replace("null","");
 			if (formatSbmp.charAt(0) == ",") {
 				formatSbmp = formatSbmp.substr(1);
@@ -2402,7 +2386,7 @@ $('#send-btn-ewi-amd').click(function(){
 	var difference = [];
 
 	$.grep(current_recipients, function(el) {
-	        if ($.inArray(el, default_recipients) == -1) difference.push(el);
+		if ($.inArray(el, default_recipients) == -1) difference.push(el);
 	});
 
 	ewiFlagger = true;
@@ -2413,7 +2397,13 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = [];
+		for (var counter = 0; counter < current_recipients.length; counter ++) {
+			var office = current_recipients[counter].substring(0, current_recipients[counter].indexOf(':')).trim();
+			if ($.inArray(office, tagOffices) == -1) {
+				tagOffices.push(office);
+			}
+		}
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
@@ -2449,8 +2439,12 @@ $('#send-btn-ewi-amd').click(function(){
 		if (difference != null || difference.length != 0) {
 			var added_contacts = [];
 			difference.forEach(function(x){
-				var temp = x.split('|');
-				added_contacts.push(temp.splice(1,1));
+				if (x.indexOf("|") == -1) {
+					added_contacts.push([x]);
+				} else {
+					var temp = x.split('|');
+					added_contacts.push(temp.splice(1,1));
+				}
 			});
 
 			for (var counter = 0; counter < added_contacts.length;counter++) {
@@ -2538,10 +2532,10 @@ $('#btn-advanced-search').click(function(){
 var isFirstAdvancedSearchActivation = false;
 
 function disableCommands(){
-	$('#go-chat').attr("class","btn btn-xs btn-danger disabled");
-	$('#go-chat').attr("data-toggle","tooltip");
-	$('#go-chat').css("text-decoration","line-through");
-	$('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
+	// $('#go-chat').attr("class","btn btn-xs btn-danger disabled");
+	// $('#go-chat').attr("data-toggle","tooltip");
+	// $('#go-chat').css("text-decoration","line-through");
+	// $('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
 
 	$('#go-load-groups').attr("class","btn btn-danger disabled");
 	$('#go-load-groups').css("text-decoration","line-through");
@@ -2560,9 +2554,9 @@ function disableCommands(){
 }
 
 function enableCommands(){
-	$('#go-chat').attr("class","btn btn-xs btn-primary");
-	$('#go-chat').css("text-decoration","none");
-	$('#go-chat').attr("data-original-title","");
+	// $('#go-chat').attr("class","btn btn-xs btn-primary");
+	// $('#go-chat').css("text-decoration","none");
+	// $('#go-chat').attr("data-original-title","");
 
 	$('#go-load-groups').attr("class","btn btn-success");
 	$('#go-load-groups').css("text-decoration","none");
@@ -2601,12 +2595,16 @@ function getInitialQuickInboxMessages () {
 				var parts = dataFetched[x].grouptags.split(/[ ,.]+/); 
 				if (employeeTags.length <= 0) {
 					for (var y = 0; y < parts.length; y++){
-						employeeTags.push(parts[y]);
+						if (parts[y].trim() != "") {
+							employeeTags.push(parts[y]);
+						}
 					}
 				} else {
 					for (var y = 0;y < parts.length;y++){
 						if (!(employeeTags.indexOf(parts[y]) > -1)) {
-							employeeTags.push(parts[y]);
+							if (parts[y].trim() != "") {
+								employeeTags.push(parts[y]);
+							}
 						}
 					}
 				}
@@ -2635,7 +2633,9 @@ function getInitialQuickInboxMessages () {
 		for (var i = 0; i < tags.length; i++) {
 			var modIndex = i % 4;
 			var tag = tags[i];
-			$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+			if (tag != "" || tag != null) {
+				$("#tag-"+modIndex).append('<div class="checkbox"><label><input name="tag" type="checkbox" value="'+tag+'">'+tag.toUpperCase()+'</label></div>');
+			}	
 		}
 	}
 
@@ -2752,7 +2752,9 @@ function getInitialQuickInboxMessages () {
 
 
 				$('#response-contact-container').show();
-				$("#response-contact-container").DataTable();
+				$("#response-contact-container").DataTable({
+					"scrollX": true
+				});
 			}
 		});
 	}
@@ -2794,7 +2796,9 @@ function getInitialQuickInboxMessages () {
 				}
 
 				$('#response-contact-container').show();
-				$("#response-contact-container").DataTable();
+				$("#response-contact-container").DataTable({
+					"scrollX": true
+				});
 			}
 		});
 	}
@@ -3057,6 +3061,32 @@ function getInitialQuickInboxMessages () {
 		} 
 	});
 
+	$('#grouptags_ec').tagsinput({
+		typeahead: {
+			displayKey: 'text',
+			source: function (query) {
+				var group_tag = [];
+				$.ajax({
+					url : "../chatterbox/get_employee_contacts",
+					type : "GET",
+					async: false,
+					success : function(data) {
+						var data = JSON.parse(data);
+						for (var counter = 0; counter < data.length; counter ++) {
+							var raw_grouptags = data[counter].grouptags.split(",");
+							for (var raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter++) {
+								if ($.inArray(raw_grouptags[raw_counter],group_tag) == -1) {
+									group_tag.push(raw_grouptags[raw_counter]);
+								}
+							}
+						}
+					}
+				});
+				return group_tag;
+			}
+		} 
+	});
+
 	function removeGintagService(data,tags){
 		var tagOffices = [];
 		$('input[name="offices"]:checked').each(function() {
@@ -3228,7 +3258,6 @@ function getInitialQuickInboxMessages () {
 						"data": data,
 						"cmd": "insert"
 					};
-					displayNarrativeConfirmation(gintag_details);
 					var tags = $('#gintags').val();
 					tags = tags.split(',');
 					tags.splice($.inArray("#EwiResponse", tags),1);
@@ -3298,42 +3327,6 @@ function getInitialQuickInboxMessages () {
 				});
 			}
 		}
-	}
-
-	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
-			.done(function(response) {
-				siteids = JSON.parse(response);
-				for (var counter = 0; counter < events.length; counter++) {
-					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-						if (events[counter].site_id == siteids[siteid_counter].id) {
-							var narrative_template = "";
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else if (gintags_msg_details.tags === "#EwiMessage"){
-								narrative_template = "Sent Early warning information message.";
-							} else {
-								$.notify("Invalid request, please try again.","warning");
-							}
-							var narrative_details = {
-								'event_id': events[counter].event_id,
-								'site_id': siteids[siteid_counter].id,
-								'ewi_sms_timestamp': gintags_msg_details[2],
-								'narrative_template': narrative_template
-							}
-							
-							$.post( "../narrativeAutomation/insert/", {narratives: JSON.stringify(narrative_details)})
-							.done(function(response) {
-								console.log(response);
-							});
-
-						}
-					}
-				}
-			});
-		});
 	}
 
 	function removeIndividualGintag(gintag_details){
