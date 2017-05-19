@@ -2,8 +2,25 @@ var templateData = {};
 var templateTable;
 var backboneTable;
 var tableId;
-var template;
+var template="";
+var alertLevelSymbol;
+var defaultTemplateInputs = {
+    'ALERT_LVL' : 'Alert 1',
+    'GREETINGS': 'Hapon',
+    'SBMP': 'Boloc, Tubungan, Iloilo',
+    'CURRENT_DATE': '17 May 2017',
+    'CURRENT_TIME': '04:00 PM',
+    'EXPECTED_DATE_GDATA': 'bukas bago ',
+    'EXPECTED_TIME_GDATA': 'mag-7:30 AM',
+    'NEXT_EWI_DATE': 'mamayang',
+    'NEXT_EWI_TIME': '08:00 PM',
+    'LOWERING_EXTENDED_TIME': '08:00 PM',
+    'EXT_DAY': 'ikatlo',
+    'KEY_INPUT': 'Ang recommended response ay PREPARE TO EVACUATE THE HOUSEHOLDS AT RISK.'
+}
+
 $(document).ready(function(e){
+
     templateTable = $('#template_table').DataTable( {
         "processing": true,
         "bSort" : false,
@@ -12,11 +29,9 @@ $(document).ready(function(e){
         "ajax": '../communications/fetchalltemplate',
         columns: [
             { "data" : "id" , title:"ID"},
-            { "data" : "alert_lvl", title:"ALERT LEVEL"},
-            { "data" : "internal_alert", title:"INTERNAL ALERT"},
-            { "data" : "possible_scenario", title:"POSSIBLE SCENARIO"},
-            { "data" : "recommended_response", title:"RECOMMENDED RESPONSE"},
-            { "data" : "bb_scenario", title:"Backbone Message Category"},
+            { "data" : "alert_status", title:"ALERT STATUS"},
+            { "data" : "alert_symbol_level", title:"ALERT SYMBOL / ALERT LEVEL"},
+            { "data" : "key_input", title:"KEY INPUT"},
             { "data" : "last_update_by", title:"LATEST MODIFICATION"},
             { "data" : "functions", title: "*"}
         ]
@@ -30,11 +45,16 @@ $(document).ready(function(e){
     	"ajax": '../communications/fetchallbackbonetemplate',
     	columns: [
     		{ "data" : "id", title: "ID"},
-    		{ "data" : "category", title: "CATEGORY"},
+    		{ "data" : "alert_status", title: "ALERT STATUS"},
     		{ "data" : "template", title: "BACKBONE MESSAGE"},
     		{ "data" : "last_modified_by", title: "LAST UPDATE"},
     		{ "data" : "functions", title : "*"}
     	]
+    });
+
+    $('#template_table tbody').on('mouseover', 'tr', function () {
+       var ttip = $('#template_table').DataTable().row(this).data();
+       tooltipKeyinput(ttip);
     });
 
     $('#key_input_tab').on('click',function(){
@@ -54,6 +74,7 @@ $(document).ready(function(e){
     });
 
     $('#add_backbone').on('click',function(){
+        // loadKeyInputs();
     	$('form').trigger('reset');
     	$('#modal-title-backbone').text('Create Message Backbone');
     	$('#submit_backbone').text("CREATE");
@@ -65,18 +86,36 @@ $(document).ready(function(e){
     	$('#key_input_display').modal('toggle');
     });
 
+    $('#show_key_input_display').on('click',function(){
+        $('#key_input_display').modal('toggle');
+    });
+
     $('#submit_template').on('click',function(){
-    	templateData['alert_lvl'] = $('#alert_lvl').val();
-    	templateData['internal_alert'] = $('#internal_alert').val();
-    	templateData['scenario'] = $('#scenario').val();
-    	templateData['response'] = $('#response').val();
-    	templateData['bb_scenario'] = $('#bb_scenario').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
+
+        if (!$('#response_template').prop('disabled')) {
+            templateData['alert_level'] = $('#alert_level').val();
+            templateData['response_template'] = $('#response_template').val();
+        } else {
+            templateData['alert_level'] = "";
+            templateData['response_template'] = ""; 
+        }
+
+        if (!$('#alert_symbols').prop('disabled')) {
+            templateData['alert_symbols'] = $('#alert_symbols').val();
+            templateData['techinfo_template'] =$('#techinfo_template').val();
+        } else {
+            templateData['alert_symbols'] = "";
+            templateData['techinfo_template'] = "";
+        }
+
+        templateData['alert_status'] = $('#alert_status').val();
+        templateData['backbone_template'] = $('#backbone_template').val();
 
     	if ($('#submit_template').text() == "CREATE") {
 			$.post("../communications/addtemplate", {template : JSON.stringify(templateData)})
 			.done(function(data) {
-				var response = JSON.parse(data);
+                var response = JSON.parse(data);
 				if (response == 1 || response == true) {
 					$.notify("Successfully added a new template.","success");
 					reloadTable();
@@ -103,7 +142,7 @@ $(document).ready(function(e){
     });
 
     $('#submit_backbone').on('click',function(){
-    	templateData['category'] = $('#category').val();
+    	templateData['alert_status'] = $('#alert_status').val();
     	templateData['backbone_message'] = $('#msg_backbone').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
 
@@ -174,26 +213,19 @@ $(document).ready(function(e){
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		$('#modal-title').text('Update Template');
-		$('#alert_lvl').val(data.alert_lvl);
-		$('#internal_alert').val(data.internal_alert);
-		$('#scenario').val(data.possible_scenario);
-		$('#response').val(data.recommended_response);
-		$('#bb_scenario').val(data.bb_scenario);
+		$('#alert_symbol').val(data.alert_symbol);
+		$('#key_input').val(data.key_input);
+		$('#alert_status').val(data.alert_status);
 		$('#submit_template').text("UPDATE");
 		$('#template_modal').modal('toggle');
-        console.log($('#alert_lvl').val());
-        console.log($('#internal_alert').val());
-        console.log($('#bb_scenario').val());
     });
 
     $('#template_table tbody').on('click','tr:has(td) .delete',function(){
     	var table = $('#template_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
-		var to_be_deleted = "Alert Level: "+data.alert_lvl+"\n"+
-							"Internal Alert: "+data.internal_alert+"\n"+
-							"Scenario: "+data.possible_scenario+"\n"+
-							"Response: "+data.recommended_response;
+		var to_be_deleted = "Alert Level / Alert Symbol: "+data.alert_symbol_level+"\n"+
+							"Key input: "+data.key_input;
 		$('#delete-template').val(to_be_deleted);
 		$('#submit_template').text("UPDATE");
 		$('#delete_template_modal').modal('toggle');
@@ -205,15 +237,20 @@ $(document).ready(function(e){
 
     $('#backbone_table tbody').on('click','.update',function(){
         backboneAutocomplete();
+        // loadKeyInputs();
     	var table = $('#backbone_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		$('#modal-title-backbone').text('Update Message Backbone');
-		$('#category').val(data.category);
+		$('#alert_status').val(data.alert_status);
 		$('#msg_backbone').val(data.template);
 		$('#submit_backbone').text("UPDATE");
 		$('#backbone_modal').modal('toggle');
 		loadBackboneView(data.template);
+    });
+
+    $('#backbone_table tbody').on('click','.view',function(){
+        $('#template_simulation').modal('toggle');
     });
 
     $('#backbone_table tbody').on('click','tr:has(td) .delete',function(){
@@ -221,14 +258,122 @@ $(document).ready(function(e){
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		console.log(data);
-        var to_be_deleted = "Category: "+data.category+"\n"+
+        var to_be_deleted = "Alert Status: "+data.alert_status+"\n"+
                             "Template: "+data.template+"\n";
         $('#delete-backbone').val(to_be_deleted);
 		$('#submit_backbone').text("UPDATE");
         $('#delete_backbone_modal').modal('toggle');
     });
 
+    $('#alert_lvl').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#greetings').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#sbmp').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#current_date').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#current_time').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#expected_date_gdata').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#expected_time_gdata').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#next_ewi_date').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#next_ewi_time').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#lowering_extended_time').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#ext_day').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $('#recom_response').on('click',function(){
+        template = $('#msg_backbone').val()+$(this).val();
+        $('#msg_backbone').val(template);
+        loadBackboneView(template);
+    });
+
+    $.get('../chatterbox/getdistinctsitename',function(data){
+        var response = JSON.parse(data);
+        for (var counter = 0; counter < response.length;counter++) {
+                 $('#site_code').append($("<option></option>")
+                            .attr("value",response[counter].sitename)
+                            .text(response[counter].sitename)); 
+        }
+    });
+
+    $('#time_of_release').datetimepicker({
+        format: 'YYYY-MM-DD HH:mm'
+    });
+
 });
+
+function tooltipKeyinput(toToolTip) {
+    $.get('../communications/fetchallbackbonetemplate',function(data){
+        var response = JSON.parse(data);
+        var tooltip = "";
+        for (var counter =0; counter < response.data.length;counter++) {
+            if (response.data[counter].alert_status == toToolTip.alert_status) {
+                tooltip = response.data[counter].template.replace('{KEY_INPUT}',toToolTip.recommended_response);
+                tooltip = tooltip.replace('{GREETINGS}',defaultTemplateInputs.GREETINGS);
+                tooltip = tooltip.replace('{SBMP}',defaultTemplateInputs.SBMP);
+                tooltip = tooltip.replace('{CURRENT_DATE}',defaultTemplateInputs.CURRENT_DATE);
+                tooltip = tooltip.replace('{CURRENT_TIME}',defaultTemplateInputs.CURRENT_TIME);
+                tooltip = tooltip.replace('{EXPECTED_DATE_GDATA}',defaultTemplateInputs.EXPECTED_DATE_GDATA);
+                tooltip = tooltip.replace('{EXPECTED_TIME_GDATA}',defaultTemplateInputs.EXPECTED_TIME_GDATA);
+                tooltip = tooltip.replace('{NEXT_EWI_DATE}',defaultTemplateInputs.NEXT_EWI_DATE);
+                tooltip = tooltip.replace('{NEXT_EWI_TIME}',defaultTemplateInputs.NEXT_EWI_TIME);
+                tooltip = tooltip.replace('{LOWERING_EXTENDED_TIME}',defaultTemplateInputs.LOWERING_EXTENDED_TIME);
+                tooltip = tooltip.replace('{EXT_DAY}',defaultTemplateInputs.EXT_DAY);   
+                $('#template_table').attr('title',tooltip);
+            }
+        }
+    });
+}
 
 function reloadTable() {
 	var templateTable = $('#template_table').DataTable();
@@ -240,11 +385,9 @@ function reloadTable() {
         "ajax": '../communications/fetchalltemplate',
         columns: [
             { "data" : "id" , title:"ID"},
-            { "data" : "alert_lvl", title:"ALERT LEVEL"},
-            { "data" : "internal_alert", title:"INTERNAL ALERT"},
-            { "data" : "possible_scenario", title:"POSSIBLE SCENARIO"},
-            { "data" : "recommended_response", title:"RECOMMENDED RESPONSE"},
-            { "data" : "bb_scenario", title:"Backbone Message Category"},
+            { "data" : "alert_status", title:"ALERT STATUS"},
+            { "data" : "alert_symbol_level", title:"ALERT SYMBOL / ALERT LEVEL"},
+            { "data" : "key_input", title:"KEY INPUT"},
             { "data" : "last_update_by", title:"LATEST MODIFICATION"},
             { "data" : "functions", title: "*"}
         ]
@@ -254,48 +397,79 @@ function reloadTable() {
 function keyInputAutocomplete() {
     $.get('../communications/fetchalltemplate',function(data){
         var response = JSON.parse(data);
+        alertLevelSymbol = response;
+        console.log(alertLevelSymbol);
+        alertSymbolAutocomplete(response);
         alertLevelAutocomplete(response);
-        internalAlertAutocomplete(response);
-        backboneCategoryAutocomplete(response);
+        $('#alert_symbols').on('change',function(){
+            for(var counter = 0; counter < response.data.length; counter++){
+                if ($(this).val() == response.data[counter].alert_symbol_level) {
+                    $('#techinfo_template').prop('disabled', true);
+                    $('#techinfo_template').val(response.data[counter].key_input);
+                    break;
+                } else {
+                    $('#techinfo_template').prop('disabled', false);
+                    $('#techinfo_template').val("");
+                }
+            }
+        });
+
+        $('#alert_level').on('change',function(){
+            for(var counter = 0; counter < response.data.length; counter++){
+                if ($(this).val() == response.data[counter].alert_symbol_level) {
+                    $('#response_template').prop('disabled', true);
+                    $('#response_template').val(response.data[counter].key_input);
+                    break;
+                } else {
+                    $('#response_template').prop('disabled', false);
+                    $('#response_template').val("");
+                }
+            }
+        });
+
     });
+}
+
+function alertSymbolAutocomplete(response) {
+    var alert_symbols = [];
+    for (var counter=0;counter < response.data.length;counter++){
+        if ($.inArray(response.data[counter].alert_symbol_level,alert_symbols) == -1) {
+           if (response.data[counter].alert_symbol_level.toLowerCase().indexOf("alert") == -1) {
+            alert_symbols.push(response.data[counter].alert_symbol_level);
+           }
+        }
+    }
+    var alert = document.getElementById("alert_symbols");
+    var awesomplete = new Awesomplete(alert, {
+        minChars: 1,
+    });
+    awesomplete.list = alert_symbols;
 }
 
 function alertLevelAutocomplete(response) {
-    var alert_lvls = [];
+    var alert_levels = [];
     for (var counter=0;counter < response.data.length;counter++){
-        if ($.inArray(response.data[counter].alert_lvl,alert_lvls) == -1) {
-           alert_lvls.push(response.data[counter].alert_lvl); 
+        if ($.inArray(response.data[counter].alert_symbol_level,alert_levels) == -1) {
+           if (response.data[counter].alert_symbol_level.toLowerCase().indexOf("alert") != -1) {
+            alert_levels.push(response.data[counter].alert_symbol_level);
+           }
         }
     }
-    var input = document.getElementById("alert_lvl");
-    var awesomplete = new Awesomplete(input, {
+    var alert = document.getElementById("alert_level");
+    var awesomplete = new Awesomplete(alert, {
         minChars: 1,
     });
-    awesomplete.list = alert_lvls;
-}
-
-function internalAlertAutocomplete(response) {
-    var internal_alerts = [];
-    for (var counter=0;counter < response.data.length;counter++){
-        if ($.inArray(response.data[counter].internal_alert,internal_alerts) == -1) {
-           internal_alerts.push(response.data[counter].internal_alert); 
-        }
-    }
-    var input = document.getElementById("internal_alert");
-    var awesomplete = new Awesomplete(input, {
-        minChars: 1,
-    });
-    awesomplete.list = internal_alerts;
+    awesomplete.list = alert_levels;
 }
 
 function backboneCategoryAutocomplete(response) {
     var backbone_category = [];
     for (var counter=0;counter < response.data.length;counter++){
-        if ($.inArray(response.data[counter].bb_scenario,backbone_category) == -1) {
-           backbone_category.push(response.data[counter].bb_scenario); 
+        if ($.inArray(response.data[counter].alert_status,backbone_category) == -1) {
+           backbone_category.push(response.data[counter].alert_status); 
         }
     }
-    var input = document.getElementById("bb_scenario");
+    var input = document.getElementById("alert_status");
     var awesomplete = new Awesomplete(input, {
         minChars: 1,
     });
@@ -329,7 +503,7 @@ function reloadBackboneTable() {
         "ajax": '../communications/fetchallbackbonetemplate',
         columns: [
     		{ "data" : "id", title: "ID"},
-    		{ "data" : "category", title: "CATEGORY"},
+    		{ "data" : "alert_status", title: "ALERT STATUS"},
     		{ "data" : "template", title: "BACKBONE MESSAGE"},
     		{ "data" : "last_modified_by", title: "LASTEST MODIFICATION"},
     		{ "data" : "functions", title : "*"}
@@ -337,10 +511,18 @@ function reloadBackboneTable() {
     });
 }
 
+function loadKeyInputs(){
+    var objKeys = Object.keys(defaultTemplateInputs);
+    for (var counter =0; counter < objKeys.length; counter++) {
+        var r= $('<button type="button" id="'+objKeys[counter].toLowerCase()+'" class="btn btn-info" style="margin: 2px;"" value="{'+objKeys[counter]+'}">+ '+objKeys[counter]+'</button>');
+        $("#key-input-container").append(r);
+    }
+}
+
 function loadBackboneView(real_time_value) {
 	template = real_time_value;
 	var key = {
-		'keypoint' : $('#category').val()
+		'keypoint' : $('#alert_status').val()
 	};
 
 	$.post('../communications/getkeypointsviacategory',{template_key : JSON.stringify(key)})
@@ -350,9 +532,18 @@ function loadBackboneView(real_time_value) {
 			$('#no-key-input').show();
 		} else {
 			$('#no-key-input').hide();
-			template = template.replace("%%ALERT_LVL%%",response[0].alert_lvl);
-			template = template.replace("%%POSSIBLE_SCENARIO%%", response[0].possible_scenario);
-			template = template.replace("%%RECOMMENDED_RESPONSE%%",response[0].recommended_response);	
+			template = template.replace('{KEY_INPUT}',defaultTemplateInputs.KEY_INPUT);
+            template = template.replace('{ALERT_LVL}',defaultTemplateInputs.ALERT_LVL);
+            template = template.replace('{GREETINGS}',defaultTemplateInputs.GREETINGS);
+            template = template.replace('{SBMP}',defaultTemplateInputs.SBMP);
+            template = template.replace('{CURRENT_DATE}',defaultTemplateInputs.CURRENT_DATE);
+            template = template.replace('{CURRENT_TIME}',defaultTemplateInputs.CURRENT_TIME);
+            template = template.replace('{EXPECTED_DATE_GDATA}',defaultTemplateInputs.EXPECTED_DATE_GDATA);
+            template = template.replace('{EXPECTED_TIME_GDATA}',defaultTemplateInputs.EXPECTED_TIME_GDATA);
+            template = template.replace('{NEXT_EWI_DATE}',defaultTemplateInputs.NEXT_EWI_DATE);
+            template = template.replace('{NEXT_EWI_TIME}',defaultTemplateInputs.NEXT_EWI_TIME);
+            template = template.replace('{LOWERING_EXTENDED_TIME}',defaultTemplateInputs.LOWERING_EXTENDED_TIME);
+            template = template.replace('{EXT_DAY}',defaultTemplateInputs.EXT_DAY);	
 			$('#backbone_preview').val(template);
 		}		
 	});
