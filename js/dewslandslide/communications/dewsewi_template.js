@@ -67,6 +67,10 @@ $(document).ready(function(e){
 
     $('#add_template').on('click',function(){
     	$('form').trigger('reset');
+        $('#backbone_template').val('');
+        $('#backbone_template').text('');
+        $('#template_view').val('');
+        $('#template_view').text('');
     	$('#modal-title').text('Create Template');
     	$('#submit_template').text("CREATE");
     	$('#template_modal').modal('toggle');
@@ -88,6 +92,11 @@ $(document).ready(function(e){
 
     $('#show_key_input_display').on('click',function(){
         $('#key_input_display').modal('toggle');
+    });
+
+    $('#backbone_template').on('input',function(){
+        var realtime_input = $(this).val();
+        triggerChange(realtime_input);
     });
 
     $('#submit_template').on('click',function(){
@@ -116,7 +125,7 @@ $(document).ready(function(e){
 			$.post("../communications/addtemplate", {template : JSON.stringify(templateData)})
 			.done(function(data) {
                 var response = JSON.parse(data);
-				if (response == 1 || response == true) {
+				if (response.template == 1 || response.template == true) {
 					$.notify("Successfully added a new template.","success");
 					reloadTable();
 					$('#template_modal').modal('toggle');
@@ -350,6 +359,14 @@ $(document).ready(function(e){
         format: 'YYYY-MM-DD HH:mm'
     });
 
+    $('#techinfo_template').on('input',function(){
+        triggerChange($('#backbone_template').val());
+    });
+
+    $('#response_template').on('input',function(){
+        triggerChange($('#backbone_template').val());
+    })
+
 });
 
 function tooltipKeyinput(toToolTip) {
@@ -398,9 +415,9 @@ function keyInputAutocomplete() {
     $.get('../communications/fetchalltemplate',function(data){
         var response = JSON.parse(data);
         alertLevelSymbol = response;
-        console.log(alertLevelSymbol);
         alertSymbolAutocomplete(response);
         alertLevelAutocomplete(response);
+        backboneCategoryAutocomplete(response);
         $('#alert_symbols').on('change',function(){
             for(var counter = 0; counter < response.data.length; counter++){
                 if ($(this).val() == response.data[counter].alert_symbol_level) {
@@ -412,6 +429,7 @@ function keyInputAutocomplete() {
                     $('#techinfo_template').val("");
                 }
             }
+            triggerChange($('#backbone_template').val());
         });
 
         $('#alert_level').on('change',function(){
@@ -425,6 +443,17 @@ function keyInputAutocomplete() {
                     $('#response_template').val("");
                 }
             }
+            triggerChange($('#backbone_template').val());
+        });
+
+        $('#alert_status').on('change',function(){
+            $.post('../communications/getbackboneviastatus',{category: $('#alert_status').val()}).done(function(data){
+                var response = JSON.parse(data);
+                $('#backbone_template').trigger("change");
+                $('#backbone_template').text(response[0].template);
+                $('#backbone_template').val(response[0].template);
+                triggerChange(response[0].template);
+            })
         });
 
     });
@@ -517,6 +546,17 @@ function loadKeyInputs(){
         var r= $('<button type="button" id="'+objKeys[counter].toLowerCase()+'" class="btn btn-info" style="margin: 2px;"" value="{'+objKeys[counter]+'}">+ '+objKeys[counter]+'</button>');
         $("#key-input-container").append(r);
     }
+}
+
+function triggerChange(realtime_input) {
+    realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
+    realtime_input = realtime_input.replace('(site_location)',$('#site_code').val());
+    realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
+    realtime_input = realtime_input.replace('(recommended_response)',$('#response_template').val());
+    realtime_input = realtime_input.replace('(staff_duty)',$('#staff_duty').val()+" - PHIVOLCS-DYNASLOPE");
+    realtime_input = realtime_input.replace('(release_time)',$('#time_of_release').val());
+    $('#template_view').val(realtime_input);
+    $('#template_view').text(realtime_input);
 }
 
 function loadBackboneView(real_time_value) {
