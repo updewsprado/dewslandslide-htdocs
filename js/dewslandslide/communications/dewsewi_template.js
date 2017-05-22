@@ -4,6 +4,9 @@ var backboneTable;
 var tableId;
 var template="";
 var alertLevelSymbol;
+var tempSymbol;
+var tempLevel;
+var tempStatus;
 var defaultTemplateInputs = {
     'ALERT_LVL' : 'Alert 1',
     'GREETINGS': 'Hapon',
@@ -21,10 +24,8 @@ var defaultTemplateInputs = {
 
 $(document).ready(function(e){
 
-    templateTable = $('#template_table').DataTable( {
+    template_table = $('#template_table').DataTable( {
         "processing": true,
-        "bSort" : false,
-        "scrollCollapse": true,
         "serverSide": false,
         "ajax": '../communications/fetchalltemplate',
         columns: [
@@ -67,13 +68,11 @@ $(document).ready(function(e){
 
     $('#add_template').on('click',function(){
     	$('form').trigger('reset');
-        $('#backbone_template').val('');
-        $('#backbone_template').text('');
-        $('#template_view').val('');
-        $('#template_view').text('');
+        resetFields();
     	$('#modal-title').text('Create Template');
     	$('#submit_template').text("CREATE");
     	$('#template_modal').modal('toggle');
+
         keyInputAutocomplete();
     });
 
@@ -101,20 +100,18 @@ $(document).ready(function(e){
 
     $('#submit_template').on('click',function(){
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
+        templateData['alert_level'] = $('#alert_level').val();
+        templateData['alert_symbols'] = $('#alert_symbols').val();
 
         if (!$('#response_template').prop('disabled')) {
-            templateData['alert_level'] = $('#alert_level').val();
             templateData['response_template'] = $('#response_template').val();
         } else {
-            templateData['alert_level'] = "";
             templateData['response_template'] = ""; 
         }
 
-        if (!$('#alert_symbols').prop('disabled')) {
-            templateData['alert_symbols'] = $('#alert_symbols').val();
+        if (!$('#techinfo_template').prop('disabled')) {
             templateData['techinfo_template'] =$('#techinfo_template').val();
         } else {
-            templateData['alert_symbols'] = "";
             templateData['techinfo_template'] = "";
         }
 
@@ -137,6 +134,7 @@ $(document).ready(function(e){
     		templateData['id'] = tableId;
 			$.post("../communications/updatetemplate", {template : JSON.stringify(templateData)})
 			.done(function(data) {
+                console.log(data);
 				var response = JSON.parse(data);
 				if (response == 1 || response == true) {
 					$.notify("Successfully updated a template.","success");
@@ -217,14 +215,27 @@ $(document).ready(function(e){
     });
 
     $('#template_table tbody').on('click','.update',function(){
+        $('form').trigger('reset');
+        resetFields();
         keyInputAutocomplete();
     	var table = $('#template_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		$('#modal-title').text('Update Template');
-		$('#alert_symbol').val(data.alert_symbol);
-		$('#key_input').val(data.key_input);
-		$('#alert_status').val(data.alert_status);
+        if (data.alert_symbol_level.toLowerCase().indexOf("alert") == -1) {
+            tempSymbol = data.alert_symbol_level;
+            $('#alert_symbols').val(data.alert_symbol_level);
+            $('#techinfo_template').val(data.key_input);
+            $('#techinfo_template').text(data.key_input);
+            $('#response_template').prop('disabled',true);
+        } else {
+            tempLevel = data.alert_symbol_level;
+            $('#alert_level').val(data.alert_symbol_level);
+            $('#response_template').val(data.key_input);
+            $('#response_template').text(data.key_input);
+            $('#techinfo_template').prop('disabled',true);
+        }
+        $('#backbone_template').prop('disabled',true);
 		$('#submit_template').text("UPDATE");
 		$('#template_modal').modal('toggle');
     });
@@ -255,7 +266,7 @@ $(document).ready(function(e){
 		$('#msg_backbone').val(data.template);
 		$('#submit_backbone').text("UPDATE");
 		$('#backbone_modal').modal('toggle');
-		loadBackboneView(data.template);
+		triggerChange(data.template);
     });
 
     $('#backbone_table tbody').on('click','.view',function(){
@@ -274,76 +285,76 @@ $(document).ready(function(e){
         $('#delete_backbone_modal').modal('toggle');
     });
 
-    $('#alert_lvl').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#alert_lvl', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#greetings').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#greetings', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#sbmp').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#tech_info', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#current_date').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#current_date', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#current_time').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#current_time', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#expected_date_gdata').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#gndmeas_date', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#expected_time_gdata').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#gndmeas_time', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#next_ewi_date').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
+    $('a#open_popover').popover().parent().delegate('button#next_ewi_date', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
         $('#msg_backbone').val(template);
-        loadBackboneView(template);
+        triggerChange(template);
     });
 
-    $('#next_ewi_time').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#next_ewi_time', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#lowering_extended_time').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#nth-day', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#ext_day').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#tech_info', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
-    $('#recom_response').on('click',function(){
-        template = $('#msg_backbone').val()+$(this).val();
-        $('#msg_backbone').val(template);
-        loadBackboneView(template);
+    $('a#open_popover').popover().parent().delegate('button#recom_response', 'click', function() {
+        template = $('#backbone_template').val()+$(this).val();
+        $('#backbone_template').val(template);
+        triggerChange(template);
     });
 
     $.get('../chatterbox/getdistinctsitename',function(data){
@@ -365,7 +376,10 @@ $(document).ready(function(e){
 
     $('#response_template').on('input',function(){
         triggerChange($('#backbone_template').val());
-    })
+    });
+
+    $('#open_popover').popover();
+    $('#close_popover').popover('hide');
 
 });
 
@@ -453,7 +467,7 @@ function keyInputAutocomplete() {
                 $('#backbone_template').text(response[0].template);
                 $('#backbone_template').val(response[0].template);
                 triggerChange(response[0].template);
-            })
+            });
         });
 
     });
@@ -549,42 +563,33 @@ function loadKeyInputs(){
 }
 
 function triggerChange(realtime_input) {
-    realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
-    realtime_input = realtime_input.replace('(site_location)',$('#site_code').val());
-    realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
-    realtime_input = realtime_input.replace('(recommended_response)',$('#response_template').val());
-    realtime_input = realtime_input.replace('(staff_duty)',$('#staff_duty').val()+" - PHIVOLCS-DYNASLOPE");
-    realtime_input = realtime_input.replace('(release_time)',$('#time_of_release').val());
-    $('#template_view').val(realtime_input);
-    $('#template_view').text(realtime_input);
+     $.post('../chatterbox/getsitbangprovmun', {sites: $('#site_code').val()}).done(function(data){
+        var response = JSON.parse(data);
+        var location = response[0].sition+", "+response[0].barangay+", "+response[0].municipality+", "+response[0].province;
+        location = location.replace("undefined,","");
+        location = location.trim();
+
+        realtime_input = realtime_input.replace('(site_location)',location);
+        realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
+        realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
+        realtime_input = realtime_input.replace('(recommended_response)',$('#response_template').val());
+        realtime_input = realtime_input.replace('(staff_duty)',$('#staff_duty').val()+" - PHIVOLCS-DYNASLOPE");
+        realtime_input = realtime_input.replace('(release_time)',$('#time_of_release').val());
+        $('#template_view').val(realtime_input);
+        $('#template_view').text(realtime_input);
+    });
 }
 
-function loadBackboneView(real_time_value) {
-	template = real_time_value;
-	var key = {
-		'keypoint' : $('#alert_status').val()
-	};
-
-	$.post('../communications/getkeypointsviacategory',{template_key : JSON.stringify(key)})
-	.done(function(data){
-		var response = JSON.parse(data);
-		if (response.length == 0) {
-			$('#no-key-input').show();
-		} else {
-			$('#no-key-input').hide();
-			template = template.replace('{KEY_INPUT}',defaultTemplateInputs.KEY_INPUT);
-            template = template.replace('{ALERT_LVL}',defaultTemplateInputs.ALERT_LVL);
-            template = template.replace('{GREETINGS}',defaultTemplateInputs.GREETINGS);
-            template = template.replace('{SBMP}',defaultTemplateInputs.SBMP);
-            template = template.replace('{CURRENT_DATE}',defaultTemplateInputs.CURRENT_DATE);
-            template = template.replace('{CURRENT_TIME}',defaultTemplateInputs.CURRENT_TIME);
-            template = template.replace('{EXPECTED_DATE_GDATA}',defaultTemplateInputs.EXPECTED_DATE_GDATA);
-            template = template.replace('{EXPECTED_TIME_GDATA}',defaultTemplateInputs.EXPECTED_TIME_GDATA);
-            template = template.replace('{NEXT_EWI_DATE}',defaultTemplateInputs.NEXT_EWI_DATE);
-            template = template.replace('{NEXT_EWI_TIME}',defaultTemplateInputs.NEXT_EWI_TIME);
-            template = template.replace('{LOWERING_EXTENDED_TIME}',defaultTemplateInputs.LOWERING_EXTENDED_TIME);
-            template = template.replace('{EXT_DAY}',defaultTemplateInputs.EXT_DAY);	
-			$('#backbone_preview').val(template);
-		}		
-	});
+function resetFields(){
+    $('#backbone_template').val('');
+    $('#backbone_template').text('');
+    $('#backbone_template').prop('disabled',false);
+    $('#techinfo_template').prop('disabled',false);
+    $('#response_template').prop('disabled',false);
+    $('#techinfo_template').val('');
+    $('#techinfo_template').text('');
+    $('#response_template').val('');
+    $('#response_template').text('');
+    $('#template_view').val('');
+    $('#template_view').text('');
 }
