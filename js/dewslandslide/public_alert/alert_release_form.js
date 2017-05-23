@@ -260,8 +260,10 @@ $(document).ready(function()
 
             // Enable/Disable Rainfall Intermediate Threshold option (rx)
             // if R0 is checked
-            if(this.value[0] == "R" && this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", true);
-            if(this.value[0] == "R" && !this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", false);
+            if(this.value[0] == "R") {
+                if(this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", true);
+                else $(".cbox_trigger_rx").prop("disabled", false);
+            }
         }
         
         // Disable Timestamp Input Validation Checkbox Fields
@@ -300,17 +302,32 @@ $(document).ready(function()
         let alert = trigger_list.length > 0 ? alert_level + "-" + trigger_list.join("") : alert_level;
         alert = $("#public_alert_level").val() == "A0" ? "A0" : alert;
         $("#internal_alert_level").val(alert);
+
+        // Trigger Rx if it is checked and does not have Rx/rx on internal alert
+        if( $(".cbox_trigger_rx").is(":checked") ) {
+            console.log("RX CHECKED");
+            $(".cbox_trigger_rx").trigger("change");
+        }
+        else console.log("RX NOT CHECKED");
     });
 
     // Disable R0 if rx is checked
+    // Change internal alert also
     $(".cbox_trigger_rx").change(function () 
     {
+        let rx_internal = "";
+        let internal = $("#internal_alert_level").val();
         if(this.checked) {
             $(".cbox_trigger_nd[value=R0]").prop("checked", false).prop("disabled", true);
             $(".cbox_trigger[value=R]").prop("checked", false).prop("disabled", true);
             $(".cbox_trigger[value=R]").parent().next().children("input").prop("disabled", true).val("");
+            rx_internal = internal.indexOf("R") > -1 ? internal.replace(/R/g, "Rx") : internal + "rx";
         }
-        else $(".cbox_trigger_nd[value=R0], .cbox_trigger[value=R]").prop("checked", false).prop("disabled", false);
+        else {
+            $(".cbox_trigger_nd[value=R0], .cbox_trigger[value=R]").prop("checked", false).prop("disabled", false);
+            rx_internal = internal.replace(/Rx/g, "R").replace(/rx/g, "");
+        }
+        $("#internal_alert_level").val(rx_internal);
     });
 
     /*************** END OF THIS AREA ****************/
@@ -371,7 +388,7 @@ $(document).ready(function()
                     let triggers = release.internal_alert_level.substr(3).split("");
                     //saved_triggers = triggers.splice(0);
                     for (let i = 0; i < triggers.length; i++) {
-                        if (triggers[i + 1] == "0") 
+                        if (triggers[i + 1] == "0" || triggers[i + 1] == "x" ) 
                             { saved_triggers.push(triggers[i] + triggers[i + 1]); i++; }
                         else saved_triggers.push(triggers[i]);
                     }
@@ -399,6 +416,8 @@ $(document).ready(function()
                         console.log(event);
                         console.log(triggers);
 
+                        $(".cbox_trigger_rx").prop('disabled', true).prop('checked', false);
+                        $(".cbox_trigger_nd").prop('disabled', true).prop('checked', false);
                         let groupedTriggers = groupTriggersByType(event, triggers);
                         console.log(groupedTriggers);
 
@@ -451,9 +470,9 @@ $(document).ready(function()
         function clearZero(x, public_alert) 
         { 
             console.log(public_alert);
-            x = x.replace('0', '');
+            x = x.replace('0', '').replace('rx', '').replace("x", '');
             if(public_alert == "A3") x = x.toUpperCase();
-            return x;
+            if(x != "") return x;
         }
         let trigger_copy = trigger_list.map(function (x) { return clearZero(x, public_alert); });
 
@@ -467,6 +486,9 @@ $(document).ready(function()
 
             switch( trigger_list[i] )
             {
+                case "R0": case "Rx": case "rx":
+                    if(trigger_list[i] == "R0") check(trigger_list[i], "nd");
+                    else check("rx", "rx"); console.log("lol");
                 case "R": check("rs"); enable("R0"); break;
                 case "E": check("es"); enable("E0"); break;
                 case "D": check("ds"); enable("D0"); break;
@@ -487,7 +509,9 @@ $(document).ready(function()
 
             let x = triggers.filter(function (val) 
             {
-                return val.trigger_type == trigger_copy[i] || val.trigger_type == trigger_copy[i].toLowerCase();
+                // Check for filtered "rx"
+                if( typeof trigger_copy[i] != "undefined" )
+                    return val.trigger_type == trigger_copy[i] || val.trigger_type == trigger_copy[i].toLowerCase();
             })
 
             x.sort(function (a, b) 
@@ -495,7 +519,8 @@ $(document).ready(function()
                 if( moment(a.timestamp).isAfter(b.timestamp) ) return -1; else return 1;
             })
 
-            arr.push(x);
+            // Check for filtered "rx"
+            if( typeof trigger_copy[i] != "undefined" ) arr.push(x);
         }
         return arr;
     }
