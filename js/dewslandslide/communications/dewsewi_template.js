@@ -461,7 +461,7 @@ function keyInputAutocomplete() {
         });
 
         $('#alert_status').on('change',function(){
-            $.post('../communications/getbackboneviastatus',{category: $('#alert_status').val()}).done(function(data){
+            $.post('../communications/getbackboneviastatus',{alert_status: $('#alert_status').val()}).done(function(data){
                 var response = JSON.parse(data);
                 $('#backbone_template').trigger("change");
                 $('#backbone_template').text(response[0].template);

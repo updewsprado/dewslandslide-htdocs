@@ -70,60 +70,148 @@ function sendViaAlertMonitor(dashboard_data){
 	$('#edit-btn-ewi-amd').text("Edit");
 	$('#edit-btn-ewi-amd').val("edit");
 	$('#event_details').val(JSON.stringify(dashboard_data));
-
+	var alertLevel = dashboard_data.internal_alert_level.split('-')[0];
+	var alertTrigger = dashboard_data.internal_alert_level.split('-')[1];
 	$.ajax({
 		type: "POST",
 		url: "../communications/getkeyinputviatriggertype",
 		async: true,
-		data: {trigger_type: dashboard_data.trigger_type},
+		data: {trigger_type:alertTrigger},
 		success: function(data) {
-			var response_key_input = JSON.parse(data);
+			var techInfo = JSON.parse(data);
 			$.ajax({
 				type: "POST",
-				url: "../communications/getbackboneviacategory",
+				url: "../communications/getbackboneviastatus",
 				async: true,
-				data: {category: response_key_input[0].bb_scenario},
+				data: {alert_status: techInfo.alert_status},
 				success: function(data) {
-					var response_backbone = JSON.parse(data);
+					var backboneMessage = JSON.parse(data);
+					
+					if (alertLevel.length == 2 && alertLevel.indexOf("A") != -1) {
+						alertLevel = alertLevel.replace("A","Alert ");
+					}
 					$.ajax({
 						type: "POST",
-						url: "../communications/gettechinfo",
+						url: "../communications/getrecommendedresponse",
 						async: true,
-						data: {alert_level: dashboard_data.internal_alert_level.split('-')[0]},
+						data: {recommended_response: alertLevel},
 						success: function(data) {
-							var response_alert_level = JSON.parse(data);
-							var template = response_backbone[0].template;
+							var recommendedResponse = JSON.parse(data);
+							var template = "";
+							var level;
+							if (recommendedResponse[0].alert_symbol_level.match(/\d+/g)) {
+								level = recommendedResponse[0].alert_symbol_level[recommendedResponse[0].alert_symbol_level.length-1];
+							}
+
+							for (var counter = 0;counter < backboneMessage.length; counter++) {
+								if (backboneMessage[counter].alert_status.indexOf(level) == -1 && level == 3) { // Leave the "3" for the meantime. still looking for a better logic for this.
+									template = backboneMessage[counter].template;
+								} else {
+									template = backboneMessage[counter].template;
+									break;
+								}
+							}
+
 							var d = new Date();
 							var current_meridiem = d.getHours();
 
 							if (current_meridiem >= 13 && current_meridiem <= 18) {
-								template = template.replace("{GREETINGS}","hapon");
+								template = template.replace("(greetings)","hapon");
 							} else if (current_meridiem >= 18 && current_meridiem <=23) {
-								template = template.replace("{GREETINGS}","gabi");
+								template = template.replace("(greetings)","gabi");
 							} else if (current_meridiem >= 0 && current_meridiem <= 3) {
-								template = template.replace("{GREETINGS}","gabi");
+								template = template.replace("(greetings)","gabi");
 							} else if (current_meridiem >= 4 && current_meridiem <= 11) {
-								template = template.replace("{GREETINGS}","umaga");
+								template = template.replace("(greetings)","umaga");
 							} else {
-								template = template.replace("{GREETINGS}","tanghali");
+								template = template.replace("(greetings)","tanghali");
 							}
-
-							template = template.replace("{ALERT_LVL}",alert_level);
 							
+							template = template.replace("(alert_level)",alert_level);
 							var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
-
 							var formatSbmp = ewiLocation.replace("null","");
 							if (formatSbmp.charAt(0) == ",") {
 								formatSbmp = formatSbmp.substr(1);
 							}
 
-							template = template.replace("{SBMP}",formatSbmp);
-							template = template.replace("{TECH_INFO}",response_key_input[0].tech_info);
-							template = template.replace("{RECOMMENDED_RESPONSE}",response_alert_level[0].recommended_response);
-							
-							console.log(template);
+							template = template.replace("(site_location)",formatSbmp);
+							if (techInfo.key_input.substring(0,4) == " at ") {
+								techInfo.key_input = techInfo.key_input.substring(4);
+							}
+
+							template = template.replace("(technical_info)",techInfo.key_input);
+							template = template.replace("(recommended_response)",recommendedResponse[0].key_input);
+
+							var currentTime = moment().format("YYYY-MM-DD HH:mm");
+
+							var release_time = moment(data.data_timestamp).format("YYYY-MM-DD hh:mm A");
+							var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+
+							if (onset_time != release_time) {
+								var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+								if (meridiem == "12:00 AM") {
+									meridiem = meridiem.replace("AM","MN");
+								} else if (meridiem == "12:00 PM") {
+									meridiem = meridiem.replace("PM","NN");
+								}
+								template = template.replace("(current_date_time)",meridiem);
+							} else {
+								var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+								if (meridiem.slice(-8) == "12:00 AM") {
+									meridiem = meridiem.replace("AM","MN");
+								}
+								else if (meridiem.slice(-8) == "12:00 PM") {
+									meridiem = meridiem.replace("PM","NN");
+								}
+								template = template.replace("(current_date_time)",meridiem);
+							}
+
+
+							if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+								template = template.replace("(gndmeas_date_submission)","mamaya");
+
+								template = template.replace("(next_ewi_time)","04:00 AM");
+								template = template.replace("(next_ewi_date)","mamayang");
+							} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+								template = template.replace("(gndmeas_date_submission)","mamaya");
+
+								template = template.replace("(next_ewi_time)","08:00 AM");
+								template = template.replace("(next_ewi_date)","mamayang");
+							} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag 11:30 AM");
+								template = template.replace("(gndmeas_date_submission)","mamaya");
+
+								template = template.replace("(next_ewi_time)","12:00 NN");
+								template = template.replace("(next_ewi_date)","mamayang");
+							} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag 3:30 PM");
+								template = template.replace("(gndmeas_date_submission)","mamaya");
+
+								template = template.replace("(next_ewi_time)","04:00 PM");
+								template = template.replace("(next_ewi_date)","mamayang");
+							} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
+								template = template.replace("(gndmeas_date_submission)","bukas");
+
+								template = template.replace("(next_ewi_time)","08:00 PM");
+								template = template.replace("(next_ewi_date)","mamayang");
+							} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
+								template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
+								template = template.replace("(gndmeas_date_submission)","bukas");
+
+								template = template.replace("(next_ewi_time)","12:00 MN");
+								template = template.replace("(next_ewi_date)","bukas ng");
+							} else {
+								alert("Error Occured: Please contact Administrator");
+							}
+							$('#msg').val(template);
+							$('#site-abbr').val(data["name"]);
+							$('#constructed-ewi-amd').val(template);
+							$('#ewi-asap-modal').modal('toggle');
 						}
-					})
+					});
 				}
 			});
 		}
