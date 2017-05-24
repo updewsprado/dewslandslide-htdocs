@@ -1096,7 +1096,7 @@ $(document).ready(function() {
 							}
 
 							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-
+							if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							narrative_recipients = [];
 						} 
@@ -1261,7 +1261,7 @@ function getOngoingEvents(sites){
 									});
 								}
 								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
+								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							}
 						} else {
