@@ -149,8 +149,7 @@ $(document).ready(function(e){
     });
 
     $('#submit_backbone').on('click',function(){
-    	templateData['alert_status'] = $('#alert_status').val();
-    	templateData['backbone_message'] = $('#msg_backbone').val();
+    	templateData['backbone_message'] = $('#update-backbone').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
 
     	if ($('#submit_backbone').text() == "CREATE") {
@@ -169,6 +168,7 @@ $(document).ready(function(e){
     		});
     	} else {
     		templateData['id'] = tableId;
+            templateData['alert_status'] = tempStatus;
     		$.post('../communications/updatebackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
     			var response = JSON.parse(data);
@@ -181,6 +181,7 @@ $(document).ready(function(e){
                 }
     		});
     	}
+        tempStatus = "";
     	templateData = {};
     });
 
@@ -256,17 +257,16 @@ $(document).ready(function(e){
     });
 
     $('#backbone_table tbody').on('click','.update',function(){
-        backboneAutocomplete();
-        // loadKeyInputs();
     	var table = $('#backbone_table').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		tableId = data.id;
 		$('#modal-title-backbone').text('Update Message Backbone');
-		$('#alert_status').val(data.alert_status);
-		$('#msg_backbone').val(data.template);
+        $('#update-backbone').val(data.template);
+        $('#update-backbone').text(data.template);
+        tempStatus = data.alert_status;
 		$('#submit_backbone').text("UPDATE");
 		$('#backbone_modal').modal('toggle');
-		triggerChange(data.template);
+		triggerChange(data);
     });
 
     $('#backbone_table tbody').on('click','.view',function(){
@@ -355,6 +355,11 @@ $(document).ready(function(e){
         template = $('#backbone_template').val()+$(this).val();
         $('#backbone_template').val(template);
         triggerChange(template);
+    });
+
+    $('.update_backbone').on('click',function(){
+        $('#update-backbone').val($('#update-backbone').val()+$(this).val());
+        $('#update-backbone').text($('#update-backbone').val()+$(this).val());
     });
 
     $.get('../chatterbox/getdistinctsitename',function(data){
@@ -563,21 +568,46 @@ function loadKeyInputs(){
 }
 
 function triggerChange(realtime_input) {
-     $.post('../chatterbox/getsitbangprovmun', {sites: $('#site_code').val()}).done(function(data){
-        var response = JSON.parse(data);
-        var location = response[0].sition+", "+response[0].barangay+", "+response[0].municipality+", "+response[0].province;
-        location = location.replace("undefined,","");
-        location = location.trim();
+    if (($("#template_view").data('bs.modal') || {}).isShown == true) {
+        $.post('../chatterbox/getsitbangprovmun', {sites: $('#site_code').val()}).done(function(data){
+            var response = JSON.parse(data);
+            var location = response[0].sition+", "+response[0].barangay+", "+response[0].municipality+", "+response[0].province;
+            location = location.replace("undefined,","");
+            location = location.trim();
 
-        realtime_input = realtime_input.replace('(site_location)',location);
-        realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
-        realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
-        realtime_input = realtime_input.replace('(recommended_response)',$('#response_template').val());
-        realtime_input = realtime_input.replace('(staff_duty)',$('#staff_duty').val()+" - PHIVOLCS-DYNASLOPE");
-        realtime_input = realtime_input.replace('(release_time)',$('#time_of_release').val());
-        $('#template_view').val(realtime_input);
-        $('#template_view').text(realtime_input);
-    });
+            realtime_input = realtime_input.replace('(site_location)',location);
+            realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
+            realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
+            realtime_input = realtime_input.replace('(recommended_response)',$('#response_template').val());
+            realtime_input = realtime_input.replace('(staff_duty)',$('#staff_duty').val()+" - PHIVOLCS-DYNASLOPE");
+            realtime_input = realtime_input.replace('(release_time)',$('#time_of_release').val());
+            $('#template_view').val(realtime_input);
+            $('#template_view').text(realtime_input);
+        });
+    } else {
+        var template = $('#update-backbone').val();
+        console.log = (template);
+        if (tempStatus == "Event-Level3") {
+            template = template.replace('(technical_info)','naka-detect ang sensor ng critical ground movement');
+            template = template.replace('(recommended_response)','EVACUATE THE HOUSEHOLDS AT RISK ang recommended response');
+            template = template.replace('(alert_level)','Alert 3');
+        } else {
+            template = template.replace('(technical_info)','nakapagsukat ng significant ground movement ang LEWC');
+            template = template.replace('(recommended_response)','PREPARE TO EVACUATE THE HOUSEHOLDS AT RISK');
+            template = template.replace('(alert_level)','Alert 2');
+        }
+        template = template.replace('(greetings)','umaga');
+        template = template.replace('(site_location)','Agbatuan, Dumarao, Capiz');
+        template = template.replace('(staff_duty)','You - PHIVOLCS-DYNASLOPE');
+        template = template.replace('(release_time)','2017-05-24 08:00 AM');
+        template = template.replace('(current_date_time)','2017-05-24 08:00 AM');
+        template = template.replace('(gndmeas_date_submission)','mamaya bago mag 11:30 AM.');
+        template = template.replace('(gndmeas_time_submission)','mamaya bago mag 11:30 AM.');
+        template = template.replace('(new_ewi_time)','12:00 NN');
+        template = template.replace('(next_ewi_date)','mamaya');
+        $('#preview-backbone').val(template);
+        $('#preview-backbone').text(template);
+    }
 }
 
 function resetFields(){
