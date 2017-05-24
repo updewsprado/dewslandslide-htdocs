@@ -78,6 +78,7 @@ function sendViaAlertMonitor(dashboard_data){
 		async: true,
 		data: {trigger_type:alertTrigger},
 		success: function(data) {
+			console.log(data);
 			var techInfo = JSON.parse(data);
 			$.ajax({
 				type: "POST",

@@ -116,11 +116,12 @@ $(document).ready(function(e){
         }
 
         templateData['alert_status'] = $('#alert_status').val();
-        templateData['backbone_template'] = $('#backbone_template').val();
+        templateData['backbone_message'] = $('#backbone_template').val();
 
     	if ($('#submit_template').text() == "CREATE") {
 			$.post("../communications/addtemplate", {template : JSON.stringify(templateData)})
 			.done(function(data) {
+                console.log(data);
                 var response = JSON.parse(data);
 				if (response.template == 1 || response.template == true) {
 					$.notify("Successfully added a new template.","success");
@@ -151,8 +152,8 @@ $(document).ready(function(e){
     $('#submit_backbone').on('click',function(){
     	templateData['backbone_message'] = $('#update-backbone').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
-
     	if ($('#submit_backbone').text() == "CREATE") {
+            templateData['alert_status'] = $('#alert_status').val();
     		$.post('../communications/addbackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
     			console.log(data);
@@ -171,6 +172,7 @@ $(document).ready(function(e){
             templateData['alert_status'] = tempStatus;
     		$.post('../communications/updatebackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
+                console.log(data);
     			var response = JSON.parse(data);
                 if (response == 1 || response == true) {
                     $.notify("Successfully updated a backbone message.","success");
@@ -252,8 +254,8 @@ $(document).ready(function(e){
 		$('#delete_template_modal').modal('toggle');
     });
 
-    $('#msg_backbone').on('input',function(){
-    	loadBackboneView($('#msg_backbone').val());
+    $('#update-backbone').on('input',function(){
+    	triggerChange($('#update-backbone').val());
     });
 
     $('#backbone_table tbody').on('click','.update',function(){
@@ -468,6 +470,7 @@ function keyInputAutocomplete() {
         $('#alert_status').on('change',function(){
             $.post('../communications/getbackboneviastatus',{alert_status: $('#alert_status').val()}).done(function(data){
                 var response = JSON.parse(data);
+                console.log(response);
                 $('#backbone_template').trigger("change");
                 $('#backbone_template').text(response[0].template);
                 $('#backbone_template').val(response[0].template);
@@ -568,13 +571,37 @@ function loadKeyInputs(){
 }
 
 function triggerChange(realtime_input) {
-    if (($("#template_view").data('bs.modal') || {}).isShown == true) {
+    if (($("#template_modal").data('bs.modal') || {}).isShown == true) {
         $.post('../chatterbox/getsitbangprovmun', {sites: $('#site_code').val()}).done(function(data){
             var response = JSON.parse(data);
             var location = response[0].sition+", "+response[0].barangay+", "+response[0].municipality+", "+response[0].province;
             location = location.replace("undefined,","");
             location = location.trim();
+            var d = new Date();
+            var current_meridiem = d.getHours();
 
+            if (current_meridiem >= 13 && current_meridiem <= 18) {
+                realtime_input = realtime_input.replace("(greetings)","hapon");
+            } else if (current_meridiem >= 18 && current_meridiem <=23) {
+                realtime_input = realtime_input.replace("(greetings)","gabi");
+            } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+                realtime_input = realtime_input.replace("(greetings)","gabi");
+            } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+                realtime_input = realtime_input.replace("(greetings)","umaga");
+            } else {
+                realtime_input = realtime_input.replace("(greetings)","tanghali");
+            }
+
+            // var currentTime = moment(moment().format("YYYY-MM-DD HH:mm")).format('LLL');
+            var meridiem = moment().format("hh:mm A");
+            if (meridiem == "12:00 AM") {
+                meridiem = meridiem.replace("AM","MN");
+            } else if (meridiem == "12:00 PM") {
+                meridiem = meridiem.replace("PM","NN");
+            }
+            var current_date = moment(moment().format("YYYY-MM-DD")).format('LL');
+
+            realtime_input = realtime_input.replace("(current_date_time)",current_date+" "+meridiem);
             realtime_input = realtime_input.replace('(site_location)',location);
             realtime_input = realtime_input.replace('(alert_level)',$('#alert_level').val());
             realtime_input = realtime_input.replace('(technical_info)',$('#techinfo_template').val());
@@ -586,7 +613,6 @@ function triggerChange(realtime_input) {
         });
     } else {
         var template = $('#update-backbone').val();
-        console.log = (template);
         if (tempStatus == "Event-Level3") {
             template = template.replace('(technical_info)','naka-detect ang sensor ng critical ground movement');
             template = template.replace('(recommended_response)','EVACUATE THE HOUSEHOLDS AT RISK ang recommended response');
@@ -596,13 +622,12 @@ function triggerChange(realtime_input) {
             template = template.replace('(recommended_response)','PREPARE TO EVACUATE THE HOUSEHOLDS AT RISK');
             template = template.replace('(alert_level)','Alert 2');
         }
-        template = template.replace('(greetings)','umaga');
         template = template.replace('(site_location)','Agbatuan, Dumarao, Capiz');
         template = template.replace('(staff_duty)','You - PHIVOLCS-DYNASLOPE');
         template = template.replace('(release_time)','2017-05-24 08:00 AM');
         template = template.replace('(current_date_time)','2017-05-24 08:00 AM');
-        template = template.replace('(gndmeas_date_submission)','mamaya bago mag 11:30 AM.');
-        template = template.replace('(gndmeas_time_submission)','mamaya bago mag 11:30 AM.');
+        template = template.replace('(gndmeas_date_submission)','mamaya bago mag 11:30 AM');
+        template = template.replace('(gndmeas_time_submission)','mamaya bago mag 11:30 AM');
         template = template.replace('(new_ewi_time)','12:00 NN');
         template = template.replace('(next_ewi_date)','mamaya');
         $('#preview-backbone').val(template);
