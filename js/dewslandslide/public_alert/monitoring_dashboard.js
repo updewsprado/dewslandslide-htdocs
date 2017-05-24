@@ -938,7 +938,7 @@ function checkIfAlreadySent(release_id, event_id, timestamp)
                 $("#" + release_id).css("color", "red").attr("data-sent", 1);
             }
 
-            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(hour_min) || temp[i].narrative.includes("onset"));
+            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(hour_min) || temp[i].narrative.includes("onset"));
             {
             	isEWISent = true;
                 $("#" + release_id + "_sms").css("color", "red").attr("data-sent", 1);
