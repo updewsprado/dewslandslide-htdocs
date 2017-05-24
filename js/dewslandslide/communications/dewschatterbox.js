@@ -155,18 +155,21 @@ function sendViaAlertMonitor(dashboard_data){
 								} else if (meridiem == "12:00 PM") {
 									meridiem = meridiem.replace("PM","NN");
 								}
-								template = template.replace("(current_date_time)",meridiem);
+
+								var current_time = moment().format('LL');
+								template = template.replace("(current_date_time)",current_time+" "+meridiem);
 							} else {
-								var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+								var meridiem = moment(data.event_start).format("hh:mm A");
 								if (meridiem.slice(-8) == "12:00 AM") {
 									meridiem = meridiem.replace("AM","MN");
 								}
 								else if (meridiem.slice(-8) == "12:00 PM") {
 									meridiem = meridiem.replace("PM","NN");
 								}
-								template = template.replace("(current_date_time)",meridiem);
-							}
 
+								var current_time = moment().format('LL');
+								template = template.replace("(current_date_time)",current_time+" "+meridiem);
+							}
 
 							if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
 								template = template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
