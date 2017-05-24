@@ -214,7 +214,7 @@ function sendMail(text, subject, filename, recipients) {
                     });
 
                     let x = moment(bulletin_timestamp).hour() % 4 == 0  && moment(bulletin_timestamp).minute() == 0 ?  moment(bulletin_timestamp).format("hh:mm A") : moment(bulletin_timestamp).format("hh:mm A") + " onset";
-                    if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "MN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "NN");
+                    if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
                     let message = "Sent " + x + " EWI Bulletin to " + people.join(", ");
 
                     let narratives = [{ 
