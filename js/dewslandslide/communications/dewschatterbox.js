@@ -145,11 +145,14 @@ function sendViaAlertMonitor(dashboard_data){
 
 							var currentTime = moment().format("YYYY-MM-DD HH:mm");
 
-							var release_time = moment(data.data_timestamp).format("YYYY-MM-DD hh:mm A");
-							var onset_time = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
+							var release_time = moment(dashboard_data.data_timestamp).format("YYYY-MM-DD hh:mm A");
+							var onset_time = moment(dashboard_data.event_start).format("YYYY-MM-DD hh:mm A");
+							
+							data_timestamp = dashboard_data.data_timestamp;
+							latest_release_id = dashboard_data.latest_release_id;
 
 							if (onset_time != release_time) {
-								var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
+								var meridiem = moment(dashboard_data.data_timestamp).add(30,'m').format("hh:mm A");
 								if (meridiem == "12:00 AM") {
 									meridiem = meridiem.replace("AM","MN");
 								} else if (meridiem == "12:00 PM") {
@@ -159,7 +162,7 @@ function sendViaAlertMonitor(dashboard_data){
 								var current_time = moment().format('LL');
 								template = template.replace("(current_date_time)",current_time+" "+meridiem);
 							} else {
-								var meridiem = moment(data.event_start).format("hh:mm A");
+								var meridiem = moment(dashboard_data.event_start).format("hh:mm A");
 								if (meridiem.slice(-8) == "12:00 AM") {
 									meridiem = meridiem.replace("AM","MN");
 								}
@@ -211,7 +214,7 @@ function sendViaAlertMonitor(dashboard_data){
 								alert("Error Occured: Please contact Administrator");
 							}
 							$('#msg').val(template);
-							$('#site-abbr').val(data["name"]);
+							$('#site-abbr').val(dashboard_data["name"]);
 							$('#constructed-ewi-amd').val(template);
 							$('#ewi-asap-modal').modal('toggle');
 						}
