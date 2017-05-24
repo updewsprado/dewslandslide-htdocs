@@ -957,16 +957,16 @@ function checkIfAlreadySent(release_id, event_id, timestamp)
         let isEWISent = false;
         
         let hour_min = moment(timestamp).format("hh:mm A");
-        if(/12:\d{2} PM/g.test(hour_min)) hour_min = hour_min.replace("PM", "MN"); else if (/12:\d{2} AM/g.test(hour_min)) hour_min = hour_min.replace("AM", "NN");
+        if(/12:\d{2} PM/g.test(hour_min)) hour_min = hour_min.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(hour_min)) hour_min = hour_min.replace("AM", "MN");
         
         for( let i = 0; i < temp.length; i++) {
-            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(hour_min))
+            if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(hour_min) || temp[i].narrative.includes("onset"));
             {
             	isBulletinSent = true;
                 $("#" + release_id).css("color", "red").attr("data-sent", 1);
             }
 
-            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(hour_min))
+            if(temp[i].narrative.includes("SMS") && temp[i].narrative.includes(hour_min) || temp[i].narrative.includes("onset"))
             {
             	isEWISent = true;
                 $("#" + release_id + "_sms").css("color", "red").attr("data-sent", 1);
