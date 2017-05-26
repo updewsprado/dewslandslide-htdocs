@@ -7,9 +7,9 @@
  *	
 ****/
 
-let realtime_cache = [], ongoing = [], candidate_triggers = [];
+let realtime_cache = {}, ongoing = [], candidate_triggers = [];
 let isTableInitialized = false;
-let latest_table = null, extended_table = null, overdue_table = null, candidate_table =null;
+let latest_table = null, extended_table = null, overdue_table = null, candidate_table = null;
 let modalForm = null, entry = {};
 let sitesList = [];
 
@@ -63,7 +63,12 @@ $(document).ready( function() {
                 let recipients = $("#recipients").tagsinput("items");
                 console.log(recipients);
 
-                text = $("#info").html();
+                text = $("#info").val().replace(/\n/g, '<br/>');
+                let i = text.indexOf("DEWS");
+                if( i > 0) 
+                	text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
+                else text = "<b>" + text + "</b>";
+
                 subject = $("#subject").text();
                 filename = $("#filename").text();
                 sendMail(text, subject, filename, recipients);
@@ -358,7 +363,7 @@ $(document).ready( function() {
 	            success: function(result, textStatus, jqXHR)
 	            {
 	                console.log(result);
-	                doSend("getOnGoingAndExtended");
+	                doSend("updateDashboardTables");
 
 	                setTimeout(function () 
 	                {
@@ -380,12 +385,54 @@ $(document).ready( function() {
 
 /*****************************************
  * 
- * 		BUILD THREE TABLES AVAILABLE
+ * 		BUILD DASHBOARD TABLES AVAILABLE
  * 
 ******************************************/
 
-function buildTable( latest, extended, overdue, candidate ) 
+function buildDashboardTables( data )
 {
+
+	if ( data.code == "existingAlerts" )
+	{
+		ongoing = jQuery.extend(true, {}, data.alerts);
+	}
+
+	let tables = {"latest":latest_table, "extended":extended_table, "overdue":overdue_table, "candidate":candidate_table};
+	let alerts = data.alerts;
+
+	if( alerts == null ) 
+	{
+        console.log("=== ERROR PROCESSING ALERTS! ===");
+        console.log(data.error);
+        alerts = {"candidate" : null};
+    } 
+
+	for( let key in alerts ) 
+	{
+		if( tables[key] == null ) 
+		{
+			switch(key) {
+				case "latest": latest_table = buildLatestAndOverdue(key, alerts[key]); 
+								alerts[key].forEach(function (x) {
+									checkIfAlreadySent(x.latest_release_id, x.event_id, x.data_timestamp);
+								});
+								break;
+				case "extended": extended_table = buildExtendedTable(alerts[key]); break;
+				case "overdue": overdue_table = buildLatestAndOverdue(key, alerts[key]);
+								overdue_table.column(6).visible(false);
+								break;
+				case "candidate": candidate_table = buildCandidateTable(alerts[key]); break;
+			}
+		} else {
+			console.log("Entered Here reload", key)
+			reloadTable(tables[key], alerts[key]);
+		}
+
+		if( key !== 'markers' ) tableCSSifEmpty(key, alerts[key]);
+	}
+
+	initialize_map();
+
 	function buildLatestAndOverdue (table, dataX)
 	{
 		return $('#' + table).DataTable({
@@ -466,181 +513,179 @@ function buildTable( latest, extended, overdue, candidate )
 	    });
 	};
 
-	latest_table = buildLatestAndOverdue("latest", latest);
-	overdue_table = buildLatestAndOverdue("overdue", overdue);
-	overdue_table.column(6).visible(false);
+	function buildExtendedTable (data)
+	{
+		return $('#extended').DataTable({
+	    	"data": data,
+			"columnDefs": [
+				{ className: "text-left", "targets": [ 0 ] },
+		 		{ className: "text-right", "targets": [ 1, 2, 3 ] },
+		 		{ className: "text-center", "targets": [4] }
+			],
+			"columns": [
+	            {
+	            	data: "name", 
+	            	"render": function (data, type, full) {
+	            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
+	            	},
+	        		"name": 'name',
+	            },
+	            { 
+	            	"data": "validity",
+	            	"render": function (data, type, full) {
+	            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "validity"
+	        	},
+	        	{
+	            	"data": "start",
+	            	"render": function (data, type, full) {
+	            		return moment.unix(full.start).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "start"
+	        	},
+	        	{ 
+	            	"data": "end",
+	            	"render": function (data, type, full) {
+	            		return moment.unix(full.end).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "end"
+	        	},
+	        	{
+	        		"render": function (data, type, full) {
+	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
+	            	}
+	        	}
+			],
+	    	"order" : [[3, "asc"]],
+	    	"processing": true,
+	    	"filter": false,
+	    	"info": false,
+	    	"paginate": false,
+	    	"autoWidth": false,
+	    	"language": 
+	    	{
+		        "emptyTable": "There are no sites under 3-day extended monitoring."
+		    },
+		    "rowCallback": function( row, data, index ) 
+		    {
+	            switch(data.day)
+	            {
+	            	case 0: break;
+	            	case 1: $(row).addClass("day-one"); break;
+	                case 2: $(row).addClass("day-two"); break;
+	                case 3: $(row).addClass("day-three"); break;
+	                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
+	            }
+		  	}
+	    });
+	}
 
-    extended_table = $('#extended').DataTable({
-    	"data": extended,
-		"columnDefs": [
-			{ className: "text-left", "targets": [ 0 ] },
-	 		{ className: "text-right", "targets": [ 1, 2, 3 ] },
-	 		{ className: "text-center", "targets": [4] }
-		],
-		"columns": [
-            {
-            	data: "name", 
-            	"render": function (data, type, full) {
-            		return "<b><a href='../monitoring/events/" + full.event_id + "'>" + full.name.toUpperCase() + "</a></b>";
-            	},
-        		"name": 'name',
-            },
-            { 
-            	"data": "validity",
-            	"render": function (data, type, full) {
-            		return moment(full.validity).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "validity"
-        	},
-        	{
-            	"data": "start",
-            	"render": function (data, type, full) {
-            		return moment.unix(full.start).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "start"
-        	},
-        	{ 
-            	"data": "end",
-            	"render": function (data, type, full) {
-            		return moment.unix(full.end).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "end"
-        	},
-        	{
-        		"render": function (data, type, full) {
-            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0'></span></a>";
-            	}
-        	}
-		],
-    	"order" : [[3, "asc"]],
-    	"processing": true,
-    	"filter": false,
-    	"info": false,
-    	"paginate": false,
-    	"autoWidth": false,
-    	"language": 
-    	{
-	        "emptyTable": "There are no sites under 3-day extended monitoring."
-	    },
-	    "rowCallback": function( row, data, index ) 
-	    {
-            switch(data.day)
-            {
-            	case 0: break;
-            	case 1: $(row).addClass("day-one"); break;
-                case 2: $(row).addClass("day-two"); break;
-                case 3: $(row).addClass("day-three"); break;
-                default: if(data.day != 0) $(row).addClass("day-overdue"); break;
-            }
-	  	}
-    });
-
-    candidate_table = $('#candidate').DataTable({
-    	"data": candidate,
-		"columnDefs": [
-			{ className: "text-left", "targets": [ 0, 3 ] },
-	 		{ className: "text-right", "targets": [ 1, 2, 4 ] },
-	 		{ className: "text-center", "targets": [ 5 ] }
-		],
-		"columns": [
-            {
-            	data: "site", 
-            	"render": function (data, type, full) {
-            		return "<b>" + full.site.toUpperCase() + "</b>";
-            	},
-        		"name": 'site',
-            },
-            { 
-            	"data": "data_timestamp",
-            	"render": function (data, type, full) {
- 					if( full.timestamp == null )	return "No new triggers";
-            		else return moment(full.timestamp).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "data_timestamp"
-        	},
-            { 
-            	"data": "latest_trigger_timestamp",
-            	"render": function (data, type, full) {
- 					if( full.latest_trigger_timestamp == "end" ) return "No new triggers";
- 					else if( full.latest_trigger_timestamp == "manual" ) return "---";
-            		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "latest_trigger_timestamp"
-        	},
-        	{ 
-            	"data": "trigger",
-            	"render": function (data, type, full) {
-            		if( full.trigger == "No new triggers" ) return full.trigger;
-            		else if( full.trigger == "manual" ) return "---";
-            		return full.trigger.toUpperCase();
-            	},
-            	"name": "trigger",
-	        },
-            { 
-            	"data": "validity",
-            	"render": function (data, type, full) {
-            		if ( full.validity == "end" ) return "END OF VALIDITY"
-            		else if ( full.validity == "manual" ) return "---";
-            		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
-            	},
-            	"name": "validity"
-        	},
-        	{
-        		"render": function (data, type, full) {
-        			if(typeof full.isManual !== "undefined") return "<a><span class='glyphicon glyphicon-info-sign' title='Info'></span></a>";
-            		else return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
-            	}
-        	}
-		],
-    	"order" : [[3, "asc"]],
-    	"processing": true,
-    	"filter": false,
-    	"info": false,
-    	"paginate": false,
-    	"autoWidth": false,
-    	"language": 
-    	{
-	        "emptyTable": "There are no current candidate triggers."
-	    },
-	   //  "rowCallback": function( row, data, index ) 
-	   //  {
- //            switch(data.day)
- //            {
- //            	case 1: $(row).addClass("day-one"); break;
- //                case 2: $(row).addClass("day-two"); break;
- //                case 3: $(row).addClass("day-three"); break;
- //            }
-	  	// }
-    });
-
-    ["latest", "extended", "overdue", "candidate"].forEach(function (data) { tableCSSifEmpty(data); });
-
-    isTableInitialized = true;
-    $("#loading").modal("hide");
+	function buildCandidateTable (data)
+	{
+		return $('#candidate').DataTable({
+	    	"data": data,
+			"columnDefs": [
+				{ className: "text-left", "targets": [ 0, 3 ] },
+		 		{ className: "text-right", "targets": [ 1, 2, 4 ] },
+		 		{ className: "text-center", "targets": [ 5 ] }
+			],
+			"columns": [
+	            {
+	            	data: "site", 
+	            	"render": function (data, type, full) {
+	            		return "<b>" + full.site.toUpperCase() + "</b>";
+	            	},
+	        		"name": 'site',
+	            },
+	            { 
+	            	"data": "data_timestamp",
+	            	"render": function (data, type, full) {
+	 					if( full.timestamp == null )	return "No new triggers";
+	            		else return moment(full.timestamp).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "data_timestamp"
+	        	},
+	            { 
+	            	"data": "latest_trigger_timestamp",
+	            	"render": function (data, type, full) {
+	 					if( full.latest_trigger_timestamp == "end" ) return "No new triggers";
+	 					else if( full.latest_trigger_timestamp == "manual" ) return "---";
+	            		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "latest_trigger_timestamp"
+	        	},
+	        	{ 
+	            	"data": "trigger",
+	            	"render": function (data, type, full) {
+	            		if( full.trigger == "No new triggers" ) return full.trigger;
+	            		else if( full.trigger == "manual" ) return "---";
+	            		return full.trigger.toUpperCase();
+	            	},
+	            	"name": "trigger",
+		        },
+	            { 
+	            	"data": "validity",
+	            	"render": function (data, type, full) {
+	            		if ( full.validity == "end" ) return "END OF VALIDITY"
+	            		else if ( full.validity == "manual" ) return "---";
+	            		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
+	            	},
+	            	"name": "validity"
+	        	},
+	        	{
+	        		"render": function (data, type, full) {
+	        			if(typeof full.isManual !== "undefined") return "<a><span class='glyphicon glyphicon-info-sign' title='Info'></span></a>";
+	            		else return "<a><span class='glyphicon glyphicon-ok' title='Approve'></span></a>&ensp;<a><span class='glyphicon glyphicon-remove' title='Dismiss'></span></a>";
+	            	}
+	        	}
+			],
+	    	"order" : [[3, "asc"]],
+	    	"processing": true,
+	    	"filter": false,
+	    	"info": false,
+	    	"paginate": false,
+	    	"autoWidth": false,
+	    	"language": 
+	    	{
+		        "emptyTable": "There are no current candidate triggers."
+		    },
+		   /* "rowCallback": function( row, data, index ) 
+		    {
+	            switch(data.day)
+	            {
+	            	case 1: $(row).addClass("day-one"); break;
+	                case 2: $(row).addClass("day-two"); break;
+	                case 3: $(row).addClass("day-three"); break;
+	            }
+		  	}*/
+	    });
+	}
+	
+	$("#loading").modal("hide");
 }
 
-function tableCSSifEmpty( table ) 
+function tableCSSifEmpty( table, data ) 
 {
 	if ($("#" + table).dataTable().fnSettings().aoData.length == 0)
     {
-    	if( table == "candidate" && candidate == null ) {
-    		reposition("#errorModal");
-		    $("#errorModal").modal("show");
+    	if( table == "candidate" && data == null ) {
+    		reposition("#errorProcessingModal");
+		    $("#errorProcessingModal").modal("show");
     	}
 
         $("#" + table + " .dataTables_empty").css({"font-size": "20px", "padding": "30px 15px 10px 15px", "width": "600px"})
     }
 }
 
-/********** END OF TABLE BUILDING **********/
-
-
 function reloadTable(table, data) {
 	table.clear();
     table.rows.add(data).draw();
 
-    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table); });
+    ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table, data); });
 }
+
+/********** END OF TABLE BUILDING **********/
 
 /*****************************************
  * 
@@ -648,17 +693,17 @@ function reloadTable(table, data) {
  * 
 ******************************************/
 
-function initialize_map() 
+function initialize_map(markers) 
 {
-		let latlng = new google.maps.LatLng(12.867031,121.766552);
+	let latlng = new google.maps.LatLng(12.867031,121.766552);
 
-		let mapOptions = {
+	let mapOptions = {
 		center: latlng,
 		zoom: 5
 	};
 
 	let map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-	let markerList = ongoing.markers;
+	let markerList = markers;
 
 	if ( markerList != null ) 
 	{
@@ -696,16 +741,14 @@ function initialize_map()
 
 function getRealtimeAlerts(data)
 {
-	let json = jQuery.extend(true, {}, data);	
-	if(typeof json.is_bad != 'undefined')
+	if(typeof data.is_bad != 'undefined')
 	{
-		console.log(json.is_bad);
+		console.log(data.is_bad);
 	}
 	else {
-		let cache = json.alert_json.pop();
-		ongoing = jQuery.extend(true, {}, json.ongoing);
+		let cache = jQuery.extend(true, {}, data);
 
-		if( realtime_cache.length == 0 || ( typeof realtime_cache.alerts !== 'undefined' && realtime_cache.alerts[0].timestamp !== cache.alerts[0].timestamp))
+		if( Object.keys(realtime_cache).length === 0 && realtime_cache.constructor === Object || typeof realtime_cache.alerts !== 'undefined' && realtime_cache.alerts[0].timestamp !== cache.alerts[0].timestamp ) 
 		{	
 			realtime_cache.no_alerts = cache.alerts.filter(function (x) {
 				return x.alert == "A0";
@@ -715,7 +758,6 @@ function getRealtimeAlerts(data)
 			realtime_cache.alerts = cache.alerts.filter(function (x) {
 				return x.alert != "A0";
 			});
-
 
 			realtime_cache.invalids = cache.invalids.slice(0);
 		}
@@ -734,29 +776,17 @@ function getOnGoingAndExtended(data) {
 		console.log(err);
 		candidate = null;
 	}
-
-	if(isTableInitialized) 
-	{
-		reloadTable(latest_table, ongoing.latest);
-		reloadTable(extended_table, ongoing.extended);
-		reloadTable(overdue_table, ongoing.overdue);
-		reloadTable(candidate_table, candidate);
-	}
-	else buildTable(ongoing.latest, ongoing.extended, ongoing.overdue, candidate);
-
-	// Update icon on dashboard if EWI and Bulletin already sent
-	ongoing.latest.forEach(function (x) {
-		checkIfAlreadySent(x.latest_release_id, x.event_id, x.data_timestamp);
-	});
-
-	initialize_map();
 }
 
 function checkCandidateTriggers(cache) {
-	let alerts = JSON.parse(JSON.stringify(cache.alerts));
-	let invalids = JSON.parse(JSON.stringify(cache.invalids));
-	let no_alerts = JSON.parse(JSON.stringify(cache.no_alerts));
-	let final = [];
+  
+	console.log(JSON.stringify(cache));
+	console.log(JSON.stringify(ongoing));
+
+	let alerts = cache.alerts,
+		invalids = cache.invalids,
+		no_alerts = cache.no_alerts,
+		final = [];
 
 	// Get all the latest and overdue releases on site
 	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
@@ -782,8 +812,6 @@ function checkCandidateTriggers(cache) {
 		let merged_arr_sites = merged_arr.map(x => x.name);
 		site_invalids.forEach(function (invalid)
 		{
-			//console.log("INVALID", invalid);
-
 			// Get alerts sources from the alerts array and invalids array
 			let invalid_source = invalid.source;
 			let alerts_source = alert.source.split(",");
@@ -795,7 +823,7 @@ function checkCandidateTriggers(cache) {
 						let temp = retriggers.map(x => x.retrigger).indexOf(trigger);
 						return temp;
 					};
-					
+
 					// Check if alert exists on database
 					// Mark isInvalid TRUE to prevent being pushed to final
 					// if alert is really invalid and has no active alert
@@ -871,7 +899,7 @@ function checkCandidateTriggers(cache) {
 					forUpdating = false; break;
 				}
 
-				if ( moment(merged_arr[i].trigger_timestamp).isSame(alert.latest_trigger_timestamp) )
+				if ( moment(merged_arr[i].trigger_timestamp).isSameOrAfter(alert.latest_trigger_timestamp) )
 				{
 					alert.latest_trigger_timestamp = "end";
 					alert.trigger = "No new triggers";

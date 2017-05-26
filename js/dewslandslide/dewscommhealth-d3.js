@@ -186,8 +186,8 @@ function showCommHealthPlotGeneral(curSite,div_ID)
 	var comm_url = "/test/commhealth/" + curSite ;
 		//console.log(comm_url);
 	
-		comm_cWidth = document.getElementById(div_ID).clientWidth;
-		comm_cHeight = document.getElementById(div_ID).clientHeight;
+		comm_cWidth = document.getElementById(div_ID).clientWidth-50;
+		comm_cHeight = document.getElementById(div_ID).clientHeight-50;
 
 	var comm_margin = {top: comm_cHeight * 0.001, right: comm_cWidth * 0.005, bottom: comm_cWidth * 0.05, left: comm_cHeight * 0.125},
 		comm_width = comm_cWidth - comm_margin.left - comm_margin.right,
