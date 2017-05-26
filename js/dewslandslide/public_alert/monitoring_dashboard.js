@@ -99,12 +99,11 @@ $(document).ready( function() {
 		let previous = null;
 
 		entry.rain_alert = row.rain_alert;
-		console.log(entry.rain_alert, row.internal_alert);
 		if( entry.rain_alert == "rx" )
 		{
 			let internal = row.internal_alert;
 			if( internal.indexOf("x") == -1 ) {
-				if( internal.indexOf("R") > -1 ) internal.replace(/R/g, "Rx");
+				if( internal.indexOf("R") > -1 ) internal = internal.replace(/R/g, "Rx");
 				else internal += "rx";
 				$("#internal_alert_level").val(internal);
 			}
