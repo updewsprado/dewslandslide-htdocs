@@ -99,7 +99,7 @@ $(document).ready( function() {
 		let previous = null;
 
 		entry.rain_alert = row.rain_alert;
-		console.log(entry.rain_alert, row.internal_alert, internal.indexOf("x") == -1 );
+		console.log(entry.rain_alert, row.internal_alert);
 		if( entry.rain_alert == "rx" )
 		{
 			let internal = row.internal_alert;
