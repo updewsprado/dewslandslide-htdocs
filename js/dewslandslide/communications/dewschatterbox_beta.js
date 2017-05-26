@@ -967,7 +967,7 @@ $(document).ready(function() {
 						}
 					}
 
-			        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+					if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_template = "";
 
@@ -981,12 +981,12 @@ $(document).ready(function() {
 								});
 							}
 
-		                    var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-
+							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+							if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							narrative_recipients = [];
 						} 
-			        }
+					}
 
 					if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 						var narrative_details = {
@@ -1044,6 +1044,7 @@ $(document).ready(function() {
 									});
 								}
 							});
+
 						});
 					} 
 				});
@@ -1160,10 +1161,10 @@ $(document).ready(function() {
 }
 
 	function getOngoingEvents(sites){
-		$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
-			var events = JSON.parse(data);
-			console.log(events);
-			$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
+	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
+		var events = JSON.parse(data);
+		console.log(events);
+		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 			.done(function(response) {
 				siteids = JSON.parse(response);
 				for (var counter = 0; counter < events.length; counter++) {
@@ -1179,7 +1180,7 @@ $(document).ready(function() {
 									tagOffices.push(this.value);
 								});
 
-						        if (narrative_recipients.length > 0 || tagOffices.length > 0) {
+								if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 									if (narrative_recipients.length > 0) {
 										narrative_recipients.forEach(function(x) {
 											narrative_template = narrative_template+","+x;
@@ -1190,9 +1191,9 @@ $(document).ready(function() {
 										});
 									}
 									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
+									if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-						        }
+								}
 							} else {
 								$.notify("Invalid request, please try again.","warning");
 							}
@@ -1202,7 +1203,7 @@ $(document).ready(function() {
 								'ewi_sms_timestamp': gintags_msg_details[2],
 								'narrative_template': narrative_template
 							}
-							console.log(narrative_details);
+
 							$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 							.done(function(response) {
 								var start = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -1244,7 +1245,6 @@ $(document).ready(function() {
 									}
 								});
 							});
-
 						}
 					}
 				}
