@@ -101,7 +101,7 @@ $(document).ready( function() {
 		entry.rain_alert = row.rain_alert;
 		if( entry.rain_alert == "rx" )
 		{
-			let internal = row.internal_alert_level;
+			let internal = row.internal_alert;
 			if( internal.indexOf("x") == -1 ) {
 				if( internal.indexOf("R") > -1 ) internal.replace(/R/g, "Rx");
 				else internal += "rx";
