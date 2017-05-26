@@ -79,7 +79,9 @@ function sendViaAlertMonitor(dashboard_data){
 		data: {trigger_type:alertTrigger},
 		success: function(data) {
 			console.log(data);
-			var techInfo = JSON.parse(data);
+			if (data != null) {
+				var techInfo = JSON.parse(data);
+			}
 			$.ajax({
 				type: "POST",
 				url: "../communications/getbackboneviastatus",
@@ -98,15 +100,59 @@ function sendViaAlertMonitor(dashboard_data){
 						data: {recommended_response: alertLevel},
 						success: function(data) {
 							var recommendedResponse = JSON.parse(data);
+
+							console.log(recommendedResponse);
+							console.log(dashboard_data);
+							console.log(backboneMessage);
+
 							var template = "";
 							var level;
 							if (recommendedResponse[0].alert_symbol_level.match(/\d+/g)) {
 								level = recommendedResponse[0].alert_symbol_level[recommendedResponse[0].alert_symbol_level.length-1];
 							}
 
+							// Event Status check A1 - A3
 							for (var counter = 0;counter < backboneMessage.length; counter++) {
 								if (backboneMessage[counter].alert_status.indexOf(level) == -1 && level == 3) { // Leave the "3" for the meantime. still looking for a better logic for this.
 									template = backboneMessage[counter].template;
+								} else {
+									template = backboneMessage[counter].template;
+									break;
+								}
+							}
+
+							// Routing, Extended, Lowering check A0
+							for (var counter = 0;counter < backboneMessage.length;counter++) {
+								if (backboneMessage[counter].alert_status.toLowerCase() == dashboard_data.status) {
+									template = backboneMessage[counter].template;
+									switch(dashboard_data.day) {
+									    case 0:
+									        template = template.replace('(nth-day-extended)','3');
+									        break;
+									    case 1:
+									        template = template.replace('(nth-day-extended)','1st');
+									        break;
+									    case 2:
+									        template = template.replace('(nth-day-extended)','2nd');
+									        break;
+									    case 3:
+									        template = template.replace('(nth-day-extended)','3rd');
+									        break;
+									}
+								}
+							}
+
+							var d = new Date();
+							var current_meridiem = d.getHours();
+
+							if (current_meridiem >= 13 && current_meridiem <= 18) {
+								template = template.replace("(greetings)","hapon");
+							} else if (current_meridiem >= 18 && current_meridiem <=23) {
+								template = template.replace("(greetings)","gabi");
+							} else if (current_meridiem >= 0 && current_meridiem <= 3) {
+								template = template.replace("(greetings)","gabi");
+							} else if (current_meridiem >= 4 && current_meridiem <= 11) {
+								template = template.replace("(greetings)","umaga");
 							} else {
 								template = backboneMessage[counter].template;
 								break;
