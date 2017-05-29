@@ -47,22 +47,79 @@ $(document).ready(function() {
 function loadAnalytics(data) {
 	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data)}).done(function(data){
 		var response = JSON.parse(data);
-
-		debugger;
 		var data_set = [];
 		var total_population = 0;
+		var tag_details = [];
+
+		for (var counter =0; counter < response.length; counter++) {
+			var pop_count = Object.values(response[counter])[counter].length;
+			total_population = total_population+pop_count;
+		}
+
 		for (var counter = 0; counter < response.length; counter++) {
 			var name = Object.keys(response[counter]);
-			var tags_count = Object.values(response[counter])[0].length;
-			temp = name[0];
+			var tags_count = Object.values(response[counter])[counter].length;
+			temp = name[counter];
 			var piece = {
 				'name': temp,
-				'y': tags_count
+				'y': (tags_count/total_population)*100,
+				'count': tags_count
 			}
-			total_population = total_population+tags_count;
+
+			var tag_raw = {
+				'tag_name': temp,
+				'count': tags_count
+			}
+
+			tag_details.push(tag_raw);
 			data_set.push(piece);
 		}
-		console.log(total_population);
-		console.log(data_set);
+
+		$('#analytics-container').append("<h5>Total tag count : <b>"+total_population+"</b></h5>");
+
+		var title_details = {
+			'start_date': $('#start_date').val(),
+			'end_date': $('#end_date').val(),
+			'tags': $('#gintags').val()
+		}
+
+		Highcharts.chart('chart-container', {
+		    chart: {
+		        plotBackgroundColor: null,
+		        plotBorderWidth: null,
+		        plotShadow: false,
+		        type: 'pie'
+		    },
+		    title: {
+		        text: generateChartTitle(title_details)
+		    },
+		    tooltip: {
+		        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>'+
+		        				'Tag count: <b>{point.count}</b>'
+		    },
+		    plotOptions: {
+		        pie: {
+		            allowPointSelect: true,
+		            cursor: 'pointer',
+		            dataLabels: {
+		                enabled: true,
+		                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+		                style: {
+		                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+		                }
+		            }
+		        }
+		    },
+		    series: [{
+		        name: 'Tags',
+		        colorByPoint: true,
+		        data: data_set
+		    }]
+		});
 	});
+}
+
+function generateChartTitle(title_details) {
+	var construct_title = "Difference of "+title_details.tags+" from "+title_details.start_date+" to "+title_details.end_date;
+	return construct_title;
 }
