@@ -40,6 +40,15 @@ $(document).ready(function() {
 		loadAnalytics(data);
 		$('#page-wrapper .container').switchClass('container','container-fluid',1000,'easeInOutQuad');
 		$('#table-rows').switchClass('col-md-12','col-md-7');
+		if ($('#analytics-section').is(':visible')) {
+			$('#chart-container').css('width','100%');
+			$('#chart-container').css('height','100%');
+			$('#chart-container').css('margin','0px');
+		} else {
+			$('#chart-container').css('width','35%');
+			$('#chart-container').css('height','45%');
+			$('#chart-container').css('margin','0px');
+		}
 		$('#analytics-section').show(500);
 	});
 });
@@ -74,7 +83,7 @@ function loadAnalytics(data) {
 			tag_details.push(tag_raw);
 			data_set.push(piece);
 		}
-
+		$('#analytics-container').empty();
 		$('#analytics-container').append("<h5>Total tag count : <b>"+total_population+"</b></h5>");
 
 		var title_details = {
@@ -120,6 +129,6 @@ function loadAnalytics(data) {
 }
 
 function generateChartTitle(title_details) {
-	var construct_title = "Difference of "+title_details.tags+" from "+title_details.start_date+" to "+title_details.end_date;
+	var construct_title = title_details.tags+" tag as of "+title_details.start_date+" to "+title_details.end_date;
 	return construct_title;
 }
