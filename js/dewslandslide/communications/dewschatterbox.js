@@ -101,11 +101,6 @@ function sendViaAlertMonitor(dashboard_data){
 						data: {recommended_response: alertLevel},
 						success: function(data) {
 							var recommendedResponse = JSON.parse(data);
-
-							console.log(recommendedResponse);
-							console.log(dashboard_data);
-							console.log(backboneMessage);
-
 							var template = "";
 							var level;
 							if (recommendedResponse[0].alert_symbol_level.match(/\d+/g)) {
@@ -143,9 +138,9 @@ function sendViaAlertMonitor(dashboard_data){
 								}
 							}
 
-							var d = new Date();
-							var current_meridiem = d.getHours();
-
+ 							var d = new Date();
+  							var current_meridiem = d.getHours();
+  							
 							if (current_meridiem >= 13 && current_meridiem <= 18) {
 								template = template.replace("(greetings)","hapon");
 							} else if (current_meridiem >= 18 && current_meridiem <=23) {
