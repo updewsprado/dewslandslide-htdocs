@@ -1890,6 +1890,35 @@ $(document).on("click","#quick-inbox-unknown-display li",function(){
 	quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 });
 
+$(document).on("click","#quick-release-display li",function(){
+	counters = 0;
+	convoFlagger = false;
+	groupTags = [];
+
+	user = "You";
+
+	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+
+	var tagSitenames = [];
+	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
+	$('input[name="opt-ewi-recipients"]').prop('checked',true);
+
+	groupTags = {
+		'type': 'smsloadrequestgroup',
+		'offices': tagOffices,
+		'sitenames': tagSitenames
+	};
+	displayGroupTagsForThread();
+
+	$('#user').val('You');
+	$('#messages').html('');
+	messages = [];
+	contactInfo = "groups";
+	conn.send(JSON.stringify(groupTags));
+	$('#loading').modal('show');
+	$('#main-container').removeClass('hidden');
+});
+
 function quickInboxStartChat(fullContact=null) {
 
 	if (fullContact == null) {
