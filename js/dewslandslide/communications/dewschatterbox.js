@@ -93,6 +93,7 @@ function sendViaAlertMonitor(dashboard_data){
 					if (alertLevel.length == 2 && alertLevel.indexOf("A") != -1) {
 						alertLevel = alertLevel.replace("A","Alert ");
 					}
+
 					$.ajax({
 						type: "POST",
 						url: "../communications/getrecommendedresponse",
@@ -287,7 +288,6 @@ function sendViaAlertMonitor(dashboard_data){
 
 	// 		}
 
-
 	// 		if (data['status'] == 'extended') {
 	// 			switch(data['day']) {
 	// 				case 1:
@@ -426,6 +426,7 @@ function sendViaAlertMonitor(dashboard_data){
 	// 		$('#ewi-asap-modal').modal('toggle');
 	// 	}
 	// });
+// }
 
 $(document).ready(function() {
 
