@@ -53,6 +53,10 @@ $(document).ready(function() {
 	});
 });
 
+function isFieldEmpty() {
+	
+}
+
 function loadAnalytics(data) {
 	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data)}).done(function(data){
 		var response = JSON.parse(data);

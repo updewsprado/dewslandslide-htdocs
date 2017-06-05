@@ -1044,7 +1044,6 @@ $(document).ready(function() {
 									});
 								}
 							});
-
 						});
 					} 
 				});
@@ -1393,6 +1392,7 @@ function displayContactNamesForThread (source="normal") {
 		}
 	}
 	$("#convo-header .panel-heading").text(tempText);
+	$("#convo-header .panel-body").text(contactInfo[0].numbers);
 	document.title = tempText;
 }
 

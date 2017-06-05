@@ -17,6 +17,7 @@
 
 .division {
 	height: 100%;
+  margin-top: 5px;
 }
 
 #convo-header div{
@@ -265,10 +266,20 @@ p {
 	padding: 10px 15px 0px 15px;
 }
 
+#send-char-remain {
+  display: block;
+}
+
 textarea {
   font-style: italic;
 }
 
 #modal-select-recipients {
     padding-left: 15px;
+}
+
+@media screen and (max-width: 480px) {
+    #send-char-remain {
+        display: -webkit-inline-box;
+    }
 }
