@@ -1731,10 +1731,12 @@ function PiezoOnSelect() {
 }
 
 function allSensorPosition(site,fdate,tdate) {
+	console.log("/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate)
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
 			SubOnSelectDay(site,tdate)
+			console.log(data)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
