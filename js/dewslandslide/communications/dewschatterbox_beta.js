@@ -111,18 +111,14 @@ function sendViaAlertMonitor(data){
 							if (recommendedResponse[0].alert_symbol_level.match(/\d+/g)) {
 								level = recommendedResponse[0].alert_symbol_level[recommendedResponse[0].alert_symbol_level.length-1];
 							}
-
-							// Event Status check A1 - A3
 							for (var counter = 0;counter < backboneMessage.length; counter++) {
-								if (backboneMessage[counter].alert_status.indexOf(level) == -1 && level == 3) { // Leave the "3" for the meantime. still looking for a better logic for this.
+								if (backboneMessage[counter].alert_status.indexOf(level) == -1 && level == 3) {
 									template = backboneMessage[counter].template;
 								} else {
 									template = backboneMessage[counter].template;
 									break;
 								}
 							}
-
-							// Routing, Extended, Lowering check A0
 							for (var counter = 0;counter < backboneMessage.length;counter++) {
 								if (backboneMessage[counter].alert_status.toLowerCase() == dashboard_data.status) {
 									template = backboneMessage[counter].template;
@@ -546,7 +542,6 @@ $(document).ready(function() {
 			$('#quick-release-display').html(quick_release_html);
 			$('#quick-release-display').scrollTop(0);
 		} catch(err) {
-			// Do nothing for now.
 		}
 	}
 
@@ -693,22 +688,6 @@ $(document).ready(function() {
 		console.log("Loading Old Messages");
 	}
 
-	// $(window).scroll(function(){
-	// 	var scroll = $(window).scrollTop();
-	// 	if ($(document).height() > $(window).height()) {
-	// 		if (scroll == 0 && convoFlagger == false){
-	// 			console.log(msgType);
-	// 			if (msgType == "smsload") {
-	// 				getOldMessage();
-	// 			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
-	// 				getOldMessageGroup();
-	// 			} else {
-	// 				console.log("Invalid Request/End of the Conversation");
-	// 			}
-	// 		}
-	// 	}
-	// });
-
 	function getOldMessage(){
 		if (lastMessageTimeStampYou == "") {
 			lastMessageTimeStampYou = tempTimestampYou;
@@ -832,7 +811,6 @@ $(document).ready(function() {
 	}
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		//Base url and Ws indicator.
 		if (window.location.host == "www.dewslandslide.com") {
 			$('#testing-site-indicator').hide();
 		} else {
@@ -946,7 +924,7 @@ $(document).ready(function() {
 							'tagger': tagger_user_id,
 							'table_element_id': msg["data"][i][0],
 							'table_used': "smsoutbox",
-						'remarks': "" // Leave it blank for now
+						'remarks': ""
 					}
 					gintags_collection.push(gintags)
 				}
@@ -1267,7 +1245,6 @@ function waitForSocketConnection() {
 						delayReconn += 1000;
 					}
 				}
-
 			}, delayReconn);
 	}
 }
@@ -1321,7 +1298,6 @@ function getNameSuggestions (nameQuery) {
 };
 
 function parseContactInfo (multipleContactInfo) {
-
 	parseSingleContactInfo(multipleContactInfo);
 }
 
@@ -2386,9 +2362,6 @@ function reset_cc() {
 	$('#other-officename').hide();
 	$('#other-sitename').hide();
 }
-
-
-// Change implementation for EWI generation.
 $('#btn-ewi').on('click',function(){
 	$('#alert-lvl').empty();
 	$('#sites').empty();
@@ -2691,43 +2664,9 @@ $('#btn-advanced-search').click(function(){
 var isFirstAdvancedSearchActivation = false;
 
 function disableCommands(){
-	// $('#go-chat').attr("class","btn btn-xs btn-danger disabled");
-	// $('#go-chat').attr("data-toggle","tooltip");
-	// $('#go-chat').css("text-decoration","line-through");
-	// $('#go-chat').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-
-	// $('#go-load-groups').attr("class","btn btn-danger disabled");
-	// $('#go-load-groups').css("text-decoration","line-through");
-	// $('#load-groups-wrapper').attr("data-toggle","tooltip");
-	// $('#load-groups-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-
-	// $('#send-msg').attr("class","btn btn-danger no-rounded disabled");
-	// $('#send-msg').css("text-decoration","line-through");
-	// $('#sms-msg-wrapper').attr("data-toggle","tooltip");
-	// $('#sms-msg-wrapper').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-
-	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm disabled");
-	// $('#btn-gbl-search').attr("data-toggle","tooltip");
-	// $('#btn-gbl-search').attr("data-original-title","Chatterbox disconnected, waiting to reconnect..");
-	// $('#btn-gbl-search').css("color","coral");
 }
 
 function enableCommands(){
-	// $('#go-chat').attr("class","btn btn-xs btn-primary");
-	// $('#go-chat').css("text-decoration","none");
-	// $('#go-chat').attr("data-original-title","");
-
-	// $('#go-load-groups').attr("class","btn btn-success");
-	// $('#go-load-groups').css("text-decoration","none");
-	// $('#load-groups-wrapper').attr("data-original-title","");
-
-	// $('#send-msg').attr("class","btn btn-success no-rounded");
-	// $('#send-msg').css("text-decoration","none");
-	// $('#sms-msg-wrapper').attr("data-original-title","");
-
-	// $('#btn-gbl-search').attr("class","btn btn-link btn-sm");
-	// $('#btn-gbl-search').attr("data-original-title","Search Message");
-	// $('#btn-gbl-search').css("color","");
 }
 
 function getOfficesAndSitenames () {
@@ -2743,7 +2682,6 @@ function getOfficesAndSitenames () {
 		var msg = {
 			'type': 'smsloadquickinboxrequest'
 		};
-		// $('#loading').modal('show');
 		conn.send(JSON.stringify(msg));
 	}
 
@@ -3328,7 +3266,7 @@ function getOfficesAndSitenames () {
 						'tagger': tagger_user_id,
 						'table_element_id': data.data[5],
 						'table_used': data.data[6],
-						'remarks': "" // Leave it blank for now.
+						'remarks': ""
 					}
 					gintags_collection.push(gintags);
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
@@ -3435,7 +3373,7 @@ function getOfficesAndSitenames () {
 								'tagger': tagger_user_id,
 								'table_element_id': data[5],
 								'table_used': data[6],
-								'remarks': "" // Leave it blank for now.
+								'remarks': ""
 							}
 							gintags_collection.push(gintags);
 							$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
@@ -3457,7 +3395,7 @@ function getOfficesAndSitenames () {
 							'tagger': tagger_user_id,
 							'table_element_id': data[5],
 							'table_used': data[6],
-							'remarks': "" // Leave it blank for now.
+							'remarks': ""
 						}
 						gintags_collection.push(gintags);
 						$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
@@ -3479,7 +3417,7 @@ function getOfficesAndSitenames () {
 					'tagger': tagger_user_id,	
 					'table_element_id': data[5],
 					'table_used': data[6],
-					'remarks': "" //Leave it blank for now.
+					'remarks': ""
 				}
 				gintags_collection.push(gintags);
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
@@ -3518,7 +3456,7 @@ function getOfficesAndSitenames () {
 									'tagger': tagger_user_id,
 									'table_element_id': data[x][y].sms_id,					
 									'table_used': "smsoutbox",
-									'remarks': "" // Leave it blank for now
+									'remarks': ""
 								}
 								gintags_collection.push(gintags);
 							}
