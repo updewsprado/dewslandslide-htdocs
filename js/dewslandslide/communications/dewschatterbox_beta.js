@@ -292,6 +292,10 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 
+	if (window.location.host != "www.dewslandslide.com") {
+		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
+	}
+
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
 
@@ -811,12 +815,6 @@ $(document).ready(function() {
 	}
 	function connectWS() {
 		console.log("trying to connect to web socket server");
-		if (window.location.host == "www.dewslandslide.com") {
-			$('#testing-site-indicator').hide();
-		} else {
-			$('#testing-site-indicator span').html("TEST SITE: "+window.location.host);
-			$('#testing-site-indicator').show();
-		}
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
