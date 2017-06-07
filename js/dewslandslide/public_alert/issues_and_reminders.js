@@ -55,8 +55,8 @@ function getNormalAndLockedIssues(data) {
                 if( active_table == null )
                     onLoadIssuesPage();
                 else {
-                    reloadTable(active_table);
-                    reloadTable(archived_table);
+                    reloadIssuesTable(active_table);
+                    reloadIssuesTable(archived_table);
                 }
             }
         });
@@ -703,7 +703,7 @@ function loadTables()
     });
 }
 
-function reloadTable(table) {
+function reloadIssuesTable(table) {
     table.ajax.reload();
 }
 
