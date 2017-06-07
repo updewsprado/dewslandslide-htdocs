@@ -25,4 +25,135 @@ $(document).ready(function() {
 		        ]
 	    });
 	});
+
+	$('#start_date,#end_date').datetimepicker({
+	    locale: 'en',
+	    format: 'YYYY-MM-DD'
+	});
+
+	$('#go_search').on('click',function(){
+		var data = {
+			'start_date': $('#start_date').val(),
+			'end_date': $('#end_date').val(),
+			'gintags': $('#gintags').val()
+		}
+		loadAnalytics(data);
+		$('#page-wrapper .container').switchClass('container','container-fluid',1000,'easeInOutQuad');
+		$('#table-rows').switchClass('col-md-12','col-md-7');
+		if ($('#analytics-section').is(':visible')) {
+			$('#chart-container').css('width','100%');
+			$('#chart-container').css('height','100%');
+			$('#chart-container').css('margin','0px');
+		} else {
+			$('#chart-container').css('width','35%');
+			$('#chart-container').css('height','45%');
+			$('#chart-container').css('margin','0px');
+		}
+		$('#analytics-section').show(500);
+	});
+
+	$('#gintags').tagsinput({
+		typeahead: {
+			displayKey: 'text',
+			source: function (query) {
+				var tagname_collection = [];
+				$.ajax({
+					url : "../../../gintagshelper/getAllGinTags",
+					type : "GET",
+					async: false,
+					success : function(data) {
+						var data = JSON.parse(data);
+						for (var counter = 0; counter < data.length; counter ++) {
+							tagname_collection.push(data[counter].tag_name);
+						}
+					}
+				});
+				return tagname_collection;
+			}
+		} 
+	});
 });
+
+function isFieldEmpty() {
+	
+}
+
+function loadAnalytics(data) {
+	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data)}).done(function(data){
+		var response = JSON.parse(data);
+		var data_set = [];
+		var total_population = 0;
+		var tag_details = [];
+
+		for (var counter =0; counter < response.length; counter++) {
+			var pop_count = Object.values(response[counter])[counter].length;
+			total_population = total_population+pop_count;
+		}
+
+		for (var counter = 0; counter < response.length; counter++) {
+			var name = Object.keys(response[counter]);
+			var tags_count = Object.values(response[counter])[counter].length;
+			temp = name[counter];
+			var piece = {
+				'name': temp,
+				'y': (tags_count/total_population)*100,
+				'count': tags_count
+			}
+
+			var tag_raw = {
+				'tag_name': temp,
+				'count': tags_count
+			}
+
+			tag_details.push(tag_raw);
+			data_set.push(piece);
+		}
+		$('#analytics-container').empty();
+		$('#analytics-container').append("<h5>Total tag count : <b>"+total_population+"</b></h5>");
+
+		var title_details = {
+			'start_date': $('#start_date').val(),
+			'end_date': $('#end_date').val(),
+			'tags': $('#gintags').val()
+		}
+
+		Highcharts.chart('chart-container', {
+		    chart: {
+		        plotBackgroundColor: null,
+		        plotBorderWidth: null,
+		        plotShadow: false,
+		        type: 'pie'
+		    },
+		    title: {
+		        text: generateChartTitle(title_details)
+		    },
+		    tooltip: {
+		        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>'+
+		        				'Tag count: <b>{point.count}</b>'
+		    },
+		    plotOptions: {
+		        pie: {
+		            allowPointSelect: true,
+		            cursor: 'pointer',
+		            dataLabels: {
+		                enabled: true,
+		                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+		                style: {
+		                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+		                }
+		            }
+		        }
+		    },
+		    series: [{
+		        name: 'Tags',
+		        colorByPoint: true,
+		        data: data_set
+		    }]
+		});
+	});
+}
+
+function generateChartTitle(title_details) {
+	var construct_title = title_details.tags+" tag as of "+title_details.start_date+" to "+title_details.end_date;
+	return construct_title;
+}

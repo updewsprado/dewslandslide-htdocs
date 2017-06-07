@@ -116,7 +116,7 @@ $(document).ready(function () {
 		let d3_svg = $("#d3_container")[0].innerHTML;
 		let charts = [ chart1.getSVG(), chart2.getSVG(), d3_svg ];
 		//let charts = [ d3_svg ];
-		//console.log(d3_svg);
+		console.log(charts);
 		
 		$.post("/../chart_export/renderChart", { charts : charts } )
 		.done(function (data) {
