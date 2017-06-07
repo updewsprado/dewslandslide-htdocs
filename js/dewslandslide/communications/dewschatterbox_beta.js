@@ -291,6 +291,7 @@ $(document).ready(function() {
 	var temp_msg_holder = "";
 	var socket = "";
 	var narrative_recipients = [];
+	var tag_indicator = "";
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -846,6 +847,7 @@ $(document).ready(function() {
 
 		tempConn.onmessage = function(e) {
 			$('#loading').modal('hide');
+			console.log(e);
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
@@ -1146,9 +1148,14 @@ function getOngoingEvents(sites){
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
 						var narrative_template = "";
-						if (gintags_msg_details.tags === "#EwiResponse") {
-							narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-						} else if (gintags_msg_details.tags === "#EwiMessage"){
+						console.log(gintags_msg_details);
+						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeasReminderAck") {
+							if (gintags_msg_details.tags === "#EwiResponse") {
+								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+							} else {
+								narrative_template = "Ground measurement reminder acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+							}
+						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
 
 							var tagOffices = [];
 							$('input[name="offices"]:checked').each(function() {
@@ -1165,9 +1172,13 @@ function getOngoingEvents(sites){
 										narrative_template = narrative_template+","+x;
 									});
 								}
-								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
-								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+								if (gintags_msg_details.tags === "#EwiMessage") {
+									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
+									if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
+									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
+								} else {
+									narrative_template = "Sent Ground measurement reminder";
+								}
 							}
 						} else {
 							$.notify("Invalid request, please try again.","warning");
@@ -1181,6 +1192,7 @@ function getOngoingEvents(sites){
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
+							console.log("GO HERE!!");
 							var start = moment().format('YYYY-MM-DD HH:mm:ss');
 							var rounded_release;
 							var last_rounded_release;
@@ -3108,16 +3120,16 @@ $(document).on("click","#messages li",function(){
 
 $('#gintags').on('beforeItemAdd', function(event) {
 	if (gintags_msg_details[1] === "You") {
-		if (event.item === "#EwiResponse") {
+		if (event.item === "#EwiResponse" || event.item === "#GroundMeasReminderAck") {
 			console.log("Cannot add EwiResponse Tag for this message");
 			event.cancel = true;
-			$.notify("You cannot tag #EwiResponse if you are the sender","error");
+			$.notify("You cannot tag "+event.item+" if you are the sender","error");
 		}
 	} else {
-		if (event.item === "#EwiMessage") {
+		if (event.item === "#EwiMessage" || event.item === "#GroundMeasReminder") {
 			console.log("Cannot add EwiMessage Tag for this message");
 			event.cancel = true;
-			$.notify("You cannot tag #EwiMessage if you are the recipient","error");
+			$.notify("You cannot tag "+event.item+" if you are the recipient","error");
 		}
 	}
 });
@@ -3241,19 +3253,20 @@ $("#confirm-narrative").on('click',function(){
 	$('input[name="sitenames"]:checked').each(function() {
 		tagSitenames.push(this.value);
 	});
-
-	gintags_msg_details.tags = tags[0];
-	if (data.tags === "#EwiMessage") {
+	gintags_msg_details.tags = data.tags;
+	console.log(data.tags);
+	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
 		getGintagGroupContacts(data);
-		for (var counter = 0; counter < tags.length;counter++) {
-			if (tags[counter] === "#EwiMessage") {
+		console.log(tags);
+		for (var counter = 0; counter < tags.length; counter++) {
+			if (tags[counter] == "#EwiMessage" || tags[counter] == "#GroundMeasReminder") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
 					getOngoingEvents(tagSitenames[tag_counter]);
 				}
 				break;
 			}
 		}
-	} else if (data.tags === "#EwiResponse") {
+	} else if (data.tags == "#EwiResponse" || data.tags == "#GroundMeasReminderAck") {
 		if (tags[1] != "") {
 			for (var i = 0; i < tags.length;i++) {
 				gintags_collection = [];
@@ -3275,7 +3288,7 @@ $("#confirm-narrative").on('click',function(){
 			}
 		}
 		for (var counter = 0; counter < tags.length;counter++) {
-			if (tags[counter] === "#EwiResponse") {
+			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeasReminderAck") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
 					getOngoingEvents(tagSitenames[tag_counter]);
 				}
@@ -3288,7 +3301,7 @@ $("#confirm-narrative").on('click',function(){
 });
 
 function displayNarrativeConfirmation(gintag_details){
-	if (gintag_details.data[1] === "You") {
+	if (gintag_details.data[1] == "You") {
 		var summary = "";
 		var office = "Office(s): ";
 		var site = "Site(s): ";
@@ -3301,13 +3314,15 @@ function displayNarrativeConfirmation(gintag_details){
 		}
 
 		summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
-		$('#save-narrative-content p').text("Saving an #EwiMessage tagged message will be permanently save to narratives.");
+		console.log(gintag_details.data);
+		$('#save-narrative-content p').text("Saving an "+tag_indicator+" tagged message will be saved to narratives.");
 		$('#ewi-tagged-msg').val(summary);
 	} else {
 		var summary = "";
 		var sender = "Sender(s): "+gintag_details.data[1];
 		summary = sender+"\n\n"+gintag_details.data[4];
-		$('#save-narrative-content p').text("Saving an #EwiResponse tagged message will be permanently save to narratives.");
+		console.log(gintag_details.data);
+		$('#save-narrative-content p').text("Saving an "+tag_indicator+" tagged message will be saved to narratives.");
 		$('#ewi-tagged-msg').val(summary);
 	}
 	$('#save-narrative-modal').modal('toggle');
@@ -3328,6 +3343,7 @@ function insertGintagService(data){
 	$('input[name="sitenames"]:checked').each(function() {
 		tagSitenames.push(this.value);
 	});
+
 	if (tagOffices.length != 0 && tagSitenames.length != 0) {
 		if (data[1] == "You") {
 			var gintag_details = {
@@ -3336,14 +3352,19 @@ function insertGintagService(data){
 				"data": data,
 				"cmd": "insert"
 			};
+			if ($.inArray("#EwiMessage",tags) != -1) {
+				tag_indicator = "#EwiMessage";
+			} else if ($.inArray('#GroundMeasReminder',tags) != -1) {
+				tag_indicator = "#GroundMeasReminder";
+			}
 
-			if ($.inArray("#EwiMessage", tags) != -1) {
+			if ($.inArray("#EwiMessage", tags) != -1 || $.inArray('#GroundMeasReminder',tags) != -1) {
 				var tags = $('#gintags').val();
 				tags = tags.split(',');
-				tags.splice($.inArray("#EwiMessage", tags),1);
+				tags.splice($.inArray(tag_indicator, tags),1);
 				$('#gintags').val(tags);
 				getGintagGroupContacts(gintag_details);
-				gintag_details.tags = "#EwiMessage";
+				gintag_details.tags = tag_indicator;
 				$("#gintag_details_container").val(JSON.stringify(gintag_details));
 				displayNarrativeConfirmation(gintag_details);
 			} else {
@@ -3351,16 +3372,22 @@ function insertGintagService(data){
 			}
 
 		} else {
-			if ($.inArray("#EwiResponse",tags) != -1) {
+			if ($.inArray("#EwiResponse",tags) != -1 || $.inArray('#GroundMeasReminderAck',tags) != -1) {
 				var gintag_details = {
 					"data": data,
 					"cmd": "insert"
 				};
+			
+				if ($.inArray("#EwiResponse",tags) != -1) {
+					tag_indicator = "#EwiResponse"
+				} else if ($.inArray('#GroundMeasReminderAck',tags) != -1) {
+					tag_indicator = "#GroundMeasReminderAck";
+				}
 				var tags = $('#gintags').val();
 				tags = tags.split(',');
-				tags.splice($.inArray("#EwiResponse", tags),1);
+				tags.splice($.inArray(tag_indicator, tags),1);
 				$('#gintags').val(tags);
-				gintag_details.tags = "#EwiResponse";
+				gintag_details.tags = tag_indicator;
 				if (tags[1] != "") {
 					for (var i = 0; i < tags.length;i++) {
 						gintags_collection = [];
