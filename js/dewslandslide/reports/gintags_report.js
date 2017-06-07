@@ -51,6 +51,27 @@ $(document).ready(function() {
 		}
 		$('#analytics-section').show(500);
 	});
+
+	$('#gintags').tagsinput({
+		typeahead: {
+			displayKey: 'text',
+			source: function (query) {
+				var tagname_collection = [];
+				$.ajax({
+					url : "../../../gintagshelper/getAllGinTags",
+					type : "GET",
+					async: false,
+					success : function(data) {
+						var data = JSON.parse(data);
+						for (var counter = 0; counter < data.length; counter ++) {
+							tagname_collection.push(data[counter].tag_name);
+						}
+					}
+				});
+				return tagname_collection;
+			}
+		} 
+	});
 });
 
 function isFieldEmpty() {
