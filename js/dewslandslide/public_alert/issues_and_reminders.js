@@ -11,6 +11,9 @@ let iarListCache = [];
 let iarArchived = {};
 let iarArchivedCache = [];
 let current_iar_id = null;
+let active_table = null;
+let archived_table = null;
+
 
 function getNormalAndLockedIssues(data) {
 
@@ -46,12 +49,15 @@ function getNormalAndLockedIssues(data) {
             if(!isPage) {
                     $("#issuesAndRemindersModal").modal("show");
                     onLoadIssuesModal();
-            } else {
-                $.get("/../issues_and_reminders/panel_div", {normal: normal, locked: locked, archived: data.archived})
-                .done(function (data) {
-                    $("#issues_and_reminders_panels").html(data);
+            } 
+            else {
+
+                if( active_table == null )
                     onLoadIssuesPage();
-                });
+                else {
+                    reloadTable(active_table);
+                    reloadTable(archived_table);
+                }
             }
         });
     }
@@ -193,10 +199,27 @@ function onLoadIssuesModal() {
     $(".submit-buttons").click(function () {
         let button_id = $(this).attr("id");
         let action = "";
+
+        $("#resolution-div").hide();
+        $("#resolution").val("");
+
         switch(button_id) {
-            case "add-issue-modal": action = "add"; $("#archive-issue, #edit-issue").css("display", "none"); $("#add-issue").css("display", "inline block"); break;
-            case "edit-issue-modal": action = "submit an edit to"; $("#add-issue, #archive-issue").css("display", "none"); $("#edit-issue").css("display", "inline block"); break;
-            case "archive-issue-modal": action = "archive"; $("#edit-issue, #add-issue").css("display", "none"); $("#archive-issue").css("display", "inline block"); break;
+            case "add-issue-modal": 
+                action = "add"; 
+                $("#archive-issue, #edit-issue").css("display", "none"); 
+                $("#add-issue").css("display", "inline block");
+                break;
+            case "edit-issue-modal": 
+                action = "submit an edit to"; 
+                $("#add-issue, #archive-issue").css("display", "none"); 
+                $("#edit-issue").css("display", "inline block"); 
+                break;
+            case "archive-issue-modal": 
+                action = "archive"; 
+                $("#edit-issue, #add-issue").css("display", "none"); 
+                $("#archive-issue").css("display", "inline block"); 
+                $("#resolution-div").show();
+                break;
         }
         $("#iarConfirmModal #action").text(action);
     });
@@ -217,7 +240,7 @@ function onLoadIssuesModal() {
             html = html.replace(/<span class="glyphicon glyphicon(.*)<\/span>/, "");
         })
         $(".show-bar, .overflow").hide();
-        $("#issue-loader").html(html);
+        $(".issue-loader").html(html);
         $("#add-issue-modal, #close-issue-modal").css("display", "none");
         $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "block");
 
@@ -268,7 +291,13 @@ function onLoadIssuesModal() {
                 doSend("getNormalAndLockedIssues");
             });
         } else if(this.id == "archive-issue") {
-            $.post( "../issues_and_reminders/archive", {iar_id: current_iar_id})
+            let data = {
+                iar_id: current_iar_id, 
+                resolved_by: $("#current_user_id").val(),
+                resolution: $("#resolution").val()
+            };
+
+            $.post( "../issues_and_reminders/archive", {data: JSON.stringify(data)} )
             .done(function( data ) {
                 console.log("Data archived: ", data);
                 doSend("getNormalAndLockedIssues");
@@ -280,6 +309,8 @@ function onLoadIssuesModal() {
 }
 
 function onLoadIssuesPage() {
+
+    loadTables();
 
     $(".datetime-issue").datetimepicker({
         format: 'YYYY-MM-DD HH:mm:00',
@@ -379,27 +410,33 @@ function onLoadIssuesPage() {
 
     $(".submit-buttons").click(function () {
         let button_id = $(this).attr("id");
-        console.log(button_id);
         let action = "";
+
+        $("#resolution-div").hide();
+        $("#resolution").val("");
+        
         switch(button_id) {
-            case "add-issue-modal": action = "add"; $("#archive-issue, #edit-issue").css("display", "none"); $("#add-issue").css("display", "inline"); console.log($("#add-issue").css("display")); break;
-            case "edit-issue-modal": action = "submit an edit to"; $("#add-issue, #archive-issue").css("display", "none"); $("#edit-issue").css("display", "inline"); console.log($("#edit-issue").css("display")); break;
-            case "archive-issue-modal": action = "archive"; $("#edit-issue, #add-issue").css("display", "none"); $("#archive-issue").css("display", "inline"); console.log($("#archive-issue").css("display")); break;
+            case "add-issue-modal": 
+                action = "add"; 
+                $("#archive-issue, #edit-issue").css("display", "none"); 
+                $("#add-issue").css("display", "inline block");
+                break;
+            case "edit-issue-modal": 
+                action = "submit an edit to"; 
+                $("#add-issue, #archive-issue").css("display", "none"); 
+                $("#edit-issue").css("display", "inline block"); 
+                break;
+            case "archive-issue-modal": 
+                action = "archive"; 
+                $("#edit-issue, #add-issue").css("display", "none"); 
+                $("#archive-issue").css("display", "inline block"); 
+                $("#resolution-div").show();
+                break;
         }
         $("#iarConfirmModal #action").text(action);
     });
 
-    $("#issues_and_reminders_panels .glyphicon-trash").click(function () {
-        current_iar_id = $(this).attr("data-iar-id");
-        $("#issuesAndRemindersModal").modal("hide");
-        $("#edit-issue, #add-issue").css("display", "none"); 
-        $("#archive-issue").css("display", "inline block");
-        $("#iarConfirmModal #action").text("archive");
-        reposition("#iarConfirmModal");
-        $("#iarConfirmModal").modal("show");
-    });
-
-    $("#issues_and_reminders_panels .glyphicon-edit").click(function () {
+    $("#issues_and_reminders_modal .glyphicon-edit").click(function () {
 
         // HTML Tweaks after clicking edit
         let html = $("<div />").append( $(this).parents(".alert").clone() ).html();
@@ -407,7 +444,7 @@ function onLoadIssuesPage() {
             html = html.replace(/<span class="glyphicon glyphicon(.*)<\/span>/, "");
         })
         $(".show-bar, .overflow").hide();
-        $("#issue-loader").html(html);
+        $(".issue-loader").html(html);
         $("#add-issue-modal, #close-issue-modal").css("display", "none");
         $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "block");
 
@@ -460,7 +497,13 @@ function onLoadIssuesPage() {
                 doSend("getNormalAndLockedIssues");
             });
         } else if(this.id == "archive-issue") {
-            $.post( "../issues_and_reminders/archive", {iar_id: current_iar_id})
+            let data = {
+                iar_id: current_iar_id, 
+                resolved_by: $("#current_user_id").val(),
+                resolution: $("#resolution").val()
+            };
+
+            $.post( "../issues_and_reminders/archive", {data: JSON.stringify(data)} )
             .done(function( data ) {
                 console.log("Data archived: ", data);
                 doSend("getNormalAndLockedIssues");
@@ -482,6 +525,186 @@ function lock_button(bool) {
         $("#issue_event").prop("disabled", true).val("---");
         $("#lock").attr("data-button-lock", 1).html('<span class="fa fa-unlock" aria-hidden="true"></span> Unlock');
     }
+}
+
+function loadTables() 
+{
+    $.fn.dataTable.moment( 'D MMMM YYYY. h:mm A' );
+
+    active_table = $('#active_table').DataTable({
+        // "dom": "Bfrtip",
+        "dom": "<'row'<'col-sm-6'B><'col-sm-6'f>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+        "buttons": [
+            {
+                text: 'Add or Edit an Issue/Reminder',
+                className: 'btn btn-danger iar_modal_link',
+                action: function ( e, dt, node, config ) {
+                    $("#issuesAndRemindersModal").modal("show");
+                }
+            }
+        ],
+        "columnDefs" : [
+            { className: "text-right", "targets": [1] },
+            { className: "text-left", "targets": [0, 2, 3, 4, 5] },
+            {
+                'sortable' : false,
+                'targets' : [ 2, 3 ]
+            },
+        ],
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/../issues_and_reminders/getAllRowsAsync",
+            "type": "POST",
+            "data": function(data) {
+                data.extra_filter = {
+                    status : "normal",
+                    hasFilter: false
+                }
+            }
+        },
+        "columns": [
+            { 
+                "data": "iar_id", 
+                "render": function (data, type, full, meta) {
+                    return data;
+                }
+            },
+            {
+                "data": "ts_posted",
+                "render": function (data, type, full, meta) {
+                    return moment(data).format("D MMMM YYYY, h:mm A");
+                }
+            },
+            { 
+                "data": "detail",
+            },
+            { 
+                "data": "posted_by",
+                "render": function (data, type, full, meta) {
+                    return data;
+                }
+            },
+            { 
+                "data": "name",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "---";
+                    else return data.toUpperCase();
+                }
+            },
+            { 
+                "data": "status",
+                "render": function (data, type, full, meta) {
+                    return data.toUpperCase();
+                }
+            },
+        ],
+        "pagingType": "full_numbers",
+        "displayLength": 10,
+        "lengthChange": false,
+        "order": [[0, 'desc']],
+        "rowCallback": function (row, data, index) {
+            // if( data.status == "finished" || data.status == "extended" ) {
+            //     $(row).css("background-color", "rgba(0,140,0,0.7)");
+            // } else if( data.status == "on-going" ) {
+            //     $(row).css("background-color", "rgba(255,0,0,0.7)");
+            // } else if( data.status == "invalid" ) {
+            //     $(row).css("background-color", "rgba(90,90,90,0.7)");
+            // }
+        }
+    });
+
+    archived_table = $('#archived_table').DataTable({
+        "autoWidth": false,
+        columnDefs : [
+            { className: "text-right", "targets": [1] },
+            { className: "text-left", "targets": [0, 2, 3, 4, 5, 6] },
+            {
+                'sortable' : false,
+                'targets' : [ 2, 3, 6 ]
+            },
+        ],
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/../issues_and_reminders/getAllRowsAsync",
+            "type": "POST",
+            "data": function(data) 
+            {
+                data.extra_filter = {
+                    status : "archived",
+                    hasFilter: false
+                }
+            }
+        },
+        "columns": [
+            { 
+                "data": "iar_id", 
+                "render": function (data, type, full, meta) {
+                    return data;
+                }
+            },
+            {
+                "data": "ts_posted",
+                "render": function (data, type, full, meta) {
+                    return moment(data).format("D MMMM YYYY, h:mm A");
+                }
+            },
+            { 
+                "data": "detail",
+            },
+            { 
+                "data": "posted_by",
+                "render": function (data, type, full, meta) {
+                    return data;
+                }
+            },
+            { 
+                "data": "name",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "---";
+                    else return data.toUpperCase();
+                }
+            },
+            { 
+                "data": "status",
+                "render": function (data, type, full, meta) {
+                    return data.toUpperCase();
+                }
+            },
+            { 
+                "data": "resolved_by",
+                "render": function (data, type, full, meta) {
+                    return data;
+                }
+            },
+            { 
+                "data": "resolution",
+            }
+        ],
+        "pagingType": "full_numbers",
+        "displayLength": 10,
+        "lengthMenu": [ 10, 20 ],
+        "order": [[0, 'desc']],
+        "rowCallback": function (row, data, index) {
+            // if( data.status == "finished" || data.status == "extended" ) {
+            //     $(row).css("background-color", "rgba(0,140,0,0.7)");
+            // } else if( data.status == "on-going" ) {
+            //     $(row).css("background-color", "rgba(255,0,0,0.7)");
+            // } else if( data.status == "invalid" ) {
+            //     $(row).css("background-color", "rgba(90,90,90,0.7)");
+            // }
+        },
+        "initComplete": function () {
+            $("#archived_table").css("width", '');
+        }
+    });
+}
+
+function reloadTable(table) {
+    table.ajax.reload();
 }
 
 $(document).ready(function () {
