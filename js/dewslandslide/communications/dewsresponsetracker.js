@@ -142,7 +142,7 @@ $(document).ready(function(e) {
 			        },
 			        tooltip: {
 		        	    formatter: function() {
-			        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+			        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 						        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
@@ -292,7 +292,7 @@ $(document).ready(function(e) {
 			        },
 			        tooltip: {
 		        	    formatter: function() {
-			        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+			        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 						        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
@@ -423,7 +423,7 @@ $(document).ready(function(e) {
 		        },
 		        tooltip: {
         		    formatter: function() {
-		        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+		        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 					        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 					        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 					            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
@@ -1422,7 +1422,7 @@ $(document).ready(function(e) {
 	        },
 	        tooltip: {
 	        	formatter: function() {
-			        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+			        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 						        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
@@ -1484,7 +1484,7 @@ $(document).ready(function(e) {
 			        },
 			        tooltip: {
 		        	    formatter: function() {
-			        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+			        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 						        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 						        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 						            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
@@ -1547,8 +1547,7 @@ $(document).ready(function(e) {
 		    },
 		    tooltip: {
 		    	formatter: function() {
-		    		console.log(this.point);
-	        		tooltip = '<span style="font-size:10px">Statistics: '+this.point.y+'%</span><table><br>'+
+	        		tooltip = '<span style="font-size:10px"><b>'+this.point.series.name+'</b> Statistics: '+this.point.y+'%</span><table><br>'+
 				        	'<tr><td style="color:{series.color};padding:0">Fastest response delay: </td>' +
 				        	'<td style="padding:0"><b> '+this.point.series.options.data[0]["fastest_reply"]+'</b></td></tr><br>'+
 				            '<tr><td style="color:{series.color};padding:0">Average response delay: </td>' +
