@@ -1,6 +1,6 @@
 var data_timestamp;
 var latest_release_id;
-function sendViaAlertMonitor(data){
+function sendViaAlertMonitor(dashboard_data){
 
 	var alert_site_name = "";
 	var alert_level = "";
@@ -2372,25 +2372,63 @@ function reset_cc() {
 	$('#other-officename').hide();
 	$('#other-sitename').hide();
 }
+
+$('#alert_status').on('change',function(){
+	$.post( "../chatterbox_beta/getAlertLevel", {alert_status: $(this).val()})
+	.done(function(data) {
+		var response = JSON.parse(data);
+		$('#alert-lvl').empty();
+		$('#internal-alert').empty();
+
+	    $('#alert-lvl').append($('<option>', { 
+	        value: "------------",
+	        text : "------------" 
+	    }));
+
+	    $('#internal-alert').append($('<option>', { 
+	        value: "------------",
+	        text : "------------" 
+	    }));
+
+		for (var counter = 0; counter < response.length; counter++) {
+			if (response[counter].alert_symbol_level.toLowerCase().indexOf('alert') > -1) {
+				 $('#alert-lvl').append($('<option>', { 
+			        value: response[counter].alert_symbol_level,
+			        text : response[counter].alert_symbol_level 
+			    }));
+			} else {
+				 $('#internal-alert').append($('<option>', { 
+			        value: response[counter].alert_symbol_level,
+			        text : response[counter].alert_symbol_level 
+			    }));
+			}
+		}
+	});
+});
+
 $('#btn-ewi').on('click',function(){
 	$('#alert-lvl').empty();
 	$('#sites').empty();
+	$('#alert_status').empty();
+	$('#alert_lvl').empty();
+	$('#internal_alert').empty();
+
+    $('#alert_status').append($('<option>', { 
+        value: "------------",
+        text : "------------" 
+    }));
+
 	$.ajax({
 		type: "GET",
-		url: "../chatterbox/getewi",             	
+		url: "../chatterbox_beta/getAlertStatus",             	
 		dataType: "json",
 		success: function(response){
-			var alertList = Object.keys(response).length;
-			var counter = 0;
-			select = document.getElementById('alert-lvl');
-			for (counter=0;counter<alertList;counter++){
-				var opt = document.createElement('option');
-				opt.value = Object.keys(response)[counter];
-				opt.innerHTML = Object.keys(response)[counter];
-				select.className = "form-control";
-				select.setAttribute("required","true");
-				select.appendChild(opt);
-			}
+			$.each(response, function (i, response) {
+			    $('#alert_status').append($('<option>', { 
+			        value: response.alert_status,
+			        text : response.alert_status 
+			    }));
+			});
 		}
 	});
 
@@ -2430,7 +2468,7 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#confirm-ewi').click(function(){
-	if ($('#ewi-date-picker input').val() == "" || $('#alert-lvl').val() == "" || $('#sites').val() == "") {
+	if ($('#ewi-date-picker input').val() == "" || $('#alert-lvl').val() == "------------" || $('#sites').val() == "" || $('#alert_status').val() == "------------" || $('#internal_alert').val() == "------------") {
 		alert('Invalid input, All fields must be filled');
 	} else {
 		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
@@ -2448,11 +2486,6 @@ $('#confirm-ewi').click(function(){
 			sendViaAlertMonitor(toTemplate)
 		});
 	}
-});
-
-$('#ewi-date-picker').datetimepicker({
-	locale: 'en',
-	format: 'YYYY-MM-DD HH:mm:ss'
 });
 
 function getEWI(handledTemplate){
@@ -2506,6 +2539,11 @@ function setEWILocation(consEWI){
 		$('#msg').val("Site is not available");
 	}
 }
+
+$('#ewi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD HH:mm:ss'
+});
 
 $('#edit-btn-ewi-amd').click(function(){
 	if ($('#edit-btn-ewi-amd').val() === "edit"){
