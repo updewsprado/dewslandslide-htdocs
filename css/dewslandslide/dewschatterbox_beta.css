@@ -8,7 +8,7 @@
 	bottom:0;
 	left:0;
 	right:0;
-	opacity: .4;
+	opacity: .2;
 }
 
 .nav-margin {
@@ -24,8 +24,16 @@
     text-align: right;
 }
 
+#convo-header {
+  margin-bottom: 10px;
+}
+
 .dropdown-input {
 	margin-top: 5px;
+}
+
+#timestamp-sent {
+  color: blue;
 }
 
 textarea {
@@ -71,7 +79,7 @@ textarea {
   position: relative;
   font-size: 11px;
   padding: 10px;
-  border: 1px solid #f1f5fc;
+  border: 4px solid #bfbfbf;
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
   -moz-box-shadow: 0 1px 1px rgba(0,0,0,.05);
   -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
@@ -86,16 +94,23 @@ textarea {
   margin: 0;
 }
 
+hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+
+
 .chat li.left .chat-body:before {
   position: absolute;
   top: 10px;
-  left: -8px;
+  left: -11px;
   display: inline-block;
   background: #fff;
   width: 16px;
   height: 16px;
-  border-top: 1px solid #f1f5fc;
-  border-left: 1px solid #f1f5fc;
+  border-top: 4px solid #c6c6c6;
+  border-left: 4px solid #c6c6c6;
   content: '';
   transform: rotate(-45deg);
   -webkit-transform: rotate(-45deg);
@@ -107,13 +122,13 @@ textarea {
 .chat li.right .chat-body:before {
   position: absolute;
   top: 10px;
-  right: -8px;
+  right: -11px;
   display: inline-block;
   background: #fff;
   width: 16px;
   height: 16px;
-  border-top: 1px solid #f1f5fc;
-  border-right: 1px solid #f1f5fc;
+  border-top: 4px solid #c6c6c6;
+  border-right: 4px solid #c6c6c6;
   content: '';
   transform: rotate(45deg);
   -webkit-transform: rotate(45deg);
