@@ -1698,7 +1698,7 @@ function loadSearchedMessage(msg){
 		var searchedResult = msg.data;
 		var res;
 		try {
-			for (var i = searchedResult.length - 1; i >= 0; i--) {
+			for (var i =  0; i < searchedResult.length; i++) {
 				res = searchedResult[i];
 				updateGlobalMessage(res);
 				counters++;
@@ -2878,6 +2878,7 @@ function getEmpContact(){
 		url: "../chatterbox/get_employee_contacts",        
 		success: function(response){
 			var data = JSON.parse(response);
+			console.log(data);
 			$("#response-contact-container").DataTable().clear();
 			$("#response-contact-container").DataTable().destroy();
 
@@ -2961,12 +2962,9 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 			.done(function(response) {
 				if (response == true) {
 					$('#contact-result').remove();
-					var container = document.getElementById('community-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-success";
-					resContainer.innerHTML = "<strong>Success!</strong> New Community contact added.";
-					container.insertBefore(resContainer,container.childNodes[0]);
+					$.notify('Success! New community contact added.','success');
+					$('#community-contact-wrapper').prop('hidden', true);
+					getComContact();
 					$("#employee-contact-wrapper input").val('');
 				} else {
 					$('#contact-result').remove();
@@ -3015,7 +3013,6 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 					'rel': $('#rel').val(),
 					'ewirecipient': $('#ewirecipient').val()
 				};
-				console.log(data);
 				updateContactService(data,"community-contact-wrapper");
 			}
 		}
@@ -3056,12 +3053,9 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 				console.log(response);
 				if (response == true) {
 					$('#contact-result').remove();
-					var container = document.getElementById('employee-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-success";
-					resContainer.innerHTML = "<strong>Success!</strong> New Employee contact added.";
-					container.insertBefore(resContainer,container.childNodes[0]);
+					$('#employee-contact-wrapper').prop('hidden',true);
+					$.notify('Success! New employee contact added.','success');
+					getEmpContact();
 					$("#employee-contact-wrapper input").val('');
 				} else {
 					$('#contact-result').remove();
@@ -3282,10 +3276,10 @@ $("#confirm-narrative").on('click',function(){
 				gintags_collection.push(gintags);
 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 				.done(function(response) {
-					$.notify("GINTAG successfully tagged!","success");
 					$( "#messages li" ).eq(message_li_index).addClass("tagged");
 				});
 			}
+			$.notify("GINTAG successfully tagged!","success");
 		}
 		for (var counter = 0; counter < tags.length;counter++) {
 			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeasReminderAck") {
@@ -3403,10 +3397,10 @@ function insertGintagService(data){
 						gintags_collection.push(gintags);
 						$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 						.done(function(response) {
-							$.notify("GINTAG successfully tagged!","success");
 							$( "#messages li" ).eq(message_li_index).addClass("tagged");
 						});
 					}
+					$.notify("GINTAG successfully tagged!","success");
 				}
 				$("#gintag_details_container").val(JSON.stringify(gintag_details));
 				displayNarrativeConfirmation(gintag_details);
@@ -3425,10 +3419,10 @@ function insertGintagService(data){
 					gintags_collection.push(gintags);
 					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 					.done(function(response) {
-						$.notify("GINTAG successfully tagged!","success");
 						$( "#messages li" ).eq(message_li_index).addClass("tagged");
 					});
 				}
+				$.notify("GINTAG successfully tagged!","success");
 			}
 		}
 
@@ -3447,10 +3441,10 @@ function insertGintagService(data){
 			gintags_collection.push(gintags);
 			$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 			.done(function(response) {
-				$.notify("GINTAG successfully tagged!","success");
 				$( "#messages li" ).eq(message_li_index).addClass("tagged");
 			});
 		}
+		$.notify("GINTAG successfully tagged!","success");
 	}
 }
 
@@ -3489,12 +3483,11 @@ function getGintagGroupContacts(gintag_details){
 					if (gintags_collection != null || gintags_collection.length > 0) {
 						$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
 						.done(function(response) {
-							$.notify("GINTAG successfully tagged ","success");
 							$( "#messages li" ).eq(message_li_index).addClass("tagged");
 						});
 					}
 				}
-
+				$.notify("GINTAG successfully tagged ","success");
 			});
 		}
 	} else if (gintag_details.cmd == "delete") {
@@ -3556,14 +3549,16 @@ function updateContactService(data,wrapper){
 	$.post( "../communications/chatterbox/updatecontacts", {contact: JSON.stringify(data)})
 	.done(function(response) {
 		console.log(response);
+		if (wrapper == "employee-contact-wrapper") {
+			getEmpContact();
+		} else {
+			getComContact();
+		}
 		if (response == "true") {
 			$('#contact-result').remove();
-			var container = document.getElementById(wrapper);
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-success";
-			resContainer.innerHTML = "<strong>Success!</strong> Existing contact updated.";
-			container.insertBefore(resContainer,container.childNodes[0]);
+			$.notify('Success! Existing contact updated.','success');
+			$('#employee-contact-wrapper').prop('hidden',true);
+			$('#community-contact-wrapper').prop('hidden', true);
 		} else {
 			$('#contact-result').remove();
 			var container = document.getElementById(wrapper);
