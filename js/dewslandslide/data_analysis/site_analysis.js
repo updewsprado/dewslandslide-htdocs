@@ -1962,6 +1962,8 @@ function columnPosition(data_result,site) {
 				break;
 			}
 		}
+
+		console.log(AlllistDate)
 		for(var i = 0; i < AlllistId.length; i++){
 			if(AlllistId[i] != AlllistId[i+1]){
 				listId.push(AlllistId[i])

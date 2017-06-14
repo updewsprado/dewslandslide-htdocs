@@ -16,15 +16,16 @@ $(document).ready(function(e) {
 
 	var values = window.location.href.split("/")
 	var category = values[5]
-	var from = values[6]
-	var to = values[7]
-	var site = values[8]
-	var column = values[9]
+	var site = values[6]
 	
 	dropdowlistAppendValue()
 	if(category == "rain"){
+		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
+		var to = moment().format('YYYY-MM-DD')
 		RainFallProcess(site,from,to)
 	}else  if(category == "surficial"){
+		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
+		var to = moment().format('YYYY-MM-DD')
 		let dataSubmit = { 
 			site : (site).toLowerCase(), 
 			fdate : from,
@@ -57,7 +58,9 @@ $(document).ready(function(e) {
 			});
 		
 		surficialGraph(dataSubmit)
-	}else if(category == "subSurface"){
+	}else if(category == "subsurface"){
+		var from = 'n'
+		var to = 'n'
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
 		$(".selectpicker").selectpicker('refresh')
@@ -69,7 +72,7 @@ $(document).ready(function(e) {
 			$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
 				'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 		}
-		allSensorPosition(column,from,to)
+		allSensorPosition(site,from,to)
 	}
 
 });
@@ -78,37 +81,67 @@ function SelectdaysOption(id) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var values = window.location.href.split("/")
 		var category = values[5]
-		var from = values[6]
-		var to = values[7]
-		var site = values[8]
-		var column = values[9]
+		var site = values[6]
+		
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
-		var fdate;
+		var from;
 		if(selected_days == "7 days"){
-			fdate = moment(to).subtract(7,'days').format('YYYY-MM-DD')
+			from = moment().subtract(7,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "10 days"){
-			fdate = moment(to).subtract(10,'days').format('YYYY-MM-DD')
+			from = moment().subtract(10,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "2 weeks"){
-			fdate = moment(to).subtract(14,'days').format('YYYY-MM-DD')
+			from = moment().subtract(14,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 month"){
-			fdate = moment(to).subtract(30,'days').format('YYYY-MM-DD')
+			from = moment().subtract(30,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "3 months"){
-			fdate = moment(to).subtract(90,'days').format('YYYY-MM-DD')
+			from = moment().subtract(90,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "6 months"){
-			fdate = moment(to).subtract(120,'days').format('YYYY-MM-DD')
+			from = moment().subtract(120,'days').format('YYYY-MM-DD')
 		}else if(selected_days == "1 year"){
-			fdate = moment(to).subtract(1,'year').format('YYYY-MM-DD')
+			from = moment().subtract(1,'year').format('YYYY-MM-DD')
 		}else if(selected_days == "Customize"){
-			fdate = moment(to).subtract(5,'year').format('YYYY-MM-DD')
+			from = moment().subtract(5,'year').format('YYYY-MM-DD')
 		}
 
-		var tdate = moment().add(1,'days').format('YYYY-MM-DD');
-		if(column != undefined){
-			location = "/data_analysis/Eos_onModal/"+category+"/"+fdate+"/"+to+"/"+site+"/"+column;
-		}else{
-			location = "/data_analysis/Eos_onModal/"+category+"/"+fdate+"/"+to+"/"+site;
+		var to = moment().add(1,'days').format('YYYY-MM-DD');
+
+		if(category == "rain"){
+			RainFallProcess(site,from,to)
+		}else  if(category == "surficial"){
+			let dataSubmit = { 
+				site : (site).toLowerCase(), 
+				fdate : from,
+				tdate : to
+			}
+
+			$.ajax({
+				url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+						$('.graphGenerator').empty();
+						$('.selectpicker').selectpicker();
+						$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+						$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+							'</select></b></h4><br><div id="ground_graph"><div>')
+						daysOption('surperimpose')
+						SelectdaysOption('surperimpose')
+						dropdowDayValue('surperimpose',from,to)
+						$('#surperimpose_days').selectpicker('refresh');
+						$('#crackgeneral').append('<option value="">Select Crack</option>')
+						$('#crackgeneral').selectpicker('hide')
+						var result= data
+						var crack_name= [];
+						for (i = 0; i <  result.length; i++) {
+							dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
+							crack_name.push(result[i].crack_id)
+						}
+					}
+				});
+
+			surficialGraph(dataSubmit)
 		}
-		
 		
 	})
 }
@@ -146,22 +179,24 @@ function removeDuplicates(num) {
 }
 
 function dropdowDayValue(id,fromDate,toDate) {
+
 	var date1 = moment(fromDate);
 	var date2 = moment(toDate);
 	var diff = date2.diff(date1,'days');
-	if(diff == 7){
+		console.log(diff)
+	if(diff == 8 || diff == 7){
 		$('#'+id+'_days').val('7 days')
-	}else if(diff == 10){
+	}else if(diff == 11 || diff == 10){
 		$('#'+id+'_days').val('10 days')
-	}else if(diff == 14){
+	}else if(diff == 15 || diff == 14){
 		$('#'+id+'_days').val('2 weeks')
-	}else if(diff == 30){
+	}else if(diff == 31 || diff == 30){
 		$('#'+id+'_days').val('1 months')
-	}else if(diff == 90){
+	}else if(diff == 91 || diff == 90){
 		$('#'+id+'_days').val('3 months')
-	}else if(diff == 120){
+	}else if(diff == 121 || diff == 120){
 		$('#rainfall_days').val('6 months')
-	}else if(diff == 365 || diff == 366){
+	}else if(diff == 366 || diff == 367){
 		$('#'+id+'_days').val('1 year')
 	}else  {
 		$('#'+id+'_days').val('Customize')
@@ -705,7 +740,6 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 
 
 function surficialGraph(dataTableSubmit) {  
-	console.log( "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -868,7 +902,6 @@ function allSensorPosition(site,fdate,tdate) {
 		dataType: "json",
 		success: function(result){
 			var data = JSON.parse(result);
-			console.log(data)
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
 			$("#reportrange2").popover('hide')
@@ -906,6 +939,7 @@ function columnPosition(data_result,site) {
 				break;
 			}
 		}
+		listDate.sort()
 		for(var i = 0; i < AlllistId.length; i++){
 			if(AlllistId[i] != AlllistId[i+1]){
 				listId.push(AlllistId[i])
@@ -936,7 +970,7 @@ function columnPosition(data_result,site) {
 			var color = parseInt((255 / fAlldown.length)*(a+1))
 			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
-			// console.log(inferno[color] ,color)
+			
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement,downslope(mm)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(mm)",site)
@@ -994,6 +1028,7 @@ function displacementPosition(data_result,data_result_v,site) {
 				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
 			}
 		}
+		
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
 				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
@@ -1009,7 +1044,6 @@ function displacementPosition(data_result,data_result_v,site) {
 				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
 		}
 
-		console.log(n1)
 		for(var a = 0; a < data[0].cumulative.length; a++){
 			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
 			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
