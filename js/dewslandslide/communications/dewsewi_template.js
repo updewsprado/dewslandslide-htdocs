@@ -373,7 +373,7 @@ $(document).ready(function(e){
         }
     });
 
-    $('#time_of_release').datetimepicker({
+    $('#date-time-of-release').datetimepicker({
         format: 'YYYY-MM-DD HH:mm'
     });
 
