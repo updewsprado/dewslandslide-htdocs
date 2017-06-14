@@ -248,7 +248,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -322,7 +322,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -396,7 +396,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -472,7 +472,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 	});
 	$("#"+id).highcharts({
 		chart: {
-			type: 'area',
+			type: 'line',
 			zoomType: 'x',
 			panning: true,
 			panKey: 'shift',
@@ -610,7 +610,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	});
 	$("#"+id+"2").highcharts({
 		chart: {
-			type: 'area',
+			type: 'column',
 			zoomType: 'x',
 			panning: true,
 			height: 300,
@@ -1237,7 +1237,7 @@ function chartProcessInverted(id,data_series,name,site){
 			enabled: false
 		},
 		legend: {
-			enabled: false
+			enabled: true
 		},
 		series:data_series
 	});
