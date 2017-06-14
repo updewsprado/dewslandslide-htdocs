@@ -52,11 +52,6 @@ function sendViaAlertMonitor(dashboard_data){
 			});
 		}
 
-		console.log(dashboard_data);
-		console.log(internal_alert);
-		console.log(backbone_message);
-		console.log(recommended_response);
-
 		var final_template = backbone_message[0].template;
 
 		var d = new Date();
@@ -85,10 +80,51 @@ function sendViaAlertMonitor(dashboard_data){
 		final_template = final_template.replace("(recommended_response)",recommended_response.key_input);
 		final_template = final_template.replace("(technical_info)",internal_alert.key_input);
 
-		console.log(final_template);
+		var currentTime = moment().format("YYYY-MM-DD HH:mm");
+		if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
 
-	} else 
-{		var alert_site_name = "";
+			final_template = final_template.replace("(next_ewi_time)","04:00 AM");
+			final_template = final_template.replace("(next_ewi_date)","mamayang");
+		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
+
+			final_template = final_template.replace("(next_ewi_time)","08:00 AM");
+			final_template = final_template.replace("(next_ewi_date)","mamayang");
+		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 11:30 AM");
+			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
+
+			final_template = final_template.replace("(next_ewi_time)","12:00 NN");
+			final_template = final_template.replace("(next_ewi_date)","mamayang");
+		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 3:30 PM");
+			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
+
+			final_template = final_template.replace("(next_ewi_time)","04:00 PM");
+			final_template = final_template.replace("(next_ewi_date)","mamayang");
+		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
+			final_template = final_template.replace("(gndmeas_date_submission)","bukas");
+
+			final_template = final_template.replace("(next_ewi_time)","08:00 PM");
+			final_template = final_template.replace("(next_ewi_date)","mamayang");
+		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
+			final_template = templfinal_templateate.replace("(gndmeas_date_submission)","bukas");
+
+			final_template = final_template.replace("(next_ewi_time)","12:00 MN");
+			final_template = final_template.replace("(next_ewi_date)","bukas ng");
+		} else {
+			alert("Error Occured: Please contact Administrator");
+		}
+		final_template = final_template.replace("(current_date_time)",moment(dashboard_data.data_timestamp).format('LL')+" "+moment(dashboard_data.data_timestamp).format('HH:mm A'));
+		$('#msg').val(final_template);
+		$('#site-abbr').val(dashboard_data["name"]);
+	} else {
+		var alert_site_name = "";
 		var alert_level = "";
 		if (dashboard_data.name == "msu" || dashboard_data.name == "msl") {
 			alert_site_name = "mes";
@@ -1232,7 +1268,7 @@ function getOngoingEvents(sites){
 					if (events[counter].site_id == siteids[siteid_counter].id) {
 						var narrative_template = "";
 						console.log(gintags_msg_details);
-						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeasReminderAck") {
+						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
 							} else {
@@ -3237,7 +3273,7 @@ $(document).on("click","#messages li",function(){
 
 $('#gintags').on('beforeItemAdd', function(event) {
 	if (gintags_msg_details[1] === "You") {
-		if (event.item === "#EwiResponse" || event.item === "#GroundMeasReminderAck") {
+		if (event.item === "#EwiResponse" || event.item === "#GroundMeas") {
 			console.log("Cannot add EwiResponse Tag for this message");
 			event.cancel = true;
 			$.notify("You cannot tag "+event.item+" if you are the sender","error");
@@ -3383,7 +3419,7 @@ $("#confirm-narrative").on('click',function(){
 				break;
 			}
 		}
-	} else if (data.tags == "#EwiResponse" || data.tags == "#GroundMeasReminderAck") {
+	} else if (data.tags == "#EwiResponse" || data.tags == "#GroundMeas") {
 		if (tags[1] != "") {
 			for (var i = 0; i < tags.length;i++) {
 				gintags_collection = [];
@@ -3405,7 +3441,7 @@ $("#confirm-narrative").on('click',function(){
 			$.notify("GINTAG successfully tagged!","success");
 		}
 		for (var counter = 0; counter < tags.length;counter++) {
-			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeasReminderAck") {
+			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeas") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
 					getOngoingEvents(tagSitenames[tag_counter]);
 				}
@@ -3489,7 +3525,7 @@ function insertGintagService(data){
 			}
 
 		} else {
-			if ($.inArray("#EwiResponse",tags) != -1 || $.inArray('#GroundMeasReminderAck',tags) != -1) {
+			if ($.inArray("#EwiResponse",tags) != -1 || $.inArray('#GroundMeas',tags) != -1) {
 				var gintag_details = {
 					"data": data,
 					"cmd": "insert"
@@ -3497,8 +3533,8 @@ function insertGintagService(data){
 			
 				if ($.inArray("#EwiResponse",tags) != -1) {
 					tag_indicator = "#EwiResponse"
-				} else if ($.inArray('#GroundMeasReminderAck',tags) != -1) {
-					tag_indicator = "#GroundMeasReminderAck";
+				} else if ($.inArray('#GroundMeas',tags) != -1) {
+					tag_indicator = "#GroundMeas";
 				}
 				var tags = $('#gintags').val();
 				tags = tags.split(',');
