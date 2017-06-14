@@ -1,16 +1,3 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-	});
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-	});
-});
-
 
 $(document).ready(function(e) {
 
@@ -75,6 +62,19 @@ $(document).ready(function(e) {
 		allSensorPosition(site,from,to)
 	}
 
+});
+
+$(document).ajaxStart(function () {
+	$('#loading').modal('toggle');
+	$(".bootstrap-select").click(function () {
+		$(this).addClass("open");
+	});
+});
+$(document).ajaxStop(function () {
+	$('#loading').modal('toggle');
+	$(".bootstrap-select").click(function () {
+		$(this).addClass("open");
+	});
 });
 
 function SelectdaysOption(id) {
@@ -183,7 +183,7 @@ function dropdowDayValue(id,fromDate,toDate) {
 	var date1 = moment(fromDate);
 	var date2 = moment(toDate);
 	var diff = date2.diff(date1,'days');
-		console.log(diff)
+
 	if(diff == 8 || diff == 7){
 		$('#'+id+'_days').val('7 days')
 	}else if(diff == 11 || diff == 10){
@@ -1188,7 +1188,6 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
 			
-			// crosshairs: true
 		},
 		credits: {
 			enabled: false
@@ -1339,12 +1338,14 @@ function chartProcessbase(id,data_series,name,site){
 	
 }
 
+/************************/
+/**DOWNLOAD SVG PROCESS**/
+/************************/
 
 function svgChart() {
 	var name_site = ((($( "tspan" ).text()).split('.')))
 	var extracted_name = (name_site[0]).split(' ');
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-	$( "#pdfsvg" ).empty();
 
 	var all_data=[]
 	var ids = $('.highcharts-container').map(function() {
@@ -1357,12 +1358,7 @@ function svgChart() {
 		all_data.push($('#heatmap_container').html())
 	}	
 	
-	console.log(all_data)
+	console.log(all_data) //<----- ARRAY OF SVG
 
-	// $.post("/Eos_modal/getAllEos",{data : JSON.stringify(all_data)}).done(function(data_result){
 
-	// },
-	// function(data, status){
-	// 	console.log(data)
-	// });
 }
