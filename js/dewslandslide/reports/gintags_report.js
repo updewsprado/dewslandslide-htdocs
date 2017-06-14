@@ -26,7 +26,7 @@ $(document).ready(function() {
 	    });
 	});
 
-	$('#start_date,#end_date').datetimepicker({
+	$('#date-start,#date-end').datetimepicker({
 	    locale: 'en',
 	    format: 'YYYY-MM-DD'
 	});
