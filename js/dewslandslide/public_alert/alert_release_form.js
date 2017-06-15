@@ -471,7 +471,7 @@ $(document).ready(function()
         { 
             console.log(public_alert);
             x = x.replace('0', '').replace('rx', '').replace("x", '');
-            if(public_alert == "A3") x = x.toUpperCase();
+            // if(public_alert == "A3") x = x.toUpperCase();
             if(x != "") return x;
         }
         let trigger_copy = trigger_list.map(function (x) { return clearZero(x, public_alert); });
