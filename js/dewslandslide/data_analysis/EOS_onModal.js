@@ -4,12 +4,13 @@ $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var category = values[5]
 	var site = values[6]
-	
+	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
 		var to = moment().format('YYYY-MM-DD')
 		RainFallProcess(site,from,to)
+		
 	}else  if(category == "surficial"){
 		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
 		var to = moment().format('YYYY-MM-DD')
@@ -53,7 +54,7 @@ $(document).ready(function(e) {
 		$(".selectpicker").selectpicker('refresh')
 		var title = ["Column","Displacement","Velocity"]
 		var id_title =["column","dis","velocity"]
-		var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+		var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
 		for(var a = 0; a < title.length; a++){
 			$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
 			$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
@@ -61,8 +62,10 @@ $(document).ready(function(e) {
 		}
 		allSensorPosition(site,from,to)
 	}
-
+	
 });
+
+
 
 $(document).ajaxStart(function () {
 	$('#loading').modal('toggle');
@@ -75,7 +78,12 @@ $(document).ajaxStop(function () {
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
 	});
+
+
 });
+
+
+
 
 function SelectdaysOption(id) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
@@ -178,6 +186,8 @@ function removeDuplicates(num) {
 	return out;
 }
 
+
+
 function dropdowDayValue(id,fromDate,toDate) {
 
 	var date1 = moment(fromDate);
@@ -246,6 +256,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 			success: function(data)
 			{
 				var result = data;
+				console.log(result)
 				var threshold_data = Math.round( parseFloat(result[0].max_rain_2year) * 10 ) / 10
 				getRainSenslope(result[0].rain_senslope , dataSubmit, threshold_data ,'rain_senslope',result[0].rain_senslope);
 				getRainArq(result[0].rain_arq , dataSubmit, threshold_data ,'rain_arq',result[0].rain_arq);
@@ -621,7 +632,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		series:series_data
 	});
 
-	svgChart()
+	// setTimeout(function(){
+	// 	svgChart(id) 
+	// }, 1000);
 
 }
 
@@ -732,7 +745,9 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		series:series_data
 	});
 
-	svgChart()
+	setTimeout(function(){
+		svgChart('rain') 
+	}, 3000);
 
 }
 
@@ -894,7 +909,11 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 	$( "#pdfsvg" ).empty();
 
-	svgChart()
+	setTimeout(function(){
+		svgChart('surficial') 
+	}, 1000);
+
+	
 }
 
 function allSensorPosition(site,fdate,tdate) {
@@ -972,7 +991,7 @@ function columnPosition(data_result,site) {
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			
 		}
-		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement,downslope(mm)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(mm)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(mm)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
@@ -1334,7 +1353,12 @@ function chartProcessbase(id,data_series,name,site){
 		},
 		series:data_series
 	});
-	svgChart()
+	
+	setTimeout(function(){
+		svgChart('subsurface') 
+	}, 3000);
+
+	
 	
 }
 
@@ -1342,23 +1366,102 @@ function chartProcessbase(id,data_series,name,site){
 /**DOWNLOAD SVG PROCESS**/
 /************************/
 
-function svgChart() {
+function svgChart(idBox) {
+	var values = window.location.href.split("/")
+	var category = values[5]
+	var site = values[6]
+
 	var name_site = ((($( "tspan" ).text()).split('.')))
 	var extracted_name = (name_site[0]).split(' ');
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-
-	var all_data=[]
-	var ids = $('.highcharts-container').map(function() {
-		return this.id;
-	}).get();
-	for (var i = 0; i < ids.length; i++) {
-		all_data.push($('#'+ids[i]).html());
-	}
-	if($('#heatmap_container').html() != undefined){
-		all_data.push($('#heatmap_container').html())
-	}	
 	
-	console.log(all_data) //<----- ARRAY OF SVG
+
+	if(idBox == "rain"){
+		$(".highcharts-root").removeAttr("xmlns");
+		$(".highcharts-root").removeAttr("version");
+		var ids0 = ['rain_arq2','rain_senslope2','rain12','rain22','rain32']
+		var ids1 = ['rain_arq','rain_senslope','rain1','rain2','rain3']
+		var ids2 = $('.rainGraph .in').map(function() {
+			return this.id;
+		}).get();
+		var ids4 =[]
+		for (var i = 0; i < ids0.length; i++) {
+			for (var a = 0; a < ids2.length; a++) {
+				if(ids0[i] == ids2[a]){
+					ids4.push(ids0[i]);
+				}
+			}
+		}	
+
+		for (var i = 0; i < ids4.length; i++) {
+			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 0 );
+			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "y", i * 300 );
+		}
+
+
+		var ids5 =[]
+		for (var i = 0; i < ids0.length; i++) {
+			for (var a = 0; a < ids2.length; a++) {
+				if(ids1[i] == ids2[a]){
+					ids5.push(ids1[i]);
+				}
+			}
+		}	
+
+		for (var i = 0; i < ids5.length; i++) {
+			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "x", 610 );
+			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "y", i*300 );
+		}
+
+		var ids = $('.highcharts-container').map(function() {
+			return this.id;
+		}).get();
+
+
+		for (var i = 0; i < ids.length; i++) {
+			$("#rainBox").append($('#'+ids[i]).html())
+		}
+
+
+		var all_data=$('#rainAll').html();
+	}else if (idBox == "subsurface"){
+
+
+		$(".highcharts-root").removeAttr("xmlns");
+		$(".highcharts-root").removeAttr("version");
+		
+		var ids0 = ['colspangraph','dis','velocity']
+		var idsall = []
+		for (var i = 0; i < ids0.length; i++) {
+			$( "#"+ids0[i]+"1 .highcharts-container  .highcharts-root").attr( "x", 0 );
+			$( "#"+ids0[i]+"1 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+			$("#subBox").append($('#'+ids0[i]+'1 .highcharts-container ').html())
+		}
+
+		for (var i = 0; i < ids0.length; i++) {
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 610 );
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+			$("#subBox").append($('#'+ids0[i]+'2 .highcharts-container').html())
+		}
+		
+		var all_data= $('#subAll').html();
+
+
+	}else if (idBox == "surficial"){
+		var ids = $('.highcharts-container').map(function() {
+			return this.id;
+		}).get();
+
+
+		var all_data= $('#'+ids[0]).html();
+		
+	}
+
+
+	$.post("/../chart_export/saveChartSVG", { svg : all_data , site : site , type :category } )
+	.done(function (data) {
+		console.log('done')
+	})
 
 
 }
