@@ -21,19 +21,19 @@ $(document).ready(function(e) {
 
 });
 function doSortDates(dates){
-		var swapped;
-		do {
-			swapped = false;
-			for (var i=0; i < dates.length-1; i++) {
-				if (dates[i][0] > dates[i+1][0]) {
-					var temp = dates[i][0];
-					dates[i][0] = dates[i+1][0];
-					dates[i+1][0] = temp;
-					swapped = true;
-				}
+	var swapped;
+	do {
+		swapped = false;
+		for (var i=0; i < dates.length-1; i++) {
+			if (dates[i][0] > dates[i+1][0]) {
+				var temp = dates[i][0];
+				dates[i][0] = dates[i+1][0];
+				dates[i+1][0] = temp;
+				swapped = true;
 			}
-		} while (swapped);
-	}
+		}
+	} while (swapped);
+}
 function columnSelect(site_selected) {
 	$.ajax({ 
 		dataType: "json",
@@ -720,19 +720,21 @@ function displacementPosition(data_result,data_result_v) {
 		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
 		var disData1 = [] , disData2 = [];
 		var fseries = [], fseries2 = [];
-		var d1= [] , d2 =[];
-		for(var i = 0; i < data.length; i++){
-			if(data[i].ts == data[i+1].ts ){
-				totalId.push(data[i]);
+		var c1series =[], c2series =[];
+		var d1= [] , d2 =[] , n1=[], n2=[];
+
+		for(var i = 0; i < data[0].disp.length; i++){
+			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
+				totalId.push(data[0].disp[i]);
 			}else{
-				totalId.push(data[i]);
+				totalId.push(data[0].disp[i]);
 				break;
 			}
 		}
 		for(var i = 1; i < totalId.length +1 ; i++){
-			for(var a = 0; a < data.length; a++){
-				if(i == data[a].id){
-					fixedId.push(data[a]);
+			for(var a = 0; a < data[0].disp.length; a++){
+				if(i == data[0].disp[a].id){
+					fixedId.push(data[0].disp[a]);
 				}
 			}
 		}
@@ -761,12 +763,28 @@ function displacementPosition(data_result,data_result_v) {
 				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
 			}
 		}
+		
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].downslope*1000])
-				d2.push([Date.parse(disData1[a][i].ts) ,disData1[a][i].latslope*1000])
+				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
+				d2.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base)*1000)})
+
 			}
 		}
+
+		for(var i = 0; i < disData1.length; i++){
+			n1.push({from:((disData1[i][0].downslope-data[0].cml_base)*1000),to:(((disData1[i][0].downslope-data[0].cml_base)*1000)+1),
+				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
+			n2.push({from:((disData1[i][0].downslope-data[0].cml_base)*1000),to:(((disData1[i][0].downslope-data[0].cml_base)*1000)+1),
+				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
+		}
+
+		for(var a = 0; a < data[0].cumulative.length; a++){
+			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
+			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
+		}
+		fseries.push({name:'cumulative', data:c1series,type: 'area'});
+		fseries2.push({name:'cumulative', data:c1series,type: 'area'});
 		for(var a = 1; a < disData1.length+1; a++){
 			var color = parseInt((255 / disData1.length)*(a))
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
@@ -775,8 +793,9 @@ function displacementPosition(data_result,data_result_v) {
 		velocityPosition(data_result_v,totalId.length,disData1[0]); 
 		fseries.push({name:'unselect'})
 		fseries2.push({name:'unselect'})
-		chartProcess("dis1",fseries,"Displacement, downslope")
-		chartProcess("dis2",fseries2,"Displacement , across slope")
+		chartProcess("dis1",fseries,"Displacement, downslope",n1)
+		chartProcess("dis2",fseries2,"Displacement , across slope",n2)
+
 
 	}     
 	
@@ -859,15 +878,15 @@ function velocityPosition(data_result,id,date) {
 		}
 
 		var sorted_fseries =[]
-			for (var counter = 0; counter < fseries.length;counter++){
-				 sorted_fseries.push(doSortDates(fseries[counter].data));
-			}
+		for (var counter = 0; counter < fseries.length;counter++){
+			sorted_fseries.push(doSortDates(fseries[counter].data));
+		}
 
 		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
 	}  
 }
-function chartProcess(id,data_series,name){
+function chartProcess(id,data_series,name,nPlot){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -884,6 +903,7 @@ function chartProcess(id,data_series,name){
 			text: name,
 		},
 		yAxis: {
+			plotBands:nPlot,
 			title: {
 				text: 'Displacement'
 			},
@@ -900,33 +920,27 @@ function chartProcess(id,data_series,name){
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			split: true,
+			
 			
 		},
 		plotOptions: {
-			spline: {
+			
+			line: {
 				marker: {
-					enabled: true
+					enabled: false
 				}
-			}
+			},
+			area: {
+				marker: {
+					enabled: false
+				}
+			},
 		},
 		credits: {
 			enabled: false
 		},
 		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#0000'
-			},
-			itemHoverStyle: {
-				color: '#0000'
-			},
-			itemHiddenStyle: {
-				color: '#222'
-			}
+			enabled: false
 		},
 		series:data_series
 	});
@@ -971,34 +985,18 @@ function chartProcessInverted(id,data_series,name){
 				text: 'Depth'
 			},
 		},
-		tooltip: {
-			
-			split: true,
-		},
 		plotOptions: {
-			spline: {
+			line: {
 				marker: {
-					enabled: true
-				}
+					enabled: true,
+				},
+			},
+			series: {
+				lineWidth: 1
 			}
 		},
 		credits: {
 			enabled: false
-		},
-		legend: {
-			layout: 'vertical',
-			align: 'right',
-			verticalAlign: 'middle',
-			borderWidth: 0,
-			itemStyle: {
-				color: '#222'
-			},
-			itemHoverStyle: {
-				color: '#E0E0E3'
-			},
-			itemHiddenStyle: {
-				color: '#606063'
-			}
 		},
 		credits: {
 			enabled: false
@@ -1023,13 +1021,6 @@ function chartProcessbase(id,data_series,name){
 		title: {
 			text: name
 		},
-
-		tooltip: {
-			// headerFormat: 'point.key',
-			// pointFormat: ' ',
-			split: true,
-		},
-
 		credits: {
 			enabled: false
 		},
@@ -1051,6 +1042,14 @@ function chartProcessbase(id,data_series,name){
 				text: 'Depth'
 			},
 
+		},
+		plotOptions: {
+			
+			line: {
+				marker: {
+					enabled: false
+				}
+			},
 		},
 		series:data_series
 	});
@@ -1108,35 +1107,23 @@ function dataPresencePerSite(site){
 			.attr("height", 100);
 
 
-				// var timeLabels = svg.selectAll(".timeLabel")
- //          	.data(time_index_obj)
- //          	.enter().append("text")
- //            .text(function(d) { return d.time.slice(11,16); })
- //            .attr("x", function(d) {
-				// return d.index * 25; })
- //            .attr("y",  function(d) {
-				// return 25;})
- //            .style("text-anchor", "middle")
- //            .attr("transform", "translate(11, -6)")
- //            .attr("class", function(d, i) { return ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"); });
-
- svg.call(tip);
+			svg.call(tip);
 
 
- var rectangles = svg.selectAll("rect")
- .data(pattern)
- .enter().append("rect");
+			var rectangles = svg.selectAll("rect")
+			.data(pattern)
+			.enter().append("rect");
 
- rectangles.attr("x", function(d) {
- 	return d.index_x * 17;})
- .attr("y", function(d) {
- 	return d.index_y * 17;})
- .attr("width", 15)
- .attr("height", 15).
- style("fill", function(d) {
- 	return colorScale(d.index_x);})
- .on('mouseover', tip.show)
- .on('mouseout', tip.hide)
-}
-});
+			rectangles.attr("x", function(d) {
+				return d.index_x * 17;})
+			.attr("y", function(d) {
+				return d.index_y * 17;})
+			.attr("width", 15)
+			.attr("height", 15).
+			style("fill", function(d) {
+				return colorScale(d.index_x);})
+			.on('mouseover', tip.show)
+			.on('mouseout', tip.hide)
+		}
+	});
 }

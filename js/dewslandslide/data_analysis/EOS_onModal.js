@@ -4,7 +4,7 @@ $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var category = values[5]
 	var site = values[6]
-	$(".box").hide();
+	// $(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
@@ -991,8 +991,8 @@ function columnPosition(data_result,site) {
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			
 		}
-		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(mm)",site)
-		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(mm)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(m)",site)
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(m)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
@@ -1057,9 +1057,9 @@ function displacementPosition(data_result,data_result_v,site) {
 		}
 
 		for(var i = 0; i < disData1.length; i++){
-			n1.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)+1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
+			n1.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
 				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
-			n2.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)+1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
+			n2.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
 				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
 		}
 
@@ -1394,7 +1394,7 @@ function svgChart(idBox) {
 		}	
 
 		for (var i = 0; i < ids4.length; i++) {
-			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 0 );
+			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 400);
 			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "y", i * 300 );
 		}
 
@@ -1409,7 +1409,7 @@ function svgChart(idBox) {
 		}	
 
 		for (var i = 0; i < ids5.length; i++) {
-			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "x", 610 );
+			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "x", 1000);
 			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "y", i*300 );
 		}
 
@@ -1433,13 +1433,13 @@ function svgChart(idBox) {
 		var ids0 = ['colspangraph','dis','velocity']
 		var idsall = []
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+"1 .highcharts-container  .highcharts-root").attr( "x", 0 );
+			$( "#"+ids0[i]+"1 .highcharts-container  .highcharts-root").attr( "x", 1400 );
 			$( "#"+ids0[i]+"1 .highcharts-container  .highcharts-root").attr( "y", i*900 );
 			$("#subBox").append($('#'+ids0[i]+'1 .highcharts-container ').html())
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 610 );
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 2000 );
 			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", i*900 );
 			$("#subBox").append($('#'+ids0[i]+'2 .highcharts-container').html())
 		}
