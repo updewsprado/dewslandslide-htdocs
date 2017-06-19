@@ -401,7 +401,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -475,7 +475,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -549,7 +549,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
-						var colors= ["#0000FF","#FF0000","#448aff"]
+						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -657,7 +657,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 		});
 		$("#"+id).highcharts({
 			chart: {
-				type: 'area',
+				type: 'line',
 				zoomType: 'x',
 				panning: true,
 				panKey: 'shift',
@@ -861,7 +861,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 		});
 		$("#"+id+"2").highcharts({
 			chart: {
-				type: 'area',
+				type: 'column',
 				zoomType: 'x',
 				panning: true,
 				height: 400,
@@ -1918,12 +1918,10 @@ function PiezoOnSelect() {
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	console.log("/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate)
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
 			SubOnSelectDay(site,tdate)
-			console.log(data)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
@@ -1963,7 +1961,6 @@ function columnPosition(data_result,site) {
 			}
 		}
 
-		console.log(AlllistDate)
 		for(var i = 0; i < AlllistId.length; i++){
 			if(AlllistId[i] != AlllistId[i+1]){
 				listId.push(AlllistId[i])
@@ -1994,7 +1991,6 @@ function columnPosition(data_result,site) {
 			var color = parseInt((255 / fAlldown.length)*(a+1))
 			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
-			// console.log(inferno[color] ,color)
 		}
 		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)",site)
@@ -2010,7 +2006,7 @@ function displacementPosition(data_result,data_result_v,site) {
 		var disData1 = [] , disData2 = [];
 		var fseries = [], fseries2 = [];
 		var c1series =[], c2series =[];
-		var d1= [] , d2 =[];
+		var d1= [] , d2 =[] , n1=[], n2=[];
 
 		for(var i = 0; i < data[0].disp.length; i++){
 			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
@@ -2052,16 +2048,25 @@ function displacementPosition(data_result,data_result_v,site) {
 				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
 			}
 		}
+		
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push({x:Date.parse(disData1[a][i].ts) ,y:(disData1[a][i].downslope-data[0].cml_base)})
-				d2.push({x:Date.parse(disData1[a][i].ts) ,y:(disData1[a][i].latslope-data[0].cml_base)})
+				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
+				d2.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base)*1000)})
+
 			}
 		}
 
+		for(var i = 0; i < disData1.length; i++){
+			n1.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)+1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
+				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
+			n2.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)+1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
+				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
+		}
+
 		for(var a = 0; a < data[0].cumulative.length; a++){
-			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:(data[0].cumulative[a].downslope-data[0].cml_base)})
-			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:(data[0].cumulative[a].latslope-data[0].cml_base)})
+			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
+			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
 		}
 		fseries.push({name:'cumulative', data:c1series,type: 'area'});
 		fseries2.push({name:'cumulative', data:c1series,type: 'area'});
@@ -2073,8 +2078,8 @@ function displacementPosition(data_result,data_result_v,site) {
 		velocityPosition(data_result_v,totalId.length,disData1[0],site); 
 		fseries.push({name:'unselect'})
 		fseries2.push({name:'unselect'})
-		chartProcessDis("dis1",fseries,"Displacement, downslope",site)
-		chartProcessDis("dis2",fseries2,"Displacement , across slope",site)
+		chartProcessDis("dis1",fseries,"Displacement, downslope",site,n1)
+		chartProcessDis("dis2",fseries2,"Displacement , across slope",site,n2)
 
 	}     
 
@@ -2163,7 +2168,7 @@ function velocityPosition(data_result,id,date,site) {
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope",site)   
 	}  
 }
-function chartProcessDis(id,data_series,name,site){
+function chartProcessDis(id,data_series,name,site,nPlot){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -2195,14 +2200,13 @@ function chartProcessDis(id,data_series,name,site){
 			},
 		},
 		yAxis:{
+			plotBands:nPlot,
 			title: {
 				text: 'Relative Displacement (mm)'
 			}
 		},
 		tooltip: {
 			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			split: true,
-			// crosshairs: true
 		},
 		plotOptions: {
 			spline: {
@@ -2263,12 +2267,8 @@ function chartProcessInverted(id,data_series,name,site){
 				},
 			},
 			series: {
-            lineWidth: 1
-        }
-		},
-		tooltip: {
-			// crosshairs: true,
-			split: true,
+				lineWidth: 1
+			}
 		},
 		xAxis:{
 			gridLineWidth: 1,
@@ -2279,33 +2279,11 @@ function chartProcessInverted(id,data_series,name,site){
 				text: 'Depth (m)'
 			}
 		},
-		plotOptions: {
-			spline: {
-				marker: {
-					enabled: true
-				}
-			}
-		},
 		credits: {
 			enabled: false
 		},
-		// legend: {
-		// 	layout: 'vertical',
-		// 	align: 'right',
-		// 	verticalAlign: 'middle',
-		// 	borderWidth: 0,
-		// 	itemStyle: {
-		// 		color: '#222'
-		// 	},
-		// 	itemHoverStyle: {
-		// 		color: '#E0E0E3'
-		// 	},
-		// 	itemHiddenStyle: {
-		// 		color: '#606063'
-		// 	}
-		// },
-		credits: {
-			enabled: false
+		legend: {
+			enabled: true
 		},
 		series:data_series
 	});
@@ -2334,7 +2312,7 @@ function chartProcessbase(id,data_series,name,site){
 			text: 'Source: ' + (site).toUpperCase()
 		},
 		tooltip: {
-			split: true,
+			// split: true,
 			// crosshairs: true
 		},
 
@@ -2590,7 +2568,6 @@ function SiteInfo(site){
 }
 
 function heatmapProcess(site,tdate,day){
-	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
