@@ -305,7 +305,7 @@ $(document).ready(function()
 
                         $("#reports_field_sample").clone().attr("id", "report_field_" + release.site).removeClass("in active").attr("hidden", false).appendTo("#reports_field");
                         $("#reports_field_sample").attr("hidden", true).removeClass("in active");
-                        $("#report_field_mag .submit_buttons").attr({id: "submit_" + release.site, disabled: false, "data-value": release.site});
+                        $("#report_field_" + release.site + " .submit_buttons").attr({id: "submit_" + release.site, disabled: false, "data-value": release.site});
 
                         $("#graph_checkbox_sample").clone().attr("id", "graph_checkbox_" + release.site).attr("hidden", false).appendTo("#report_field_" + release.site + " .graphs-div");
 
