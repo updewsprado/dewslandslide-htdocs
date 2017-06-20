@@ -308,8 +308,10 @@ $(document).ready(function()
                         $("#report_field_mag .submit_buttons").attr({id: "submit_" + release.site, disabled: false, "data-value": release.site});
 
                         $("#graph_checkbox_sample").clone().attr("id", "graph_checkbox_" + release.site).attr("hidden", false).appendTo("#report_field_" + release.site + " .graphs-div");
+
                         $("#graph_checkbox_" + release.site + " .rainfall_checkbox").attr("value", "rain_" + release.site);
                         $("#graph_checkbox_" + release.site + " .surficial_checkbox").attr("value", "surficial_" + release.site);
+
                         $("#report_field_" + release.site + " textarea").attr("id", "report_" + release.site);
 
                         // Get sensor columns for graph options
@@ -613,7 +615,6 @@ $(document).ready(function()
 
             window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site, "_blank", "menubar=0");
         }
-
     });
 
     // File uploading 

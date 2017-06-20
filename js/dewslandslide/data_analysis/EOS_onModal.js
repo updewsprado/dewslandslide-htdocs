@@ -5,7 +5,7 @@ $(document).ready(function(e) {
 	var category = values[6]
 	var site = values[7]
 	var connection_id = values[5]
-	alert(connection_id)
+	// alert(connection_id)
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
