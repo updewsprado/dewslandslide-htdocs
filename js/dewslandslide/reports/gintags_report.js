@@ -11,9 +11,11 @@ $(document).ready(function() {
 			dataset.push(dataraw);
 		}
 
-		$('#gintag_table').DataTable( {
+		$('#gintag_table').DataTable({
 			"searching": false,
 			data: dataset,
+			"scrollY": 300,
+			"scrollX": true,
 			columns: [
 			{ title: "Gintag ID" },
 			{ title: "Tagger ID" },
@@ -33,6 +35,7 @@ $(document).ready(function() {
 	});
 
 	$('#go_search').on('click',function(){
+		$('#loading').modal('toggle');
 		var data = {
 			'start_date': $('#start_date').val(),
 			'end_date': $('#end_date').val(),
@@ -104,7 +107,6 @@ function loadSearchedGintag(data) {
 			'database': counter_table_used,
 			'data': counter_duplicate
 		}
-
 		$.post("../gintagshelper/getAllSms", {sms_data : JSON.stringify(sms_data)}).done(function(data) {
 
 			var response = JSON.parse(data);
@@ -125,7 +127,7 @@ function loadSearchedGintag(data) {
 				}
 				datacolumn.push(title);
 			}
-			
+
 			$('#summary_table').DataTable({
 				destroy: true,
 				data: dataset,
@@ -141,6 +143,7 @@ function loadSearchedGintag(data) {
 function loadAnalytics(data_searched) { 
 	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data_searched)}).done(function(data){
 		var response = JSON.parse(data);
+		var compared_data = [];
 		var data_set = [];
 		var total_population = 0;
 		var tag_details = [];
@@ -168,6 +171,40 @@ function loadAnalytics(data_searched) {
 			tag_details.push(tag_raw);
 			data_set.push(piece);
 		}
+
+		for (var counter = 0; counter < response.length; counter++) {
+			var tags_arrayed = $.map(response[counter], function(value, index) {
+			    return [value];
+			});
+			for (var sub_counter = 0; sub_counter < tags_arrayed.length; sub_counter++) {
+				for (var third_counter = 0; third_counter < tags_arrayed[sub_counter].length;third_counter++) {
+					var name = Object.keys(response[counter]);
+					tags_arrayed[sub_counter][third_counter] = $.map(tags_arrayed[sub_counter][third_counter], function(value, index) {
+					    return [value];
+					});
+					tags_arrayed[sub_counter][third_counter].push("#"+name[counter]);
+					compared_data.push(tags_arrayed[sub_counter][third_counter]);
+				}
+			}
+		}
+		$('#gintag_table').DataTable({
+			destroy: true,
+			"searching": false,
+			"scrollY": 300,
+			"scrollX": true,
+			data: compared_data,
+			columns: [
+			{ title: "ID #" },
+			{ title: "Gintag ID" },
+			{ title: "Tagger ID" },
+			{ title: "Table Element ID" },
+			{ title: "Table Used" },
+			{ title: "Timestamp date" },
+			{ title: "Remarks" },
+			{ title: "Tag name" }
+			]
+		});
+
 		$('#analytics-container').empty();
 		$('#analytics-container').append("<h5>Total tag count : <b>"+total_population+"</b></h5>");
 
@@ -224,6 +261,7 @@ function loadAnalytics(data_searched) {
 				}
 			}]
 		});
+		$('#loading').modal('toggle');
 	});
 }
 
