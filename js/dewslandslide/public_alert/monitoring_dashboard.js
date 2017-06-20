@@ -959,7 +959,8 @@ function checkIfAlreadySent(release_id, event_id, timestamp)
         let hour_min = moment(timestamp).format("hh:mm A");
         if(/12:\d{2} PM/g.test(hour_min)) hour_min = hour_min.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(hour_min)) hour_min = hour_min.replace("AM", "MN");
         
-        for( let i = 0; i < temp.length; i++) {
+        for( let i = 0; i < temp.length; i++) 
+        {
             if(temp[i].narrative.includes("Bulletin") && temp[i].narrative.includes(hour_min) || temp[i].narrative.includes("onset"))
             {
             	isBulletinSent = true;
