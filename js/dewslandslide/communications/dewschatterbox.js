@@ -176,12 +176,17 @@ function sendViaAlertMonitor(data){
 				var meridiem = moment(data.data_timestamp).add(30,'m').format("hh:mm A");
 				if (meridiem == "12:00 AM") {
 					meridiem = meridiem.replace("AM","MN");
+				} else if (meridiem == "12:00 PM") {
+					meridiem = meridiem.replace("PM","NN");
 				}
 				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			} else {
 				var meridiem = moment(data.event_start).format("YYYY-MM-DD hh:mm A");
 				if (meridiem.slice(-8) == "12:00 AM") {
 					meridiem = meridiem.replace("AM","MN");
+				}
+				else if (meridiem.slice(-8) == "12:00 PM") {
+					meridiem = meridiem.replace("PM","NN");
 				}
 				formCurrentTime = formSBMP.replace("%%CURRENT_TIME%%",meridiem);
 			}
@@ -206,7 +211,7 @@ function sendViaAlertMonitor(data){
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","08:00 AM");
 				finalEWI = finalEWI.replace("%%N_NOW_TOM%%","mamayang");
 			} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 11:30 PM");
+				formGroundTime = formCurrentTime.replace("%%GROUND_DATA_TIME%%","bago mag 11:30 AM");
 				formGroundTime = formGroundTime.replace("%%NOW_TOM%%","mamaya");
 
 				finalEWI = formGroundTime.replace("%%NEXT_EWI%%","12:00 NN");
@@ -936,7 +941,7 @@ $(document).ready(function() {
 							}
 
 							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-
+							if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 							narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							narrative_recipients = [];
 						} 
@@ -1101,7 +1106,7 @@ function getOngoingEvents(sites){
 									});
 								}
 								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-
+								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
 							}
 						} else {

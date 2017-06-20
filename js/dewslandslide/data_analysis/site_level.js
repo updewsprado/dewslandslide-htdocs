@@ -12,13 +12,28 @@ $(document).ready(function(e) {
 	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)
 		ValueProcess(current_site)
-		$("#soms_search_tool").slideDown()
+		if(current_site.slice(3,4) != 's'){
+			$("#soms_panel").hide()
+		}
 	}else{
 		columnSelect("Select");
 	}
 
 });
-
+function doSortDates(dates){
+	var swapped;
+	do {
+		swapped = false;
+		for (var i=0; i < dates.length-1; i++) {
+			if (dates[i][0] > dates[i+1][0]) {
+				var temp = dates[i][0];
+				dates[i][0] = dates[i+1][0];
+				dates[i+1][0] = temp;
+				swapped = true;
+			}
+		}
+	} while (swapped);
+}
 function columnSelect(site_selected) {
 	$.ajax({ 
 		dataType: "json",
@@ -67,22 +82,28 @@ function submit() {
 			$("#errorMsg").modal('show')
 		}
 	});
-
 }
 function ValueProcess(curSite) {
-	document.getElementById("header-site").innerHTML = curSite.toUpperCase()+" Column Overview"
+	
+	$('.subpanel').on('click',function(){
+		$( '#graph11').switchClass( "", "active");
+	})
+	$('.colpanel').on('click',function(){
+		$( '.subannalysis').switchClass( "active", "");
+	})
 	showCommHealthPlotGeneral(curSite,'com_graph')
 	getAlertmini(curSite,'graph')
 	ColumnDataProcess(curSite)
 	DataPresence(curSite)
+	heatmapProcess(curSite,moment().format('YYYY-MM-DDTHH:00'),'30d')
+	$('.daygeneral').val('30d')
+	$('#reportrange3').val(moment().add(1,'h').format('YYYY-MM-DD HH:00'))
 	$(".soms_heatmap").append('<div class="col-md-12" id="heatmap_div"></div>')
-	$('.daygeneral').prop('disabled', true);
-	var start = moment().subtract(2, 'days'); 
+	// $('.daygeneral').prop('disabled', true);
+	var start = moment(); 
 	$('input[name="datefilter3"]').daterangepicker({
 		timePicker: true,
 		autoUpdateInput: false,
-		timePickerIncrement: 30,
-		maxDate: new Date(),
 		opens: "right",
 		startDate: start,
 		locale: {
@@ -102,15 +123,52 @@ function ValueProcess(curSite) {
 		$(".heatmapClass").empty()
 		$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
 			'<select class="daygeneral" id="daygeneral"> <option value="">...</option><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select>')
-		$('#daygeneral').on('change', function() {
+		if($('#daygeneral').val() != ""){
+			heatmapProcess(curSite,(tdate+"T"+time),$('#daygeneral').val())
+		}else{
+			$('#daygeneral').on('change', function() {
 
-			heatmapProcess(curSite,(tdate+"T"+time),this.value)
-		})
+				heatmapProcess(curSite,(tdate+"T"+time),this.value)
+			})
+		}
+		
 	});
 
 	$('input[name="datefilter2"]').on('cancel.daterangepicker', function(ev, picker) {
 		$(this).val('Select Date');
 	});
+
+
+	var fromDate = 'n';
+	var toDate = 'n';
+	let dataSubmit = { 
+		site : curSite, 
+		fdate : fromDate,
+		tdate : toDate
+	}
+
+	allSensorPosition(dataSubmit)
+	var start = moment().subtract(2, 'days'); 
+	var end = moment();
+	
+
+	$('#reportrange').daterangepicker({
+		autoUpdateInput: true,
+		startDate: start,
+		endDate: end,
+		opens: "rigth",
+		ranges: {
+			'Today': [moment(), moment()],
+			'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+			'This Month': [moment().startOf('month'), moment().endOf('month')],
+			'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		}
+	}, cb);
+
+	cb(start, end);
+
 }
 function removeDuplicates(num) {
 	var x,
@@ -132,17 +190,16 @@ function getAlertmini(site,siteDiv){
 	let dataSubmit = { site:site}
 	$.ajax({url: "/node_level_page/getAllSingleAlertGet/"+site,
 		dataType: "json",error: function(xhr, textStatus, errorThrown){
-				submit()
-				$("#errorMsg").modal('show')},
-		success: function(data){
-			console.log(data)
-			var result = data;
-			nodeAlertJSON = JSON.parse(result.nodeAlerts)
-			maxNodesJSON = JSON.parse(result.siteMaxNodes)
-			nodeStatusJSON = JSON.parse(result.nodeStatus)
-			initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
-		}
-	});
+			submit()
+			$("#errorMsg").modal('show')},
+			success: function(data){
+				var result = data;
+				nodeAlertJSON = JSON.parse(result.nodeAlerts)
+				maxNodesJSON = JSON.parse(result.siteMaxNodes)
+				nodeStatusJSON = JSON.parse(result.nodeStatus)
+				initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
+			}
+		});
 }
 
 function ColumnDataProcess(site){
@@ -152,9 +209,10 @@ function ColumnDataProcess(site){
 			var result = data;
 			var site_details = []
 			for (i = 0; i < result.length; i++) {
-				site_details.push([result[i].name ,result[i].version , 'logger' , result[i].date_install , result[i].date_activation , result[i].region , result[i].barangay , 
-					result[i].municipality , result[i].province , 'network' ,'number'])
+				site_details.push([result[i].date_install , result[i].date_activation , result[i].region , result[i].barangay , 
+					result[i].municipality , result[i].province])
 			}
+			document.getElementById("header-site").innerHTML = site.toUpperCase()+"(v"+result[result.length-1].version+") Column Overview"
 			$('#siteD').DataTable( {
 				data:  site_details,
 				"processing": true,
@@ -263,6 +321,7 @@ function DataPresence(site){
 
 
 function heatmapProcess(site,tdate,day){		
+	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -357,7 +416,8 @@ function heatmapProcess(site,tdate,day){
 					}
 				});
 			}else{
-				$(".daygeneral").hide()
+				// $(".daygeneral").hide()
+				$("#heatmap_div").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
 			}
 		}
@@ -549,7 +609,521 @@ function heatmapVisual(series_data,list_time,list_id){
 		.attr("transform", "translate(0," + (10) + ")")
 		.call(xAxis);
 	}else{
-		$(".daygeneral").hide();
+		// $(".daygeneral").hide();
+		$("#heatmap_div").empty()
 		$("#heatmap_div").append('<div id="heatmap_container"><h3 style="text-align: center"> NO DATA </h3></div>')
 	}
+}
+
+
+
+
+/*SUBSURFACE*/
+
+function cb(start, end) {
+	$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
+	// alert(time) 
+	if($("#sitegeneral").val() != null){
+
+		var curSite = $("#sitegeneral").val();
+		var fromDate = $('#reportrange span').html().slice(0,10);
+		var toDate = $('#reportrange span').html().slice(13,23);
+		var time = moment().format('HH:mm:ss')
+		let dataSubmit = { 
+			site : curSite, 
+			fdate : fromDate+"T"+time,
+			tdate : toDate+"T"+time
+		}
+
+		allSensorPosition(dataSubmit)
+	}
+}
+
+function allSensorPosition(data_result) {
+	$.ajax({url: "/api/SensorAllAnalysisData/"+data_result.site+"/"+data_result.fdate+"/"+data_result.tdate,
+		dataType: "json",
+		success: function(result){
+			var data = JSON.parse(result);
+			columnPosition(data[0].c)
+			// console.log(data)
+			displacementPosition(data[0].d,data[0].v)
+		}
+	});
+}
+function columnPosition(data_result) {
+	if(data_result== "error"){
+		$("#graph").hide();
+		$("#errorMsg").append('<center>Select new timestamp</h1></center>');
+	}else{
+		var data = data_result;
+		var AlllistId = [] ,  AlllistDate = [];
+		var listId = [] , listDate = [];
+		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
+		var fseries2=[] , fdatalat= [],fAlllat =[] ;
+		for(var i = 0; i < data.length; i++){
+			AlllistId.push(data[i].id);
+		}
+		for(var i = 0; i < data.length; i++){
+			AlllistDate.push(data[i].ts);
+			if(data[i].id == data[i+1].id){
+				listDate.push(data[i].ts)
+			}else{
+				listDate.push(data[i].ts)
+				break;
+			}
+		}
+		for(var i = 0; i < AlllistId.length; i++){
+			if(AlllistId[i] != AlllistId[i+1]){
+				listId.push(AlllistId[i])
+			}
+		}
+
+		var sortlist = listDate.sort()
+		for(var i = 0; i < listDate.length; i++){
+			for(var a = 0; a < data.length; a++){
+				if(sortlist[i] == data[a].ts){
+					fdatadown.push([data[a].downslope*1000,data[a].depth])
+					fdatalat.push([data[a].latslope*1000,data[a].depth])
+				}
+			}
+		}
+
+		for(var a = 0; a < fdatadown.length; a++){
+			var num = fdatadown.length-(listId.length*a);
+			if(num >= 0 ){
+				fnum.push(num);
+			}
+		}
+		for(var a = fnum.length-1; a >= 0; a--){
+			if(fnum[a+1] != undefined){
+				fAlldown.push(fdatadown.slice(fnum[a+1],fnum[a]))
+				fAlllat.push(fdatalat.slice(fnum[a+1],fnum[a]))
+			}
+		}
+		for(var a = 0; a < fAlldown.length; a++){
+			var color = parseInt((255 / fAlldown.length)*(a+1))
+			fseries.push({name:sortlist[a], data:fAlldown[a] ,color:inferno[color]})
+			fseries2.push({name:sortlist[a],  data:fAlllat[a],color:inferno[color]})
+		}
+		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)")
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)")
+		// console.log(bubble_Sort(fseries2));
+	}     
+}
+
+function displacementPosition(data_result,data_result_v) {
+	if(data_result == "error"){
+		$("#graph1").hide();
+	}else{
+		var data = data_result;
+		var totalId =[] , listid = [0] ,allTime=[] ,allId=[] , totId = [];
+		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
+		var disData1 = [] , disData2 = [];
+		var fseries = [], fseries2 = [];
+		var c1series =[], c2series =[];
+		var d1= [] , d2 =[] , n1=[], n2=[];
+
+		for(var i = 0; i < data[0].disp.length; i++){
+			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
+				totalId.push(data[0].disp[i]);
+			}else{
+				totalId.push(data[0].disp[i]);
+				break;
+			}
+		}
+		for(var i = 1; i < totalId.length +1 ; i++){
+			for(var a = 0; a < data[0].disp.length; a++){
+				if(i == data[0].disp[a].id){
+					fixedId.push(data[0].disp[a]);
+				}
+			}
+		}
+		for(var i = 1; i < fixedId.length-1; i++){
+			if(fixedId[i].id != fixedId[i+1].id){
+				allIdData.push(i)
+			}
+			if(fixedId[i-1].id == fixedId[i].id){
+				totId.push(fixedId[i].id)
+			}else{
+				totId.push(fixedId[i].id)
+				break;
+			}
+		}
+
+		for(var i = fixedId.length - 1; i >= 0 ; i--){
+			var num = fixedId.length-(totId.length*i);
+			if(num >= 0 ){
+				listid.push(num);
+			}
+		}
+
+		for(var a = 1; a < (listid.length-1); a++){
+			if(listid[a] != undefined){
+				disData1.push(fixedId.slice(listid[a],listid[a+1]));
+				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
+			}
+		}
+		
+		for(var a = 0; a < disData1.length; a++){
+			for(var i = 0; i < disData1[0].length; i++){
+				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
+				d2.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base)*1000)})
+
+			}
+		}
+
+		for(var i = 0; i < disData1.length; i++){
+			n1.push({from:((disData1[i][0].downslope-data[0].cml_base)*1000),to:(((disData1[i][0].downslope-data[0].cml_base)*1000)+1),
+				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
+			n2.push({from:((disData1[i][0].downslope-data[0].cml_base)*1000),to:(((disData1[i][0].downslope-data[0].cml_base)*1000)+1),
+				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
+		}
+
+		for(var a = 0; a < data[0].cumulative.length; a++){
+			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
+			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
+		}
+		fseries.push({name:'cumulative', data:c1series,type: 'area'});
+		fseries2.push({name:'cumulative', data:c1series,type: 'area'});
+		for(var a = 1; a < disData1.length+1; a++){
+			var color = parseInt((255 / disData1.length)*(a))
+			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
+		}
+		velocityPosition(data_result_v,totalId.length,disData1[0]); 
+		fseries.push({name:'unselect'})
+		fseries2.push({name:'unselect'})
+		chartProcess("dis1",fseries,"Displacement, downslope",n1)
+		chartProcess("dis2",fseries2,"Displacement , across slope",n2)
+
+
+	}     
+	
+}
+function velocityPosition(data_result,id,date) {
+	if(data_result == "error"){
+		$("#graph2").hide();
+	}else{
+		var data = data_result;
+		var allTime = [] , dataset= [] , sliceData =[];
+		var fseries = [], fseries2 = [] ;
+		var l2 =[] , l3=[] , alldataNotSlice=[];
+
+		if(data[0].L2.length != 0){
+			var catNum=[1];
+			for(var a = 0; a < data[0].L2.length; a++){
+				allTime.push(data[0].L2[a].ts)
+				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
+			}
+			var symbolD = 'url(http://icons.iconarchive.com/icons/kyo-tux/soft/32/Alert-icon.png)';
+			for(var a = 0; a < data[0].L2.length; a++){
+				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
+				fseries2.push({type: 'scatter', zIndex:5 ,name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
+			}
+			for(var a = 0; a < data[0].L3.length; a++){
+				allTime.push(data[0].L3[a].ts)
+				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
+			}
+			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
+			for(var a = 0; a < data[0].L3.length; a++){
+				fseries.push({ type: 'scatter', zIndex:5 , name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
+				fseries2.push({type: 'scatter', zIndex:5,name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
+			}
+			for(var i = 0; i < id; i++){
+				for(var a = 0; a < allTime.length; a++){
+					dataset.push([Date.parse(allTime[a]) , i+1])
+				}
+			}
+			for(var a = 0; a < dataset.length; a++){
+				for(var i = 0; i < id; i++){
+					if(dataset[a][1] == i){
+						alldataNotSlice.push(dataset[a])
+					}
+				}
+			}
+
+			for(var i = alldataNotSlice.length - 1; i >= 0 ; i--){
+				var num = alldataNotSlice.length-(allTime.length*i);
+				if(num >= 0 ){
+					sliceData.push(num);
+				}
+			}
+			for(var a = 0; a < sliceData.length; a++){
+				catNum.push((sliceData.length-1)-(a+1)+2)
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+			}
+		}else{
+			var catNum=[];
+			for(var a = 0; a < id ; a++){
+				for(var i = 0; i < date.length; i++){
+					dataset.push([Date.parse(date[i].ts),a]);
+				}
+			}
+
+			for(var i = dataset.length - 1; i >= 0 ; i--){
+				var num = dataset.length-(date.length*i);
+				if(num >= 0 ){
+					sliceData.push(num);
+				}
+			}
+
+			for(var a = 0; a < sliceData.length-1; a++){
+				catNum.push((sliceData.length-2)-(a+1)+2)
+				var color = parseInt((255 / sliceData.length)*(a+1))
+				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+			}					
+		}
+
+		var sorted_fseries =[]
+		for (var counter = 0; counter < fseries.length;counter++){
+			sorted_fseries.push(doSortDates(fseries[counter].data));
+		}
+
+		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope")
+		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope")   
+	}  
+}
+function chartProcess(id,data_series,name,nPlot){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 800,
+			width:1100
+		},
+		title: {
+			text: name,
+		},
+		yAxis: {
+			plotBands:nPlot,
+			title: {
+				text: 'Displacement'
+			},
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			
+			
+		},
+		plotOptions: {
+			
+			line: {
+				marker: {
+					enabled: false
+				}
+			},
+			area: {
+				marker: {
+					enabled: false
+				}
+			},
+		},
+		credits: {
+			enabled: false
+		},
+		legend: {
+			enabled: false
+		},
+		series:data_series
+	});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < data_series.length-1; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
+			}
+		}
+	});
+}
+
+function chartProcessInverted(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 1000,
+			width: 550
+		},
+		title: {
+			text: name,
+		},
+		xAxis: {
+			gridLineWidth: 1,
+		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: true,
+				},
+			},
+			series: {
+				lineWidth: 1
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+}
+
+function chartProcessbase(id,data_series,name){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 500,
+			width: 1100
+		},
+		title: {
+			text: name
+		},
+		credits: {
+			enabled: false
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			}
+		},
+		legend: {
+			enabled: false
+		},
+		yAxis: {
+			title: {
+				text: 'Depth'
+			},
+
+		},
+		plotOptions: {
+			
+			line: {
+				marker: {
+					enabled: false
+				}
+			},
+		},
+		series:data_series
+	});
+}
+function dataPresencePerSite(site){
+	$.ajax({url: "/site_level_page/getDatafromSiteDataPresence/"+site+"/2016-04-20/2016-04-21",
+		dataType: "json",
+		success: function(result){
+			var time_non_moment = []
+			var time_index_obj =[]
+			var time_data =[]
+			var pattern = []
+			for (a = 0; a < 48; a++) {
+				var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+				time_non_moment.push(time.format('YYYY-MM-DD HH:mm:ss'))
+			}
+			time_non_moment.reverse()
+			for (b = 0; b < 48; b++) {
+				var time = moment(result[0].timeslice).subtract(a*30, "minutes")
+				time_index_obj.push({index:b,time:time_non_moment[b]})
+			}
+			for (c = 0; c < time_non_moment.length; c++) {
+				for (d = 0; d < result.length; d++) {
+					if(time_non_moment[c] == result[d].timeslice){
+						time_data.push(c)
+					}
+				}
+			}
+
+			colors = [ "#1a9850", "#222"]
+			for (e = 0; e < time_data.length; e++) {
+				pattern.push({index_x:time_data[e],index_y:1,time:time_data[e],timestamp:time_non_moment[time_data[e]]})
+			}
+			
+
+			var colorDomain = d3.extent(pattern, function(d) {
+				return d.time;
+			});
+
+			var colorScale = d3.scale.linear()
+			.domain(colorDomain)
+			.range(colors);
+
+			var tip = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function(d) {
+				return "<strong>timestamp:</strong> <span style='color:red'>"+d.timestamp+"</span>";
+			}) 
+
+
+			var svg = d3.select(".heatmap")
+			.append("svg")
+			.attr("width", 48 * 25)
+			.attr("height", 100);
+
+
+			svg.call(tip);
+
+
+			var rectangles = svg.selectAll("rect")
+			.data(pattern)
+			.enter().append("rect");
+
+			rectangles.attr("x", function(d) {
+				return d.index_x * 17;})
+			.attr("y", function(d) {
+				return d.index_y * 17;})
+			.attr("width", 15)
+			.attr("height", 15).
+			style("fill", function(d) {
+				return colorScale(d.index_x);})
+			.on('mouseover', tip.show)
+			.on('mouseout', tip.hide)
+		}
+	});
 }
