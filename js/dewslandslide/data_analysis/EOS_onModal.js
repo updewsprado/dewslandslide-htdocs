@@ -2,9 +2,11 @@
 $(document).ready(function(e) {
 
 	var values = window.location.href.split("/")
-	var category = values[5]
-	var site = values[6]
-	// $(".box").hide();
+	var category = values[6]
+	var site = values[7]
+	var connection_id = values[5]
+	alert(connection_id)
+	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
@@ -88,8 +90,8 @@ $(document).ajaxStop(function () {
 function SelectdaysOption(id) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var values = window.location.href.split("/")
-		var category = values[5]
-		var site = values[6]
+		var category = values[6]
+		var site = values[7]
 		
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
 		var from;
@@ -1368,9 +1370,11 @@ function chartProcessbase(id,data_series,name,site){
 
 function svgChart(idBox) {
 	var values = window.location.href.split("/")
-	var category = values[5]
-	var site = values[6]
+	var connection_id = values[5]
+	var category = values[6]
+	var site = values[7]
 
+	alert(connection_id)
 	var name_site = ((($( "tspan" ).text()).split('.')))
 	var extracted_name = (name_site[0]).split(' ');
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
@@ -1458,7 +1462,7 @@ function svgChart(idBox) {
 	}
 
 
-	$.post("/../chart_export/saveChartSVG", { svg : all_data , site : site , type :category } )
+	$.post("/../chart_export/saveChartSVG", { svg : all_data , site : site , type :category , connection_id:connection_id} )
 	.done(function (data) {
 		console.log('done')
 	})
