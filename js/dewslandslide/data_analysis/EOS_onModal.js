@@ -1374,7 +1374,6 @@ function svgChart(idBox) {
 	var category = values[6]
 	var site = values[7]
 
-	alert(connection_id)
 	var name_site = ((($( "tspan" ).text()).split('.')))
 	var extracted_name = (name_site[0]).split(' ');
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
