@@ -441,7 +441,7 @@ function keyInputAutocomplete() {
         backboneCategoryAutocomplete(response);
         $('#alert_symbols').on('change',function(){
             for(var counter = 0; counter < response.data.length; counter++){
-                if ($(this).val() == response.data[counter].alert_symbol_level) {
+                if ($(this).val() == response.data[counter].alert_symbol_level && $('#alert_status').val() == response.data[counter].alert_status) {
                     $('#techinfo_template').prop('disabled', true);
                     $('#techinfo_template').val(response.data[counter].key_input);
                     break;
@@ -470,7 +470,6 @@ function keyInputAutocomplete() {
         $('#alert_status').on('change',function(){
             $.post('../communications/getbackboneviastatus',{alert_status: $('#alert_status').val()}).done(function(data){
                 var response = JSON.parse(data);
-                console.log(response);
                 $('#backbone_template').trigger("change");
                 $('#backbone_template').text(response[0].template);
                 $('#backbone_template').val(response[0].template);

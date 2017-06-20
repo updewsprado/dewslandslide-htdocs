@@ -128,13 +128,16 @@ function loadSearchedGintag(data) {
 				datacolumn.push(title);
 			}
 
-			$('#summary_table').DataTable({
+			var summary = $('#summary_table').DataTable({
 				destroy: true,
+			    "bScrollCollapse": true,
+			    "bAutoWidth": true,
+			    "sScrollX": "100%",
+			    "sScrollXInner": "100%",
 				data: dataset,
-				"scrollY": 300,
-				"scrollX": true,
 				columns: datacolumn
 			});
+			$('#loading').modal('toggle');
 			$('#tag_summary').modal('toggle');
 		});
 	})
@@ -249,6 +252,7 @@ function loadAnalytics(data_searched) {
 				point: {
 					events: {
 						click: function() {
+							$('#loading').modal('toggle');
 							var data = {
 								'start_date': $('#start_date').val(),
 								'end_date': $('#end_date').val(),
