@@ -106,6 +106,7 @@ function loadSearchedGintag(data) {
 		}
 
 		$.post("../gintagshelper/getAllSms", {sms_data : JSON.stringify(sms_data)}).done(function(data) {
+
 			var response = JSON.parse(data);
 			var dataset = [];
 			var datacolumn = [];
@@ -124,22 +125,20 @@ function loadSearchedGintag(data) {
 				}
 				datacolumn.push(title);
 			}
-
-			var summaryTable = $('#summary_table').DataTable({
+			
+			$('#summary_table').DataTable({
+				destroy: true,
 				data: dataset,
+				"scrollY": 300,
+				"scrollX": true,
 				columns: datacolumn
 			});
-			summaryTable.destroy();
-			$('#summary_table').DataTable({
-				"scrollY": 300,
-				"scrollX": true
-			})
-			
+			$('#tag_summary').modal('toggle');
 		});
 	})
 }
 
-function loadAnalytics(data_searched) {
+function loadAnalytics(data_searched) { 
 	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data_searched)}).done(function(data){
 		var response = JSON.parse(data);
 		var data_set = [];
@@ -218,9 +217,8 @@ function loadAnalytics(data_searched) {
 								'end_date': $('#end_date').val(),
 								'gintags': "#"+this.name
 							}
-							loadSearchedGintag(data);
 							$('#tag_summary .modal-title').text('Tag summary for #'+this.name);
-							$('#tag_summary').modal('toggle');
+							loadSearchedGintag(data);
 						}
 					}
 				}
