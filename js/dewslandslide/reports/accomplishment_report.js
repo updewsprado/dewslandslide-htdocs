@@ -640,7 +640,12 @@ $(document).ready(function()
         let svg = [];
         $("#graph_checkbox_" + site).find("input[type=checkbox]:checked")
         .each(function (index, cbox) {
-            svg.push($(this).val());
+            let val = $(this).val();
+            if( val.search("subsurface") == -1 ) {
+                let x = val.search("_");
+                val = val.slice(0, x);
+            }
+            svg.push(val);
         });
 
         $("#loading .progress-bar").text("Rendering end-of-shift charts...");
