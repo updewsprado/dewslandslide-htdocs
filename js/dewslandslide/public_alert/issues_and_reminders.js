@@ -325,10 +325,6 @@ function onLoadIssuesPage() {
         $(this).data("DateTimePicker").minDate(moment().second(0));
     });
 
-    $("#lock").click(function () {
-        lock_button();
-    });
-
     let temp = {};
     $("#issuesForm").validate(
     {
@@ -542,6 +538,7 @@ function loadTables()
                 className: 'btn btn-danger iar_modal_link',
                 action: function ( e, dt, node, config ) {
                     $("#issuesAndRemindersModal").modal("show");
+                    onLoadIssuesModal();
                 }
             }
         ],
