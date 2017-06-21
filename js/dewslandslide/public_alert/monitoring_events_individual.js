@@ -242,7 +242,7 @@ $(document).ready(function()
                 text = text.substr(0, i) + "<b>" + text.substr(i) + "</b>";
                 
                 subject = $("#subject").text();
-                filename = $("#filename").text();
+                filename = $("#filename").text() + ".pdf";
                 sendMail(text, subject, filename, recipients);
             }
         })
