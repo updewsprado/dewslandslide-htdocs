@@ -1,7 +1,6 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(data){
-
 	var alert_site_name = "";
 	if (data.name == "msu" || data.name == "msl") {
 		alert_site_name = "mes";
@@ -976,7 +975,7 @@ $(document).ready(function() {
 							if (moment(rounded_release).hour() % 4 == 0) {
 								last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
 							} else {
-								last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
+								last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour() - moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
 							}
 
 							var lastReleaseData = {
@@ -995,7 +994,7 @@ $(document).ready(function() {
 										'province': event_details.province,
 										'barangay': event_details.barangay,
 										'sition': event_details.sition,
-										'ewi_sms_timestamp': rounded_release,
+										'ewi_sms_timestamp': moment(rounded_release).subtract(1,'m').format('YYYY-MM-DD HH:mm:ss'),
 										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 									}
 									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
