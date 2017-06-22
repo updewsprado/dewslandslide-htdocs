@@ -6,32 +6,36 @@ $(document).ready(function() {
 
 		for (var counter = 0; counter < response.length; counter++) {
 			var dataraw = $.map(response[counter], function(value, index) {
-			    return [value];
+				return [value];
 			});
 			dataset.push(dataraw);
 		}
 
-		    $('#gintag_table').DataTable( {
-		        data: dataset,
-		        columns: [
-		            { title: "Gintag ID" },
-		            { title: "Tagger ID" },
-		            { title: "Table Element ID" },
-		            { title: "Table Used." },
-		            { title: "Timestamp date" },
-		            { title: "Remarks" },
-		            { title: "Tag name" },
-		            { title: "Tag Description" }
-		        ]
-	    });
+		$('#gintag_table').DataTable({
+			"searching": false,
+			data: dataset,
+			"scrollY": 300,
+			"scrollX": true,
+			columns: [
+			{ title: "Gintag ID" },
+			{ title: "Tagger ID" },
+			{ title: "Table Element ID" },
+			{ title: "Table Used." },
+			{ title: "Timestamp date" },
+			{ title: "Remarks" },
+			{ title: "Tag name" },
+			{ title: "Tag Description" }
+			]
+		});
 	});
 
 	$('#date-start,#date-end').datetimepicker({
-	    locale: 'en',
-	    format: 'YYYY-MM-DD'
+		locale: 'en',
+		format: 'YYYY-MM-DD'
 	});
 
 	$('#go_search').on('click',function(){
+		$('#loading').modal('toggle');
 		var data = {
 			'start_date': $('#start_date').val(),
 			'end_date': $('#end_date').val(),
@@ -78,9 +82,71 @@ function isFieldEmpty() {
 	
 }
 
-function loadAnalytics(data) {
-	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data)}).done(function(data){
+function loadSearchedGintag(data) {
+	$.post('../gintagshelper/getSearchedGintag',{search_values: JSON.stringify(data)}).done(function(data){
 		var response = JSON.parse(data);
+		var arrayed_response = $.map(response, function(value, index) {
+			return [value];
+		});
+
+		var counter_duplicate = [];
+		var counter_table_used = [];
+		for (var counter = 0;counter < arrayed_response[0].length;counter++) {
+			if ($.inArray(arrayed_response[0][counter].table_element_id,counter_duplicate) === -1) {
+				counter_duplicate.push(arrayed_response[0][counter].table_element_id);
+			}
+
+			if ($.inArray(arrayed_response[0][counter].table_used,counter_table_used) === -1) {
+				if (arrayed_response[0][counter].table_used != "") {
+					counter_table_used.push(arrayed_response[0][counter].table_used);
+				}
+			}
+		}
+
+		var sms_data = {
+			'database': counter_table_used,
+			'data': counter_duplicate
+		}
+		$.post("../gintagshelper/getAllSms", {sms_data : JSON.stringify(sms_data)}).done(function(data) {
+
+			var response = JSON.parse(data);
+			var dataset = [];
+			var datacolumn = [];
+			var dataraw= [];
+
+			for (var counter = 0; counter < response.sms.length; counter++) {
+				var dataraw = $.map(response.sms[counter], function(value, index) {
+					return [value];
+				});
+				dataset.push(dataraw);
+			}
+
+			for (var counter = 0; counter < response.columns.length;counter++) {
+				var title = {
+					title: response.columns[counter].Field
+				}
+				datacolumn.push(title);
+			}
+
+			var summary = $('#summary_table').DataTable({
+				destroy: true,
+			    "bScrollCollapse": true,
+			    "bAutoWidth": true,
+			    "sScrollX": "100%",
+			    "sScrollXInner": "100%",
+				data: dataset,
+				columns: datacolumn
+			});
+			$('#loading').modal('toggle');
+			$('#tag_summary').modal('toggle');
+		});
+	})
+}
+
+function loadAnalytics(data_searched) { 
+	$.post("../generalinformation/getanalytics",{data : JSON.stringify(data_searched)}).done(function(data){
+		var response = JSON.parse(data);
+		var compared_data = [];
 		var data_set = [];
 		var total_population = 0;
 		var tag_details = [];
@@ -108,6 +174,40 @@ function loadAnalytics(data) {
 			tag_details.push(tag_raw);
 			data_set.push(piece);
 		}
+
+		for (var counter = 0; counter < response.length; counter++) {
+			var tags_arrayed = $.map(response[counter], function(value, index) {
+			    return [value];
+			});
+			for (var sub_counter = 0; sub_counter < tags_arrayed.length; sub_counter++) {
+				for (var third_counter = 0; third_counter < tags_arrayed[sub_counter].length;third_counter++) {
+					var name = Object.keys(response[counter]);
+					tags_arrayed[sub_counter][third_counter] = $.map(tags_arrayed[sub_counter][third_counter], function(value, index) {
+					    return [value];
+					});
+					tags_arrayed[sub_counter][third_counter].push("#"+name[counter]);
+					compared_data.push(tags_arrayed[sub_counter][third_counter]);
+				}
+			}
+		}
+		$('#gintag_table').DataTable({
+			destroy: true,
+			"searching": false,
+			"scrollY": 300,
+			"scrollX": true,
+			data: compared_data,
+			columns: [
+			{ title: "ID #" },
+			{ title: "Gintag ID" },
+			{ title: "Tagger ID" },
+			{ title: "Table Element ID" },
+			{ title: "Table Used" },
+			{ title: "Timestamp date" },
+			{ title: "Remarks" },
+			{ title: "Tag name" }
+			]
+		});
+
 		$('#analytics-container').empty();
 		$('#analytics-container').append("<h5>Total tag count : <b>"+total_population+"</b></h5>");
 
@@ -118,38 +218,54 @@ function loadAnalytics(data) {
 		}
 
 		Highcharts.chart('chart-container', {
-		    chart: {
-		        plotBackgroundColor: null,
-		        plotBorderWidth: null,
-		        plotShadow: false,
-		        type: 'pie'
-		    },
-		    title: {
-		        text: generateChartTitle(title_details)
-		    },
-		    tooltip: {
-		        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>'+
-		        				'Tag count: <b>{point.count}</b>'
-		    },
-		    plotOptions: {
-		        pie: {
-		            allowPointSelect: true,
-		            cursor: 'pointer',
-		            dataLabels: {
-		                enabled: true,
-		                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-		                style: {
-		                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-		                }
-		            }
-		        }
-		    },
-		    series: [{
-		        name: 'Tags',
-		        colorByPoint: true,
-		        data: data_set
-		    }]
+			chart: {
+				plotBackgroundColor: null,
+				plotBorderWidth: null,
+				plotShadow: false,
+				type: 'pie'
+			},
+			title: {
+				text: generateChartTitle(title_details)
+			},
+			tooltip: {
+				pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b><br>'+
+				'Tag count: <b>{point.count}</b>'
+			},
+			plotOptions: {
+				pie: {
+					cursor: 'pointer',
+					allowPointSelect: true,
+					cursor: 'pointer',
+					dataLabels: {
+						enabled: true,
+						format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+						style: {
+							color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+						}
+					}
+				}
+			},
+			series: [{
+				name: 'Tags',
+				colorByPoint: true,
+				data: data_set,
+				point: {
+					events: {
+						click: function() {
+							$('#loading').modal('toggle');
+							var data = {
+								'start_date': $('#start_date').val(),
+								'end_date': $('#end_date').val(),
+								'gintags': "#"+this.name
+							}
+							$('#tag_summary .modal-title').text('Tag summary for #'+this.name);
+							loadSearchedGintag(data);
+						}
+					}
+				}
+			}]
 		});
+		$('#loading').modal('toggle');
 	});
 }
 

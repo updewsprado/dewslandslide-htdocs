@@ -70,7 +70,7 @@ $(document).ready( function() {
                 else text = "<b>" + text + "</b>";
 
                 subject = $("#subject").text();
-                filename = $("#filename").text();
+                filename = $("#filename").text() + ".pdf";
                 sendMail(text, subject, filename, recipients);
             }
         })

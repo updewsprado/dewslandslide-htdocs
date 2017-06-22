@@ -7,6 +7,15 @@
  *	
 ****/
 
+.nav-tabs>li>a {
+    background-color: #eee !important;
+    color: #333;
+}
+
+.nav-tabs>li.active>a{
+    background-color: #fff !important;
+}
+
 .inner-hr {
     margin-top: 10px;
     margin-bottom: 25px;
