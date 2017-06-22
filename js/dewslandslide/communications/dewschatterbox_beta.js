@@ -1311,7 +1311,6 @@ function getOngoingEvents(sites){
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							console.log("GO HERE!!");
 							var start = moment().format('YYYY-MM-DD HH:mm:ss');
 							var rounded_release;
 							var last_rounded_release;

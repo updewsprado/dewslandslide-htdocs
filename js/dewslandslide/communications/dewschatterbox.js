@@ -961,7 +961,48 @@ $(document).ready(function() {
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							console.log(response);
+							var start = moment().format('YYYY-MM-DD HH:mm:ss');
+							var rounded_release;
+							var last_rounded_release;
+
+							if (moment(start).minute() < 30) {
+								var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
+							} else {
+								var rounded_release = moment(start).add(1,'h').startOf('hour').format('YYYY-MM-DD HH:mm:ss');
+							}
+
+							var current_release_day = moment(start).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+							if (moment(rounded_release).hour() % 4 == 0) {
+								last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
+							} else {
+								last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
+							}
+
+							var lastReleaseData = {
+								'event_id': event_details.event_id,
+								'current_release_time': rounded_release,
+								'last_release_time': last_rounded_release
+							}
+
+							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
+								var response = JSON.parse(data);
+								if (response.ack == "no_ack") {
+									var narrative_details = {
+										'event_id': event_details.event_id,
+										'site_id': event_details.site_id,
+										'municipality': event_details.municipality,
+										'province': event_details.province,
+										'barangay': event_details.barangay,
+										'sition': event_details.sition,
+										'ewi_sms_timestamp': rounded_release,
+										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+									}
+									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
+										console.log(data);
+									});
+								}
+							});
 						});
 					} 
 				});
@@ -1121,9 +1162,45 @@ function getOngoingEvents(sites){
 						console.log(narrative_details);
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							console.log(response);
-						});
+							var start = moment().format('YYYY-MM-DD HH:mm:ss');
+							var rounded_release;
+							var last_rounded_release;
 
+							if (moment(start).minute() < 30) {
+								var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
+							} else {
+								var rounded_release = moment(start).add(1,'h').startOf('hour').format('YYYY-MM-DD HH:mm:ss');
+							}
+
+							var current_release_day = moment(start).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+							if (moment(rounded_release).hour() % 4 == 0) {
+								last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
+							} else {
+								last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
+							}
+
+							var lastReleaseData = {
+								'event_id': events[counter].event_id,
+								'current_release_time': rounded_release,
+								'last_release_time': last_rounded_release
+							}
+
+							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
+								var response = JSON.parse(data);
+								if (response.ack == "no_ack") {
+									var narrative_details = {
+										'event_id': events[counter].event_id,
+										'site_id': siteids[siteid_counter].id,
+										'ewi_sms_timestamp': rounded_release,
+										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+									}
+									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
+										console.log(data);
+									});
+								}
+							});
+						});
 					}
 				}
 			}
