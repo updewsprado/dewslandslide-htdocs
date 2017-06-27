@@ -790,7 +790,9 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	});
 
 
-	svgChart('rain') 
+	setTimeout(function(){
+		svgChart('rain') 
+	}, 5000);
 	
 
 }
