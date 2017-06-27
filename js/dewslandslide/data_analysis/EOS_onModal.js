@@ -677,9 +677,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		series:series_data
 	});
 
-	// setTimeout(function(){
-	// 	svgChart(id) 
-	// }, 1000);
 
 }
 
