@@ -1272,7 +1272,7 @@ function getOngoingEvents(sites){
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
 							} else {
-								narrative_template = "Ground measurement reminder acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+								narrative_template = gintags_msg_details[1]+"sent surficial measurement <insert trend here>";
 							}
 						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
 
