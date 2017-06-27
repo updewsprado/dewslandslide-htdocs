@@ -449,7 +449,6 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
 
-					ALERT(site)
 				}
 			})
 	}
@@ -1499,9 +1498,9 @@ function svgChart(idBox) {
 		}).get();
 
 		if(ids.length == 4){
-			$('#rainBox').attr("height", "1000");
+			$('#rainBox').attr("height", "1200");
 		}else if(ids.length == 5){
-			$('#rainBox').attr("height", "1300");
+			$('#rainBox').attr("height", "1600");
 		}
 
 		for (var i = 0; i < ids.length; i++) {
