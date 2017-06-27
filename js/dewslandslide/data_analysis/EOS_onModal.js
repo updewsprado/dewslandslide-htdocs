@@ -12,9 +12,6 @@ $(document).ready(function(e) {
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
 		var to = moment().format('YYYY-MM-DD')
 		RainFallProcess(site,from,to)
-	// 	setTimeout(function(){
-	// 	svgChart('rain') 
-	// }, 8000);
 }else  if(category == "surficial"){
 	var from = moment().subtract(30,'days').format('YYYY-MM-DD')
 	var to = moment().format('YYYY-MM-DD')
