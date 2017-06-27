@@ -960,7 +960,7 @@ $(document).ready(function() {
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							var start = moment().format('YYYY-MM-DD HH:mm:ss');
+							var start = moment(event_details.event_start).format('YYYY-MM-DD HH:mm:ss');
 							var rounded_release;
 							var last_rounded_release;
 
@@ -981,9 +981,10 @@ $(document).ready(function() {
 							var lastReleaseData = {
 								'event_id': event_details.event_id,
 								'current_release_time': rounded_release,
-								'last_release_time': last_rounded_release
+								'last_release_time': last_rounded_release,
+								'data_timestamp': data_timestamp
 							}
-
+							var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("YYYY-MM-DD HH:mm:ss") : moment(data_timestamp).format("YYYY-MM-DD HH:mm:ss");
 							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
 								var response = JSON.parse(data);
 								if (response.ack == "no_ack") {
@@ -994,8 +995,8 @@ $(document).ready(function() {
 										'province': event_details.province,
 										'barangay': event_details.barangay,
 										'sition': event_details.sition,
-										'ewi_sms_timestamp': moment(rounded_release).subtract(1,'m').format('YYYY-MM-DD HH:mm:ss'),
-										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+										'ewi_sms_timestamp': moment(x).subtract(1,'m').format('YYYY-MM-DD HH:mm:ss'),
+										'narrative_template': "No ACK for "+moment(rounded_release).format('HH:mm A')+" EWI Release"
 									}
 									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 										console.log(data);
@@ -1186,7 +1187,8 @@ function getOngoingEvents(sites){
 							}
 
 							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-								var response = JSON.parse(data);
+								console.log(data);
+								// var response = JSON.parse(data);
 								if (response.ack == "no_ack") {
 									var narrative_details = {
 										'event_id': events[counter].event_id,
