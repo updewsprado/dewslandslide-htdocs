@@ -12,61 +12,61 @@ $(document).ready(function(e) {
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
 		var to = moment().format('YYYY-MM-DD')
 		RainFallProcess(site,from,to)
-		setTimeout(function(){
-		svgChart('rain') 
-	}, 5000);
-	}else  if(category == "surficial"){
-		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
-		var to = moment().format('YYYY-MM-DD')
-		let dataSubmit = { 
-			site : (site).toLowerCase(), 
-			fdate : from,
-			tdate : to
-		}
-		
-		$.ajax({
-			url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
-			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log(errorThrown)},
-				success: function(data)
-				{
-					$('.selectpicker').selectpicker();
-					$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
-					$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
-						'</select></b></h4><br><div id="ground_graph"><div>')
-					daysOption('surperimpose')
-					SelectdaysOption('surperimpose')
-					dropdowDayValue('surperimpose',from,to)
-					$('#surperimpose_days').selectpicker('refresh');
-					$('#crackgeneral').append('<option value="">Select Crack</option>')
-					$('#crackgeneral').selectpicker('hide')
-					var result= data
-					var crack_name= [];
-					for (i = 0; i <  result.length; i++) {
-						dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
-						crack_name.push(result[i].crack_id)
-					}
-				}
-			});
-		
-		surficialGraph(dataSubmit)
-	}else if(category == "subsurface"){
-		var from = 'n'
-		var to = 'n'
-		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
-		$("#subgeneral").val('column_sub')
-		$(".selectpicker").selectpicker('refresh')
-		var title = ["Column","Displacement","Velocity"]
-		var id_title =["column","dis","velocity"]
-		var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
-		for(var a = 0; a < title.length; a++){
-			$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
-			$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
-				'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
-		}
-		allSensorPosition(site,from,to)
+	// 	setTimeout(function(){
+	// 	svgChart('rain') 
+	// }, 8000);
+}else  if(category == "surficial"){
+	var from = moment().subtract(30,'days').format('YYYY-MM-DD')
+	var to = moment().format('YYYY-MM-DD')
+	let dataSubmit = { 
+		site : (site).toLowerCase(), 
+		fdate : from,
+		tdate : to
 	}
-	
+
+	$.ajax({
+		url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
+		dataType: "json",error: function(xhr, textStatus, errorThrown){
+			console.log(errorThrown)},
+			success: function(data)
+			{
+				$('.selectpicker').selectpicker();
+				$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+				$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+					'</select></b></h4><br><div id="ground_graph"><div>')
+				daysOption('surperimpose')
+				SelectdaysOption('surperimpose')
+				dropdowDayValue('surperimpose',from,to)
+				$('#surperimpose_days').selectpicker('refresh');
+				$('#crackgeneral').append('<option value="">Select Crack</option>')
+				$('#crackgeneral').selectpicker('hide')
+				var result= data
+				var crack_name= [];
+				for (i = 0; i <  result.length; i++) {
+					dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
+					crack_name.push(result[i].crack_id)
+				}
+			}
+		});
+
+	surficialGraph(dataSubmit)
+}else if(category == "subsurface"){
+	var from = 'n'
+	var to = 'n'
+	$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
+	$("#subgeneral").val('column_sub')
+	$(".selectpicker").selectpicker('refresh')
+	var title = ["Column","Displacement","Velocity"]
+	var id_title =["column","dis","velocity"]
+	var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+	for(var a = 0; a < title.length; a++){
+		$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
+		$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
+			'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
+	}
+	allSensorPosition(site,from,to)
+}
+
 });
 
 
@@ -268,7 +268,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 				getDistanceRainSite(result[0].RG2, dataSubmit , threshold_data,'rain2',result[0].RG2+" ( "+result[0].d_RG2+"km )");
 				getDistanceRainSite(result[0].RG3, dataSubmit , threshold_data,'rain3',result[0].RG3+" ( "+result[0].d_RG3+"km )");
 
-				var ids1 = ['rain_arq','rain_senslope','rain1','rain2','rain3']
+				var ids1 = ['rain_senslope','rain_arq','rain1','rain2','rain3']
 				var ids2 = [result[0].rain_senslope,result[0].rain_arq,result[0].RG1,result[0].RG2,result[0].RG3]
 				for (var i = 0; i < ids1.length; i++) {
 					if( ids2[i] == null){
@@ -276,6 +276,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 						removeSpecificArray(ids2, ids2[i]);
 					}
 				}
+				
 				for (var i = 0; i < ids1.length; i++) {
 					$("#raincharts").append('<div class="col-md-6 rainGraph "><div  id="'+ids1[i]+'2" class="collapse in"></div></div><div class="col-md-6 rainGraph"><div id="'+ids1[i]+'" class="collapse in"></div><div>')
 					
@@ -447,6 +448,8 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
+
+					ALERT(site)
 				}
 			})
 	}
@@ -787,6 +790,8 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		series:series_data
 	});
 
+
+	svgChart('rain') 
 	
 
 }
@@ -1179,10 +1184,9 @@ function velocityPosition(data_result,id,date,site,ndata) {
 				}
 			}
 			for(var a = 0; a < sliceData.length; a++){
-				// catNum.push((sliceData.length)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
 			
 		}else{
@@ -1203,8 +1207,8 @@ function velocityPosition(data_result,id,date,site,ndata) {
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
-				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
-				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
 		}
 		var sorted_fseries =[]
@@ -1388,11 +1392,19 @@ function chartProcessbase(id,data_series,name,site,catNum){
 
 		yAxis: {
 			categories: catNum,
-
+			title: {
+				text: 'Nodes'
+			},
 			labels: {
 				formatter: function () {
 					return this.value;
 				}
+			}
+		},
+		tooltip: {
+			formatter: function () {
+				return 'The value for <b>' + moment(this.x).format('YYYY-MM-DD HH:mm') +
+				'</b> is <b>' + this.series.name + '</b>';
 			}
 		},
 		plotOptions: {
@@ -1463,9 +1475,8 @@ function svgChart(idBox) {
 		}	
 
 		for (var i = 0; i < ids4.length; i++) {
-			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 0);
+			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 50);
 			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
-			console.log((i) * 300)
 		}
 
 
