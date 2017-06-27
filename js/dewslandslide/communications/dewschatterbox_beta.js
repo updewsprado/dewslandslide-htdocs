@@ -1272,7 +1272,7 @@ function getOngoingEvents(sites){
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
 							} else {
-								narrative_template = "Ground measurement reminder acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
+								narrative_template = gintags_msg_details[1]+"sent surficial measurement <insert trend here>";
 							}
 						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
 
@@ -1311,7 +1311,6 @@ function getOngoingEvents(sites){
 
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
-							console.log("GO HERE!!");
 							var start = moment().format('YYYY-MM-DD HH:mm:ss');
 							var rounded_release;
 							var last_rounded_release;
