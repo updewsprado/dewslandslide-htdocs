@@ -1475,7 +1475,7 @@ function svgChart(idBox) {
 		}	
 
 		for (var i = 0; i < ids4.length; i++) {
-			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 50);
+			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "x", 660);
 			$( "#"+ids4[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
 		}
 
@@ -1490,7 +1490,7 @@ function svgChart(idBox) {
 		}	
 
 		for (var i = 0; i < ids5.length; i++) {
-			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "x", 610);
+			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "x", 50);
 			$( "#"+ids5[i]+" .highcharts-container  .highcharts-root").attr( "y", (i)*300 );
 		}
 
@@ -1498,10 +1498,10 @@ function svgChart(idBox) {
 			return this.id;
 		}).get();
 
-		if(ids.length == 2){
-			$('#rainBox').attr("height", "310");
-		}else{
-			$('#rainBox').attr("height", "1500");
+		if(ids.length == 4){
+			$('#rainBox').attr("height", "1000");
+		}else if(ids.length == 5){
+			$('#rainBox').attr("height", "1300");
 		}
 
 		for (var i = 0; i < ids.length; i++) {
