@@ -90,6 +90,11 @@ function cb(start, end) {
 	
 }
 
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
 function daysOption(id) {
 	var day_list_text=["7 days","10 days","2 weeks","1 month","3 months","6 months","1 year","All"];
 	var day_list_val =["7d","10d","2w","1m","3m","6m","1y","all"];
@@ -372,6 +377,18 @@ function RainFallProcess(curSite,fromDate,toDate){
 				$("#raincharts").slideUp()
 			}
 		});	
+		var ids1 = ['rain_senslope','rain_arq','rain1','rain2','rain3']
+		var ids2 = [result[0].rain_senslope,result[0].rain_arq,result[0].RG1,result[0].RG2,result[0].RG3]
+		for (var i = 0; i < ids1.length; i++) {
+			if( ids2[i] == null){
+				removeSpecificArray(ids1, ids1[i]);
+				removeSpecificArray(ids2, ids2[i]);
+			}
+		}
+		setTimeout(function(){
+			$( "#"+ids1[0]+" .highcharts-container").attr( "style", "border: thick solid #91f7da" );
+			$( "#"+ids1[0]+"2 .highcharts-container").attr( "style", "border: thick solid #91f7da" );
+		}, 5000);
 	});
 
 }
@@ -662,7 +679,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 				panning: true,
 				panKey: 'shift',
 				height: 400,
-				width: 400
+				width: 370
 			},
 			title: {
 				text:' <b>Rainfall Data </b>',
@@ -865,7 +882,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 				zoomType: 'x',
 				panning: true,
 				height: 400,
-				width: 400
+				width: 370
 			},
 			title: {
 				text:' <b>Rainfall Data </b>',
@@ -2075,7 +2092,7 @@ function displacementPosition(data_result,data_result_v,site) {
 			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
 			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
-		velocityPosition(data_result_v,totalId.length,disData1[0],site); 
+		velocityPosition(data_result_v,totalId.length,disData1[0],site,n1); 
 		fseries.push({name:'unselect'})
 		fseries2.push({name:'unselect'})
 		chartProcessDis("dis1",fseries,"Displacement, downslope",site,n1)
@@ -2084,7 +2101,7 @@ function displacementPosition(data_result,data_result_v,site) {
 	}     
 
 }
-function velocityPosition(data_result,id,date,site) {
+function velocityPosition(data_result,id,date,site,ndata) {
 	if(data_result != "error"){
 		var data = data_result;
 		var allTime = [] , dataset= [] , sliceData =[];
@@ -2092,11 +2109,15 @@ function velocityPosition(data_result,id,date,site) {
 		var l2 =[] , l3=[] , alldataNotSlice=[];
 
 		if(data[0].L2.length != 0){
-			var catNum=[1];
+			var catNum=[];
 			for(var a = 0; a < data[0].L2.length; a++){
 				allTime.push(data[0].L2[a].ts)
-				l2.push([Date.parse(data[0].L2[a].ts) , ((id+1)-data[0].L2[a].id)])
+				l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
 			}
+			for(var a = ndata.length; a > 0 ; a--){
+				catNum.push(a)
+			}
+			
 			var symbolD = 'url(http://downloadicons.net/sites/default/files/triangle-exclamation-point-warning-icon-95041.png)';
 			for(var a = 0; a < data[0].L2.length; a++){
 				fseries.push({ type: 'scatter', zIndex:5, name:'L2',marker:{symbol:symbolD,width: 25,height: 25} , data:l2})
@@ -2104,18 +2125,23 @@ function velocityPosition(data_result,id,date,site) {
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , ((id+1)-data[0].L3[a].id)]);
+				l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
 				fseries.push({ type: 'scatter', zIndex:5 , name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
 				fseries2.push({type: 'scatter', zIndex:5,name:'L3',marker:{symbol:symbolD1,width: 25,height: 25} , data:l3})
 			}
+
+			var allTime_filtered = removeDuplicates(allTime)
+
 			for(var i = 0; i < id; i++){
 				for(var a = 0; a < allTime.length; a++){
-					dataset.push([Date.parse(allTime[a]) , i+1])
+					dataset.push([Date.parse(allTime[a]) , (i)])
 				}
 			}
+
+
 			for(var a = 0; a < dataset.length; a++){
 				for(var i = 0; i < id; i++){
 					if(dataset[a][1] == i){
@@ -2131,11 +2157,11 @@ function velocityPosition(data_result,id,date,site) {
 				}
 			}
 			for(var a = 0; a < sliceData.length; a++){
-				catNum.push((sliceData.length-1)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
-				fseries.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
-				fseries2.push({name:catNum[a], data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}
+			
 		}else{
 			var catNum=[];
 			for(var a = 0; a < id ; a++){
@@ -2154,8 +2180,8 @@ function velocityPosition(data_result,id,date,site) {
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
-				fseries.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
-				fseries2.push({name:(a+1), data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
+				fseries2.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
 			}					
 		}
 		var sorted_fseries =[]
@@ -2164,8 +2190,8 @@ function velocityPosition(data_result,id,date,site) {
 
 		}
 
-		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope",site)
-		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope",site)   
+		chartProcessbase("velocity1",fseries,"Velocity Alerts, downslope",site,catNum)
+		chartProcessbase("velocity2",fseries2,"Velocity Alerts, across slope",site,catNum)   
 	}  
 }
 function chartProcessDis(id,data_series,name,site,nPlot){
@@ -2290,7 +2316,7 @@ function chartProcessInverted(id,data_series,name,site){
 
 }
 
-function chartProcessbase(id,data_series,name,site){
+function chartProcessbase(id,data_series,name,site,catNum){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -2333,10 +2359,31 @@ function chartProcessbase(id,data_series,name,site){
 			enabled: false
 		},
 		yAxis: {
+			categories: catNum,
 			title: {
 				text: 'Depth (m)'
 			},
-
+			labels: {
+				formatter: function () {
+					return this.value;
+				}
+			}
+		},
+		tooltip: {
+			formatter: function () {
+				return 'The value for <b>' + moment(this.x).format('YYYY-MM-DD HH:mm') +
+				'</b> is <b>' + this.series.name + '</b>';
+			}
+		},
+		plotOptions: {
+			line: {
+				
+				marker: {
+					enabled: true,
+					radius: 2,
+				},
+				
+			}
 		},
 		series:data_series
 	});
