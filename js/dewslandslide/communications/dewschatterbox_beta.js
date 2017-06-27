@@ -1,8 +1,7 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(dashboard_data){
-	if (($("#eewi-asap-modal").data('bs.modal') || {}).isShown != true) {
-
+	if (($("#ewi-asap-modal").data('bs.modal') || {}).isShown == true) {
 		var internal_alert = "";
 		var backbone_message = "";
 		var recommended_response = "";
@@ -938,7 +937,6 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
-			$('#loading').modal("toggle");
 			console.log("Connection established!");
 			enableCommands();
 
@@ -961,11 +959,9 @@ $(document).ready(function() {
 				window.timerID = 0;
 			}
 			$("#send-msg").removeClass("disabled");
-			$('#loading').modal("toggle");
 		};
 
 		tempConn.onmessage = function(e) {
-			$('#loading').modal('hide');
 			console.log(e);
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
