@@ -265,8 +265,8 @@ function CheckBoxSite(site,from,to){
 			$('.crackgeneral').slideDown()
 			$(".site_level").append('<div class="col-md-12 surficial_graphs_VD" id="surficial_graphs_VD"></div>')
 			$("#surficial_graphs_VD").empty()
-			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b><select class="selectpicker pull-right surficialgeneral"  id="surficialgeneral" multiple><option value="analysisVelocity">Surficial Velocity</option><option value="analysisDisplacement">Surficial Displacement</option></select></h4>')
-			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div> ')
+			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b><select class="selectpicker pull-right surficialgeneral"  id="surficialgeneral" multiple><option value="analysisVelocity">Surficial Velocity</option><option value="analysisDisplacement">Surficial Displacement</option><option value="analysisVAT">Surficial Velocity Acceleration</option></select></h4>')
+			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div><br> <div id="analysisVAT" class="collapse"></div> ')
 			$("#surficialgeneral").selectpicker('refresh')
 			$(".surficialgeneral").hide();
 			$("#crackgeneral").change(function () {
@@ -284,8 +284,8 @@ function CheckBoxSite(site,from,to){
 }
 
 function SurficialOnSelect() {
-	var name = ['Surficial Velocity','Surficial Displacement']
-	var id = ['analysisVelocity','analysisDisplacement']
+	var name = ['Surficial Velocity','Surficial Displacement','Surficial Velocity Acceleration']
+	var id = ['analysisVelocity','analysisDisplacement','analysisVAT']
 	$("#surficialgeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_surficial =($(this).find('option').eq(clickedIndex).val());
 		for (a = 0; a < name.length; a++) {
@@ -385,10 +385,11 @@ function RainFallProcess(curSite,fromDate,toDate){
 				removeSpecificArray(ids2, ids2[i]);
 			}
 		}
-		setTimeout(function(){
-			$( "#"+ids1[0]+" .highcharts-container").attr( "style", "border: thick solid #91f7da" );
-			$( "#"+ids1[0]+"2 .highcharts-container").attr( "style", "border: thick solid #91f7da" );
-		}, 5000);
+		for (var i = 0; i < ids1.length; i++) {
+			$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+ids1[i]+'"><button type="button">'+ids2[i].toUpperCase()+'</button></a></li>')
+			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="collapse"></div></div>')
+			dropdowlistAppendValue(ids1[i],ids2[i].toUpperCase(),'#rainfallgeneral');
+		}
 	});
 
 }
@@ -412,9 +413,6 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 				{
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
-						$("#raincharts").append('<div class="col-md-6"><div id="'+id+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+id+'" class="collapse"></div></div>')
-						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
@@ -486,9 +484,6 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 				{
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
-						$("#raincharts").append('<div class="col-md-6"><div id="'+id+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+id+'" class="collapse"></div></div>')
-						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
@@ -560,9 +555,6 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 				{
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
-						$("#raincharts").append('<div class="col-md-6"><div id="'+id+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+id+'" class="collapse"></div></div>')
-						dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 						var max = max_rain;
 						var max_array_data = [];
@@ -1555,6 +1547,8 @@ function surficialAnalysis(site,crack_id) {
 				var line = [];
 				var series_data_vel =[];
 				var series_data_dis =[];
+				var a_time =[], v_time = [];
+				var vatSeries=[];
 				for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
 					dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
 					catdata.push(i);
@@ -1577,6 +1571,15 @@ function surficialAnalysis(site,crack_id) {
 					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i],ground_analysis_data["av"].a_threshold_down[i]]);
 					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
 				}
+
+				for (var i = 0; i < ground_analysis_data["vat"].a_n.length; i++) {
+					a_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].a_n[i]])
+					v_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].v_n[i]])
+				}
+				vatSeries.push({name:'accelerometer',data:a_time,id:'dataseries',type:'line'})
+				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line'})
+				chartProcessSurficialAnalysis2('analysisVAT',vatSeries,'Velocity Acceleration Chart of '+crack_id,site)
+
 				var series_data_name_vel =[vGraph,up,down,line,last];
 				var series_name =["Data","Threshold","TL","LPoint"];
 				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries',type:'line'})
@@ -1587,7 +1590,7 @@ function surficialAnalysis(site,crack_id) {
 
 				$('#surficialgeneral').val('analysisVelocity')
 				$('#surficialgeneral').selectpicker('refresh')
-				chartProcessSurficialAnalysis('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id,site)
+				chartProcessSurficialAnalysis3('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id,site)
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
 				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id,site)
@@ -1655,7 +1658,7 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 			crosshairs: true
 		},
 		plotOptions: {
-			spline: {
+			line: {
 				marker: {
 					enabled: true
 				}
@@ -1667,6 +1670,106 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 		series:data_series
 	});
 	$("#analysisVelocity").addClass("in");
+
+}
+function chartProcessSurficialAnalysis2(id,data_series,name,site){
+	SurficialOnSelect()
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
+		},
+		xAxis: {
+			
+			title: {
+				text: 'Date'
+			},
+		},
+		yAxis:{
+			title: {
+				text: 'Acceleration'
+			}
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: false
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+}
+function chartProcessSurficialAnalysis3(id,data_series,name,site){
+	SurficialOnSelect()
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
+		},
+		xAxis: {
+			title: {
+				text: 'Date'
+			},
+		},
+		yAxis:{
+			title: {
+				text: 'Acceleration'
+			}
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
 
 }
 
