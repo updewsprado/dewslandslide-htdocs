@@ -26,6 +26,7 @@ $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	$('#sitegeneral').selectpicker();
 	$('.checkbox').prop('disabled', true);
+	$('.svgBox').hide();
 	$('.site-panel').hide();
 	$('.column-panel').hide();
 	$('.node-panel').hide();
@@ -59,6 +60,12 @@ function dateselection() {
 
 	
 }
+
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
 
 function cb(start, end) {
 	$('#reportrange0 span').html(end.format('YYYY-MM-DD'));
@@ -3844,22 +3851,62 @@ function downloadSvg() {
 		var extracted_name = (name_site[0]).split(' ');
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 		$( "#pdfsvg" ).empty();
-		
+		$( "#rainfallsvg" ).empty();
+
 		var all_data=[]
-		var ids = $('.highcharts-container').map(function() {
+
+		var all_raincharts = $('#raincharts .collapse ').map(function() {
 			return this.id;
 		}).get();
-		
+
+		var ids0 = []
+		for (var i = 0; i < all_raincharts.length; i++) {
+			if(all_raincharts[i].length < 6 || all_raincharts[i] == 'rain_arq' || all_raincharts[i] == 'rain_senslope'){
+				ids0.push(all_raincharts[i])
+			}
+		}
+
+		for (var i = 0; i < ids0.length; i++) {
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 50);
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+		}
+
+		for (var i = 0; i < ids0.length; i++) {
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 660);
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+		}
+
+		if(ids0.length == 4){
+			$('#rainfallsvg').attr("height", "1200");
+		}else if(ids.length == 5){
+			$('#rainfallsvg').attr("height", "1600");
+		}
+
+		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
+			return this.id;
+		}).get();
+
 		for (var i = 0; i < ids.length; i++) {
-			all_data.push($('#'+ids[i]).html());
+			$("#rainfallsvg").append($('#'+ids[i]).html())
 		}
-		if($('#heatmap_container').html() != undefined){
-			all_data.push($('#heatmap_container').html())
+
+		var ids_all = $('.highcharts-container').map(function() {
+			return this.id;
+		}).get();
+
+
+		for (var i = 0; i < ids.length; i++) {
+			removeSpecificArray(ids_all,ids[i])
 		}
+
+		ids_all.push($('#divSurficial').html());
 		
+		if($('#heatmap_container').html() != undefined){
+			ids_all.push($('#heatmap_container').html())
+		}
+
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
-			console.log(all_data)
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
