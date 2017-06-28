@@ -3849,14 +3849,14 @@ function downloadSvg() {
 		var ids = $('.highcharts-container').map(function() {
 			return this.id;
 		}).get();
-		console.log(all_data)
+		
 		for (var i = 0; i < ids.length; i++) {
 			all_data.push($('#'+ids[i]).html());
 		}
 		if($('#heatmap_container').html() != undefined){
 			all_data.push($('#heatmap_container').html())
 		}
-
+		console.log(all_data)
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			// $( "#pdfsvg" ).append(all_data[0])
