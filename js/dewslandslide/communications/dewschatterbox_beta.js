@@ -834,7 +834,6 @@ $(document).ready(function() {
 		messages = [];
 
 		conn.send(JSON.stringify(request));
-		$('#loading').modal('toggle');
 	}
 
 	function getOldMessageGroup(){
@@ -881,7 +880,6 @@ $(document).ready(function() {
 		messages = [];
 		contactInfo = "groups";
 		conn.send(JSON.stringify(request));
-		$('#loading').modal('toggle');
 	}
 
 	function initLoadQuickInbox(quickInboxMsg) {
@@ -967,7 +965,7 @@ $(document).ready(function() {
 			tempMsg = msg;
 			msgType = msg.type;
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
-				console.log(msg);
+				$('#loading').modal('hide');
 				initLoadMessageHistory(msg);
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
@@ -981,18 +979,24 @@ $(document).ready(function() {
 				loadOldMessages(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 				msgType = "searchMessage";
 			} else if (msg.type == "searchMessageGlobal") {
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "searchMessageGroup") {
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 				msgType = "searchMessageGroup";
 			} else if (msg.type == "searchGintags") {
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadGlobalSearched"){
+				$('#loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
@@ -1508,6 +1512,7 @@ $('#btn-standard-search').click(function(){
 });
 
 $('#btn-search-global').click(function(){
+	$('#loading').modal('show');
 	switch($('input[name="opt-search"]:checked').val()) {
 		case "gintag-search":
 		searchGintagMessages($('#search-global-keyword').val());
@@ -1548,7 +1553,6 @@ function searchMessageIndividual(){
 	};
 
 	conn.send(JSON.stringify(request));
-	$('#loading').modal('show');
 }
 
 function searchMessageGroup(){
@@ -1584,7 +1588,6 @@ function searchMessageGroup(){
 	messages = [];
 	contactInfo = "groups";
 	conn.send(JSON.stringify(request));
-	$('#loading').modal('show');
 }
 
 function searchMessageGlobal(searchKey){
@@ -1594,7 +1597,6 @@ function searchMessageGlobal(searchKey){
 	}
 	console.log(request);
 	conn.send(JSON.stringify(request));
-	$('#loading').modal('show');
 }
 
 function searchGintagMessages(searchKey){
@@ -1604,7 +1606,6 @@ function searchGintagMessages(searchKey){
 		'searchKey': searchKey
 	}
 	conn.send(JSON.stringify(request));
-	$('#loading').modal('show');
 }
 
 var coloredTimestamp;
@@ -1991,6 +1992,7 @@ $(document).on("click","#quick-inbox-unknown-display li",function(){
 });
 
 $(document).on("click","#quick-release-display li",function(){
+	$('#loading').modal('show');
 	counters = 0;
 	convoFlagger = false;
 	groupTags = [];
@@ -2015,7 +2017,6 @@ $(document).on("click","#quick-release-display li",function(){
 	messages = [];
 	contactInfo = "groups";
 	conn.send(JSON.stringify(groupTags));
-	$('#loading').modal('show');
 	$('#main-container').removeClass('hidden');
 });
 
@@ -2080,9 +2081,9 @@ function startChat(source="normal") {
 
 	tempRequest = msgHistory;
 	conn.send(JSON.stringify(msgHistory));
-	$('#loading').modal('show');
 }
 $('#go-chat').click(function() {
+	$('#loading').modal('show');
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
 	tempTimestamp = "";
@@ -2238,7 +2239,6 @@ function loadGroupsCommunity(){
 	messages = [];
 	contactInfo = "groups";
 	conn.send(JSON.stringify(groupTags));
-	$('#loading').modal('show');
 	$('#main-container').removeClass('hidden');
 }
 
@@ -2261,11 +2261,11 @@ function loadGroupsEmployee(){
 		'teams': dynaTags
 	}
 	conn.send(JSON.stringify(requestTag));
-	$('#loading').modal('toggle');
 	$('#main-container').removeClass('hidden');
 }
 
 $('#go-load-groups').click(function() {
+	$('#loading').modal('show');
 	groupTags = [];
 	tempTimestampYou = "";
 	tempTimestampGroup = "";
