@@ -3905,7 +3905,7 @@ function downloadSvg() {
 			ids_all.push($('#heatmap_container').html())
 		}
 
-		$.post("/../chart_export/renderChart", { charts : all_data } )
+		$.post("/../chart_export/renderChart", { charts : ids_all } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
