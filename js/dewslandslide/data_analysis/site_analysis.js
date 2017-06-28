@@ -3849,6 +3849,7 @@ function downloadSvg() {
 		var ids = $('.highcharts-container').map(function() {
 			return this.id;
 		}).get();
+		console.log(all_data)
 		for (var i = 0; i < ids.length; i++) {
 			all_data.push($('#'+ids[i]).html());
 		}
