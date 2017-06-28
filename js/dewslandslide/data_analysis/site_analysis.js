@@ -3856,11 +3856,10 @@ function downloadSvg() {
 		if($('#heatmap_container').html() != undefined){
 			all_data.push($('#heatmap_container').html())
 		}
-		console.log(all_data)
+		
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
-			// $( "#pdfsvg" ).append(all_data[0])
-			// $("#pdfModal").modal('show')
+			console.log(all_data)
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
