@@ -3904,8 +3904,17 @@ function downloadSvg() {
 		if($('#heatmap_container').html() != undefined){
 			ids_all.push($('#heatmap_container').html())
 		}
+		var all_data = [];
+		for (var i = 0; i < ids_all.length; i++) {
+			if(ids_all[i] != undefined ) {
+				all_data.push($('#'+ids_all[i]).html())
+			}
+			
+		}
 
-		$.post("/../chart_export/renderChart", { charts : ids_all } )
+		all_data.push($('.svgBox').html())
+		
+		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
