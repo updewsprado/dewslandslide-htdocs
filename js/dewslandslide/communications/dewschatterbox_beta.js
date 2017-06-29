@@ -1151,7 +1151,7 @@ $(document).ready(function() {
 			} else if (msg.type == "fetchedDwslContacts") {
 				displayDataTableEmployeeContacts(msg.data);
 			} else if (msg.type == "fetchedSelectedDwslContact") {
-				console.log(msg.data);
+				updateDwslContact(msg.data);
 			} else if (msg.type == "fetchedSelectedCmmtyContact") {
 				console.log(msg.data);
 			} else {
@@ -2945,6 +2945,77 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 		]
 	});
 	$('#response-contact-container').show();
+}
+
+function updateDwslContact(dwsl_contact) {
+	console.log(dwsl_contact);
+	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#firstname_ec').val(dwsl_contact.contact_info.firstname);
+	$('#lastname_ec').val(dwsl_contact.contact_info.lastname);
+	$('#middlename_ec').val(dwsl_contact.contact_info.middlename);
+	$('#nickname_ec').val(dwsl_contact.contact_info.nickname);
+	$('#gender_ec').val(dwsl_contact.contact_info.gender);
+	$('#salutation_ec').val(dwsl_contact.contact_info.salutation);
+	$('#birthdate_ec').val(dwsl_contact.contact_info.birthday);
+	$('#active_status_ec').val(dwsl_contact.contact_info.contact_active_status);
+	$('#mobile-div').empty();
+	$('#landline-div').empty();
+	$('#email_ec').tagsinput('removeAll');
+	for (var counter = 0; counter < dwsl_contact.email_data.length; counter++) {
+		$('#email_ec').tagsinput('add',dwsl_contact.email_data[counter].email);
+	}
+
+	for (var counter = 0; counter < dwsl_contact.landline_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="landline_ec">Landline #:</label>'+
+			'<input type="text" class="form-control" id="landline_ec" name="landline_ec" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline ID #:</label>'+
+			'<input type="text" id="landline_ec_id" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline # Remarks:</label>'+
+			'<input type="text" id="landline_ec_remarks" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_remarks+'">'+
+			'</div>'+
+			'</div>').appendTo("#landline-div");
+
+		if (dwsl_contact.landline_data[counter].landline_id == null) {
+			$('#landline_ec_id').val('');
+			$('#landline_ec').val('');
+			$('#landline_ec_remarks').val();
+		}
+	}
+
+	$('<div class="row"><div class="col-md-6"><a href="" id="add_additional_landline_ec">Add another landline number..</a></div></div>').appendTo("#landline-div");
+
+	for (var counter = 0; counter < dwsl_contact.mobile_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'">Mobile #:</label>'+
+			'<input type="text" class="form-control" id="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'" name="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'" value="'+dwsl_contact.mobile_data[counter].number+'"required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Mobile ID #:</label>'+
+			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Status:</label>'+
+			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_status+'">'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Priority:</label>'+
+			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].priority+'">'+
+			'</div>'+
+			'</div>').appendTo("#mobile-div");
+	}
+
+	$('<div class="row"><div class="col-md-6"><a href="" id="add_additional_number_ec">Add another mobile number..</a></div></div>').appendTo("#mobile-div");
+
+	for (var counter = 0; counter < dwsl_contact.team_data.length; counter++) {
+		$('#team_ec').tagsinput('add',dwsl_contact.team_data[counter].team_name);
+	}
+
+	$('#employee-contact-wrapper').prop('hidden',false);
 }
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
