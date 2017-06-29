@@ -3867,19 +3867,19 @@ function downloadSvg() {
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 50);
-			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 660);
-			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 460);
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
 		if(ids0.length == 4){
-			$('#rainfallsvg').attr("height", "1200");
+			$('#rainfallsvg').attr("height", "1700");
 		}else if(ids.length == 5){
-			$('#rainfallsvg').attr("height", "1600");
+			$('#rainfallsvg').attr("height", "2100");
 		}
 
 		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
