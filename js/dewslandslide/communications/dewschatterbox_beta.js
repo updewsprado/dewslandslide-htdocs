@@ -1,7 +1,7 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(dashboard_data){
-	if (($("#ewi-asap-modal").data('bs.modal') || {}).isShown == true) {
+	if (window.location.href == window.location.origin+"/communications/chatterbox_beta") {
 		var internal_alert = "";
 		var backbone_message = "";
 		var recommended_response = "";
