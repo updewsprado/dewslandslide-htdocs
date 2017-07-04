@@ -2855,8 +2855,8 @@ $('#settings-cmd').on('change',function(){
 		$('#settings-cmd').css("background-color", "#dff0d8");
 	}
 
-	if ($('#contact-category').val() == "econtacts") {
-		if ($('#settings-cmd').val() == "addcontact") {
+	if ($('#contact-category').val() == "econtacts") 
+{		if ($('#settings-cmd').val() == "addcontact") {
 			$('#response-contact-container_wrapper').prop('hidden',true);
 			$('#community-contact-wrapper').prop('hidden', true);
 			$('#employee-contact-wrapper').prop('hidden', false);
@@ -2950,6 +2950,7 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 function updateDwslContact(dwsl_contact) {
 	console.log(dwsl_contact);
 	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#ec_id').val(dwsl_contact.contact_info.id);
 	$('#firstname_ec').val(dwsl_contact.contact_info.firstname);
 	$('#lastname_ec').val(dwsl_contact.contact_info.lastname);
 	$('#middlename_ec').val(dwsl_contact.contact_info.middlename);
@@ -2961,248 +2962,140 @@ function updateDwslContact(dwsl_contact) {
 	$('#mobile-div').empty();
 	$('#landline-div').empty();
 	$('#email_ec').tagsinput('removeAll');
+
 	for (var counter = 0; counter < dwsl_contact.email_data.length; counter++) {
 		$('#email_ec').tagsinput('add',dwsl_contact.email_data[counter].email);
 	}
-
-	for (var counter = 0; counter < dwsl_contact.landline_data.length; counter++) {
-		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
-			'<label for="landline_ec">Landline #:</label>'+
-			'<input type="text" class="form-control" id="landline_ec" name="landline_ec" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
-			'</div>'+
-			'<div class="col-md-4">'+
-			'<label>Landline ID #:</label>'+
-			'<input type="text" id="landline_ec_id" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_id+'" disabled>'+
-			'</div>'+
-			'<div class="col-md-4">'+
-			'<label>Landline # Remarks:</label>'+
-			'<input type="text" id="landline_ec_remarks" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_remarks+'">'+
-			'</div>'+
-			'</div>').appendTo("#landline-div");
-
-		if (dwsl_contact.landline_data[counter].landline_id == null) {
-			$('#landline_ec_id').val('');
-			$('#landline_ec').val('');
-			$('#landline_ec_remarks').val();
-		}
-	}
-
-	$('<div class="row"><div class="col-md-6"><a href="" id="add_additional_landline_ec">Add another landline number..</a></div></div>').appendTo("#landline-div");
-
-	for (var counter = 0; counter < dwsl_contact.mobile_data.length; counter++) {
-		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
-			'<label for="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'">Mobile #:</label>'+
-			'<input type="text" class="form-control" id="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'" name="mobile_ec_'+dwsl_contact.mobile_data[counter].number_id+'" value="'+dwsl_contact.mobile_data[counter].number+'"required>'+
-			'</div>'+
-			'<div class="col-md-4">'+
-			'<label>Mobile ID #:</label>'+
-			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_id+'" disabled>'+
-			'</div>'+
-			'<div class="col-md-2">'+
-			'<label>Mobile # Status:</label>'+
-			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_status+'">'+
-			'</div>'+
-			'<div class="col-md-2">'+
-			'<label>Mobile # Priority:</label>'+
-			'<input type="text" class="form-control" value="'+dwsl_contact.mobile_data[counter].priority+'">'+
-			'</div>'+
-			'</div>').appendTo("#mobile-div");
-	}
-
-	$('<div class="row"><div class="col-md-6"><a href="" id="add_additional_number_ec">Add another mobile number..</a></div></div>').appendTo("#mobile-div");
 
 	for (var counter = 0; counter < dwsl_contact.team_data.length; counter++) {
 		$('#team_ec').tagsinput('add',dwsl_contact.team_data[counter].team_name);
 	}
 
-	$('#employee-contact-wrapper').prop('hidden',false);
-}
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_landline_ec" onclick="addAdditionalLandlineEc()">Add another landline number..</a></div></div>').appendTo("#landline-div");
+	for (var counter = 0; counter < dwsl_contact.landline_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="landline_ec_'+(counter)+'">Landline #:</label>'+
+			'<input type="text" class="form-control" id="landline_ec_'+(counter)+'" name="landline_ec_'+(counter)+'" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline ID #:</label>'+
+			'<input type="text" id="landline_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline # Remarks:</label>'+
+			'<input type="text" id="landline_ec_remarks_'+(counter)+'" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_remarks+'">'+
+			'</div>'+
+			'</div>').appendTo("#landline-div");
+
+		if (dwsl_contact.landline_data[counter].landline_id == null) {
+			$('#landline_ec_'+(counter)).val('');
+			$('#landline_ec_id_'+(counter)).val('');
+			$('#landline_ec_remarks_'+(counter)).val('');
+		}
+	}
+
+
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_number_ec" onclick="addAdditionalNumberEc()">Add another mobile number..</a></div></div>').appendTo("#mobile-div");
+	for (var counter = 0; counter < dwsl_contact.mobile_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="mobile_ec_'+(counter)+'">Mobile #:</label>'+
+			'<input type="text" class="form-control" id="mobile_ec_'+(counter)+'" name="mobile_ec_'+(counter)+'" value="'+dwsl_contact.mobile_data[counter].number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Mobile ID #:</label>'+
+			'<input type="text" id="mobile_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Status:</label>'+
+			'<input type="text" id="mobile_ec_status_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_status+'">'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Priority:</label>'+
+			'<input type="text" id="mobile_ec_priority_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].priority+'">'+
+			'</div>'+
+			'</div>').appendTo("#mobile-div");
+	}
+
+		$('#employee-contact-wrapper').prop('hidden',false);
+	}
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
-	if ($('#settings-cmd').val() != "updatecontact") {
-		var empty_fields = 0;
-		$('#community-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
+	if ($('#settings-cmd').val() == "updatecontact") {
+		console.log('UPDATE COMMUNITY');
+		var mobile_count = $('#mobile-div .row').length;
+		var landline_count = $('#landline-div .row').length;
 
-		if (empty_fields > 2) {
-			$('#contact-result').remove();
-			var container = document.getElementById('community-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if ($('#sitename_cc').val() == "OTHERS") {
-				$site = $('#other-sitename').val();
-			} else {
-				$site = $('#sitename_cc').val();
-			}
+		for (var counter = 0; counter < mobile_count; counter++) {
 
-			if ($('#office_cc').val() == "OTHERS") {
-				$office = $('#other-officename').val();
-			} else {
-				$office = $('#office_cc').val();
-			}
-
-			data = {
-				'category': 'communitycontacts',
-				'c_id': '',
-				'lastname': $('#lastname_cc').val(),
-				'firstname': $('#firstname_cc').val(),
-				'prefix': $('#prefix_cc').val(),
-				'office': $office,
-				'sitename': $site,
-				'number': $('#numbers_cc').val(),
-				'rel': $('#rel').val(),
-				'ewirecipient': ($('#ewirecipient').val() == 1 ? true : false)
-			};
-
-			$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
-			.done(function(response) {
-				if (response == true) {
-					$('#contact-result').remove();
-					$.notify('Success! New community contact added.','success');
-					$('#community-contact-wrapper').prop('hidden', true);
-					getComContact();
-					$("#employee-contact-wrapper input").val('');
-				} else {
-					$('#contact-result').remove();
-					var container = document.getElementById('community-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-danger";
-					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
-					container.insertBefore(resContainer,container.childNodes[0]);
-				}
-				reset_cc();
-				fetchSiteAndOffice();
-			});
 		}
+
+		for (var counter =0; counter < landline_count; counter++) {
+
+		}
+
+
 	} else {
-		var empty_fields = 0;
-		$('#community-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-
-				if (($(this).attr('id') == "other-officename" && $(this).val() == "") || ($(this).attr('id') == "other-sitename" && $(this).val() == "")) {
-					console.log($(this).attr('id'));
-				} else {
-					empty_fields++;
-				}
-			}
-		});
-
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('community-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
-				data = {
-					'id': $('#c_id').val(),
-					'firstname': $('#firstname_cc').val(),
-					'lastname': $('#lastname_cc').val(),
-					'prefix': $('#prefix_cc').val(),
-					'office': $('#office_cc').val(),
-					'sitename': $('#sitename_cc').val(),
-					'number': $('#numbers_cc').val(),
-					'rel': $('#rel').val(),
-					'ewirecipient': $('#ewirecipient').val()
-				};
-				updateContactService(data,"community-contact-wrapper");
-			}
-		}
+		console.log('ADD COMMUNITY');
 	}
 });
 
 $('#emp-settings-cmd button[type="submit"]').on('click',function(){
-	if ($('#settings-cmd').val() != "updatecontact") {
-		var empty_fields = 0;
-		$('#employee-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
+	var mobile_count = $('#mobile-div .row').length-1;
+	var landline_count = $('#landline-div .row').length-1;
+	var contact_data = {};
+	var mobile_raw = {};
+	var mobile_data = [];
+	var landline_raw = {};
+	var landline_data = [];
 
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('employee-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			data = {
-				'category': 'dewslcontacts',
-				'eid': '',
-				'lastname': $('#lastname_ec').val(),
-				'firstname': $('#firstname_ec').val(),
-				'nickname': $('#nickname_ec').val(),
-				'birthday': $('#birthdate_ec').val(),
-				'email': $('#email_ec').val(),
-				'numbers': $('#numbers_ec').val(),
-				'grouptags': $('#grouptags_ec').val()
-			};
-			$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
-			.done(function(response) {
-				console.log(response);
-				if (response == true) {
-					$('#contact-result').remove();
-					$('#employee-contact-wrapper').prop('hidden',true);
-					$.notify('Success! New employee contact added.','success');
-					getEmpContact();
-					$("#employee-contact-wrapper input").val('');
-				} else {
-					$('#contact-result').remove();
-					var container = document.getElementById('employee-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-danger";
-					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
-					container.insertBefore(resContainer,container.childNodes[0]);
-				}
-				reset_ec();
-			});
+	for (var counter = 0; counter < mobile_count; counter++) {
+		if ($('#mobile_ec_'+counter).val() != "") {
+			mobile_raw = {
+				'mobile_id': $('#mobile_ec_id_'+counter).val(),
+				'mobile_number': $('#mobile_ec_'+counter).val(),
+				'mobile_status': $('#mobile_ec_status_'+counter).val(),
+				'mobile_priority': $('#mobile_ec_priority_'+counter).val()
+			}
+			mobile_data.push(mobile_raw);
 		}
+	}
+
+	for (var counter =0; counter < landline_count; counter++) {
+		if ($('#landline_ec_'+counter).val() != "") {
+			landline_raw = {
+				'landline_id': $('#landline_ec_id_'+counter).val(),
+				'landline_number': $('#landline_ec_'+counter).val(),
+				'landline_remarks': $('#landline_ec_remarks_'+counter).val()
+			}
+			landline_data.push(landline_raw);
+		}
+	}
+		
+	if ($('#settings-cmd').val() == "updatecontact") {
+		console.log('UPDATE EMPLOYEE');
+		contact_data = {
+			'id': $('#ec_id').val(),
+			'firstname': $('#firstname_ec').val(),
+			'lastname': $('#lastname_ec').val(),
+			'middlename': $('#middlename_ec').val(),
+			'nickname': $('#nickname_ec').val(),
+			'salutation': $('#salutation_ec').val(),
+			'gender': $('#gender_ec').val(),
+			'birthdate': $('#birthdate_ec').val(),
+			'email_address': $('#email_ec').val(),
+			'teams': $('#team_ec').val(),
+			'contact_active_status': $('#active_status_ec').val(),
+			'numbers': mobile_data,
+			'landline': landline_data
+		}
+
+		msg = {
+			'type': "updateDewslContact",
+			'data': contact_data
+		}
+		conn.send(JSON.stringify(msg));
 	} else {
-		var empty_fields = 0;
-		$('#employee-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
-
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('employee-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
-				data = {
-					'id': $('#eid').val(), 
-					'firstname': $('#firstname_ec').val(),
-					'lastname': $('#lastname_ec').val(),
-					'nickname': $('#nickname_ec').val(),
-					'birthdate': $('#birthdate_ec').val(),
-					'email': $('#email_ec').val(),
-					'numbers': $('#numbers_ec').val(),
-					'grouptags': $('#grouptags_ec').val()
-				};
-				updateContactService(data,"employee-contact-wrapper");
-			}
-		}
+		console.log('ADD EMPLOYEE');
 	}
 });
 
@@ -3674,3 +3567,41 @@ function updateContactService(data,wrapper){
 	});
 }
 });
+
+function addAdditionalLandlineEc(){
+	var landline_count = $('#landline-div .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="landline_ec_'+landline_count+'">Landline #:</label>'+
+		'<input type="text" class="form-control" id="landline_ec" name="landline_ec" value="" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline ID #:</label>'+
+		'<input type="text" id="landline_ec_id_'+landline_count+'" class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline # Remarks:</label>'+
+		'<input type="text" id="landline_ec_remarks_'+landline_count+'" class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#landline-div');
+}
+
+function addAdditionalNumberEc(){
+	var mobile_count = $('#mobile-div .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="mobile_ec">Mobile #:</label>'+
+		'<input type="text" class="form-control" id="mobile_ec_'+mobile_count+'" name="mobile_ec" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Mobile ID #:</label>'+
+		'<input type="text" id="mobile_ec_id_'+mobile_count+'"class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Status:</label>'+
+		'<input type="text" id="mobile_ec_status_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Priority:</label>'+
+		'<input type="text" id="mobile_ec_priority_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#mobile-div');
+}
