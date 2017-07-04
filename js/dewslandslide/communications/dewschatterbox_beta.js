@@ -1125,10 +1125,12 @@ $(document).ready(function() {
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
-									'last_release_time': last_rounded_release
+									'last_release_time': last_rounded_release,
+									'data_timestamp': moment(rounded_release).subtract(30,'m').format('YYYY-MM-DD HH:mm:ss')
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
+									console.log(data);
 									var response = JSON.parse(data);
 									if (response.ack == "no_ack") {
 										var narrative_details = {
@@ -1138,7 +1140,7 @@ $(document).ready(function() {
 											'province': event_details.province,
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
-											'ewi_sms_timestamp': rounded_release,
+											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
 											'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
