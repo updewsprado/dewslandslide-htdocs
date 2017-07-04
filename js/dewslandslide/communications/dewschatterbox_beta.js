@@ -1,7 +1,7 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(dashboard_data){
-	if (window.location.href == window.location.origin+"/communications/chatterbox_beta") {
+	if (($("#ewi-asap-modal").data('bs.modal') || {}).isShown == true) {
 		var internal_alert = "";
 		var backbone_message = "";
 		var recommended_response = "";
@@ -119,7 +119,7 @@ function sendViaAlertMonitor(dashboard_data){
 		} else {
 			alert("Error Occured: Please contact Administrator");
 		}
-		final_template = final_template.replace("(current_date_time)",moment(dashboard_data.data_timestamp).format('LL')+" "+moment(dashboard_data.data_timestamp).format('HH:mm A'));
+		final_template = final_template.replace("(current_date_time)",moment(dashboard_data.data_timestamp).format('MMMM D, YYYY')+" "+moment(dashboard_data.data_timestamp).format('HH:mm A'));
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 	} else {
@@ -930,6 +930,7 @@ $(document).ready(function() {
 			$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" type="checkbox" value="'+sitename+'">'+sitename+'</label></div>');
 		}
 	}
+
 	function connectWS() {
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
@@ -942,27 +943,27 @@ $(document).ready(function() {
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
-			if (isFirstSuccessfulConnect) {
-				getOfficesAndSitenames();
-				setTimeout(
-					function() {
-						getInitialQuickInboxMessages();
-						getLatestAlert();
-					}, 
-					500);
-				isFirstSuccessfulConnect = false;
-			}
-			if (window.timerID) {
-				window.clearInterval(window.timerID);
-				window.timerID = 0;
-			}
+			// if (isFirstSuccessfulConnect) {
+			// 	getOfficesAndSitenames();
+			// 	setTimeout(
+			// 		function() {
+			// 			getInitialQuickInboxMessages();
+			// 			getLatestAlert();
+			// 		}, 
+			// 		500);
+			// 	isFirstSuccessfulConnect = false;
+			// }
+			// if (window.timerID) {
+			// 	window.clearInterval(window.timerID);
+			// 	window.timerID = 0;
+			// }
 			$("#send-msg").removeClass("disabled");
 		};
 
 		tempConn.onmessage = function(e) {
-			console.log(e);
 			var msg = JSON.parse(e.data);
-			tempMsg = msg;
+			console.log(msg)
+;			tempMsg = msg;
 			msgType = msg.type;
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
 				$('#loading').modal('hide');
@@ -1120,7 +1121,8 @@ $(document).ready(function() {
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
-									'last_release_time': last_rounded_release
+									'last_release_time': last_rounded_release,
+									'data_timestamp': moment(rounded_release).subtract(30,'m').format('YYYY-MM-DD HH:mm:ss')
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
@@ -1133,7 +1135,7 @@ $(document).ready(function() {
 											'province': event_details.province,
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
-											'ewi_sms_timestamp': rounded_release,
+											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
 											'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
@@ -1144,116 +1146,124 @@ $(document).ready(function() {
 							});
 						} 
 					});
-}
-} else {
-	var numbers = /^[0-9]+$/; 
-	if (msg.type == "ackgsm") {
-		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
-			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
-		}
-	} else if (msg.type == "ackrpi"){
-		console.log("Status: "+msg.type);
-	} else if (contactInfo == "groups") {
+				}
+			} else if (msg.type == "fetchedCmmtyContacts") {
+				displayDataTableCommunityContacts(msg.data);
+			} else if (msg.type == "fetchedDwslContacts") {
+				displayDataTableEmployeeContacts(msg.data);
+			} else if (msg.type == "fetchedSelectedDwslContact") {
+				updateDwslContact(msg.data);
+			} else if (msg.type == "fetchedSelectedCmmtyContact") {
+				console.log(msg.data);
+			} else {
+				var numbers = /^[0-9]+$/; 
+				if (msg.type == "ackgsm") {
+					if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
+						$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+					}
+				} else if (msg.type == "ackrpi"){
+					console.log("Status: "+msg.type);
+				} else if (contactInfo == "groups") {
 
-		if (msg.type == "smsrcv") {
-			$.notify("New Message Received!","info");
-			updateQuickInbox(msg);
-		} 
+					if (msg.type == "smsrcv") {
+						$.notify("New Message Received!","info");
+						updateQuickInbox(msg);
+					} 
 
-		var select_raw_site = $("#current-contacts h4").text().substring(11);
-		var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
+					var select_raw_site = $("#current-contacts h4").text().substring(11);
+					var selected_site = select_raw_site.substring(0,select_raw_site.indexOf(']')).replace(/\s/g,'').split(",");
 
-		var select_raw_office = select_raw_site.substring(select_raw_site.indexOf(']'));
-		var selected_office = select_raw_office.substring(13,select_raw_office.length-1).replace(/\s/g,'').split(",");
+					var select_raw_office = select_raw_site.substring(select_raw_site.indexOf(']'));
+					var selected_office = select_raw_office.substring(13,select_raw_office.length-1).replace(/\s/g,'').split(",");
 
-		var sender = msg.name.split(" ");
+					var sender = msg.name.split(" ");
 
-		for (var i = 0; i < selected_site.length; i++) {
-			console.log(selected_site[i]);
-			console.log(sender[0]);
-			if (selected_site[i] == sender[0]) {
-				for (var x = 0; x < selected_office.length; x++) {
-					console.log(selected_office[x]);
-					console.log(sender[1]);
-					if (selected_office[x] == sender[1]) {
-						updateMessages(msg);
+					for (var i = 0; i < selected_site.length; i++) {
+						console.log(selected_site[i]);
+						console.log(sender[0]);
+						if (selected_site[i] == sender[0]) {
+							for (var x = 0; x < selected_office.length; x++) {
+								console.log(selected_office[x]);
+								console.log(sender[1]);
+								if (selected_office[x] == sender[1]) {
+									updateMessages(msg);
+								}
+							}
+						}
+					}
+				} else {
+
+					if (msg.type == "smsrcv") {
+						$.notify("New Message Received!","info");
+						updateQuickInbox(msg);
+					} 
+
+					if(msg.user.match(numbers)) {
+						console.log("all numbers");
+						for (i in contactnumTrimmed) {
+							if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+								updateMessages(msg);
+								return;
+							}
+						}
+					} else {
+						console.log("alphanumeric keywords for msg.user");
+						for (i in contactnumTrimmed) {
+							for (j in msg.numbers) {
+								if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.numbers[j])) {
+									updateMessages(msg);
+									return;
+								}
+							}
+						}
 					}
 				}
 			}
 		}
-	} else {
 
-		if (msg.type == "smsrcv") {
-			$.notify("New Message Received!","info");
-			updateQuickInbox(msg);
-		} 
+	tempConn.onclose = function(e) {
+		WSS_CONNECTION_STATUS = -1;
 
-		if(msg.user.match(numbers)) {
-			console.log("all numbers");
-			for (i in contactnumTrimmed) {
-				if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
-					updateMessages(msg);
-					return;
-				}
-			}
-		} else {
-			console.log("alphanumeric keywords for msg.user");
-			for (i in contactnumTrimmed) {
-				for (j in msg.numbers) {
-					if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.numbers[j])) {
-						updateMessages(msg);
-						return;
-					}
-				}
-			}
+		var reason;
+		if (event.code == 1000)
+			reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
+		else if(event.code == 1001)
+			reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
+		else if(event.code == 1002)
+			reason = "An endpoint is terminating the connection due to a protocol error";
+		else if(event.code == 1003)
+			reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
+		else if(event.code == 1004)
+			reason = "Reserved. The specific meaning might be defined in the future.";
+		else if(event.code == 1005)
+			reason = "No status code was actually present.";
+		else if(event.code == 1006) {
+			reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
+			disableCommands();
+
+			connection_status = false;
+			$("#send-msg").addClass("disabled");
+			waitForSocketConnection();
 		}
+		else if(event.code == 1007)
+			reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
+		else if(event.code == 1008)
+			reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
+		else if(event.code == 1009)
+			reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
+		else if(event.code == 1010)
+			reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
+		else if(event.code == 1011)
+			reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
+		else if(event.code == 1015)
+			reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
+		else
+			reason = "Unknown reason";
+
+		console.log(reason);
 	}
-}
-}
 
-tempConn.onclose = function(e) {
-	WSS_CONNECTION_STATUS = -1;
-
-	var reason;
-	if (event.code == 1000)
-		reason = "Normal closure, meaning that the purpose for which the connection was established has been fulfilled.";
-	else if(event.code == 1001)
-		reason = "An endpoint is \"going away\", such as a server going down or a browser having navigated away from a page.";
-	else if(event.code == 1002)
-		reason = "An endpoint is terminating the connection due to a protocol error";
-	else if(event.code == 1003)
-		reason = "An endpoint is terminating the connection because it has received a type of data it cannot accept (e.g., an endpoint that understands only text data MAY send this if it receives a binary message).";
-	else if(event.code == 1004)
-		reason = "Reserved. The specific meaning might be defined in the future.";
-	else if(event.code == 1005)
-		reason = "No status code was actually present.";
-	else if(event.code == 1006) {
-		reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
-		disableCommands();
-
-		connection_status = false;
-		$("#send-msg").addClass("disabled");
-		waitForSocketConnection();
-	}
-	else if(event.code == 1007)
-		reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
-	else if(event.code == 1008)
-		reason = "An endpoint is terminating the connection because it has received a message that \"violates its policy\". This reason is given either if there is no other sutible reason, or if there is a need to hide specific details about the policy.";
-	else if(event.code == 1009)
-		reason = "An endpoint is terminating the connection because it has received a message that is too big for it to process.";
-	else if(event.code == 1010)
-		reason = "An endpoint (client) is terminating the connection because it has expected the server to negotiate one or more extension, but the server didn't return them in the response message of the WebSocket handshake. <br /> Specifically, the extensions that are needed are: " + event.reason;
-	else if(event.code == 1011)
-		reason = "A server is terminating the connection because it encountered an unexpected condition that prevented it from fulfilling the request.";
-	else if(event.code == 1015)
-		reason = "The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
-	else
-		reason = "Unknown reason";
-
-	console.log(reason);
-}
-
-return tempConn;
+	return tempConn;
 }
 
 function getOngoingEvents(sites){
@@ -1376,6 +1386,7 @@ function waitForSocketConnection() {
 			}, delayReconn);
 	}
 }
+
 function trimmedContactNum(inputContactNumber) {
 	var numbers = /^[0-9]+$/;  
 	var trimmed;
@@ -1405,6 +1416,7 @@ function trimmedContactNum(inputContactNumber) {
 		return -1;
 	}  
 }
+
 function normalizedContactNum(targetNumber) {
 	var trimmed = trimmedContactNum(targetNumber);
 
@@ -2082,6 +2094,7 @@ function startChat(source="normal") {
 	tempRequest = msgHistory;
 	conn.send(JSON.stringify(msgHistory));
 }
+
 $('#go-chat').click(function() {
 	$('#loading').modal('show');
 	lastMessageTimeStamp = "";
@@ -2097,7 +2110,6 @@ $('#go-chat').click(function() {
 	} else {
 		startChat();
 	}
-
 });
 
 var testMsg;
@@ -2195,6 +2207,7 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
+
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2206,7 +2219,6 @@ function loadGroups(){
 	} else {
 		alert('Something went wrong, Please contact the Administrator');
 	}
-
 }
 
 function loadGroupsCommunity(){
@@ -2278,10 +2290,6 @@ $('#go-load-groups').click(function() {
 	}
 });
 
-$(document).ready(function() {
-	var table = $('#response-contact-container').DataTable();
-});
-
 String.prototype.capitalize = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
@@ -2289,66 +2297,18 @@ String.prototype.capitalize = function() {
 $('#response-contact-container').on('click', 'tr:has(td)', function(){
 	var table = $('#response-contact-container').DataTable();
 	var data = table.row(this).data();
-	if (data[0].charAt(0) == "c") {
-		reset_cc();
-		var container = document.getElementById("community-contact-wrapper");
-		var input = document.createElement("input");
-		input.id = "c_id";
-		input.value = data[0];
-		console.log(data[0]);
-		input.setAttribute('hidden',true);
-		container.appendChild(input);
-		$('#response-contact-container_wrapper').prop('hidden',true);
-		$('#community-contact-wrapper').prop('hidden', false);
-		$('#employee-contact-wrapper').prop('hidden', true);
-		$('#firstname_cc').val(data[1]);
-		$('#lastname_cc').val(data[2]);
-		$('#prefix_cc').val(data[3]);
-		$('#office_cc').val(data[4]);
-		$('#sitename_cc').val(data[5]);
-		$('#numbers_cc').val(data[6]);
-		$('#rel_cc').val(data[7]);
-		if (data[8] == "Yes") {
-			$('#ewirecipient').val(1);
-		} else {
-			$('#ewirecipient').val(0);
-		}
-
-		var numbers = data[6].split(',');
-
-		for(x = 0; x < numbers.length; x++) {
-			$('#numbers_cc').tagsinput('add',numbers[x]);
-		}
+	if ($('#contact-category').val() == "ccontacts") {
+		var msg = {
+			'type': 'loadCommunityContact',
+			'data': data.user_id
+		};	
 	} else {
-		reset_ec();
-		var container = document.getElementById("employee-contact-wrapper");
-		var input = document.createElement("input");
-		input.id = "eid";
-		input.value = data[0];
-		input.setAttribute('hidden',true);
-		container.appendChild(input);
-		$('#response-contact-container_wrapper').prop('hidden',true);
-		$('#community-contact-wrapper').prop('hidden', true);
-		$('#employee-contact-wrapper').prop('hidden', false);
-		$('#firstname_ec').val(data[1]);
-		$('#lastname_ec').val(data[2]);
-		$('#nickname_ec').val(data[3]);
-		$('#birthdate_ec').val(data[4]);
-		$('#email_ec').val(data[5]);
-		$('#numbers_ec').val(data[6]);
-		$('#grouptags_ec').val(data[7]);
-
-		var numbers = data[6].split(',');
-		var grouptags = data[7].split(',');
-
-		for(x = 0; x < numbers.length; x++) {
-			$('#numbers_ec').tagsinput('add',numbers[x]);
-		}
-
-		for(y = 0;y < grouptags.length; y++) {
-			$('#grouptags_ec').tagsinput('add',grouptags[y]);
-		}
+		var msg = {
+			'type': 'loadDewslContact',
+			'data': data.user_id
+		};	
 	}
+	conn.send(JSON.stringify(msg));
 });
 
 $('#btn-contact-settings').click(function() {
@@ -2378,50 +2338,6 @@ $('#btn-contact-settings').click(function() {
 function fetchSiteAndOffice(){
 	$('#sitename_cc').empty();
 	$('#office_cc').empty();
-	$.ajax({
-		type: "GET",
-		url: "../chatterbox/getdistinctsitename",             
-		dataType: "json",              
-		success: function(response){
-			var counter = 0;
-			select = document.getElementById('sitename_cc');
-			for (counter=0;counter < response.length;counter++){
-				var opt = document.createElement('option');
-				opt.value = response[counter].sitename;
-				opt.innerHTML = response[counter].sitename;
-				select.className = "form-control";
-				select.setAttribute("required","true");
-				select.appendChild(opt);
-			}
-			opt.value = "OTHERS";
-			opt.innerHTML = "OTHERS";
-			select.appendChild(opt);
-		}
-	});
-
-	$.ajax({
-		type: "GET",
-		url: "../chatterbox/getdistinctofficename",             	
-		dataType: "json",              
-		success: function(response){
-			var counter = 0;
-			select = document.getElementById('office_cc');
-			for (counter=0;counter < response.length;counter++){
-				var opt = document.createElement('option');
-				opt.value = response[counter].office;
-				opt.innerHTML = response[counter].office;
-				select.className = "form-control";
-				select.setAttribute("required","true");
-				select.appendChild(opt);
-			}
-			var opt = document.createElement('option');
-			opt.value = "OTHERS";
-			opt.innerHTML = "OTHERS";
-			select.className = "form-control";
-			select.setAttribute("required","true");
-			select.appendChild(opt);
-		}
-	});
 }
 
 $('#sitename_cc').on('change',function() {
@@ -2439,6 +2355,7 @@ $('#office_cc').on('change',function() {
 		$("#other-officename").hide();
 	}
 });
+
 $('#btn-clear-ec').on('click',function(){
 	if ($('#settings-cmd').val() == "updatecontact"){
 		$('#employee-contact-wrapper').attr('hidden',true);
@@ -2459,6 +2376,7 @@ function reset_ec() {
 	$('#numbers_ec').tagsinput("removeAll");
 	$('#grouptags_ec').tagsinput("removeAll");
 }
+
 $('#btn-clear-cc').on('click',function(){
 	if ($('#settings-cmd').val() == "updatecontact"){
 		$('#community-contact-wrapper').attr('hidden',true);
@@ -2842,6 +2760,7 @@ function getOfficesAndSitenames () {
 	} catch(err) {
 	}
 }
+
 function getInitialQuickInboxMessages () {
 	var msg = {
 		'type': 'smsloadquickinboxrequest'
@@ -2855,7 +2774,6 @@ function getLatestAlert() {
 	};
 	conn.send(JSON.stringify(msg));
 }
-
 
 $('a[href="#emp-group"]').on('click',function(){
 	employeeTags = [];
@@ -2938,8 +2856,8 @@ $('#settings-cmd').on('change',function(){
 		$('#settings-cmd').css("background-color", "#dff0d8");
 	}
 
-	if ($('#contact-category').val() == "econtacts") {
-		if ($('#settings-cmd').val() == "addcontact") {
+	if ($('#contact-category').val() == "econtacts") 
+{		if ($('#settings-cmd').val() == "addcontact") {
 			$('#response-contact-container_wrapper').prop('hidden',true);
 			$('#community-contact-wrapper').prop('hidden', true);
 			$('#employee-contact-wrapper').prop('hidden', false);
@@ -2972,288 +2890,213 @@ $('#settings-cmd').on('change',function(){
 });
 
 function getComContact(){
-	var table = $('#response-contact-container').DataTable();
-	$.ajax({
-		type: "GET",
-		url: "../chatterbox/get_community_contacts",      
-		success: function(response){
-			var data = JSON.parse(response);
-			console.log(data);
+	try {
+		var msg = {
+			'type': 'loadAllCommunityContacts'
+		};
+		conn.send(JSON.stringify(msg));
+	} catch(err) {
+}}
 
-			$("#response-contact-container").DataTable().clear();
-			$("#response-contact-container").DataTable().destroy();
-
-			$('thead tr th').remove();
-			$('thead tr').append( $('<th />', {text : 'c_id'}).css("display", "none"));
-			$('thead tr').append( $('<th />', {text : 'First name'}));
-			$('thead tr').append( $('<th />', {text : 'Last name'}));
-			$('thead tr').append( $('<th />', {text : 'Prefix'}));
-			$('thead tr').append( $('<th />', {text : 'Office'}));
-			$('thead tr').append( $('<th />', {text : 'Sitename'}));
-			$('thead tr').append( $('<th />', {text : 'Contact #'}));
-			$('thead tr').append( $('<th />', {text : 'Rel'}));
-			$('thead tr').append( $('<th />', {text : 'EWI Recipient'}));
-
-			$('tfoot tr th').remove();
-			$('tfoot tr').append( $('<th />', {text : 'c_id'}).css("display", "none"));
-			$('tfoot tr').append( $('<th />', {text : 'First name'}));
-			$('tfoot tr').append( $('<th />', {text : 'Last name'}));
-			$('tfoot tr').append( $('<th />', {text : 'Prefix'}));
-			$('tfoot tr').append( $('<th />', {text : 'Office'}));
-			$('tfoot tr').append( $('<th />', {text : 'Sitename'}));
-			$('tfoot tr').append( $('<th />', {text : 'Contact #'}));
-			$('tfoot tr').append( $('<th />', {text : 'Rel'}));
-			$('tfoot tr').append( $('<th />', {text : 'EWI Recipient'}));
-
-			for (var i = 0; i < data.length; i++) {
-				var ewi_flag = "";
-				if (data[i].ewirecipient == true) {
-					ewi_flag = "Yes";
-				} else {
-					ewi_flag = "No";
-				}
-				var newContent = "<tr><td style='display:none;'>c_"+data[i].c_id+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].prefix+"</td><td>"+data[i].office+"</td><td>"+data[i].sitename+"</td><td>"+data[i].number+"</td><td>"+data[i].rel+"</td><td>"+ewi_flag+"</td></tr>";
-				$("#response-contact-container tbody").append(newContent);
-			}
-
-
-			$('#response-contact-container').show();
-			$("#response-contact-container").DataTable({
-				"scrollX": true
-			});
-		}
+function displayDataTableCommunityContacts(cmmty_contact_data){
+	$('#response-contact-container').DataTable({
+		destroy: true,
+		"scrollY": 300,
+		"scrollX": true,
+		data: cmmty_contact_data,
+		columns: [
+		{ 'data': 'user_id', title: "ID #" },
+		{ 'data': 'salutation', title: "Salutation" },
+		{ 'data': 'firstname', title: "Firstname" },
+		{ 'data': 'lastname', title: "Lastname" },
+		{ 'data': 'middlename', title: "Middlename" },
+		{ 'data': 'nickname', title: "Nickname" },
+		{ 'data': 'psgc', title: "Psgc" },
+		{ 'data': 'active_status', title: "Active Status" }
+		]
 	});
+	$('#response-contact-container').show();
 }
 
 function getEmpContact(){
-	var table = $('#response-contact-container').DataTable();
-	$.ajax({
-		type: "GET",
-		url: "../chatterbox/get_employee_contacts",        
-		success: function(response){
-			var data = JSON.parse(response);
-			console.log(data);
-			$("#response-contact-container").DataTable().clear();
-			$("#response-contact-container").DataTable().destroy();
-
-			$('thead tr th').remove();
-			$('thead tr').append( $('<th />', {text : 'eid'}).css("display", "none"));
-			$('thead tr').append( $('<th />', {text : 'First name'}));
-			$('thead tr').append( $('<th />', {text : 'Last name'}));
-			$('thead tr').append( $('<th />', {text : 'Nickname'}));
-			$('thead tr').append( $('<th />', {text : 'Birthdate'}));
-			$('thead tr').append( $('<th />', {text : 'Email'}));
-			$('thead tr').append( $('<th />', {text : 'Contact #'}));
-			$('thead tr').append( $('<th />', {text : 'Group Tags'}));
-
-			$('tfoot tr th').remove();
-			$('tfoot tr').append( $('<th />', {text : 'eid'}).css("display", "none"));
-			$('tfoot tr').append( $('<th />', {text : 'First name'}));
-			$('tfoot tr').append( $('<th />', {text : 'Last name'}));
-			$('tfoot tr').append( $('<th />', {text : 'Nickname'}));
-			$('tfoot tr').append( $('<th />', {text : 'Birthdate'}));
-			$('tfoot tr').append( $('<th />', {text : 'Email'}));
-			$('tfoot tr').append( $('<th />', {text : 'Contact #'}));
-			$('tfoot tr').append( $('<th />', {text : 'Group Tags'}));
-
-			for (var i = 0; i < data.length; i++) {
-				var newContent = "<tr><td style='display:none;'>e_"+data[i].eid+"</td><td>"+data[i].firstname+"</td><td>"+data[i].lastname+"</td><td>"+data[i].nickname+"</td><td>"+data[i].birthday+"</td><td>"+data[i].email+"</td><td>"+data[i].numbers+"</td><td>"+data[i].grouptags+"</td></tr>";
-				$("#response-contact-container tbody").append(newContent);
-			}
-
-			$('#response-contact-container').show();
-			$("#response-contact-container").DataTable({
-				"scrollX": true
-			});
-		}
-	});
+	try {
+		var msg = {
+			'type': 'loadAllDewslContacts'
+		};
+		conn.send(JSON.stringify(msg));
+	} catch(err) {
+	}
 }
 
+function displayDataTableEmployeeContacts(dwsl_contact_data) {
+	$('#response-contact-container').DataTable({
+		destroy: true,
+		"scrollY": 300,
+		"scrollX": true,
+		data: dwsl_contact_data,
+		columns: [
+		{ 'data': 'user_id', title: "ID #" },
+		{ 'data': 'salutation', title: "Salutation" },
+		{ 'data': 'firstname', title: "Firstname" },
+		{ 'data': 'lastname', title: "Lastname" },
+		{ 'data': 'middlename', title: "Middlename" },
+		{ 'data': 'nickname', title: "Nickname" },
+		{ 'data': 'team', title: "Team" },
+		{ 'data': 'active_status', title: "Active Status" }
+		]
+	});
+	$('#response-contact-container').show();
+}
+
+function updateDwslContact(dwsl_contact) {
+	console.log(dwsl_contact);
+	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#ec_id').val(dwsl_contact.contact_info.id);
+	$('#firstname_ec').val(dwsl_contact.contact_info.firstname);
+	$('#lastname_ec').val(dwsl_contact.contact_info.lastname);
+	$('#middlename_ec').val(dwsl_contact.contact_info.middlename);
+	$('#nickname_ec').val(dwsl_contact.contact_info.nickname);
+	$('#gender_ec').val(dwsl_contact.contact_info.gender);
+	$('#salutation_ec').val(dwsl_contact.contact_info.salutation);
+	$('#birthdate_ec').val(dwsl_contact.contact_info.birthday);
+	$('#active_status_ec').val(dwsl_contact.contact_info.contact_active_status);
+	$('#mobile-div').empty();
+	$('#landline-div').empty();
+	$('#email_ec').tagsinput('removeAll');
+
+	for (var counter = 0; counter < dwsl_contact.email_data.length; counter++) {
+		$('#email_ec').tagsinput('add',dwsl_contact.email_data[counter].email);
+	}
+
+	for (var counter = 0; counter < dwsl_contact.team_data.length; counter++) {
+		$('#team_ec').tagsinput('add',dwsl_contact.team_data[counter].team_name);
+	}
+
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_landline_ec" onclick="addAdditionalLandlineEc()">Add another landline number..</a></div></div>').appendTo("#landline-div");
+	for (var counter = 0; counter < dwsl_contact.landline_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="landline_ec_'+(counter)+'">Landline #:</label>'+
+			'<input type="text" class="form-control" id="landline_ec_'+(counter)+'" name="landline_ec_'+(counter)+'" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline ID #:</label>'+
+			'<input type="text" id="landline_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline # Remarks:</label>'+
+			'<input type="text" id="landline_ec_remarks_'+(counter)+'" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_remarks+'">'+
+			'</div>'+
+			'</div>').appendTo("#landline-div");
+
+		if (dwsl_contact.landline_data[counter].landline_id == null) {
+			$('#landline_ec_'+(counter)).val('');
+			$('#landline_ec_id_'+(counter)).val('');
+			$('#landline_ec_remarks_'+(counter)).val('');
+		}
+	}
+
+
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_number_ec" onclick="addAdditionalNumberEc()">Add another mobile number..</a></div></div>').appendTo("#mobile-div");
+	for (var counter = 0; counter < dwsl_contact.mobile_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="mobile_ec_'+(counter)+'">Mobile #:</label>'+
+			'<input type="text" class="form-control" id="mobile_ec_'+(counter)+'" name="mobile_ec_'+(counter)+'" value="'+dwsl_contact.mobile_data[counter].number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Mobile ID #:</label>'+
+			'<input type="text" id="mobile_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Status:</label>'+
+			'<input type="text" id="mobile_ec_status_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_status+'">'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Priority:</label>'+
+			'<input type="text" id="mobile_ec_priority_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].priority+'">'+
+			'</div>'+
+			'</div>').appendTo("#mobile-div");
+	}
+
+		$('#employee-contact-wrapper').prop('hidden',false);
+	}
+
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
-	if ($('#settings-cmd').val() != "updatecontact") {
-		var empty_fields = 0;
-		$('#community-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
+	if ($('#settings-cmd').val() == "updatecontact") {
+		console.log('UPDATE COMMUNITY');
+		var mobile_count = $('#mobile-div .row').length;
+		var landline_count = $('#landline-div .row').length;
 
-		if (empty_fields > 2) {
-			$('#contact-result').remove();
-			var container = document.getElementById('community-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if ($('#sitename_cc').val() == "OTHERS") {
-				$site = $('#other-sitename').val();
-			} else {
-				$site = $('#sitename_cc').val();
-			}
+		for (var counter = 0; counter < mobile_count; counter++) {
 
-			if ($('#office_cc').val() == "OTHERS") {
-				$office = $('#other-officename').val();
-			} else {
-				$office = $('#office_cc').val();
-			}
-
-			data = {
-				'category': 'communitycontacts',
-				'c_id': '',
-				'lastname': $('#lastname_cc').val(),
-				'firstname': $('#firstname_cc').val(),
-				'prefix': $('#prefix_cc').val(),
-				'office': $office,
-				'sitename': $site,
-				'number': $('#numbers_cc').val(),
-				'rel': $('#rel').val(),
-				'ewirecipient': ($('#ewirecipient').val() == 1 ? true : false)
-			};
-
-			$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
-			.done(function(response) {
-				if (response == true) {
-					$('#contact-result').remove();
-					$.notify('Success! New community contact added.','success');
-					$('#community-contact-wrapper').prop('hidden', true);
-					getComContact();
-					$("#employee-contact-wrapper input").val('');
-				} else {
-					$('#contact-result').remove();
-					var container = document.getElementById('community-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-danger";
-					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
-					container.insertBefore(resContainer,container.childNodes[0]);
-				}
-				reset_cc();
-				fetchSiteAndOffice();
-			});
 		}
+
+		for (var counter =0; counter < landline_count; counter++) {
+
+		}
+
+
 	} else {
-		var empty_fields = 0;
-		$('#community-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-
-				if (($(this).attr('id') == "other-officename" && $(this).val() == "") || ($(this).attr('id') == "other-sitename" && $(this).val() == "")) {
-					console.log($(this).attr('id'));
-				} else {
-					empty_fields++;
-				}
-			}
-		});
-
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('community-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
-				data = {
-					'id': $('#c_id').val(),
-					'firstname': $('#firstname_cc').val(),
-					'lastname': $('#lastname_cc').val(),
-					'prefix': $('#prefix_cc').val(),
-					'office': $('#office_cc').val(),
-					'sitename': $('#sitename_cc').val(),
-					'number': $('#numbers_cc').val(),
-					'rel': $('#rel').val(),
-					'ewirecipient': $('#ewirecipient').val()
-				};
-				updateContactService(data,"community-contact-wrapper");
-			}
-		}
+		console.log('ADD COMMUNITY');
 	}
 });
 
 $('#emp-settings-cmd button[type="submit"]').on('click',function(){
-	if ($('#settings-cmd').val() != "updatecontact") {
-		var empty_fields = 0;
-		$('#employee-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
+	var mobile_count = $('#mobile-div .row').length-1;
+	var landline_count = $('#landline-div .row').length-1;
+	var contact_data = {};
+	var mobile_raw = {};
+	var mobile_data = [];
+	var landline_raw = {};
+	var landline_data = [];
 
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('employee-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			data = {
-				'category': 'dewslcontacts',
-				'eid': '',
-				'lastname': $('#lastname_ec').val(),
-				'firstname': $('#firstname_ec').val(),
-				'nickname': $('#nickname_ec').val(),
-				'birthday': $('#birthdate_ec').val(),
-				'email': $('#email_ec').val(),
-				'numbers': $('#numbers_ec').val(),
-				'grouptags': $('#grouptags_ec').val()
-			};
-			$.post( "../communications/chatterbox/addcontact", {contact: JSON.stringify(data)})
-			.done(function(response) {
-				console.log(response);
-				if (response == true) {
-					$('#contact-result').remove();
-					$('#employee-contact-wrapper').prop('hidden',true);
-					$.notify('Success! New employee contact added.','success');
-					getEmpContact();
-					$("#employee-contact-wrapper input").val('');
-				} else {
-					$('#contact-result').remove();
-					var container = document.getElementById('employee-contact-wrapper');
-					var resContainer = document.createElement('div');
-					resContainer.id = "contact-result";
-					resContainer.className = "alert alert-danger";
-					resContainer.innerHTML = "<strong>Failed!</strong> Duplicate Entry / Invalid input data";
-					container.insertBefore(resContainer,container.childNodes[0]);
-				}
-				reset_ec();
-			});
+	for (var counter = 0; counter < mobile_count; counter++) {
+		if ($('#mobile_ec_'+counter).val() != "") {
+			mobile_raw = {
+				'mobile_id': $('#mobile_ec_id_'+counter).val(),
+				'mobile_number': $('#mobile_ec_'+counter).val(),
+				'mobile_status': $('#mobile_ec_status_'+counter).val(),
+				'mobile_priority': $('#mobile_ec_priority_'+counter).val()
+			}
+			mobile_data.push(mobile_raw);
 		}
+	}
+
+	for (var counter =0; counter < landline_count; counter++) {
+		if ($('#landline_ec_'+counter).val() != "") {
+			landline_raw = {
+				'landline_id': $('#landline_ec_id_'+counter).val(),
+				'landline_number': $('#landline_ec_'+counter).val(),
+				'landline_remarks': $('#landline_ec_remarks_'+counter).val()
+			}
+			landline_data.push(landline_raw);
+		}
+	}
+		
+	if ($('#settings-cmd').val() == "updatecontact") {
+		console.log('UPDATE EMPLOYEE');
+		contact_data = {
+			'id': $('#ec_id').val(),
+			'firstname': $('#firstname_ec').val(),
+			'lastname': $('#lastname_ec').val(),
+			'middlename': $('#middlename_ec').val(),
+			'nickname': $('#nickname_ec').val(),
+			'salutation': $('#salutation_ec').val(),
+			'gender': $('#gender_ec').val(),
+			'birthdate': $('#birthdate_ec').val(),
+			'email_address': $('#email_ec').val(),
+			'teams': $('#team_ec').val(),
+			'contact_active_status': $('#active_status_ec').val(),
+			'numbers': mobile_data,
+			'landline': landline_data
+		}
+
+		msg = {
+			'type': "updateDewslContact",
+			'data': contact_data
+		}
+		conn.send(JSON.stringify(msg));
 	} else {
-		var empty_fields = 0;
-		$('#employee-contact-wrapper input').each(function(){
-			if (($(this).val() == "" || $(this).val() == null) && $(this).attr('id') != undefined) {
-				empty_fields++;
-			}
-		});
-
-		if (empty_fields > 0) {
-			$('#contact-result').remove();
-			var container = document.getElementById('employee-contact-wrapper');
-			var resContainer = document.createElement('div');
-			resContainer.id = "contact-result";
-			resContainer.className = "alert alert-danger";
-			resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-			container.insertBefore(resContainer,container.childNodes[0]);
-		} else {
-			if (confirm('The Changes you made will be saved. \n Do you want to proceed?')) {
-				data = {
-					'id': $('#eid').val(), 
-					'firstname': $('#firstname_ec').val(),
-					'lastname': $('#lastname_ec').val(),
-					'nickname': $('#nickname_ec').val(),
-					'birthdate': $('#birthdate_ec').val(),
-					'email': $('#email_ec').val(),
-					'numbers': $('#numbers_ec').val(),
-					'grouptags': $('#grouptags_ec').val()
-				};
-				updateContactService(data,"employee-contact-wrapper");
-			}
-		}
+		console.log('ADD EMPLOYEE');
 	}
 });
 
@@ -3725,3 +3568,41 @@ function updateContactService(data,wrapper){
 	});
 }
 });
+
+function addAdditionalLandlineEc(){
+	var landline_count = $('#landline-div .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="landline_ec_'+landline_count+'">Landline #:</label>'+
+		'<input type="text" class="form-control" id="landline_ec" name="landline_ec" value="" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline ID #:</label>'+
+		'<input type="text" id="landline_ec_id_'+landline_count+'" class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline # Remarks:</label>'+
+		'<input type="text" id="landline_ec_remarks_'+landline_count+'" class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#landline-div');
+}
+
+function addAdditionalNumberEc(){
+	var mobile_count = $('#mobile-div .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="mobile_ec">Mobile #:</label>'+
+		'<input type="text" class="form-control" id="mobile_ec_'+mobile_count+'" name="mobile_ec" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Mobile ID #:</label>'+
+		'<input type="text" id="mobile_ec_id_'+mobile_count+'"class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Status:</label>'+
+		'<input type="text" id="mobile_ec_status_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Priority:</label>'+
+		'<input type="text" id="mobile_ec_priority_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#mobile-div');
+}
