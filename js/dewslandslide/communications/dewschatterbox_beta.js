@@ -112,14 +112,15 @@ function sendViaAlertMonitor(dashboard_data){
 			final_template = final_template.replace("(next_ewi_date)","mamayang");
 		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
 			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
-			final_template = templfinal_templateate.replace("(gndmeas_date_submission)","bukas");
+			final_template = final_template.replace("(gndmeas_date_submission)","bukas");
 
 			final_template = final_template.replace("(next_ewi_time)","12:00 MN");
 			final_template = final_template.replace("(next_ewi_date)","bukas ng");
 		} else {
 			alert("Error Occured: Please contact Administrator");
 		}
-		final_template = final_template.replace("(current_date_time)",moment(dashboard_data.data_timestamp).format('LL')+" "+moment(dashboard_data.data_timestamp).format('HH:mm A'));
+
+		final_template = final_template.replace("(current_date)",moment(dashboard_data.data_timestamp).format('LL'));
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 	} else {
@@ -199,7 +200,6 @@ function sendViaAlertMonitor(dashboard_data){
 			async: true,
 			data: {trigger_type:alertTrigger},
 			success: function(data) {
-				console.log(data);
 				if (data != null) {
 					var techInfo = JSON.parse(data);
 				}
@@ -207,14 +207,12 @@ function sendViaAlertMonitor(dashboard_data){
 					type: "POST",
 					url: "../communications/getbackboneviastatus",
 					async: true,
-					data: {alert_status: techInfo.alert_status},
+					data: {alert_status: techInfo.alertLevel},
 					success: function(data) {
 						var backboneMessage = JSON.parse(data);
-
 						if (alertLevel.length == 2 && alertLevel.indexOf("A") != -1) {
 							alertLevel = alertLevel.replace("A","Alert ");
 						}
-
 						$.ajax({
 							type: "POST",
 							url: "../communications/getrecommendedresponse",
@@ -224,7 +222,6 @@ function sendViaAlertMonitor(dashboard_data){
 								var recommendedResponse = JSON.parse(data);
 								var template = "";
 								var level;
-
 								if (recommendedResponse[0].alert_symbol_level.match(/\d+/g)) {
 									level = recommendedResponse[0].alert_symbol_level[recommendedResponse[0].alert_symbol_level.length-1];
 								}
@@ -232,8 +229,14 @@ function sendViaAlertMonitor(dashboard_data){
 									if (backboneMessage[counter].alert_status.indexOf(level) == -1 && level == 3) {
 										template = backboneMessage[counter].template;
 									} else {
-										template = backboneMessage[counter].template;
-										break;
+										if (level == 1 || level == 2) {
+											if (backboneMessage[counter].alert_status == "Event") {
+												template = backboneMessage[counter].template;
+											}
+										} else {
+											template = backboneMessage[counter].template;
+											break;
+										}
 									}
 								}
 								for (var counter = 0;counter < backboneMessage.length;counter++) {
@@ -241,16 +244,16 @@ function sendViaAlertMonitor(dashboard_data){
 										template = backboneMessage[counter].template;
 										switch(dashboard_data.day) {
 											case 0:
-											template = template.replace('(nth-day-extended)','3');
+											template = template.replace('(nth-day-extended)','tatlong');
 											break;
 											case 1:
-											template = template.replace('(nth-day-extended)','1st');
+											template = template.replace('(nth-day-extended)','unang');
 											break;
 											case 2:
-											template = template.replace('(nth-day-extended)','2nd');
+											template = template.replace('(nth-day-extended)','pangalawang');
 											break;
 											case 3:
-											template = template.replace('(nth-day-extended)','3rd');
+											template = template.replace('(nth-day-extended)','Ikatlong');
 											break;
 										}
 									}
@@ -304,6 +307,7 @@ function sendViaAlertMonitor(dashboard_data){
 
 									var current_time = moment().format('LL');
 									template = template.replace("(current_date_time)",current_time+" "+meridiem);
+									template = template.replace("(current_date)",moment().format("D MMMM, YYYY"));
 								} else {
 									var meridiem = moment(dashboard_data.event_start).format("hh:mm A");
 									if (meridiem.slice(-8) == "12:00 AM") {
@@ -315,6 +319,7 @@ function sendViaAlertMonitor(dashboard_data){
 
 									var current_time = moment().format('LL');
 									template = template.replace("(current_date_time)",current_time+" "+meridiem);
+									template = template.replace("(current_date)",moment().format("D MMMM, YYYY"));
 								}
 
 								if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
@@ -349,7 +354,7 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
-									template = template.replace("(gndmeas_date_submission)","bukas");
+									template = template.replace("(gndmeas_date_submission)","bukas "+moment().add(1,'d').format("D MMMM YYYY"));
 
 									template = template.replace("(next_ewi_time)","12:00 MN");
 									template = template.replace("(next_ewi_date)","bukas ng");
@@ -1120,10 +1125,12 @@ $(document).ready(function() {
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
-									'last_release_time': last_rounded_release
+									'last_release_time': last_rounded_release,
+									'data_timestamp': moment(rounded_release).subtract(30,'m').format('YYYY-MM-DD HH:mm:ss')
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
+									console.log(data);
 									var response = JSON.parse(data);
 									if (response.ack == "no_ack") {
 										var narrative_details = {
@@ -1133,7 +1140,7 @@ $(document).ready(function() {
 											'province': event_details.province,
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
-											'ewi_sms_timestamp': rounded_release,
+											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
 											'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
