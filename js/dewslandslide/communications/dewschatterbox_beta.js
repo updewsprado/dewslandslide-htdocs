@@ -1075,14 +1075,13 @@ $(document).ready(function() {
 
 								if (narrative_recipients.length > 0) {
 									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+","+x;
+										narrative_template = narrative_template+","+x.trim();
 									});
 								} else {
 									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+","+x;
+										narrative_template = narrative_template+","+x.trim();
 									});
 								}
-
 								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
@@ -1279,7 +1278,7 @@ function getOngoingEvents(sites){
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
 							} else {
-								narrative_template = gintags_msg_details[1]+"sent surficial measurement <insert trend here>";
+								narrative_template = gintags_msg_details[1]+" sent surficial measurement <insert trend here>";
 							}
 						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
 
@@ -1291,11 +1290,11 @@ function getOngoingEvents(sites){
 							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 								if (narrative_recipients.length > 0) {
 									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+","+x;
+										narrative_template = narrative_template+","+x.trim();
 									});
 								} else {
 									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+","+x;
+										narrative_template = narrative_template+","+x.trim();
 									});
 								}
 								if (gintags_msg_details.tags === "#EwiMessage") {
