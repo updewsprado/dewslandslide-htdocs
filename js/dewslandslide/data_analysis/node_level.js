@@ -578,9 +578,9 @@ function chartProcess(id,data_series,name,color){
 	var list_id=["x1r","x2r","x1f","x2f","y1r","y2r","y1f","y2f","z1r","z2r","z1f","z2f","bt1","bt2",
 	"Cal","Caf","Raw","Raf","mva"];
 	var  list_dates =[];
-		for (var i = 1; i < duration.asDays(); i++) {
-			list_dates.push(((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-		}
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
 	
 	$.ajax({ 
 		dataType: "json",
@@ -723,6 +723,21 @@ function chartProcess(id,data_series,name,color){
 						style:{
 							color: 'white'
 						}
+					},
+					events:{
+
+						afterSetExtremes:function(){
+
+							if (!this.chart.options.chart.isZoomed)
+							{                                         
+								var xMin = this.chart.xAxis[0].min;
+								var xMax = this.chart.xAxis[0].max;
+								var zmRange = computeTickInterval(xMin, xMax);
+								zoomEvent(id,zmRange,xMin,xMax)
+							}
+						}
+
+
 					}
 				},
 				tooltip: {
@@ -731,6 +746,24 @@ function chartProcess(id,data_series,name,color){
 				},
 
 				plotOptions: {
+					scatter: {
+						marker: {
+							radius: 5,
+							states: {
+								hover: {
+									enabled: true,
+									lineColor: 'rgb(100,100,100)'
+								}
+							}
+						},
+						states: {
+							hover: {
+								marker: {
+									enabled: false
+								}
+							}
+						}
+					},
 					series: {
 						marker: {
 							radius: 3
@@ -790,8 +823,12 @@ function chartProcess(id,data_series,name,color){
 					credits: {
 						enabled: false
 					},
-					series:data_series
-				});
+					series:data_series	
+				}, function(chart) { //add this function to the chart definition to get synchronized crosshairs
+                    //this function needs to be added to each syncronized chart 
+                    syncronizeCrossHairs(chart,id);
+
+                });
 			var chart = $('#'+id).highcharts();
 			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 				var series4 = chart.series[(data_series.length-5)];
@@ -870,3 +907,67 @@ function chartProcess(id,data_series,name,color){
 	});
 
 }
+
+function syncronizeCrossHairs(chart,id_chart) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+			xAxis1.removePlotLine("myPlotLineId");
+			xAxis1.addPlotLine({
+				value: chart.xAxis[0].translate(x, true),
+				width: 1,
+				color: 'red',                 
+				id: "myPlotLineId"
+			});
+		}
+
+	});
+}
+
+function computeTickInterval(xMin, xMax) {
+	var zoomRange = xMax - xMin;
+
+	if (zoomRange <= 2)
+		currentTickInterval = 0.5;
+	if (zoomRange < 20)
+		currentTickInterval = 1;
+	else if (zoomRange < 100)
+		currentTickInterval = 5;
+}
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().xAxis[0].options.tickInterval =zmRange;
+		$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+	}
+	
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+		$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+	}
+	
+}
+
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
+
+
+
