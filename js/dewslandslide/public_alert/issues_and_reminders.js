@@ -18,10 +18,11 @@ let archived_table = null;
 function getNormalAndLockedIssues(data) {
 
     if ( ($("#issuesAndRemindersModal").data('bs.modal') || {}).isShown ) {
-        $("#issuesAndRemindersModal").modal("hide");
         $('#issuesAndRemindersModal').on('hidden.bs.modal', function (e) {
             openModal();
-        })
+        });
+        $("#issuesAndRemindersModal").modal("hide");
+        $(".modal-backdrop").remove();
     } else {
         openModal();
     }
