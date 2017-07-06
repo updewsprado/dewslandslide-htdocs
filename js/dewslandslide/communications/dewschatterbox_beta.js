@@ -1154,6 +1154,13 @@ $(document).ready(function() {
 				updateDwslContact(msg.data);
 			} else if (msg.type == "fetchedSelectedCmmtyContact") {
 				console.log(msg.data);
+			} else if (msg.type == "updatedDwslContact") {
+				console.log(msg);
+				if (msg.status == true) {
+					$.notify(msg.return_msg,'success');
+				} else {
+					$.notify(msg.return_msg,'failed');
+				}
 			} else {
 				var numbers = /^[0-9]+$/; 
 				if (msg.type == "ackgsm") {
@@ -2948,7 +2955,7 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function updateDwslContact(dwsl_contact) {
-	console.log(dwsl_contact);
+	$('#go_back').prop('hidden',false);
 	$('#response-contact-container_wrapper').prop('hidden',true);
 	$('#ec_id').val(dwsl_contact.contact_info.id);
 	$('#firstname_ec').val(dwsl_contact.contact_info.firstname);
@@ -3038,6 +3045,19 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 		console.log('ADD COMMUNITY');
 	}
 });
+
+$('#go_back').click(function(){
+	if ($('#settings-cmd').val() == "updatecontact") {
+		$('#employee-contact-wrapper').prop('hidden', true);
+		$('#community-contact-wrapper').prop('hidden', true);
+		$('#go_back').prop('hidden',true);
+		reset_cc();
+		reset_ec();
+		getEmpContact();
+	} else {
+
+	}
+})
 
 $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 	var mobile_count = $('#mobile-div .row').length-1;
