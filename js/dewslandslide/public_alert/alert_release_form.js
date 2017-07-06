@@ -658,11 +658,10 @@ $(document).ready(function()
             if( $("#public_alert_level").val() == "A0")
             {   
                 return true;
-            }
-            else if( $(".cbox_trigger_rx").is(":checked") ) return true;
-            if( $("#public_alert_level").val() == "A1")
+            } else if( $(".cbox_trigger_rx").is(":checked") ) return true;
+            else if( $("#public_alert_level").val() == "A1")
             {
-                if($(element).is(":checked") || $(".cbox_trigger").is(":checked"))
+                if( $(".cbox_nd").is(":checked") || $(element).is(":checked") || $(".cbox_trigger").is(":checked"))
                     return true;
                 else { $("#nd_modal").modal('show'); return false; }
             }
