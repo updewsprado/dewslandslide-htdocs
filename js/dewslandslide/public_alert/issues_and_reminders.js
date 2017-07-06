@@ -514,7 +514,7 @@ function loadTables()
 
 function reloadIssuesTable(table) {
     table.ajax.reload();
-    onLoadIssuesModal();
+    isJSLoadedYet = false;
 }
 
 $(document).ready(function () {
