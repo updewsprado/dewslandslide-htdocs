@@ -1075,11 +1075,11 @@ $(document).ready(function() {
 
 								if (narrative_recipients.length > 0) {
 									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+","+x.trim();
+										narrative_template = narrative_template+", "+x.trim();
 									});
 								} else {
 									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+","+x.trim();
+										narrative_template = narrative_template+", "+x.trim();
 									});
 								}
 								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
@@ -1290,11 +1290,11 @@ function getOngoingEvents(sites){
 							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 								if (narrative_recipients.length > 0) {
 									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+","+x.trim();
+										narrative_template = narrative_template+", "+x.trim();
 									});
 								} else {
 									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+","+x.trim();
+										narrative_template = narrative_template+", "+x.trim();
 									});
 								}
 								if (gintags_msg_details.tags === "#EwiMessage") {
