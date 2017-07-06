@@ -47,11 +47,10 @@ function getNormalAndLockedIssues(data) {
             $("#issues_and_reminders_modal").html(data);
             reposition("#issuesAndRemindersModal");
             if(!isPage) {
-                    $("#issuesAndRemindersModal").modal("show");
-                    onLoadIssuesModal();
+                $("#issuesAndRemindersModal").modal("show");
+                onLoadIssuesModal();
             } 
             else {
-
                 if( active_table == null )
                     onLoadIssuesPage();
                 else {
@@ -85,7 +84,7 @@ function onLoadIssuesModal() {
 	let original_height = $('#issuesAndRemindersModal .modal-body.overflow').height();
 	let height = $(window).height()* 0.5 > original_height ? original_height : $(window).height()* 0.5;
 	$('#issuesAndRemindersModal .modal-body.overflow').height(height);
-    //$(window).trigger("resize");
+    $(window).trigger("resize");
 	$(window).on('resize', function() {
 		let height = $(window).height()* 0.5 > original_height ? original_height : $(window).height()* 0.5;
         $('#issuesAndRemindersModal .modal-body.overflow').height(height);
@@ -103,9 +102,12 @@ function onLoadIssuesModal() {
     	}
     });
 
-    $(".show-bar a").click(function () {
+    //$(".show-bar a").unbind("click");
+    $(".show-bar a").click(function (e) {
+        e.preventDefault();
         let row_height = null;
     	$(".form-body").slideToggle("fast", function() {
+            console.log("WEW");
             row_height = $(".form-body").height();
             let element = $("#issuesAndRemindersModal .modal-dialog");
             let position = parseInt(element.css("margin-top"), 10);
@@ -140,11 +142,7 @@ function onLoadIssuesModal() {
             var placement = $(element).closest('.form-group');
             //console.log(placement);
             
-            if( $(element).hasClass("cbox_trigger_switch") )
-            {
-                $("#errorLabel").append(error).show();
-            }
-            else if (placement) {
+            if (placement) {
                 $(placement).append(error)
             } else {
                 error.insertAfter(placement);
@@ -207,17 +205,17 @@ function onLoadIssuesModal() {
             case "add-issue-modal": 
                 action = "add"; 
                 $("#archive-issue, #edit-issue").css("display", "none"); 
-                $("#add-issue").css("display", "inline block");
+                $("#add-issue").css("display", "inline");
                 break;
             case "edit-issue-modal": 
                 action = "submit an edit to"; 
                 $("#add-issue, #archive-issue").css("display", "none"); 
-                $("#edit-issue").css("display", "inline block"); 
+                $("#edit-issue").css("display", "inline"); 
                 break;
             case "archive-issue-modal": 
                 action = "archive"; 
                 $("#edit-issue, #add-issue").css("display", "none"); 
-                $("#archive-issue").css("display", "inline block"); 
+                $("#archive-issue").css("display", "inline"); 
                 $("#resolution-div").show();
                 break;
         }
@@ -228,7 +226,7 @@ function onLoadIssuesModal() {
         current_iar_id = $(this).attr("data-iar-id");
         $("#issuesAndRemindersModal").modal("hide");
         $("#edit-issue, #add-issue").css("display", "none"); 
-        $("#archive-issue").css("display", "inline block");
+        $("#archive-issue").css("display", "inline");
         $("#iarConfirmModal #action").text("archive");
         $("#iarConfirmModal").modal("show");
     });
@@ -258,6 +256,11 @@ function onLoadIssuesModal() {
         }
 
         $("#issues-individual-view, .form-body").show();
+    });
+
+    $("#close-issue-modal").click(function () {
+        if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
+        if($(".show-bar a").attr("data-show") == "1") $(".show-bar a").trigger("click");
     });
 
     $("#cancel-issue-modal").click(function () {
@@ -311,201 +314,6 @@ function onLoadIssuesModal() {
 function onLoadIssuesPage() {
 
     loadTables();
-
-    $(".datetime-issue").datetimepicker({
-        format: 'YYYY-MM-DD HH:mm:00',
-        allowInputToggle: true,
-        widgetPositioning: {
-            horizontal: 'right',
-            vertical: 'bottom'
-        },
-        toolbarPlacement: "top"
-    })
-    .on('dp.show', function (e) {
-        $(this).data("DateTimePicker").minDate(moment().second(0));
-    });
-
-    let temp = {};
-    $("#issuesForm").validate(
-    {
-        rules: {
-            issue_detail: {
-                required: true,
-            },
-            issue_event: {
-                required: {
-                    depends: function () {
-                        return $("#lock").attr("data-button-lock") == "0";
-                }},
-            }
-        },
-        /*messages: {
-            comments: "Provide a reason to invalidate this event. If the event is not invalid and is really an end of event EWI, release it on the indicated end of validity."
-        },*/
-        errorPlacement: function ( error, element ) {
-
-            var placement = $(element).closest('.form-group');
-            //console.log(placement);
-            
-            if( $(element).hasClass("cbox_trigger_switch") )
-            {
-                $("#errorLabel").append(error).show();
-            }
-            else if (placement) {
-                $(placement).append(error)
-            } else {
-                error.insertAfter(placement);
-            } //remove on success 
-
-            element.parents( ".form-group" ).addClass( "has-feedback" );
-
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !element.next( "span" )[ 0 ] ) { 
-                if(element.parent().is(".datetime-issue") || element.parent().is(".datetime-issue")) element.next("span").css("right", "15px");
-                if(element.is("select") || element.is("textarea")) element.next("span").css({"top": "25px", "right": "25px"});
-            }
-        },
-        success: function ( label, element ) {
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !$( element ).next( "span" )) {
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-
-            $(element).closest(".form-group").children("label.error").remove();
-        },
-        highlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-error" ).removeClass( "has-success" );
-            if($(element).parent().is(".datetime-issue") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-remove" ).removeClass( "glyphicon-ok" );
-        },
-        unhighlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-success" ).removeClass( "has-error" );
-            if($(element).parent().is(".datetime-issue") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-ok" ).removeClass( "glyphicon-remove" );
-        },
-        submitHandler: function (form, event) 
-        {
-            let data = $( "#issuesForm" ).serializeArray();
-            temp = {};
-            data.forEach(function (value) { temp[value.name] = value.value == "" ? null : value.value; });
-            temp.ts_posted = moment().format("YYYY-MM-DD HH:mm:ss");
-            temp.poster_id = $("#current_user_id").val();
-            temp.isLocked = parseInt($("#lock").attr("data-button-lock"));
-
-            $("#issuesAndRemindersModal").modal("hide");
-            reposition("#iarConfirmModal");
-            $("#iarConfirmModal").modal("show");
-        }
-    });
-
-    $(".submit-buttons").click(function () {
-        let button_id = $(this).attr("id");
-        let action = "";
-
-        $("#resolution-div").hide();
-        $("#resolution").val("");
-        
-        switch(button_id) {
-            case "add-issue-modal": 
-                action = "add"; 
-                $("#archive-issue, #edit-issue").css("display", "none"); 
-                $("#add-issue").css("display", "inline block");
-                break;
-            case "edit-issue-modal": 
-                action = "submit an edit to"; 
-                $("#add-issue, #archive-issue").css("display", "none"); 
-                $("#edit-issue").css("display", "inline block"); 
-                break;
-            case "archive-issue-modal": 
-                action = "archive"; 
-                $("#edit-issue, #add-issue").css("display", "none"); 
-                $("#archive-issue").css("display", "inline block"); 
-                $("#resolution-div").show();
-                break;
-        }
-        $("#iarConfirmModal #action").text(action);
-    });
-
-    $("#issues_and_reminders_modal .glyphicon-edit").click(function () {
-
-        // HTML Tweaks after clicking edit
-        let html = $("<div />").append( $(this).parents(".alert").clone() ).html();
-        ['lock', 'edit', 'trash'].forEach(function (x) {
-            html = html.replace(/<span class="glyphicon glyphicon(.*)<\/span>/, "");
-        })
-        $(".show-bar, .overflow").hide();
-        $(".issue-loader").html(html);
-        $("#add-issue-modal, #close-issue-modal").css("display", "none");
-        $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "block");
-
-        // JS Part after clicking edit
-        current_iar_id = $(this).attr("data-iar-id");
-        let index = iarListCache.indexOf(current_iar_id);
-        let issue = iarList[index];
-        
-        console.log(issue);
-
-        $("#issue_detail").val(issue.detail);
-        if(issue.status == "normal") {
-            if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
-            $("#issue_event").val(issue.event_id);
-        } else {
-            if($("#lock").attr("data-button-lock") == "0") $("#lock").trigger("click");
-        }
-
-        $("#issues-individual-view, .form-body").show();
-        reposition("#issuesAndRemindersModal");
-        $("#issuesAndRemindersModal").modal("show");
-
-    });
-
-    $("#cancel-issue-modal").click(function () {
-        $("#add-issue-modal, #close-issue-modal").css("display", "block");
-        $("#edit-issue-modal, #archive-issue-modal, #cancel-issue-modal").css("display", "none");
-
-        $("#issue_detail, #issue_event").val("");
-        if($("#lock").attr("data-button-lock") == "1") $("#lock").trigger("click");
-        $("#issuesAndRemindersModal").modal("hide");
-    });
-
-    // Final Confirmation Modal on Sending or Editing
-    $("#add-issue, #edit-issue, #archive-issue, #cancel-issue").click(function () {
-        $("#iarConfirmModal").modal("hide");
-        if(this.id == "add-issue") {
-            $.post( "../issues_and_reminders/insert", temp)
-            .done(function( data ) {
-                console.log("Data saved: ", data);
-                doSend("getNormalAndLockedIssues");
-            });
-        } else if(this.id == "edit-issue") {
-            delete temp.ts_posted;
-            temp.iar_id = current_iar_id;
-
-            $.post( "../issues_and_reminders/update", temp)
-            .done(function( data ) {
-                console.log("Data edited: ", data);
-                doSend("getNormalAndLockedIssues");
-            });
-        } else if(this.id == "archive-issue") {
-            let data = {
-                iar_id: current_iar_id, 
-                resolved_by: $("#current_user_id").val(),
-                resolution: $("#resolution").val()
-            };
-
-            $.post( "../issues_and_reminders/archive", {data: JSON.stringify(data)} )
-            .done(function( data ) {
-                console.log("Data archived: ", data);
-                doSend("getNormalAndLockedIssues");
-            });
-        }
-    });
 }
 
 function lock_button(bool) {
@@ -523,6 +331,7 @@ function lock_button(bool) {
     }
 }
 
+let isJSLoadedYet = false;
 function loadTables() 
 {
     $.fn.dataTable.moment( 'D MMMM YYYY. h:mm A' );
@@ -538,7 +347,10 @@ function loadTables()
                 className: 'btn btn-danger iar_modal_link',
                 action: function ( e, dt, node, config ) {
                     $("#issuesAndRemindersModal").modal("show");
-                    onLoadIssuesModal();
+                    if( isJSLoadedYet == false ) {
+                        onLoadIssuesModal();
+                        isJSLoadedYet = true;
+                    }
                 }
             }
         ],
@@ -710,13 +522,13 @@ $(document).ready(function () {
 
     // APPLIES ONLY ON DASHBOARD
     $("#iar_modal_link").click(function () {
-        if(isPage) {
-            $(".overflow, .show-bar, #issues-individual-view").hide();
-            $(".form-body").show();
-            $("#add-issue-modal, #cancel-issue-modal").css("display", "block");
-            $("#edit-issue-modal, #archive-issue-modal, #close-issue-modal").css("display", "none");
-            lock_button("1");
-        }
+        // if(isPage) {
+        //     $(".overflow, .show-bar, #issues-individual-view").hide();
+        //     $(".form-body").show();
+        //     $("#add-issue-modal, #cancel-issue-modal").css("display", "block");
+        //     $("#edit-issue-modal, #archive-issue-modal, #close-issue-modal").css("display", "none");
+        //     lock_button("1");
+        // }
 
        $("#issuesAndRemindersModal").modal("show");
     });
