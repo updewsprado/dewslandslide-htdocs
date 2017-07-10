@@ -3194,6 +3194,7 @@ function updateCmmtyContact(cmmty_contact) {
 
 function siteSelection(sites) {
 	var column_count = 12; // 12 rows 
+	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
 		$('#sitenames-cc-'+counter).empty();
 	}
@@ -3201,12 +3202,14 @@ function siteSelection(sites) {
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
-		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 	}
+	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not in the list?</a></div>').appendTo('#site-accord .panel-body');
 }
 
 function orgSelection(orgs) {
 	var column_count = 7;
+	$('#new-org').remove();
 	for (var counter = 0; counter < column_count; counter++) {
 		$('#orgs-cc-'+counter).empty();
 	}
@@ -3214,24 +3217,71 @@ function orgSelection(orgs) {
 	for (var i = 0; i < orgs.length; i++) {
 		var modIndex = i % 7;
 		var org = orgs[i];
-		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
 	}
+	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not in the list?</a></div>').appendTo('#organization-selection-div');
 }
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 	if ($('#settings-cmd').val() == "updatecontact") {
-		console.log('UPDATE COMMUNITY');
-		var mobile_count = $('#mobile-div .row').length;
-		var landline_count = $('#landline-div .row').length;
-
+		var mobile_count = $('#mobile-div-cc .row').length-1;
+		var landline_count = $('#landline-div-cc .row').length-1;
+		var contact_data = {};
+		var mobile_raw = {};
+		var mobile_data = [];
+		var landline_raw = {};
+		var landline_data = [];
+		var sites_data = [];
+		var organization_data = [];
 		for (var counter = 0; counter < mobile_count; counter++) {
-
+			if ($('#mobile_cc_'+counter).val() != "" || $('#mobile_cc_id_'+counter).val() != "") {
+				mobile_raw = {
+					'mobile_id': $('#mobile_cc_id_'+counter).val(),
+					'mobile_number': $('#mobile_cc_'+counter).val(),
+					'mobile_status': $('#mobile_cc_status_'+counter).val(),
+					'mobile_priority': $('#mobile_cc_priority_'+counter).val()
+				}
+				mobile_data.push(mobile_raw);
+			}
 		}
 
-		for (var counter =0; counter < landline_count; counter++) {
-
+		for (var counter = 0; counter < landline_count; counter++) {
+			if ($('#landline_cc_'+counter).val() != "" || $('#landline_cc_id_'+counter).val() != "") {
+				landline_raw = {
+					'landline_id': $('#landline_cc_id_'+counter).val(),
+					'landline_number': $('#landline_cc_'+counter).val(),
+					'landline_remarks': $('#landline_cc_remarks_'+counter).val()
+				}
+				landline_data.push(landline_raw);
+			}
 		}
 
+		$('input[name="sites"]:checked').each(function() {
+			sites_data.push(this.value);
+		});
+
+		$('input[name="orgs"]:checked').each(function() {
+			organization_data.push(this.value);
+		});
+
+		contact_data = {
+			'id': $('#cc_id').val(),
+			'firstname': $('#firstname_cc').val(),
+			'lastname': $('#lastname_cc').val(),
+			'middlename': $('#middlename_cc').val(),
+			'nickname': $('#nickname_cc').val(),
+			'salutation': $('#salutation_cc').val(),
+			'gender': $('#gender_cc').val(),
+			'birthdate': $('#birthdate_cc').val(),
+			'contact_active_status': $('#active_status_ec').val(),
+			'ewi_recipient': $('#ewirecipient_cc').val(),
+			'numbers': mobile_data,
+			'landline': landline_data,
+			'sites': sites_data,
+			'organizations': organization_data
+		}
+
+		console.log(contact_data);
 
 	} else {
 		console.log('ADD COMMUNITY');
