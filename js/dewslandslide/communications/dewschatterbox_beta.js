@@ -962,8 +962,7 @@ $(document).ready(function() {
 
 		tempConn.onmessage = function(e) {
 			var msg = JSON.parse(e.data);
-			console.log(msg)
-;			tempMsg = msg;
+			tempMsg = msg;
 			msgType = msg.type;
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
 				$('#loading').modal('hide');
@@ -3194,6 +3193,11 @@ function updateCmmtyContact(cmmty_contact) {
 }
 
 function siteSelection(sites) {
+	var column_count = 12; // 12 rows 
+	for (var counter = 0; counter < column_count; counter++) {
+		$('#sitenames-cc-'+counter).empty();
+	}
+	
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
@@ -3202,16 +3206,17 @@ function siteSelection(sites) {
 }
 
 function orgSelection(orgs) {
+	var column_count = 7;
+	for (var counter = 0; counter < column_count; counter++) {
+		$('#orgs-cc-'+counter).empty();
+	}
+
 	for (var i = 0; i < orgs.length; i++) {
 		var modIndex = i % 7;
 		var org = orgs[i];
 		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
 	}
 }
-
-function organizationSelection() {
-
-} 
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 	if ($('#settings-cmd').val() == "updatecontact") {
