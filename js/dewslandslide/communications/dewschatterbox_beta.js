@@ -1153,7 +1153,9 @@ $(document).ready(function() {
 			} else if (msg.type == "fetchedSelectedDwslContact") {
 				updateDwslContact(msg.data);
 			} else if (msg.type == "fetchedSelectedCmmtyContact") {
-				console.log(msg.data);
+				updateCmmtyContact(msg.data);
+				siteSelection(msg.data.list_of_sites);
+				orgSelection(msg.data.list_of_orgs);
 			} else if (msg.type == "updatedDwslContact") {
 				if (msg.status == true) {
 					$.notify(msg.return_msg,'success');
@@ -2312,7 +2314,7 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 		var msg = {
 			'type': 'loadCommunityContact',
 			'data': data.user_id
-		};	
+		};
 	} else {
 		var msg = {
 			'type': 'loadDewslContact',
@@ -2450,20 +2452,48 @@ $('#btn-clear-cc').on('click',function(){
 function reset_cc() {
 	$('#firstname_cc').val('');
 	$('#lastname_cc').val('');
-	$('#prefix_cc').val('');
-	$('#rel_cc').val('');
-	$('#numbers_cc').val('');
-	$('#numbers_cc').tagsinput("removeAll");
-	$('#office_cc').val("LLMC");
-	$('#sitename_cc').val("AGB");
-	$('#rel').val("Y");
-	$('#ewirecipient').val("1");
+	$('#middlename_cc').val('');
+	$('#nickname_cc').val('');
+	$('#birthdate_cc').val('');
+	$('#salutation_cc').val('');
+	$('#active_status_cc').val('');
+	$('#gender_cc').val('');
+	$('#ewirecipient_cc').val('');
 
-	$('#other-officename').val('');
-	$('#other-sitename').val('');
+	$('#mobile-div-cc').empty();
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+	'<label for="mobile_cc_0">Mobile #:</label>'+
+	'<input type="text" class="form-control" id="mobile_cc_0" name="mobile_cc_0" value="" required>'+
+	'</div>'+
+	'<div class="col-md-4">'+
+	'<label>Mobile ID #:</label>'+
+	'<input type="text" id="mobile_cc_id_0" class="form-control" value="" disabled>'+
+	'</div>'+
+	'<div class="col-md-2">'+
+	'<label>Mobile # Status:</label>'+
+	'<input type="text" id="mobile_cc_status_0" class="form-control" value="">'+
+	'</div>'+
+	'<div class="col-md-2">'+
+	'<label>Mobile # Priority:</label>'+
+	'<input type="text" id="mobile_cc_priority_0" class="form-control" value="">'+
+	'</div>'+
+	'</div>').appendTo("#mobile-div-cc");
 
-	$('#other-officename').hide();
-	$('#other-sitename').hide();
+	$('#landline-div-cc').empty();
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+	'<label for="landline_cc_0">Landline #:</label>'+
+	'<input type="text" class="form-control" id="landline_cc_0" name="landline_cc_0" value="" required>'+
+	'</div>'+
+	'<div class="col-md-4">'+
+	'<label>Landline ID #:</label>'+
+	'<input type="text" id="landline_cc_id_0" class="form-control" value="" disabled>'+
+	'</div>'+
+	'<div class="col-md-4">'+
+	'<label>Landline # Remarks:</label>'+
+	'<input type="text" id="landline_cc_remarks_0" class="form-control" value="">'+
+	'</div>'+
+	'</div>').appendTo("#landline-div-cc");
+
 }
 
 $('#alert_status').on('change',function(){
@@ -3090,8 +3120,98 @@ function updateDwslContact(dwsl_contact) {
 		}
 	}
 
-		$('#employee-contact-wrapper').prop('hidden',false);
+	$('#employee-contact-wrapper').prop('hidden',false);
+}
+
+function updateCmmtyContact(cmmty_contact) {
+	$('#go_back').prop('hidden',false);
+	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#cc_id').val(cmmty_contact.contact_info.id);
+	$('#firstname_cc').val(cmmty_contact.contact_info.firstname);
+	$('#lastname_cc').val(cmmty_contact.contact_info.lastname);
+	$('#middlename_cc').val(cmmty_contact.contact_info.middlename);
+	$('#nickname_cc').val(cmmty_contact.contact_info.nickname);
+	$('#gender_cc').val(cmmty_contact.contact_info.gender);
+	$('#salutation_cc').val(cmmty_contact.contact_info.salutation);
+	$('#birthdate_cc').val(cmmty_contact.contact_info.birthday);
+	$('#active_status_cc').val(cmmty_contact.contact_info.contact_active_status);
+	$('#mobile-div-cc').empty();
+	$('#landline-div-cc').empty();
+
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_landline_cc" onclick="addAdditionalLandlineCc()">Add another landline number..</a></div></div>').appendTo("#landline-div-cc");
+	for (var counter = 0; counter < cmmty_contact.landline_data.length; counter++) {
+		console.log(cmmty_contact.landline_data[counter].landline_number);
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="landline_cc_'+(counter)+'">Landline #:</label>'+
+			'<input type="text" class="form-control" id="landline_cc_'+(counter)+'" name="landline_cc_'+(counter)+'" value="'+cmmty_contact.landline_data[counter].landline_number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline ID #:</label>'+
+			'<input type="text" id="landline_cc_id_'+(counter)+'" class="form-control" value="'+cmmty_contact.landline_data[counter].landline_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Landline # Remarks:</label>'+
+			'<input type="text" id="landline_cc_remarks_'+(counter)+'" class="form-control" value="'+cmmty_contact.landline_data[counter].landline_remarks+'">'+
+			'</div>'+
+			'</div>').appendTo("#landline-div-cc");
+
+		if (cmmty_contact.landline_data[counter].landline_id == null) {
+			$('#landline_cc_'+(counter)).val('');
+			$('#landline_cc_id_'+(counter)).val('');
+			$('#landline_cc_remarks_'+(counter)).val('');
+		}
 	}
+
+
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_number_cc" onclick="addAdditionalNumberCc()">Add another mobile number..</a></div></div>').appendTo("#mobile-div-cc");
+	for (var counter = 0; counter < cmmty_contact.mobile_data.length; counter++) {
+		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+			'<label for="mobile_ec_'+(counter)+'">Mobile #:</label>'+
+			'<input type="text" class="form-control" id="mobile_cc_'+(counter)+'" name="mobile_cc_'+(counter)+'" value="'+cmmty_contact.mobile_data[counter].number+'" required>'+
+			'</div>'+
+			'<div class="col-md-4">'+
+			'<label>Mobile ID #:</label>'+
+			'<input type="text" id="mobile_cc_id_'+(counter)+'" class="form-control" value="'+cmmty_contact.mobile_data[counter].number_id+'" disabled>'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Status:</label>'+
+			'<input type="text" id="mobile_cc_status_'+(counter)+'" class="form-control" value="'+cmmty_contact.mobile_data[counter].number_status+'">'+
+			'</div>'+
+			'<div class="col-md-2">'+
+			'<label>Mobile # Priority:</label>'+
+			'<input type="text" id="mobile_cc_priority_'+(counter)+'" class="form-control" value="'+cmmty_contact.mobile_data[counter].priority+'">'+
+			'</div>'+
+			'</div>').appendTo("#mobile-div-cc");
+
+		if (cmmty_contact.mobile_data[counter].number_id == null) {
+			$('#mobile_cc_'+(counter)).val('');
+			$('#mobile_cc_id_'+(counter)).val('');
+			$('#mobile_cc_status_'+(counter)).val('');
+			$('#mobile_cc_priority_'+(counter)).val('');
+		}
+	}
+	$('#community-contact-wrapper').prop('hidden',false);
+}
+
+function siteSelection(sites) {
+	for (var i = 0; i < sites.length; i++) {
+		var modIndex = i % 12;
+		var site = sites[i];
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+	}
+}
+
+function orgSelection(orgs) {
+	for (var i = 0; i < orgs.length; i++) {
+		var modIndex = i % 7;
+		var org = orgs[i];
+		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+	}
+}
+
+function organizationSelection() {
+
+} 
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 	if ($('#settings-cmd').val() == "updatecontact") {
@@ -3115,12 +3235,21 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 
 $('#go_back').click(function(){
 	if ($('#settings-cmd').val() == "updatecontact") {
-		$('#employee-contact-wrapper').prop('hidden', true);
-		$('#community-contact-wrapper').prop('hidden', true);
-		$('#go_back').prop('hidden',true);
-		reset_cc();
-		reset_ec();
-		getEmpContact();
+		if ($('#contact-category').val() == "ccontacts") {
+			$('#employee-contact-wrapper').prop('hidden', true);
+			$('#community-contact-wrapper').prop('hidden', true);
+			$('#go_back').prop('hidden',true);
+			reset_cc();
+			reset_ec();
+			getComContact();
+		} else {
+			$('#employee-contact-wrapper').prop('hidden', true);
+			$('#community-contact-wrapper').prop('hidden', true);
+			$('#go_back').prop('hidden',true);
+			reset_cc();
+			reset_ec();
+			getEmpContact();
+		}
 	} else {
 
 	}
@@ -3709,4 +3838,42 @@ function addAdditionalNumberEc(){
 		'<input type="text" id="mobile_ec_priority_'+mobile_count+'"class="form-control" value="">'+
 		'</div>'+
 		'</div>').appendTo('#mobile-div');
+}
+
+function addAdditionalLandlineCc(){
+	var landline_count = $('#landline-div-cc .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="landline_cc_'+landline_count+'">Landline #:</label>'+
+		'<input type="text" class="form-control" id="landline_cc_'+landline_count+'" name="landline_cc" value="" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline ID #:</label>'+
+		'<input type="text" id="landline_cc_id_'+landline_count+'" class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Landline # Remarks:</label>'+
+		'<input type="text" id="landline_cc_remarks_'+landline_count+'" class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#landline-div-cc');
+}
+
+function addAdditionalNumberCc(){
+	var mobile_count = $('#mobile-div-cc .row').length-1;
+	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
+		'<label for="mobile_cc">Mobile #:</label>'+
+		'<input type="text" class="form-control" id="mobile_cc_'+mobile_count+'" name="mobile_cc" required>'+
+		'</div>'+
+		'<div class="col-md-4">'+
+		'<label>Mobile ID #:</label>'+
+		'<input type="text" id="mobile_cc_id_'+mobile_count+'"class="form-control" value="" disabled>'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Status:</label>'+
+		'<input type="text" id="mobile_cc_status_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'<div class="col-md-2">'+
+		'<label>Mobile # Priority:</label>'+
+		'<input type="text" id="mobile_cc_priority_'+mobile_count+'"class="form-control" value="">'+
+		'</div>'+
+		'</div>').appendTo('#mobile-div-cc');
 }
