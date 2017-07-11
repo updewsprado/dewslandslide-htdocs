@@ -1668,7 +1668,7 @@ function surficialAnalysis(site,crack_id) {
 					a_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].a_n[i]])
 					v_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].v_n[i]])
 				}
-				vatSeries.push({name:'accelerometer',data:a_time,id:'dataseries',type:'line'})
+				vatSeries.push({name:'acceleration',data:a_time,id:'dataseries',type:'line'})
 				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line',yAxis: 1})
 				chartProcessSurficialAnalysis2('analysisVAT',vatSeries,'Velocity and  Acceleration Vs Time Chart of '+crack_id,site)
 
@@ -1730,7 +1730,6 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 			text: 'Source: '+ (site).toUpperCase()
 		},
 		xAxis: {
-			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e. %b %Y',
 				year: '%b'
@@ -1801,7 +1800,7 @@ function chartProcessSurficialAnalysis2(id,data_series,name,site){
 			}
     }, { 
     	title: {
-    		text: 'Acceleration (m/days^2)',
+    		text: 'Acceleration (cm/days^2)',
     		style: {
     			color: Highcharts.getOptions().colors[0]
     		}
