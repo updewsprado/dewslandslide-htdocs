@@ -245,7 +245,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 	$(".graphGenerator").append('<div class="col-md-12" id="raincharts"></div>')
 	$("#raincharts").empty()
 	$("#raincharts").append('<ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol>')
-	$("#raincharts").append('<h4><b>Rain Fall Graph</b><select class="selectpicker pull-right rainfall_select"  id="rainfall_days"></select></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol><br>')
+	$("#raincharts").append('<h4><b>RainFall Graph</b><select class="selectpicker pull-right rainfall_select"  id="rainfall_days"></select></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol><br>')
 	$('.rainfall_select').selectpicker('refresh')
 	daysOption('rainfall')
 	SelectdaysOption('rainfall')
@@ -285,9 +285,9 @@ function RainFallProcess(curSite,fromDate,toDate){
 					$("#raincharts").append('<div class="col-md-6 rainGraph "><div  id="'+ids1[i]+'2" class="collapse in"></div></div><div class="col-md-6 rainGraph"><div id="'+ids1[i]+'" class="collapse in"></div><div>')
 					
 				}
-				$("#raincharts").append('<div id="cumulativeMax">'+ids1.length+'</div>');
-				$("#cumulativeMax").hide();
-				
+				$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
+				$("#raincharts").append('<div class="maxPlot" id="cumulativeTime"></div>');
+				$(".maxPlot").hide();
 			}
 		});	
 
@@ -316,12 +316,14 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
 						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72))
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -342,6 +344,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 								}
 							}
 						}
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						for (var i = 0; i < nval.length-1; i=i+2) {
@@ -367,8 +370,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							current_site : dataSubmit.site
 						}
 						setTimeout(function(){
-						chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
-						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+							chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -400,12 +403,14 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
 						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -426,6 +431,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 								}
 							}
 						}
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						for (var i = 0; i < nval.length-1; i=i+2) {
@@ -451,8 +457,8 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							current_site : dataSubmit.site
 						}
 						setTimeout(function(){
-						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -485,12 +491,14 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -518,6 +526,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
 							}		
 						}
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
@@ -536,8 +545,8 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							current_site : dataSubmit.site
 						}
 						setTimeout(function(){
-						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -563,6 +572,13 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 	var  list_dates =[];
 	for (var i = 1; i < duration.asDays(); i++) {
 		list_dates.push(site.slice(0,3)+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
+	var cumulative_time = ($('#cumulativeTime').text()).split(",")
+	var max_plot_time = [];
+	for (var i = 1; i < cumulative_time.length; i++) {
+		if(Number(cumulative_time[i]) != NaN){
+			max_plot_time.push(cumulative_time[i])
+		}
 	}
 	let dataSubmit = { date:list_dates,table:site}
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
@@ -600,6 +616,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			}
 		},
 		xAxis: {
+			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e %b %Y',
@@ -714,11 +731,14 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			timezoneOffset: -8 * 60
 		}
 	});
+	var cumulative_time = ($('#cumulativeTime').text()).split(",")
+	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
 	var max_plot_cumulative = [];
 	for (var i = 1; i < cumulative_max.length; i++) {
 		if(Number(cumulative_max[i]) != NaN){
 			max_plot_cumulative.push(cumulative_max[i])
+			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
 	$("#"+id+"2").highcharts({
@@ -741,6 +761,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			}
 		},
 		xAxis: {
+			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -1362,7 +1383,11 @@ function chartProcessInverted(id,data_series,name,site){
 				text: 'Depth (m)'
 			}
 		},
-
+		tooltip: {
+			formatter: function() {
+				return this.series.name+'<br><b>Depth: </b>' + this.y + '<br><b>Disp: </b>'+this.x;
+			}
+		},
 		credits: {
 			enabled: false
 		},
@@ -1427,8 +1452,8 @@ function chartProcessbase(id,data_series,name,site,catNum){
 		},
 		tooltip: {
 			formatter: function () {
-				return 'The value for <b>' + moment(this.x).format('YYYY-MM-DD HH:mm') +
-				'</b> is <b>' + this.series.name + '</b>';
+				return moment(this.x).format('YYYY-MM-DD HH:mm') 
+				;
 			}
 		},
 		plotOptions: {

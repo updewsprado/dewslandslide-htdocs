@@ -404,8 +404,9 @@ function RainFallProcess(curSite,fromDate,toDate){
 			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="collapse"></div></div>')
 			dropdowlistAppendValue(ids1[i],ids2[i].toUpperCase(),'#rainfallgeneral');
 		}
-		$("#raincharts").append('<div id="cumulativeMax">'+ids1.length+'</div>');
-		$("#cumulativeMax").hide();
+		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
+		$("#raincharts").append('<div class="maxPlot" id="cumulativeTime"></div>');
+		$(".maxPlot").hide();
 		submittedMeas(dataSubmit,'na','rain');
 		RainFallOnSelect()
 	});
@@ -434,12 +435,14 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -461,6 +464,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							}
 						}
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
@@ -526,12 +530,14 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -553,6 +559,8 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							}
 						}
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
+						console.log(all_ts)
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
@@ -619,12 +627,14 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
+					var all_ts=[];
 					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
+							all_ts.push(time)
 							all_cummulative.push(parseFloat(jsonRespo[i].rval))
 							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
 							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
@@ -646,6 +656,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							}
 						}
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
+						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
@@ -737,7 +748,13 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
 	// 	}
 	// 	series_data.push({name:'Tag'})
-
+	var cumulative_time = ($('#cumulativeTime').text()).split(",")
+	var max_plot_time = [];
+	for (var i = 1; i < cumulative_time.length; i++) {
+		if(Number(cumulative_time[i]) != NaN){
+			max_plot_time.push(cumulative_time[i])
+		}
+	}
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -766,6 +783,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			}
 		},
 		xAxis: {
+			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e %b %Y',
@@ -937,11 +955,14 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
 	// 	}
 	// 	series_data.push({name:'Tag'})
+	var cumulative_time = ($('#cumulativeTime').text()).split(",")
+	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
 	var max_plot_cumulative = [];
 	for (var i = 1; i < cumulative_max.length; i++) {
 		if(Number(cumulative_max[i]) != NaN){
 			max_plot_cumulative.push(cumulative_max[i])
+			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
@@ -971,6 +992,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 			}
 		},
 		xAxis: {
+			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -1615,7 +1637,7 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
 			}else if (category == 'rain'){
 				let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
-				console.log(category)
+				
 			}
 		})
 		
@@ -1663,10 +1685,10 @@ function surficialAnalysis(site,crack_id) {
 					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i],ground_analysis_data["av"].a_threshold_down[i]]);
 					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
 				}
-
+				
 				for (var i = 0; i < ground_analysis_data["vat"].a_n.length; i++) {
-					a_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].a_n[i]])
-					v_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].v_n[i]])
+					a_time.push([ground_analysis_data["vat"].ts_n[i],ground_analysis_data["vat"].a_n[i]])
+					v_time.push([ground_analysis_data["vat"].ts_n[i],ground_analysis_data["vat"].v_n[i]])
 				}
 				vatSeries.push({name:'acceleration',data:a_time,id:'dataseries',type:'line'})
 				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line',yAxis: 1})
@@ -1730,6 +1752,7 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 			text: 'Source: '+ (site).toUpperCase()
 		},
 		xAxis: {
+			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e. %b %Y',
 				year: '%b'
@@ -1785,7 +1808,11 @@ function chartProcessSurficialAnalysis2(id,data_series,name,site){
 			text: 'Source: '+ (site).toUpperCase()
 		},
 		xAxis: {
-			
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
+			},
 			title: {
 				text: 'Time(Days)'
 			},
@@ -1798,38 +1825,38 @@ function chartProcessSurficialAnalysis2(id,data_series,name,site){
 					color: Highcharts.getOptions().colors[1]
 				}
 			}
-    }, { 
-    	title: {
-    		text: 'Acceleration (cm/days^2)',
-    		style: {
-    			color: Highcharts.getOptions().colors[0]
-    		}
-    	},
-    	labels: {
-    		
-    		style: {
-    			color: Highcharts.getOptions().colors[0]
-    		}
-    	},
-    	opposite: true
-    }],
-    tooltip: {
-    	header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-    	shared: true,
-    	crosshairs: true
-    },
-    plotOptions: {
-    	line: {
-    		marker: {
-    			enabled: false
-    		}
-    	}
-    },
-    credits: {
-    	enabled: false
-    },
-    series:data_series
-});
+		}, { 
+			title: {
+				text: 'Acceleration (cm/days^2)',
+				style: {
+					color: Highcharts.getOptions().colors[0]
+				}
+			},
+			labels: {
+
+				style: {
+					color: Highcharts.getOptions().colors[0]
+				}
+			},
+			opposite: true
+		}],
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: false
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
 }
 function chartProcessSurficialAnalysis3(id,data_series,name,site){
 	SurficialOnSelect()
@@ -2508,6 +2535,11 @@ function chartProcessInverted(id,data_series,name,site){
 				lineWidth: 1
 			}
 		},
+		tooltip: {
+			formatter: function() {
+				return this.series.name+'<br><b>Depth: </b>' + this.y + '<br><b>Disp: </b>'+this.x;
+			}
+		},
 		xAxis:{
 			gridLineWidth: 1,
 			title:{
@@ -2586,8 +2618,7 @@ function chartProcessbase(id,data_series,name,site,catNum){
 		},
 		tooltip: {
 			formatter: function () {
-				return 'The value for <b>' + moment(this.x).format('YYYY-MM-DD HH:mm') +
-				'</b> is <b>' + this.series.name + '</b>';
+				return  moment(this.x).format('YYYY-MM-DD HH:mm');
 			}
 		},
 		plotOptions: {
@@ -4018,7 +4049,6 @@ function downloadSvg() {
 		}
 
 		all_data.push($('.svgBox').html())
-		console.log(all_data)
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
