@@ -429,13 +429,14 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
+					
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var max_array_data = [];
+					var all_cummulative=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
-						var jsonRespo =JSON.parse(data);
-						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-						var max = max_rain;
-						var max_array_data = [];
-						var all_cummulative=[];
-						var colors= ["#0000FF","#FF0000","#0000"]
+						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -493,8 +494,18 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						}, 1000);
 						
 					}else{
-						$('#'+id).hide()
-
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site,
+							id:id,
+							category:'senslope',
+							max_rain:max_rain,
+							distance:distance
+						}
+						chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance);
+						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance);
 					}
 				}
 			})
@@ -510,13 +521,14 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
+
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var max_array_data = [];
+					var all_cummulative=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
-						var jsonRespo =JSON.parse(data);
-						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-						var max = max_rain;
-						var max_array_data = [];
-						var all_cummulative=[];
-						var colors= ["#0000FF","#FF0000","#0000"]
+						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -574,7 +586,18 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}, 1000);
 						
 					}else{
-						$('#'+id).hide()
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site,
+							id:id,
+							category:'arq',
+							max_rain:max_rain,
+							distance:distance
+						}
+						chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance);
+						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance);
 
 					}
 				}
@@ -591,13 +614,14 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
+					
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var max = max_rain;
+					var max_array_data = [];
+					var all_cummulative=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
-						var max = max_rain;
-						var max_array_data = [];
-						var all_cummulative=[];
-						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -655,7 +679,18 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}, 1000);
 						
 					}else{
-						$('#'+id).hide()
+						let dataTableSubmit = { 
+							site : site, 
+							fdate : dataSubmit.fdate,
+							tdate : dataSubmit.tdate,
+							current_site : dataSubmit.site,
+							id:id,
+							category:'noah',
+							max_rain:max_rain,
+							distance:distance
+						}
+							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance);
+							chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance);
 
 					}
 				}
@@ -669,11 +704,11 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var  list_dates =[];
-	for (var i = 0; i < allDataResult.length; i++) {
-		list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	}
-	let dataSubmit = { date:list_dates,table:site}
+	// var  list_dates =[];
+	// for (var i = 0; i < allDataResult.length; i++) {
+	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	// }
+	// let dataSubmit = { date:list_dates,table:site}
 	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
 	// 	var result = JSON.parse(data);
 	// 	var result_filtered = [];
@@ -824,21 +859,21 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			},
 			series:series_data
 		});
-	var chart = $('#'+id).highcharts();
-	$( ".highcharts-series-"+(series_data.length-1) ).click(function() {
-		var series = chart.series[(series_data.length-1)];
-		for (var i = 0; i < label_crack.length; i++) {
-			if (series.visible) {
-				(chart.series[((series_data.length-(i+1))-1)]).update({
-					visible: true,
-				});
-			}else {
-				(chart.series[((series_data.length-(i+1))-1)]).update({
-					visible: false,
-				});
-			}
-		}
-	});
+	// var chart = $('#'+id).highcharts();
+	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
+	// 	var series = chart.series[(series_data.length-1)];
+	// 	for (var i = 0; i < label_crack.length; i++) {
+	// 		if (series.visible) {
+	// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+	// 				visible: true,
+	// 			});
+	// 		}else {
+	// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+	// 				visible: false,
+	// 			});
+	// 		}
+	// 	}
+	// });
 	var show_div =($(".rain-breadcrumb").html()).split("\"")
 	var div_rainfall_name = (show_div[10].toString()).split("<")
 	var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
@@ -869,11 +904,11 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var  list_dates =[];
-	for (var i = 1; i < duration.asDays(); i++) {
-		list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	}
-	let dataSubmit = { date:list_dates,table:site}
+	// var  list_dates =[];
+	// for (var i = 1; i < duration.asDays(); i++) {
+	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	// }
+	// let dataSubmit = { date:list_dates,table:site}
 	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
 	// 	var result = JSON.parse(data);
 	// 	var result_filtered = [];
@@ -1006,21 +1041,21 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 			},
 			series:series_data
 		});
-	var chart = $('#'+id).highcharts();
-	$( ".highcharts-series-"+(series_data.length-1) ).click(function() {
-		var series = chart.series[(series_data.length-1)];
-		for (var i = 0; i < label_crack.length; i++) {
-			if (series.visible) {
-				(chart.series[((series_data.length-(i+1))-1)]).update({
-					visible: true,
-				});
-			}else {
-				(chart.series[((series_data.length-(i+1))-1)]).update({
-					visible: false,
-				});
-			}
-		}
-	});
+	// var chart = $('#'+id).highcharts();
+	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
+	// 	var series = chart.series[(series_data.length-1)];
+	// 	for (var i = 0; i < label_crack.length; i++) {
+	// 		if (series.visible) {
+	// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+	// 				visible: true,
+	// 			});
+	// 		}else {
+	// 			(chart.series[((series_data.length-(i+1))-1)]).update({
+	// 				visible: false,
+	// 			});
+	// 		}
+	// 	}
+	// });
 	var show_div =($(".rain-breadcrumb").html()).split("\"")
 	var div_rainfall_name = (show_div[10].toString()).split("<")
 	var filtered_rain_name = (div_rainfall_name[0].toString()).split(">")
@@ -1497,27 +1532,27 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 						radius: 3
 					},
 					cursor: 'pointer',
-					point: {
-						events: {
-							click: function () {
-								if(this.series.name == "Tag"){
-									$("#tagModal").modal("show");
-									$("#comment-model").empty();
-									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-								}else{
-									$("#annModal").modal("show");
-									$(".tag").hide();
-									$('#tag_ids').tagsinput('removeAll');
-									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-									$("#tag_value").val(this.y)
-									$("#tag_crack").val(this.series.name)
-									$("#tag_description").val('ground analysis')
-									$("#tag_tableused").val('gndmeas')
-									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-								}
-							}
-						}
-					}
+					// point: {
+					// 	events: {
+					// 		click: function () {
+					// 			if(this.series.name == "Tag"){
+					// 				$("#tagModal").modal("show");
+					// 				$("#comment-model").empty();
+					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+					// 			}else{
+					// 				$("#annModal").modal("show");
+					// 				$(".tag").hide();
+					// 				$('#tag_ids').tagsinput('removeAll');
+					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+					// 				$("#tag_value").val(this.y)
+					// 				$("#tag_crack").val(this.series.name)
+					// 				$("#tag_description").val('ground analysis')
+					// 				$("#tag_tableused").val('gndmeas')
+					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+					// 			}
+					// 		}
+					// 	}
+					// }
 				},
 			},
 			credits: {
@@ -3930,9 +3965,9 @@ function downloadSvg() {
 		}
 
 		if(ids0.length == 4){
-			$('#rainfallsvg').attr("height", "1700");
-		}else if(ids.length == 5){
-			$('#rainfallsvg').attr("height", "2100");
+			$('#rainfallsvg').attr("height", "1650");
+		}else if(ids0.length == 5){
+			$('#rainfallsvg').attr("height", "1950");
 		}
 
 		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
