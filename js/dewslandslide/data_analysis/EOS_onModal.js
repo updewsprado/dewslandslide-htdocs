@@ -642,13 +642,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			}]
 
 		},
-		noData: {
-			style: {
-				fontWeight: 'bold',
-				fontSize: '15px',
-				color: '#303030'
-			}
-		},
 		tooltip: {
 			shared: true,
 			crosshairs: true
