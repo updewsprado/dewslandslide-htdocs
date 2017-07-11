@@ -278,7 +278,7 @@ function CheckBoxSite(site,from,to){
 			$('.crackgeneral').slideDown()
 			$(".site_level").append('<div class="col-md-12 surficial_graphs_VD" id="surficial_graphs_VD"></div>')
 			$("#surficial_graphs_VD").empty()
-			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b><select class="selectpicker pull-right surficialgeneral"  id="surficialgeneral" multiple><option value="analysisVelocity">Surficial Velocity</option><option value="analysisDisplacement">Surficial Displacement</option><option value="analysisVAT">Surficial Velocity Acceleration</option></select></h4>')
+			$("#surficial_graphs_VD").append('<br><h4><span class=""></span><b>Surficial Analysis Graph </b><select class="selectpicker pull-right surficialgeneral"  id="surficialgeneral" multiple><option value="analysisVelocity">Velocity Acceleration Chart</option><option value="analysisDisplacement">Displacement Interpolation</option><option value="analysisVAT">Velocity and Acceleration Vs Time Chart</option></select></h4>')
 			$("#surficial_graphs_VD").append('<div id="analysisVelocity" class="collapse"></div> <br> <div id="analysisDisplacement" class="collapse"></div><br> <div id="analysisVAT" class="collapse"></div> ')
 			$("#surficialgeneral").selectpicker('refresh')
 			$(".surficialgeneral").hide();
@@ -689,8 +689,8 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							max_rain:max_rain,
 							distance:distance
 						}
-							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance);
-							chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance);
+						chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance);
+						chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance);
 
 					}
 				}
@@ -1669,8 +1669,8 @@ function surficialAnalysis(site,crack_id) {
 					v_time.push([ground_analysis_data["vat"].t_n[i],ground_analysis_data["vat"].v_n[i]])
 				}
 				vatSeries.push({name:'accelerometer',data:a_time,id:'dataseries',type:'line'})
-				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line'})
-				chartProcessSurficialAnalysis2('analysisVAT',vatSeries,'Velocity Acceleration Chart of '+crack_id,site)
+				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line',yAxis: 1})
+				chartProcessSurficialAnalysis2('analysisVAT',vatSeries,'Velocity and  Acceleration Vs Time Chart of '+crack_id,site)
 
 				var series_data_name_vel =[vGraph,up,down,line,last];
 				var series_name =["Data","Threshold","TL","LPoint"];
@@ -1682,10 +1682,10 @@ function surficialAnalysis(site,crack_id) {
 
 				$('#surficialgeneral').val('analysisVelocity')
 				$('#surficialgeneral').selectpicker('refresh')
-				chartProcessSurficialAnalysis3('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id,site)
+				chartProcessSurficialAnalysis3('analysisVelocity',series_data_vel,'Velocity Acceleration Chart of '+crack_id,site)
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
-				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id,site)
+				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Interpolation Chart of '+crack_id,site)
 				$(".surficial_velocity_checkbox").empty()
 				$(".surficial_velocity_checkbox").append('<input id="surficial_velocity_checkbox" type="checkbox" class="checkbox">'
 					+'<label for="surficial_velocity_checkbox"> Surficial Analysis Graph</label>')
@@ -1741,7 +1741,7 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 		},
 		yAxis:{
 			title: {
-				text: 'Acceleration'
+				text: 'Displacement(cm) '
 			}
 		},
 		tooltip: {
@@ -1788,31 +1788,49 @@ function chartProcessSurficialAnalysis2(id,data_series,name,site){
 		xAxis: {
 			
 			title: {
-				text: 'Date'
+				text: 'Time(Days)'
 			},
 		},
-		yAxis:{
+		yAxis: [{ 
+
 			title: {
-				text: 'Acceleration'
-			}
-		},
-		tooltip: {
-			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
-			shared: true,
-			crosshairs: true
-		},
-		plotOptions: {
-			line: {
-				marker: {
-					enabled: false
+				text: 'Velocity (cm/day)',
+				style: {
+					color: Highcharts.getOptions().colors[1]
 				}
 			}
-		},
-		credits: {
-			enabled: false
-		},
-		series:data_series
-	});
+    }, { 
+    	title: {
+    		text: 'Acceleration (m/days^2)',
+    		style: {
+    			color: Highcharts.getOptions().colors[0]
+    		}
+    	},
+    	labels: {
+    		
+    		style: {
+    			color: Highcharts.getOptions().colors[0]
+    		}
+    	},
+    	opposite: true
+    }],
+    tooltip: {
+    	header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+    	shared: true,
+    	crosshairs: true
+    },
+    plotOptions: {
+    	line: {
+    		marker: {
+    			enabled: false
+    		}
+    	}
+    },
+    credits: {
+    	enabled: false
+    },
+    series:data_series
+});
 }
 function chartProcessSurficialAnalysis3(id,data_series,name,site){
 	SurficialOnSelect()
@@ -1837,12 +1855,12 @@ function chartProcessSurficialAnalysis3(id,data_series,name,site){
 		},
 		xAxis: {
 			title: {
-				text: 'Date'
+				text: 'Velocity(cm/day)'
 			},
 		},
 		yAxis:{
 			title: {
-				text: 'Acceleration'
+				text: 'Acceleration(cm/day^2)'
 			}
 		},
 		tooltip: {
@@ -2204,8 +2222,8 @@ function columnPosition(data_result,site) {
 			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 		}
-		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(mm)",site)
-		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(mm)",site)
+		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(m)",site)
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(m)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
@@ -4001,7 +4019,7 @@ function downloadSvg() {
 		}
 
 		all_data.push($('.svgBox').html())
-		
+		console.log(all_data)
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
