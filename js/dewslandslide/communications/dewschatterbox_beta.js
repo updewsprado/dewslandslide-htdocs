@@ -1153,8 +1153,8 @@ $(document).ready(function() {
 				updateDwslContact(msg.data);
 			} else if (msg.type == "fetchedSelectedCmmtyContact") {
 				updateCmmtyContact(msg.data);
-				siteSelection(msg.data.list_of_sites);
-				orgSelection(msg.data.list_of_orgs);
+				siteSelection(msg.data.list_of_sites,msg.data.org_data);
+				orgSelection(msg.data.list_of_orgs,msg.data.org_data);
 			} else if (msg.type == "updatedDwslContact") {
 				if (msg.status == true) {
 					$.notify(msg.return_msg,'success');
@@ -3001,7 +3001,6 @@ function displayDataTableCommunityContacts(cmmty_contact_data){
 		{ 'data': 'lastname', title: "Lastname" },
 		{ 'data': 'middlename', title: "Middlename" },
 		{ 'data': 'nickname', title: "Nickname" },
-		{ 'data': 'psgc', title: "Psgc" },
 		{ 'data': 'active_status', title: "Active Status" }
 		]
 	});
@@ -3192,7 +3191,7 @@ function updateCmmtyContact(cmmty_contact) {
 	$('#community-contact-wrapper').prop('hidden',false);
 }
 
-function siteSelection(sites) {
+function siteSelection(sites,user_sites) {
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3204,10 +3203,10 @@ function siteSelection(sites) {
 		var site = sites[i];
 		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 	}
-	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not in the list?</a></div>').appendTo('#site-accord .panel-body');
+	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not on the list?</a></div>').appendTo('#site-accord .panel-body');
 }
 
-function orgSelection(orgs) {
+function orgSelection(orgs,user_orgs) {
 	var column_count = 7;
 	$('#new-org').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3219,7 +3218,7 @@ function orgSelection(orgs) {
 		var org = orgs[i];
 		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
 	}
-	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not in the list?</a></div>').appendTo('#organization-selection-div');
+	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not on the list?</a></div>').appendTo('#organization-selection-div');
 }
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
@@ -3273,7 +3272,7 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 			'salutation': $('#salutation_cc').val(),
 			'gender': $('#gender_cc').val(),
 			'birthdate': $('#birthdate_cc').val(),
-			'contact_active_status': $('#active_status_ec').val(),
+			'contact_active_status': $('#active_status_cc').val(),
 			'ewi_recipient': $('#ewirecipient_cc').val(),
 			'numbers': mobile_data,
 			'landline': landline_data,
@@ -3282,7 +3281,11 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 		}
 
 		console.log(contact_data);
-
+		msg = {
+			'type': "updateCommunityContact",
+			'data': contact_data
+		}
+		conn.send(JSON.stringify(msg));
 	} else {
 		console.log('ADD COMMUNITY');
 	}
