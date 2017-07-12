@@ -1167,6 +1167,28 @@ $(document).ready(function() {
 				} else {
 					$.notify(msg.return_msg,'failed');
 				}
+			} else if (msg.type == "updatedCmmtyContact") {
+				if (msg.status == true) {
+					$.notify(msg.return_msg,'success');
+				} else {
+					$.notify(msg.return_msg,'failed');
+				}
+			} else if (msg.type == "newAddedCommContact") {
+				if (msg.status == true) {
+					$.notify(msg.return_msg,'success');
+				} else {
+					$.notify(msg.return_msg,'failed');
+				}
+			} else if (msg.type == "conSetAllSites") {
+				siteSelection(msg.data);
+			} else if (msg.type == "conSetAllOrgs") {
+				orgSelection(msg.data);
+			} else if (msg.type == "newAddedCommContact") {
+				if (msg.status == true) {
+					$.notify(msg.return_msg,'success');
+				} else {
+					$.notify(msg.return_msg,'failed');
+				}
 			} else {
 				var numbers = /^[0-9]+$/; 
 				if (msg.type == "ackgsm") {
@@ -2460,6 +2482,7 @@ function reset_cc() {
 	$('#ewirecipient_cc').val('');
 
 	$('#mobile-div-cc').empty();
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_number_cc" onclick="addAdditionalNumberCc()">Add another mobile number..</a></div></div>').appendTo("#mobile-div-cc");
 	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
 	'<label for="mobile_cc_0">Mobile #:</label>'+
 	'<input type="text" class="form-control" id="mobile_cc_0" name="mobile_cc_0" value="" required>'+
@@ -2479,6 +2502,7 @@ function reset_cc() {
 	'</div>').appendTo("#mobile-div-cc");
 
 	$('#landline-div-cc').empty();
+	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_landline_ec" onclick="addAdditionalLandlineEc()">Add another landline number..</a></div></div>').appendTo("#landline-div-cc");
 	$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
 	'<label for="landline_cc_0">Landline #:</label>'+
 	'<input type="text" class="form-control" id="landline_cc_0" name="landline_cc_0" value="" required>'+
@@ -2493,6 +2517,20 @@ function reset_cc() {
 	'</div>'+
 	'</div>').appendTo("#landline-div-cc");
 
+	$('#site-selection-div').find(".checkbox").find("input").prop('checked', false);
+	$('#organization-selection-div').find(".checkbox").find("input").prop('checked', false);
+
+	$('#accordion .panel-collapse').collapse('toggle');
+
+	var msg = {
+		'type': 'getAllSitesConSet'
+	};
+	conn.send(JSON.stringify(msg));
+
+	var msg = {
+		'type': 'getAllOrgsConSet'
+	};
+	conn.send(JSON.stringify(msg));
 }
 
 $('#alert_status').on('change',function(){
@@ -3067,7 +3105,6 @@ function updateDwslContact(dwsl_contact) {
 
 	$('<div class="row"><div class="col-md-6"><a href="#" id="add_additional_landline_ec" onclick="addAdditionalLandlineEc()">Add another landline number..</a></div></div>').appendTo("#landline-div");
 	for (var counter = 0; counter < dwsl_contact.landline_data.length; counter++) {
-		console.log(dwsl_contact.landline_data[counter].landline_number);
 		$('<div class="row"><div class="col-md-4" title="Notes: If contact number is more than one seprate it by a comma.">'+
 			'<label for="landline_ec_'+(counter)+'">Landline #:</label>'+
 			'<input type="text" class="form-control" id="landline_ec_'+(counter)+'" name="landline_ec_'+(counter)+'" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
@@ -3122,6 +3159,7 @@ function updateDwslContact(dwsl_contact) {
 }
 
 function updateCmmtyContact(cmmty_contact) {
+	console.log(cmmty_contact.ewi_data.ewi_status);
 	$('#go_back').prop('hidden',false);
 	$('#response-contact-container_wrapper').prop('hidden',true);
 	$('#cc_id').val(cmmty_contact.contact_info.id);
@@ -3133,6 +3171,7 @@ function updateCmmtyContact(cmmty_contact) {
 	$('#salutation_cc').val(cmmty_contact.contact_info.salutation);
 	$('#birthdate_cc').val(cmmty_contact.contact_info.birthday);
 	$('#active_status_cc').val(cmmty_contact.contact_info.contact_active_status);
+	$('#ewirecipient_cc').val(cmmty_contact.ewi_data[0].ewi_status);
 	$('#mobile-div-cc').empty();
 	$('#landline-div-cc').empty();
 
@@ -3191,7 +3230,7 @@ function updateCmmtyContact(cmmty_contact) {
 	$('#community-contact-wrapper').prop('hidden',false);
 }
 
-function siteSelection(sites,user_sites) {
+function siteSelection(sites,user_sites = []) {
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3201,12 +3240,18 @@ function siteSelection(sites,user_sites) {
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
-		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		console.log(sites[i]);
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		for (var counter = 0; counter < user_sites.length; counter++) {
+			if (user_sites[counter].org_psgc == site.psgc) {
+				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc).prop('checked',true);
+			}
+		}
 	}
 	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not on the list?</a></div>').appendTo('#site-accord .panel-body');
 }
 
-function orgSelection(orgs,user_orgs) {
+function orgSelection(orgs,user_orgs = []) {
 	var column_count = 7;
 	$('#new-org').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3216,53 +3261,59 @@ function orgSelection(orgs,user_orgs) {
 	for (var i = 0; i < orgs.length; i++) {
 		var modIndex = i % 7;
 		var org = orgs[i];
-		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+		console.log(orgs[i]);
+		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+		for (var counter = 0; counter < user_orgs.length; counter++) {
+			if (user_orgs[counter].org_name == org.org_name) {
+				$("#orgs-cc-"+modIndex).find(".checkbox").find("#id_"+org.org_name).prop('checked',true);
+			}
+		}
 	}
 	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not on the list?</a></div>').appendTo('#organization-selection-div');
 }
 
 $('#comm-settings-cmd button[type="submit"]').on('click',function(){
+	var mobile_count = $('#mobile-div-cc .row').length-1;
+	var landline_count = $('#landline-div-cc .row').length-1;
+	var contact_data = {};
+	var mobile_raw = {};
+	var mobile_data = [];
+	var landline_raw = {};
+	var landline_data = [];
+	var sites_data = [];
+	var organization_data = [];
+	for (var counter = 0; counter < mobile_count; counter++) {
+		if ($('#mobile_cc_'+counter).val() != "" || $('#mobile_cc_id_'+counter).val() != "") {
+			mobile_raw = {
+				'mobile_id': $('#mobile_cc_id_'+counter).val(),
+				'mobile_number': $('#mobile_cc_'+counter).val(),
+				'mobile_status': $('#mobile_cc_status_'+counter).val(),
+				'mobile_priority': $('#mobile_cc_priority_'+counter).val()
+			}
+			mobile_data.push(mobile_raw);
+		}
+	}
+
+	for (var counter = 0; counter < landline_count; counter++) {
+		if ($('#landline_cc_'+counter).val() != "" || $('#landline_cc_id_'+counter).val() != "") {
+			landline_raw = {
+				'landline_id': $('#landline_cc_id_'+counter).val(),
+				'landline_number': $('#landline_cc_'+counter).val(),
+				'landline_remarks': $('#landline_cc_remarks_'+counter).val()
+			}
+			landline_data.push(landline_raw);
+		}
+	}
+
+	$('input[name="sites"]:checked').each(function() {
+		sites_data.push(this.value);
+	});
+
+	$('input[name="orgs"]:checked').each(function() {
+		organization_data.push(this.value);
+	});
+
 	if ($('#settings-cmd').val() == "updatecontact") {
-		var mobile_count = $('#mobile-div-cc .row').length-1;
-		var landline_count = $('#landline-div-cc .row').length-1;
-		var contact_data = {};
-		var mobile_raw = {};
-		var mobile_data = [];
-		var landline_raw = {};
-		var landline_data = [];
-		var sites_data = [];
-		var organization_data = [];
-		for (var counter = 0; counter < mobile_count; counter++) {
-			if ($('#mobile_cc_'+counter).val() != "" || $('#mobile_cc_id_'+counter).val() != "") {
-				mobile_raw = {
-					'mobile_id': $('#mobile_cc_id_'+counter).val(),
-					'mobile_number': $('#mobile_cc_'+counter).val(),
-					'mobile_status': $('#mobile_cc_status_'+counter).val(),
-					'mobile_priority': $('#mobile_cc_priority_'+counter).val()
-				}
-				mobile_data.push(mobile_raw);
-			}
-		}
-
-		for (var counter = 0; counter < landline_count; counter++) {
-			if ($('#landline_cc_'+counter).val() != "" || $('#landline_cc_id_'+counter).val() != "") {
-				landline_raw = {
-					'landline_id': $('#landline_cc_id_'+counter).val(),
-					'landline_number': $('#landline_cc_'+counter).val(),
-					'landline_remarks': $('#landline_cc_remarks_'+counter).val()
-				}
-				landline_data.push(landline_raw);
-			}
-		}
-
-		$('input[name="sites"]:checked').each(function() {
-			sites_data.push(this.value);
-		});
-
-		$('input[name="orgs"]:checked').each(function() {
-			organization_data.push(this.value);
-		});
-
 		contact_data = {
 			'id': $('#cc_id').val(),
 			'firstname': $('#firstname_cc').val(),
@@ -3287,7 +3338,29 @@ $('#comm-settings-cmd button[type="submit"]').on('click',function(){
 		}
 		conn.send(JSON.stringify(msg));
 	} else {
-		console.log('ADD COMMUNITY');
+		contact_data = {
+			'id': $('#cc_id').val(),
+			'firstname': $('#firstname_cc').val(),
+			'lastname': $('#lastname_cc').val(),
+			'middlename': $('#middlename_cc').val(),
+			'nickname': $('#nickname_cc').val(),
+			'salutation': $('#salutation_cc').val(),
+			'gender': $('#gender_cc').val(),
+			'birthdate': $('#birthdate_cc').val(),
+			'contact_active_status': $('#active_status_cc').val(),
+			'ewi_recipient': $('#ewirecipient_cc').val(),
+			'numbers': mobile_data,
+			'landline': landline_data,
+			'sites': sites_data,
+			'organizations': organization_data
+		}
+
+		console.log(contact_data);
+		msg = {
+			'type': "newCommunityContact",
+			'data': contact_data
+		}
+		conn.send(JSON.stringify(msg));
 	}
 });
 
