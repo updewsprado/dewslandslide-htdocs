@@ -1183,6 +1183,30 @@ $(document).ready(function() {
 				siteSelection(msg.data);
 			} else if (msg.type == "conSetAllOrgs") {
 				orgSelection(msg.data);
+			} else if (msg.type == "qgrAllSites") {
+				var column_count = 12; // 12 rows 
+				var sites = msg.data;
+				for (var counter = 0; counter < column_count; counter++) {
+					$('#sitenames-'+counter).empty();
+				}
+				for (var i = 0; i < sites.length; i++) {
+					var modIndex = i % 12;
+					var site = sites[i];
+					$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+
+				}
+			} else if (msg.type == "qgrAllOrgs") {
+				var column_count = 6;
+				var orgs = msg.data;
+				for (var counter = 0; counter < column_count; counter++) {
+					$('#offices-'+counter).empty();
+				}
+
+				for (var i = 0; i < orgs.length; i++) {
+					var modIndex = i % 6;
+					var org = orgs[i];
+					$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+				}
 			} else if (msg.type == "newAddedCommContact") {
 				if (msg.status == true) {
 					$.notify(msg.return_msg,'success');
@@ -2867,6 +2891,15 @@ $('#btn-advanced-search').click(function(){
 	if (connection_status == false){
 		console.log("NO CONNECTION");
 	} else {
+		var listSites = {
+			'type': "qgrSites"
+		}
+		conn.send(JSON.stringify(listSites));
+
+		var listSOrgs = {
+			'type': "qgrOrgs"
+		}
+		conn.send(JSON.stringify(listSOrgs));
 		$('#advanced-search').modal("toggle");
 	}
 });
