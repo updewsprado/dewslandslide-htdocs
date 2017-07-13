@@ -3,6 +3,8 @@ $(document).ready(function() {
 		var response = JSON.parse(data);
 		var dataset = [];
 		var dataraw= [];
+		$('#end_date').val(moment().format('YYYY-MM-DD'));
+		$('#start_date').val(moment().subtract(3,'months').format('YYYY-MM-DD'));
 
 		for (var counter = 0; counter < response.length; counter++) {
 			var dataraw = $.map(response[counter], function(value, index) {
@@ -36,11 +38,26 @@ $(document).ready(function() {
 
 	$('#go_search').on('click',function(){
 		$('#loading').modal('toggle');
+		if ($('#start_date').val() == "" && $('#end_date').val() == "") {
+			$('#end_date').val(moment().format('YYYY-MM-DD'));
+			$('#start_date').val(moment().subtract(3,'months').format('YYYY-MM-DD'));
+		} else {
+			if ($('#start_date').val() == "") {
+				$('#start_date').val("2016-01-01"); // Chatterbox created on July 2016
+			}
+
+			if ($('#end_date').val() == "") {
+				var d = new Date();
+				$('#end_date').val(d.getFullYear()+"-"+("0" + (d.getMonth() + 1)).slice(-2)+"-"+("0" + d.getDate()).slice(-2));
+			}
+		}
+
 		var data = {
 			'start_date': $('#start_date').val(),
 			'end_date': $('#end_date').val(),
 			'gintags': $('#gintags').val()
 		}
+
 		loadAnalytics(data);
 		$('#page-wrapper .container').switchClass('container','container-fluid',1000,'easeInOutQuad');
 		$('#table-rows').switchClass('col-md-12','col-md-7');
@@ -85,6 +102,7 @@ function isFieldEmpty() {
 function loadSearchedGintag(data) {
 	$.post('../gintagshelper/getSearchedGintag',{search_values: JSON.stringify(data)}).done(function(data){
 		var response = JSON.parse(data);
+		console.log(response);
 		var arrayed_response = $.map(response, function(value, index) {
 			return [value];
 		});
@@ -107,8 +125,8 @@ function loadSearchedGintag(data) {
 			'database': counter_table_used,
 			'data': counter_duplicate
 		}
-		$.post("../gintagshelper/getAllSms", {sms_data : JSON.stringify(sms_data)}).done(function(data) {
 
+		$.post("../gintagshelper/getAllSms", {sms_data : JSON.stringify(sms_data)}).done(function(data) {
 			var response = JSON.parse(data);
 			var dataset = [];
 			var datacolumn = [];
@@ -127,13 +145,12 @@ function loadSearchedGintag(data) {
 				}
 				datacolumn.push(title);
 			}
-
 			var summary = $('#summary_table').DataTable({
 				destroy: true,
-			    "bScrollCollapse": true,
-			    "bAutoWidth": true,
-			    "sScrollX": "100%",
-			    "sScrollXInner": "100%",
+				"bScrollCollapse": true,
+				"bAutoWidth": true,
+				"sScrollX": "100%",
+				"sScrollXInner": "100%",
 				data: dataset,
 				columns: datacolumn
 			});
@@ -160,6 +177,7 @@ function loadAnalytics(data_searched) {
 			var name = Object.keys(response[counter]);
 			var tags_count = Object.values(response[counter])[counter].length;
 			temp = name[counter];
+			console.log(tags_count);
 			var piece = {
 				'name': temp,
 				'y': (tags_count/total_population)*100,
@@ -177,19 +195,21 @@ function loadAnalytics(data_searched) {
 
 		for (var counter = 0; counter < response.length; counter++) {
 			var tags_arrayed = $.map(response[counter], function(value, index) {
-			    return [value];
+				return [value];
 			});
-			for (var sub_counter = 0; sub_counter < tags_arrayed.length; sub_counter++) {
-				for (var third_counter = 0; third_counter < tags_arrayed[sub_counter].length;third_counter++) {
-					var name = Object.keys(response[counter]);
-					tags_arrayed[sub_counter][third_counter] = $.map(tags_arrayed[sub_counter][third_counter], function(value, index) {
-					    return [value];
-					});
-					tags_arrayed[sub_counter][third_counter].push("#"+name[counter]);
-					compared_data.push(tags_arrayed[sub_counter][third_counter]);
-				}
+		}
+
+		for (var sub_counter = 0; sub_counter < tags_arrayed.length; sub_counter++) {
+			for (var third_counter = 0; third_counter < tags_arrayed[sub_counter].length;third_counter++) {
+				var name = Object.keys(response[sub_counter]);
+				tags_arrayed[sub_counter][third_counter] = $.map(tags_arrayed[sub_counter][third_counter], function(value, index) {
+					return [value];
+				});
+				tags_arrayed[sub_counter][third_counter].push("#"+name[counter]);
+				compared_data.push(tags_arrayed[sub_counter][third_counter]);
 			}
 		}
+
 		$('#gintag_table').DataTable({
 			destroy: true,
 			"searching": false,

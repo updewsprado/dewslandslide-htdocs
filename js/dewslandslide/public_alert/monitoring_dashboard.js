@@ -340,7 +340,7 @@ $(document).ready( function() {
 	        		if ( entry.rain_alert == "rx" ) {
 	        			let internal = temp.internal_alert_level;
 	        			if( internal.indexOf("x") > -1 ) {
-	        				if( internal.indexOf("R") > -1 ) temp.internal_alert_level.replace(/R/g, "Rx");
+	        				if( internal.indexOf("R") > -1 ) temp.internal = internal.replace(/R/g, "Rx");
 	        				else temp.internal_alert_level += "rx";
 	        			}
 	        			temp.extend_rain_x = true;
