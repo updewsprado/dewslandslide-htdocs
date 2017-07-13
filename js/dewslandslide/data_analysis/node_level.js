@@ -769,33 +769,33 @@ function chartProcess(id,data_series,name,color){
 							radius: 3
 						},
 						cursor: 'pointer',
-						point: {
-							events: {
-								click: function () {
-									$("#annModal").modal("show");
-									$("#tag_value").hide();
-									$("#tag_series").hide();
-									$("#tag_version").hide();
-									$('#tag_ids').tagsinput('removeAll');
-									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-									$("#tag_value").val(this.y)
-										// console.log(this.series.name)
-										if(this.series.name == "batt1" || this.series.name == "batt2"){
-											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
-										}else if (this.series.name == "Cal" || this.series.name == "Raw") {
-											var value_id = (this.series.name).slice(0,3)
-										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
-											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
-										}else if (this.series.name == "mvalue") {
-											var value_id = (this.series.name).slice(0,3)
-										}else{
-											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
-										}
-										$("#tag_series").val(value_id)
-										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-									}
-								}
-							}
+						// point: {
+						// 	events: {
+						// 		click: function () {
+						// 			$("#annModal").modal("show");
+						// 			$("#tag_value").hide();
+						// 			$("#tag_series").hide();
+						// 			$("#tag_version").hide();
+						// 			$('#tag_ids').tagsinput('removeAll');
+						// 			$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+						// 			$("#tag_value").val(this.y)
+						// 				// console.log(this.series.name)
+						// 				if(this.series.name == "batt1" || this.series.name == "batt2"){
+						// 					var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+						// 				}else if (this.series.name == "Cal" || this.series.name == "Raw") {
+						// 					var value_id = (this.series.name).slice(0,3)
+						// 				}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
+						// 					var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
+						// 				}else if (this.series.name == "mvalue") {
+						// 					var value_id = (this.series.name).slice(0,3)
+						// 				}else{
+						// 					var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
+						// 				}
+						// 				$("#tag_series").val(value_id)
+						// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+						// 			}
+						// 		}
+						// 	}
 						},
 						area: {
 							marker: {

@@ -19,6 +19,7 @@ $(document).ajaxStop(function () {
 
 
 $(document).ready(function(e) {
+
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -560,7 +561,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
-						console.log(all_ts)
+						
 						for (var i = 0; i < nval.length-1; i=i+2) {
 							var n = nval[i];
 							var n2 = nval[i+1];
@@ -1471,89 +1472,89 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 	}
 	
 	let dataSubmit = { date:list_dates,table:'gndmeas'}
-	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-		var result_unfiltered = JSON.parse(data)
-		var result = [];
-		for (var i = 0; i < result_unfiltered.length; i++) {
-			if (result_unfiltered[i].tag_description == "ground analysis") {
-				result.push(result_unfiltered[i])
-			}
-		}
-		$('#'+id).empty();
-		var all_crack_id = []
-		for (var i = 0; i < result.length; i++) {
-			var remark_parse = ((result[i].remarks).split("/"))
-			all_crack_id.push(remark_parse[1])
-		}
-		var label_crack = removeDuplicates(all_crack_id);
-		var all_data_tag =[]
-		for (var a = 0; a < label_crack.length; a++) {
-			var collect =[]
-			for (var i = 0; i < result.length; i++) {
-				var remark_parse = ((result[i].remarks).split("/"))
-				if(remark_parse[1] == label_crack[a] ){
-					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-				}
-			}
-			all_data_tag.push(collect)
-		}
+	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+	// 	var result_unfiltered = JSON.parse(data)
+	// 	var result = [];
+	// 	for (var i = 0; i < result_unfiltered.length; i++) {
+	// 		if (result_unfiltered[i].tag_description == "ground analysis") {
+	// 			result.push(result_unfiltered[i])
+	// 		}
+	// 	}
+	// 	$('#'+id).empty();
+	// 	var all_crack_id = []
+	// 	for (var i = 0; i < result.length; i++) {
+	// 		var remark_parse = ((result[i].remarks).split("/"))
+	// 		all_crack_id.push(remark_parse[1])
+	// 	}
+	// 	var label_crack = removeDuplicates(all_crack_id);
+	// 	var all_data_tag =[]
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		var collect =[]
+	// 		for (var i = 0; i < result.length; i++) {
+	// 			var remark_parse = ((result[i].remarks).split("/"))
+	// 			if(remark_parse[1] == label_crack[a] ){
+	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
+	// 			}
+	// 		}
+	// 		all_data_tag.push(collect)
+	// 	}
 
-		for (var a = 0; a < label_crack.length; a++) {
-			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-		}
-		data_series.push({name:'Tag'})
-		
-		Highcharts.setOptions({
-			global: {
-				timezoneOffset: -8 * 60
-			},
-		});
-		$("#"+id).highcharts({
-			chart: {
-				type: 'line',
-				zoomType: 'x',
-				panning: true,
-				panKey: 'shift',
-				height: 400,
-				width:$("#ground_graph").width()
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+	// 	}
+	// 	data_series.push({name:'Tag'})
+
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			height: 400,
+			width:$("#ground_graph").width()
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
+		},
+		yAxis:{
+			title: {
+				text: 'Displacement (cm)'
+			}
+		},
+		xAxis: {
+
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
 			},
 			title: {
-				text: name,
+				text: 'Date'
 			},
-			subtitle: {
-				text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
-			},
-			yAxis:{
-				title: {
-					text: 'Displacement (cm)'
+		},
+		tooltip: {
+			split: true,
+			crosshairs: true,
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: true
 				}
 			},
-			xAxis: {
-
-				type: 'datetime',
-				dateTimeLabelFormats: { 
-					month: '%e. %b %Y',
-					year: '%b'
+			series: {
+				marker: {
+					radius: 3
 				},
-				title: {
-					text: 'Date'
-				},
-			},
-			tooltip: {
-				split: true,
-				crosshairs: true,
-			},
-			plotOptions: {
-				line: {
-					marker: {
-						enabled: true
-					}
-				},
-				series: {
-					marker: {
-						radius: 3
-					},
-					cursor: 'pointer',
+				cursor: 'pointer',
 					// point: {
 					// 	events: {
 					// 		click: function () {
@@ -1582,23 +1583,23 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 			},
 			series:data_series
 		});
-		var chart = $('#'+id).highcharts();
-		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-			var series = chart.series[(data_series.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
-				if (series.visible) {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: true,
-					});
-				}else {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: false,
-					});
-				}
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < label_crack.length; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
 			}
-		});
-		
+		}
 	});
+
+	// });
 
 }
 
@@ -1990,7 +1991,7 @@ function CheckBoxColumn(site,column,from,to){
 			$(".selectpicker").selectpicker('refresh')
 			var title = ["Column","Displacement","Velocity"]
 			var id_title =["column","dis","velocity"]
-			var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+			var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
 			for(var a = 0; a < title.length; a++){
 				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
@@ -2070,7 +2071,7 @@ function piezometer(curSite,site){
 				}
 			});},
 			success: function(result) { 
-				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
+				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="collapse in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
 				dropdowlistAppendValue('#freq_div','Frequency','#piezogeneral');
 				dropdowlistAppendValue('#temp_div','Temperature','#piezogeneral');
 				$("#piezogeneral").val('Frequency');
@@ -2248,7 +2249,7 @@ function columnPosition(data_result,site) {
 			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 		}
-		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(m)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement, downslope(m)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(m)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
@@ -3314,7 +3315,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 		}
 		var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 		$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-		$("#batt_div").append('<br><div id="'+id[3]+'"></div>')
+		$("#batt_div").append('<br><div id="'+id[3]+'" class="accelDiv"></div>')
 		chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt',site)
 	});
 	$.ajax({ 
@@ -3368,7 +3369,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
-				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"  class="accelDiv"></div>')
 				chartProcessAccel(id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],site)
 			}
 		}
@@ -3460,7 +3461,7 @@ function accel2(data,series,msgid,list){
 			}
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-			$("#batt_div").append('<br><div id="'+data.id[3]+'"></div>')
+			$("#batt_div").append('<br><div id="'+data.id[3]+'"  class="accelDiv"></div>')
 			chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt",data.site)
 		}
 	});	
@@ -3566,7 +3567,7 @@ function accel2filtered(data,series,msgid,list){
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
-				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"  class="accelDiv"></div>')
 				chartProcessAccel(data.id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],data.site)
 			}
 		}
@@ -3644,7 +3645,7 @@ function somsfiltered(data,dataSoms,series){
 					}
 					var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 					$(".node_level").append('<div class="col-md-12" id="soms_div"></div>')
-					$("#soms_div").append('<br><div id="'+dataSoms.id+'"></div>')
+					$("#soms_div").append('<br><div id="'+dataSoms.id+'"  class="accelDiv"></div>')
 					chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms',data.site)
 					
 				}
@@ -3986,10 +3987,28 @@ function downloadSvg() {
 		var name_site = ((($( "tspan" ).text()).split('.')))
 		var extracted_name = (name_site[0]).split(' ');
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-		$( "#pdfsvg" ).empty();
-		$( "#rainfallsvg" ).empty();
 
-		var all_data=[]
+		$( "#pdfsvg" ).empty();
+		$( ".svg_container" ).empty();
+		var all_data = [];
+
+		/*SUPERIMPOSED GROUND*/
+		all_data.push($('#ground_graph .highcharts-container').html());
+
+		/*HEATMAP*/
+		console.log(($('#heatmap_container').html()).slice(0,1))
+		if($('#heatmap_container').html() != undefined && ($('#heatmap_container').html()).slice(0,1) != '<'){
+			all_data.push($('#heatmap_container').html())
+		}
+		
+		/***************Deleted Part for Highchart***********************/
+
+		$(".highcharts-root").removeAttr("xmlns");
+		$(".highcharts-root").removeAttr("version");
+
+		/***************Deleted Part for Highchart***********************/
+
+		/*RAINFALL*/
 
 		var all_raincharts = $('#raincharts .collapse ').map(function() {
 			return this.id;
@@ -4036,25 +4055,97 @@ function downloadSvg() {
 		}
 
 		ids_all.push($('#divSurficial').html());
-		
-		if($('#heatmap_container').html() != undefined){
-			ids_all.push($('#heatmap_container').html())
-		}
-		var all_data = [];
-		for (var i = 0; i < ids_all.length; i++) {
-			if(ids_all[i] != undefined ) {
-				all_data.push($('#'+ids_all[i]).html())
+		all_data.push($('#rainSvg').html())
+
+
+		/*SURFICIAL*/
+
+		var all_surficial = $('#surficial_graphs_VD .collapse ').map(function() {
+			return this.id;
+		}).get();
+		if(all_surficial.length != 0){
+			for (var i = 0; i < all_surficial.length; i++) {
+				$( "#"+all_surficial[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_surficial[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 480 );
 			}
-			
+
+			for (var i = 0; i < all_surficial.length; i++) {
+				$("#surficialsvg").append($('#'+all_surficial[i]+' .highcharts-container').html())
+			}
+
+			all_data.push($('#surfSvg').html());
 		}
 
-		all_data.push($('.svgBox').html())
+
+		/*PIEZOMETER*/
+
+		var all_piezometer = $('#piezometer_div .collapse ').map(function() {
+			return this.id;
+		}).get();
+		if(all_piezometer.length != 0){
+			for (var i = 0; i < all_piezometer.length; i++) {
+				$( "#"+all_piezometer[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_piezometer[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 480 );
+			}
+
+			for (var i = 0; i < all_piezometer.length; i++) {
+				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
+			}
+
+			all_data.push($('#pzSvg').html());
+		}
+
+		/*SUBSURFACE*/
+		var all_subsurface = ['colspangraph','dis','velocity']
+		if($('#'+all_subsurface[0]+'1 .highcharts-container').html() != undefined){
+			for (var i = 0; i < all_subsurface.length; i++) {
+				$( "#"+all_subsurface[i]+"1 .highcharts-container  .highcharts-root").attr( "x", 50 );
+				$( "#"+all_subsurface[i]+"1 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'1 .highcharts-container ').html())
+			}
+
+			for (var i = 0; i < all_subsurface.length; i++) {
+				$( "#"+all_subsurface[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 460 );
+				$( "#"+all_subsurface[i]+"2 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'2 .highcharts-container').html())
+			}
+			console.log($('#subSvg').html())
+			all_data.push($('#subSvg').html());
+		}
+
+		/*SENSOR*/
+
+		var all_sensor_accel = $('#node_collapse .col-md-12 .accelDiv').map(function() {
+			return this.id;
+		}).get();
+		var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+		all_sensor_accel.sort()
+
+		if(all_sensor_accel != 0){
+			for (var i = 0; i < all_sensor_accel.length; i++) {
+				$( "#"+all_sensor_accel[i]+" .highcharts-container").attr( "x", 70);
+				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+			}
+
+			for (var i = 0; i < all_sensor_accel.length; i++) {
+				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
+			}
+
+			all_data.push($('#aceSvg').html());
+		}
+
+
+
+		/*RENDERING ALL GRAPH*/
+		
+		
+
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
-				// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+				
 				$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
 				$("#pdfModal").modal('show');
 				$("#downloadPDF").on('click',function(){
@@ -4062,7 +4153,7 @@ function downloadSvg() {
 					$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 				});
 			}else{
-				$( "#pdfsvg" ).append('<H3>ERROR</H3>')
+				$("#pdfsvg" ).append('<H3>ERROR</H3>')
 				$("#pdfModal").modal('show');
 				$("#downloadPDF").hide();
 			}
