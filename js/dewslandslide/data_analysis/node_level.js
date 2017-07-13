@@ -114,6 +114,7 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
+		// console.log($("#sitegeneral").val() , $("#node").val() != "")
 		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
 			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
@@ -135,13 +136,14 @@ function submit(){
 function submittedAccel(){
 	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").tagsinput("items");
+		// console.log(tag_name)
 		var tag_description = "node analysis";
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
 		var time = (($("#tag_time").val()).slice(2,10)).toString()
 		var table_element_id = $("#tag_series").val()+(time.replace(/-/g, ""));
 		var table_used = ($("#sitegeneral").val()).toLowerCase();
-		var remarks = $("#node").val()+"no/"+moment($("#tag_time").val())+"/"+$("#tag_value").val()+"/"+$("#comment").val();
+		var remarks = $("#node").val()+"no/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -154,17 +156,17 @@ function submittedAccel(){
 				'remarks' : remarks
 			})
 		}
-		// console.log(dataSubmit)
-		// var host = window.location.host;
-		// $.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
-		// .done(function(data) {
-		// 	var curSite = $("#sitegeneral").val();
-		// 	var node = $ ("#node").val();
-		// 	var fromDate = $('#reportrange span').html().slice(0,10);
-		// 	var toDate = $('#reportrange span').html().slice(13,23);
-		// 	location = "/data_analysis/node/"+curSite+"/"+node+"/"+fromDate+"/"+toDate
-		// })
-		
+
+		var host = window.location.host;
+		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+		.done(function(data) {
+			// console.log(data);
+		})
+		var curSite = $("#sitegeneral").val();
+		var node = $ ("#node").val();
+		var fromDate = $('#reportrange span').html().slice(0,10);
+		var toDate = $('#reportrange span').html().slice(13,23);
+		location = "/data_analysis/node/"+curSite+"/"+node+"/"+fromDate+"/"+toDate
 	});
 }
 
@@ -264,7 +266,7 @@ function accelVersion1(curSite,node,fromDate,toDate,id){
 			for (i = 0; i < series_id.length; i++) {
 				series_data.push([{ name: series_name[i] ,step: true, data:series_id[i] ,id: ids[i]}])
 			}
-			chartProcess(id[3],series_data[3],series_name[3],color_series[3],result)
+			chartProcess(id[3],series_data[3],series_name[3],color_series[3])
 			series_id.pop()
 			let dataSubmit = { 
 				site : curSite, 
@@ -307,7 +309,7 @@ function accelVersion1Filtered(data,series_data,id){
 			}
 			var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
 			for (i = 0; i < dataseries.length; i++) {
-				chartProcess(id[i],dataseries[i],series_name[i],color_series[i],result)
+				chartProcess(id[i],dataseries[i],series_name[i],color_series[i])
 			}
 		}
 	});	
@@ -375,7 +377,7 @@ function accel2(data,series,msgid){
 				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: ids[i],visible:visibility[i]});
 			}
 			var color_series = ["#d48a3b","#fff"]
-			chartProcess(data.id[3],dataseries_batt,"Batt",color_series,result)
+			chartProcess(data.id[3],dataseries_batt,"Batt",color_series)
 		}
 	});	
 }
@@ -460,7 +462,7 @@ function accel2filtered(data,series,msgid){
 			plot_data = [];
 
 			for (i = 0; i < series_data.length; i++) { 
-				chartProcess(data.id[i] , series_data[i] , series_title[i],color_series[i],result)
+				chartProcess(data.id[i] , series_data[i] , series_title[i],color_series[i])
 			}
 
 		}
@@ -546,9 +548,10 @@ function somsfiltered(data,dataSoms,series){
 				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
 					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
+					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
-				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series,result)
+				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
 			}else{
 				var series_data=[] , data_series=[];
 				series_data.push(series)
@@ -559,14 +562,12 @@ function somsfiltered(data,dataSoms,series){
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
-
 			}
-			
 		}
 	});	
 }
 
-function chartProcess(id,data_series,name,color,all_data){
+function chartProcess(id,data_series,name,color){
 	var site = ($('#sitegeneral').val()).toLowerCase();
 	var node = $('#node').val();
 	var fdate = $('#reportrange span').html().slice(0,10);
@@ -576,51 +577,69 @@ function chartProcess(id,data_series,name,color,all_data){
 	var duration = moment.duration(date2.diff(date1));
 	var list_id=["x1r","x2r","x1f","x2f","y1r","y2r","y1f","y2f","z1r","z2r","z1f","z2f","bt1","bt2",
 	"Cal","Caf","Raw","Raf","mva"];
-	var list_dates = []
+	var  list_dates =[];
+	for (var i = 1; i < duration.asDays(); i++) {
+		list_dates.push(((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	}
 	
-	if(name == 'Batt'){
-		var plotter_name = "b"
-	}else if(name == 'Soms(cal)'){
-		var plotter_name ="C"
-	}else if (name == 'Soms(raw)'){
-		var plotter_name = "R"
-	}else{
-		var plotter_name = name.slice(0,1)
-	}
-
-	if(name == 'Batt'){
-		for (var i = 0; i < all_data.length; i++) {
-			list_dates.push( all_data[i].timestamp)
-		}
-	}else{
-		for (var i = 0; i < all_data.length; i++) {
-			list_dates.push( all_data[i].ts)
-		}
-	}
-	// console.log("/node_level_page/getAllgintagsNodeTagID/"+site+"/"+node+"no/"+plotter_name)
 	$.ajax({ 
 		dataType: "json",
-		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+node+"no/"+plotter_name,success: function(result) {
+		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
 			var data_value =[],xRaw1=[],xRaw2=[],xFil1=[],xFil2=[];
 			var yRaw1=[],yRaw2=[],yFil2=[],yFil1=[];
 			var zRaw1=[],zRaw2=[],zFil2=[],zFil1=[];
 			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[],mval=[];
-			var  list_idDiv =[xRaw1,xRaw2,xFil1,xFil2,yRaw1,yRaw2,yFil1,yFil2,zRaw1,zRaw2,zFil1,zFil2,
-			batt1,batt2,cal,calFil,raw,rawFil,mval];
-			
-			for (var b = 0; b < list_idDiv.length; b++) {
-				for (var i = 0; i < result.length; i++) {
-					var remarks_parse = (result[i].remarks).split("/")
-					for (var a = 0; a < list_dates.length; a++) {
-						if (moment(parseFloat(result[i].remarks.slice(4,17))).format('YYYY-MM-DD HH:mm:ss') == list_dates[a]) {
-							if(result[i].table_element_id.slice(0,3) == list_id[b]){
-								list_idDiv[b].push({x:parseFloat(remarks_parse[1]),text:remarks_parse[3],title:result[i].tag_name})
-							}
+			for (var i = 0; i < result.length; i++) {
+				var remarks_parse = (result[i].remarks).split("/")
+				for (var a = 0; a < list_dates.length; a++) {
+					if (result[i].table_element_id.slice(3,10) == list_dates[a]) {
+						if(result[i].table_element_id.slice(0,3) == "x1r"){
+							xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x2r"){
+							xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x1f"){
+							xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "x2f"){
+							xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y1r"){
+							yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y2r"){
+							yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y1f"){
+							yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "y2f"){
+							yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z1r"){
+							zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z2r"){
+							zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z1f"){
+							zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "z2f"){
+							zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "bt1"){
+							batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "bt2"){
+							batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Cal"){
+							cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Caf"){
+							calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Raw"){
+							raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "Raf"){
+							rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+						}else if(result[i].table_element_id.slice(0,3) == "mva"){
+							mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
 						}
 					}
 				}
+				
+				
+				
 			}
-			
+			// console.log(name)
+			// console.log(result)
 			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
 			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
 			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
@@ -655,6 +674,8 @@ function chartProcess(id,data_series,name,color,all_data){
 				data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
 			}
 			data_series.push({name:'Tag'})
+			// console.log(name)
+			// console.log(data_series)
 			Highcharts.setOptions({
 				global: {
 					timezoneOffset: -8 * 60
@@ -702,6 +723,21 @@ function chartProcess(id,data_series,name,color,all_data){
 						style:{
 							color: 'white'
 						}
+					},
+					events:{
+
+						afterSetExtremes:function(){
+
+							if (!this.chart.options.chart.isZoomed)
+							{                                         
+								var xMin = this.chart.xAxis[0].min;
+								var xMax = this.chart.xAxis[0].max;
+								var zmRange = computeTickInterval(xMin, xMax);
+								zoomEvent(id,zmRange,xMin,xMax)
+							}
+						}
+
+
 					}
 				},
 				tooltip: {
@@ -710,66 +746,89 @@ function chartProcess(id,data_series,name,color,all_data){
 				},
 
 				plotOptions: {
+					scatter: {
+						marker: {
+							radius: 5,
+							states: {
+								hover: {
+									enabled: true,
+									lineColor: 'rgb(100,100,100)'
+								}
+							}
+						},
+						states: {
+							hover: {
+								marker: {
+									enabled: false
+								}
+							}
+						}
+					},
 					series: {
 						marker: {
 							radius: 3
 						},
 						cursor: 'pointer',
-						// point: {
-						// 	events: {
-						// 		click: function () {
-						// 			$("#annModal").modal("show");
-						// 			$("#tag_value").hide();
-						// 			$("#tag_series").hide();
-						// 			$("#tag_version").hide();
-						// 			$('#tag_ids').tagsinput('removeAll');
-						// 			$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-						// 			$("#tag_value").val(this.y)
-						// 			if(this.series.name == "batt1" || this.series.name == "batt2"){
-						// 				var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
-						// 			}else if (this.series.name == "Cal" || this.series.name == "Raw") {
-						// 				var value_id = (this.series.name).slice(0,3)
-						// 			}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
-						// 				var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
-						// 			}else if (this.series.name == "mvalue") {
-						// 				var value_id = (this.series.name).slice(0,3)
-						// 			}else{
-						// 				var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
-						// 			}
-						// 			$("#tag_series").val(value_id)
-						// 			$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-						// 		}
-						// 	}
-						// }
-					},
-					area: {
-						marker: {
-							lineWidth: 3,
-							lineColor: null 
+						point: {
+							events: {
+								click: function () {
+									$("#annModal").modal("show");
+									$("#tag_value").hide();
+									$("#tag_series").hide();
+									$("#tag_version").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.y)
+										// console.log(this.series.name)
+										if(this.series.name == "batt1" || this.series.name == "batt2"){
+											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+										}else if (this.series.name == "Cal" || this.series.name == "Raw") {
+											var value_id = (this.series.name).slice(0,3)
+										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
+										}else if (this.series.name == "mvalue") {
+											var value_id = (this.series.name).slice(0,3)
+										}else{
+											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
+										}
+										$("#tag_series").val(value_id)
+										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+									}
+								}
+							}
+						},
+						area: {
+							marker: {
+								lineWidth: 3,
+								lineColor: null 
+							}
 						}
-					}
 
-				},
-				legend: {
-					layout: 'vertical',
-					align: 'right',
-					verticalAlign: 'middle',
-					borderWidth: 0,
-					itemStyle: {
-						color: '#E0E0E3'
 					},
-					itemHoverStyle: {
-						color: '#FFF'
+					legend: {
+						layout: 'vertical',
+						align: 'right',
+						verticalAlign: 'middle',
+						borderWidth: 0,
+						itemStyle: {
+							color: '#E0E0E3'
+						},
+						itemHoverStyle: {
+							color: '#FFF'
+						},
+						itemHiddenStyle: {
+							color: '#606063'
+						}
 					},
-					itemHiddenStyle: {
-						color: '#606063'
-					}
-				},
-				credits: {
-					enabled: false
-				},
-				series:data_series
-			});
+					credits: {
+						enabled: false
+					},
+					series:data_series	
+				}, function(chart) { //add this function to the chart definition to get synchronized crosshairs
+                    //this function needs to be added to each syncronized chart 
+                    syncronizeCrossHairs(chart,id);
+
+                });
 			var chart = $('#'+id).highcharts();
 			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 				var series4 = chart.series[(data_series.length-5)];
@@ -848,3 +907,67 @@ function chartProcess(id,data_series,name,color,all_data){
 	});
 
 }
+
+function syncronizeCrossHairs(chart,id_chart) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+			xAxis1.removePlotLine("myPlotLineId");
+			xAxis1.addPlotLine({
+				value: chart.xAxis[0].translate(x, true),
+				width: 1,
+				color: 'red',                 
+				id: "myPlotLineId"
+			});
+		}
+
+	});
+}
+
+function computeTickInterval(xMin, xMax) {
+	var zoomRange = xMax - xMin;
+
+	if (zoomRange <= 2)
+		currentTickInterval = 0.5;
+	if (zoomRange < 20)
+		currentTickInterval = 1;
+	else if (zoomRange < 100)
+		currentTickInterval = 5;
+}
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().xAxis[0].options.tickInterval =zmRange;
+		$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+	}
+	
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+		$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+	}
+	
+}
+
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
+
+
+
