@@ -1213,6 +1213,8 @@ $(document).ready(function() {
 				} else {
 					$.notify(msg.return_msg,'failed');
 				}
+			} else if (msg.type == "fetchGroupSms") {
+				console.log(msg.data);
 			} else {
 				var numbers = /^[0-9]+$/; 
 				if (msg.type == "ackgsm") {
@@ -2286,23 +2288,23 @@ function loadGroupsCommunity(){
 
 	user = "You";
 
-	var tagOffices = [];
-	$('input[name="offices"]:checked').each(function() {
-		tagOffices.push(this.value);
+	var tagOrgs = [];
+	$('input[name="orgs"]:checked').each(function() {
+		tagOrgs.push(this.value);
 	});
 
 	var tagSitenames = [];
-	$('input[name="sitenames"]:checked').each(function() {
+	$('input[name="sites"]:checked').each(function() {
 		tagSitenames.push(this.value);
 	});
 	tagSitenames.sort();
 
 	groupTags = {
-		'type': 'smsloadrequestgroup',
-		'offices': tagOffices,
+		'type': 'loadSmsForSites',
+		'organizations': tagOrgs,
 		'sitenames': tagSitenames
 	};
-	displayGroupTagsForThread();
+	// displayGroupTagsForThread();
 
 	$('#user').val('You');
 	$('#messages').html('');
