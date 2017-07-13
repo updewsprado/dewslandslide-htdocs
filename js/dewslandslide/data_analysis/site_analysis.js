@@ -3001,8 +3001,10 @@ function heatmapVisual(series_data,list_time,list_id,site){
 		.append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
+		.attr("xmlns","http://www.w3.org/2000/svg")
 		.append("g")
-		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		;
 
 		var newFontSize = width * 62.5 / 900;
 		d3.select("html").style("font-size", newFontSize + "%");
@@ -3986,21 +3988,26 @@ function downloadSvg() {
 	$("#download").on('click',function(){
 		var name_site = ((($( "tspan" ).text()).split('.')))
 		var extracted_name = (name_site[0]).split(' ');
+		var list_checkbox = ['ground_measurement','heatmap','rain_graph','surficial_velocity','piezo',
+		'sub_surface_analysis']
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
-
 		$( "#pdfsvg" ).empty();
 		$( ".svg_container" ).empty();
 		var all_data = [];
 
 		/*SUPERIMPOSED GROUND*/
-		all_data.push($('#ground_graph .highcharts-container').html());
-
-		/*HEATMAP*/
-		console.log(($('#heatmap_container').html()).slice(0,1))
-		if($('#heatmap_container').html() != undefined && ($('#heatmap_container').html()).slice(0,1) != '<'){
-			all_data.push($('#heatmap_container').html())
+		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
+			$("#ground_graph .highcharts-container .highcharts-root").attr("xmlns","http://www.w3.org/2000/svg");
+			all_data.push($('#ground_graph .highcharts-container').html());
 		}
 		
+
+		/*HEATMAP*/
+		if ($('#'+list_checkbox[1]+'_checkbox').is(':checked')) {
+			if($('#heatmap_container').html() != undefined && ($('#heatmap_container').html()).slice(0,2) != '<h'){
+				all_data.push($('#heatmap_container').html())
+			}
+		}
 		/***************Deleted Part for Highchart***********************/
 
 		$(".highcharts-root").removeAttr("xmlns");
@@ -4055,8 +4062,9 @@ function downloadSvg() {
 		}
 
 		ids_all.push($('#divSurficial').html());
-		all_data.push($('#rainSvg').html())
-
+		if ($('#'+list_checkbox[2]+'_checkbox').is(':checked')) {
+			all_data.push($('#rainSvg').html())
+		}
 
 		/*SURFICIAL*/
 
@@ -4073,7 +4081,9 @@ function downloadSvg() {
 				$("#surficialsvg").append($('#'+all_surficial[i]+' .highcharts-container').html())
 			}
 
-			all_data.push($('#surfSvg').html());
+			if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
+				all_data.push($('#surfSvg').html());
+			}
 		}
 
 
@@ -4091,8 +4101,9 @@ function downloadSvg() {
 			for (var i = 0; i < all_piezometer.length; i++) {
 				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
 			}
-
-			all_data.push($('#pzSvg').html());
+			if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
+				all_data.push($('#pzSvg').html());
+			}
 		}
 
 		/*SUBSURFACE*/
@@ -4109,8 +4120,9 @@ function downloadSvg() {
 				$( "#"+all_subsurface[i]+"2 .highcharts-container  .highcharts-root").attr( "y", i*900 );
 				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'2 .highcharts-container').html())
 			}
-			console.log($('#subSvg').html())
+			if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
 			all_data.push($('#subSvg').html());
+			}
 		}
 
 		/*SENSOR*/
@@ -4130,16 +4142,14 @@ function downloadSvg() {
 			for (var i = 0; i < all_sensor_accel.length; i++) {
 				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
 			}
-
-			all_data.push($('#aceSvg').html());
+			
+				all_data.push($('#aceSvg').html());
+			
 		}
 
 
 
 		/*RENDERING ALL GRAPH*/
-		
-		
-
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
