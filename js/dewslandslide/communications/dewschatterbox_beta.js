@@ -1214,6 +1214,7 @@ $(document).ready(function() {
 					$.notify(msg.return_msg,'failed');
 				}
 			} else if (msg.type == "fetchGroupSms") {
+				$('#loading').modal('hide');
 				console.log(msg.data);
 			} else {
 				var numbers = /^[0-9]+$/; 
@@ -1917,35 +1918,23 @@ function updateGlobalMessage(msg){
 	}
 }
 
-function displayGroupTagsForThread () {
+function displayGroupTagsForThread (orgs,sites) {
 	var tempText = "[Sitenames: ";
-	var titleSites = "";
 	var tempCountSitenames = groupTags.sitenames.length;
 	$("#convo-header .panel-body").text("");
-	for (i in groupTags.sitenames) {
-		displayDetailsForThread(groupTags.sitenames[i]);
-		if (i == tempCountSitenames - 1) {
-			tempText = tempText + groupTags.sitenames[i];
-			titleSites = titleSites + groupTags.sitenames[i];
-		} else {
-			tempText = tempText + groupTags.sitenames[i] + ", ";
-			titleSites = titleSites + groupTags.sitenames[i] + ", ";
-		}
+
+	for (var counter = 0; counter < sites.length; counter++) {
+		tempText = tempText+sites[counter].toUpperCase()+",";
 	}
 
+	tempText = tempText.slice(0,-1);
 	tempText = tempText + "]; [Offices: ";
-	var tempCountOffices = groupTags.offices.length;
-	for (i in groupTags.offices) {
-		if (i == tempCountOffices - 1){
-			tempText = tempText + groupTags.offices[i];
-		} else {
-			tempText = tempText + groupTags.offices[i] + ", ";
-		}
+	for (var counter = 0; counter < orgs.length; counter++) {
+		tempText = tempText+orgs[counter].toUpperCase()+",";
 	}
 
-	document.title = titleSites;
-
-	tempText = tempText + "]";
+	tempText = tempText.slice(0,-1);
+	tempText = tempText + "];";
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
 }
@@ -2304,7 +2293,7 @@ function loadGroupsCommunity(){
 		'organizations': tagOrgs,
 		'sitenames': tagSitenames
 	};
-	// displayGroupTagsForThread();
+	displayGroupTagsForThread(tagOrgs,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
