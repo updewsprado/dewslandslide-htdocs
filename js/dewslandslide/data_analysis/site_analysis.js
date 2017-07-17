@@ -1944,6 +1944,8 @@ function SelectedColumn(site,from,to) {
 			$(".bootstrap-select").click(function () {
 				$(this).addClass("open");
 			});
+			$('#total_node').attr('value',result[0].num_nodes)
+
 			for (c = 0; c <  result.length; c++) {
 				for (d = 0; d <  result[c].num_nodes; d++) {
 					dropdowlistAppendValue((d+1),(d+1),'#nodegeneral');
@@ -2030,14 +2032,13 @@ function CheckBoxColumn(site,column,from,to){
 			$(".column_level").append('<div class="col-md-12" id="heatmap_header"></div>')
 			$("#heatmap_header").empty();
 			$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
-				'<div class="pull-right"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/></div>'+
-				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
+				'<div class="pull-right heatmap_container_div"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/>'+
+				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div><div id="heatmap_div"></div>')
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
 			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
 			heatmapProcess(column,time,'3d')
-			HeatmapOnSelectDay(column)
 		}
 	});
 	$('#'+list_checkbox[5]+'_checkbox').prop('checked', false);
@@ -2694,7 +2695,7 @@ function HeatmapOnSelect(column) {
 		var time = timevalue.slice(11,16);
 		var day = $("#daygeneral").val();
 		$("#heatmap_div").empty();
-		heatmapProcess(column,(tdate+"T"+time),day)
+		// heatmapProcess(column,(tdate+"T"+time),day)
 
 	})
 }
@@ -2702,6 +2703,12 @@ function HeatmapOnSelect(column) {
 
 function HeatmapOnSelectDay(column) {
 	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var start = moment().format('MM-DD-YYYY HH:mm');
+		$("#heatmap_header").empty();
+		$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
+			'<div class="pull-right heatmap_container_div"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/>'+
+			'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div><div id="heatmap_div"></div>')
+		$("#reportrange3").hide();
 		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
 		var timevalue = $("#reportrange0 span").text();
 		var tdate = timevalue.slice(0,10);
@@ -2713,6 +2720,8 @@ function HeatmapOnSelectDay(column) {
 		}else if( selected_day == "30 days"){
 			var day = '30d'
 		}
+		$("#daygeneral").val(day);
+		$("#daygeneral").selectpicker('refresh');
 		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
 	})
 }
@@ -2857,7 +2866,6 @@ function SiteInfo(site){
 		$("#info_column").empty();
 		$("#info_site").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase().slice(0,3)+")")
 		$("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")")
-		// $("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")<br>Date install("+result[0].date_install +") <br> Date Activation("+result[0].date_activation+")")
 	});
 }
 
@@ -2865,7 +2873,6 @@ function heatmapProcess(site,tdate,day){
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
-			// HeatmapOnSelect(site)
 			HeatmapOnSelectDay(site)
 			$("#heatmap_checkbox").empty()
 			$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
@@ -2881,15 +2888,20 @@ function heatmapProcess(site,tdate,day){
 				$("#heatmap_container").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"></div>')
 				var result = JSON.parse(data_result)
+				var total_node = $('#total_node').val();
 				var all_time =[]
 				var all_nodes = []
 				var pattern_time =[]
+				var list_id=[]
+				for (var i = 0; i < parseFloat(total_node); i++) {
+					list_id.push((i+1))
+				}
 				for (a = 0; a < result.length; a++) {
 					all_time.push(result[a].ts)
 					all_nodes.push(result[a].id)
 				}
 				var list_time = removeDuplicates(all_time)
-				var list_id = removeDuplicates(all_nodes)
+				
 				var number_all =[]
 				for (b = 0; b < list_id.length; b++) {
 					for (c = 0; c < list_time.length; c++) {
@@ -2956,7 +2968,100 @@ function heatmapProcess(site,tdate,day){
 					obj_list_id.push({index:l,id:list_id[l]})
 				}
 
-				heatmapVisual(series_data,obj_list_time,obj_list_id,site)
+				if(obj_list_time.length == 48 || obj_list_time.length == 36 || obj_list_time.length == 30){
+					heatmapVisual(series_data,obj_list_time,obj_list_id,site)
+					
+				}else{
+					var time_date = Date.parse(tdate.replace('T',' '))
+					var template = [];
+					var time_template = [];
+					var time_object = [];
+					var x_and_y=[];
+					var data_series_filtered=[]
+					if( day == '1d'){
+						for (var i = 0; i < 48; i++) {
+							time_template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '3d'){
+						for (var i = 0; i < 36; i++) {
+							time_template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '30d'){
+						for (var i = 0; i < 30; i++) {
+							time_template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}
+					template.reverse()
+					if(obj_list_time.length != 0){
+						var nodata_timestamp=[]
+						var data_filteredTime =[]
+						
+						for (var i = 0; i < obj_list_time.length; i++) {
+							removeSpecificArray(time_template,obj_list_time[i])
+						}
+						for (var a = 0; a < time_template.length; a++) {
+							for (var i = 0; i < obj_list_id.length; i++) {
+								nodata_timestamp.push({id:obj_list_id[i].id,ts:time_template[a],value: NaN})
+							}
+						}
+						for (var i = 0; i < series_data.length; i++) {
+							nodata_timestamp.push({id:series_data[i].id,ts:series_data[i].ts,value:series_data[i].value})
+						}
+
+						for (var i = 0; i < template.length; i++) {
+							for (var a = 0; a < nodata_timestamp.length; a++) {
+								if( Date.parse(template[i]) == Date.parse(nodata_timestamp[a].ts)){
+									data_filteredTime.push(nodata_timestamp[a])
+								}
+							}
+						}
+
+
+						for (var i = 0; i < obj_list_id.length; i++) {
+							for (var a = 0; a < data_filteredTime.length; a++) {
+								if(obj_list_id[i].id == data_filteredTime[a].id ){
+									data_series_filtered.push({id:data_filteredTime[a].id,ts:data_filteredTime[a].ts,value:data_filteredTime[a].value,x:x_and_y[a].y,y:x_and_y[a].x})
+								}
+							}
+						}
+						
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+					}else{
+						var total_node = $('#total_node').val();
+						var obj_list_id =[];
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							obj_list_id.push({index:i,id:(i+1)})
+						}
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							for (var a = 0; a < template.length; a++) {
+								data_series_filtered.push({id:(i+1),ts:template[a],value:'null',x:i,y:a})
+								
+							}
+						}
+
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+						
+					}
+
+				}
+
 			}
 		}
 	});	
@@ -4121,7 +4226,7 @@ function downloadSvg() {
 				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'2 .highcharts-container').html())
 			}
 			if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
-			all_data.push($('#subSvg').html());
+				all_data.push($('#subSvg').html());
 			}
 		}
 
@@ -4143,7 +4248,7 @@ function downloadSvg() {
 				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
 			}
 			
-				all_data.push($('#aceSvg').html());
+			all_data.push($('#aceSvg').html());
 			
 		}
 
