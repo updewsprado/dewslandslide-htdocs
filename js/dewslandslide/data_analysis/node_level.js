@@ -725,9 +725,7 @@ function chartProcess(id,data_series,name,color){
 						}
 					},
 					events:{
-
 						afterSetExtremes:function(){
-
 							if (!this.chart.options.chart.isZoomed)
 							{                                         
 								var xMin = this.chart.xAxis[0].min;
@@ -736,8 +734,6 @@ function chartProcess(id,data_series,name,color){
 								zoomEvent(id,zmRange,xMin,xMax)
 							}
 						}
-
-
 					}
 				},
 				tooltip: {
@@ -824,8 +820,7 @@ function chartProcess(id,data_series,name,color){
 						enabled: false
 					},
 					series:data_series	
-				}, function(chart) { //add this function to the chart definition to get synchronized crosshairs
-                    //this function needs to be added to each syncronized chart 
+				}, function(chart) { 
                     syncronizeCrossHairs(chart,id);
 
                 });

@@ -795,6 +795,17 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			},
 			title: {
 				text: 'Date',
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						// zoomEvent(id,zmRange,xMin,xMax)
+					}
+				}
 			}
 		},
 
@@ -867,7 +878,25 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 						lineWidth: 3,
 						lineColor: null 
 					}
-				}
+				},
+				scatter: {
+					marker: {
+						radius: 5,
+						states: {
+							hover: {
+								enabled: true,
+								lineColor: 'rgb(100,100,100)'
+							}
+						}
+					},
+					states: {
+						hover: {
+							marker: {
+								enabled: false
+							}
+						}
+					}
+				},
 
 			},
 			legend: {
@@ -877,6 +906,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 				enabled: false
 			},
 			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id);
+
 		});
 	// var chart = $('#'+id).highcharts();
 	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
@@ -1003,6 +1035,17 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 			title: {
 				text: 'Date'
 			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						// zoomEvent(id,zmRange,xMin,xMax)
+					}
+				}
+			}
 
 		},
 		yAxis: {
@@ -1020,6 +1063,24 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 		},
 
 		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
+						}
+					}
+				}
+			},
 			series: {
 				marker: {
 					radius: 3
@@ -1063,6 +1124,9 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 				enabled: false
 			},
 			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id+"2");
+
 		});
 	// var chart = $('#'+id).highcharts();
 	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
@@ -4276,5 +4340,61 @@ function downloadSvg() {
 	});
 
 
+}
+
+
+/*syncronizegraph*/
+
+function syncronizeCrossHairs(chart,id_chart) {
+	var all_ids = $('#raincharts .collapse ').map(function() {
+			return this.id;
+		}).get();
+
+	console.log(chart,id_chart)
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+						xAxis1.removePlotLine("myPlotLineId");
+						console.log(xAxis1.addPlotLine({
+							value: chart.xAxis[0].translate(x, true),
+							width: 1,
+							color: 'red',                 
+							id: "myPlotLineId"
+						}))
+		}
+		console.log(chart,id_chart)
+	});
+
+
+}
+
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+	var all_ids = $('#raincharts .collapse ').map(function() {
+			return this.id;
+		}).get();
+		
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+	}
+	
+	console.log(all_ids)
+	removeSpecificArray(all_ids, id_chart)
+	console.log(all_ids)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+		$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+	}
+	
 }
 
