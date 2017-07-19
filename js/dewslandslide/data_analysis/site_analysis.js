@@ -493,12 +493,12 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+							chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance);
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance);
 							}else{
-								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
-								chartProcessRain(undefined,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+								chartProcessRain2(undefined,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance);
+								chartProcessRain(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance);
 							}
 						}, 1000);
 						
@@ -594,13 +594,13 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance);
 							
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance);
 							}else{
-								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
-								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+								chartProcessRain2(undefined,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance);
+								chartProcessRain(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance);
 							}
 						}, 1000);
 						
@@ -696,12 +696,12 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance);
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+								chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance);
 							}else{
-								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
-								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance);
+								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,negative,distance );
 							}
 						}, 1000);
 						
