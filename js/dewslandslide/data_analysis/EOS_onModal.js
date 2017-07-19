@@ -605,7 +605,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 	if(max_value != -Infinity){
 		var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
 	}else{
-		if(series_data[0].data != 0 && series_data != undefined){
+		if( series_data != undefined){
 			var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
 		}else{
 			var maxValue = undefined
