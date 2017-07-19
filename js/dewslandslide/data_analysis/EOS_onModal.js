@@ -600,11 +600,11 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		}
 	}
 	let dataSubmit = { date:list_dates,table:site}
-	console.log(series_data.length)
+	
 	if(max_value != -Infinity){
 		var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
 	}else{
-		if(series_data.length != ""){
+		if(series_data.length != undefined){
 			var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
 		}else{
 		var maxValue = undefined
