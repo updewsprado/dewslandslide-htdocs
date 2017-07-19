@@ -716,6 +716,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 
 
 function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance ){
+	console.log(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance )
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
