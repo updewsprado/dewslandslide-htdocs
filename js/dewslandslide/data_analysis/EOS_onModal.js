@@ -477,6 +477,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site
 						}
+						console.log(series_data2)
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
