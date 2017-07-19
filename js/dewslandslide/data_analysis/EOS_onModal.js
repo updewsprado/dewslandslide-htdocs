@@ -10,11 +10,11 @@ $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
-		var to = moment().format('YYYY-MM-DD')
+		var to = moment().add(1,'days').format('YYYY-MM-DD')
 		RainFallProcess(site,from,to)
 	}else  if(category == "surficial"){
 		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
-		var to = moment().format('YYYY-MM-DD')
+		var to = moment().add(1,'days').format('YYYY-MM-DD')
 		let dataSubmit = { 
 			site : (site).toLowerCase(), 
 			fdate : from,
