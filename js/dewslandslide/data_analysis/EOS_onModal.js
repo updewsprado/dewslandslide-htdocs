@@ -609,8 +609,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		}else{
 			var maxValue = undefined
 		}
-		
-		
 	}
 	
 
