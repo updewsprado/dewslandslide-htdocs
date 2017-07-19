@@ -245,7 +245,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 	$(".graphGenerator").append('<div class="col-md-12" id="raincharts"></div>')
 	$("#raincharts").empty()
 	$("#raincharts").append('<ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol>')
-	$("#raincharts").append('<h4><b>RainFall Graph</b><select class="selectpicker pull-right rainfall_select"  id="rainfall_days"></select></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol><br>')
+	$("#raincharts").append('<h4><b>Rainfall Graph</b><select class="selectpicker pull-right rainfall_select"  id="rainfall_days"></select></h4><ol class="breadcrumb rain-breadcrumb" id="rain-breadcrumb"></ol><br>')
 	$('.rainfall_select').selectpicker('refresh')
 	daysOption('rainfall')
 	SelectdaysOption('rainfall')
@@ -463,6 +463,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							console.log(all_raindata[2].length)
 							if(all_raindata[2].length != undefined){
 								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
