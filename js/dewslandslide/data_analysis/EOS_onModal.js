@@ -583,7 +583,6 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value ){
-	console.log(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value )
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);

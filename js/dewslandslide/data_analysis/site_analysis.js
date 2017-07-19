@@ -493,8 +493,13 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+							}else{
+								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+							}
 						}, 1000);
 						
 					}else{
@@ -589,8 +594,14 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+							}else{
+								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							}
 						}, 1000);
 						
 					}else{
@@ -685,8 +696,13 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+							}else{
+								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							}
 						}, 1000);
 						
 					}else{
@@ -755,6 +771,15 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
+	if(max_value != -Infinity){
+		var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
+	}else{
+		if( series_data != undefined){
+			var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
+		}else{
+			var maxValue = undefined
+		}
+	}
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -801,7 +826,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			title: {
 				text: 'Value (mm)',
 			},
-			max: Math.max(0,(max_value-parseFloat(max)))+parseFloat(max) ,
+			max: max_value ,
 			min: 0,
 			plotBands: [{
 				value: Math.round( parseFloat(max/2) * 10 ) / 10,
