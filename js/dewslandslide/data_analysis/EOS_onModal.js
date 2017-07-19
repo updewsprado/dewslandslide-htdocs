@@ -371,7 +371,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
-							if(all_raindata[2].length != undefined){
+							if(all_raindata[2].length != 0){
 								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
 							}else{
 								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
@@ -463,8 +463,8 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-							console.log(all_raindata[2].length)
-							if(all_raindata[2].length != undefined){
+							
+							if(all_raindata[2].length != 0){
 								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
 								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
@@ -558,7 +558,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
 							console.log(all_raindata[2].length)
-							if(all_raindata[2].length != undefined){
+							if(all_raindata[2].length != 0){
 								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
 								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
