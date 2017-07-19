@@ -494,7 +494,13 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}else{
+								chartProcessRain(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
+								chartProcessRain2(undefined,id,'Senslope',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}
+							
 						}, 1000);
 						
 					}else{
@@ -590,7 +596,12 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}else{
+								chartProcessRain(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
+								chartProcessRain2(undefined,id,'ARQ',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}
 						}, 1000);
 						
 					}else{
@@ -686,7 +697,12 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
-							chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Noah',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}else{
+								chartProcessRain(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
+								chartProcessRain2(undefined,id,'Noah',site,max_rain,dataTableSubmit,negative,distance,jsonRespo);
+							}
 						}, 1000);
 						
 					}else{
