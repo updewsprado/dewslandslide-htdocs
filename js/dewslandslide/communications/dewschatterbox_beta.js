@@ -1014,8 +1014,7 @@ $(document).ready(function() {
 
 				var suggestionsArray = [];
 				for (var i in msg.data) {
-					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"}) + 
-					" - " + msg.data[i].numbers;
+					var suggestion = msg.data[i].fullname.replace(/\?/g,function(){return "\u00f1"});
 					suggestionsArray.push(suggestion);
 				}
 
@@ -1215,6 +1214,8 @@ $(document).ready(function() {
 				}
 			} else if (msg.type == "fetchGroupSms") {
 				$('#loading').modal('hide');
+				console.log(msg.data);
+			} else if (msg.type == "fetchSms") {
 				console.log(msg.data);
 			} else {
 				var numbers = /^[0-9]+$/; 
@@ -1537,40 +1538,10 @@ function getFollowingNameQuery (allNameQueries) {
 	return nameQuery;
 }
 
-function displayContactNamesForThread (source="normal") {
-	if (source == "normal") {
-		var flags = [], uniqueName = [], l = contactInfo.length, i;
-		for( i=0; i<l; i++) {
-			if( flags[contactInfo[i].fullname]) 
-				continue;
-
-			flags[contactInfo[i].fullname] = true;
-			uniqueName.push(contactInfo[i].fullname);
-		}
-
-		var tempText = "", tempCountContacts = uniqueName.length;
-		for (i in uniqueName) {
-			console.log(uniqueName[i]);
-
-			if (i == tempCountContacts - 1)
-				tempText = tempText + uniqueName[i];
-			else
-				tempText = tempText + uniqueName[i] + ", ";
-		}
-	}
-	else if (source == "quickInbox") {
-		if (qiFullContact.search("unknown") >= 0) {
-			tempText = qiFullContact;
-			document.title = tempText;
-		} 
-		else {
-			var posDash = qiFullContact.search(" - ");
-			tempText = qiFullContact.slice(0, posDash);
-		}
-	}
-	$("#convo-header .panel-heading").text(tempText);
-	$("#convo-header .panel-body").text(contactInfo[0].numbers);
-	document.title = tempText;
+function displayContactNamesForThread () {
+	$("#convo-header .panel-heading").text($('#contact-suggestion').val());
+	// $("#convo-header .panel-body").text(contactInfo[0].numbers);
+	document.title = $('#contact-suggestion').val();
 }
 
 $('#btn-standard-search').click(function(){
@@ -2102,37 +2073,19 @@ function startChat(source="normal") {
 	user = "You";
 
 	if (source == "normal") {
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
-		}
-		else {
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
+		contactname = $('#contact-suggestion').val();
+	} else if (source == "quickInbox") {
 
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
-		}
 	}
-	else if (source == "quickInbox") {
-		contactname = qiFullContact;
-		contactnum = contactname;
-		contactnumTrimmed = [trimmedContactNum(contactnum)];
 
-		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
-	}
-	displayContactNamesForThread(source);
-
-	if (contactnumTrimmed <= 0) {
-		alert("Error: Invalid Contact Number");
-		return;
-	}
+	displayContactNamesForThread();
 
 	$('#user-container').addClass('hidden');
 	$('#main-container').removeClass('hidden');
 
 	var msgHistory = {
-		'type': 'smsloadrequest',
-		'number': contactnumTrimmed,
+		'type': 'loadSmsPerContact',
+		'fullname': contactname,
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
 
@@ -2145,7 +2098,7 @@ function startChat(source="normal") {
 }
 
 $('#go-chat').click(function() {
-	$('#loading').modal('show');
+	// $('#loading').modal('show');
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
 	tempTimestamp = "";
