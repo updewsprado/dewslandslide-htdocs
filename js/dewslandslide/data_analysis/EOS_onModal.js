@@ -557,6 +557,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							console.log(all_raindata[2].length)
 							if(all_raindata[2].length != undefined){
 								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
@@ -571,6 +572,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site
 						}
+						console.log(series_data2)
 						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 					}
