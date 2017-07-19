@@ -564,7 +564,6 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value ){
-	console.log(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value)
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
@@ -582,6 +581,13 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		}
 	}
 	let dataSubmit = { date:list_dates,table:site}
+	if(max_value != -Infinity){
+		var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
+	}else{
+		var maxValue = undefined
+	}
+	
+
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -628,7 +634,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			title: {
 				text: 'Value (mm)',
 			},
-			max: Math.max(0,(max_value-parseFloat(max)))+parseFloat(max) ,
+			max: maxValue,
 			min: 0,
 			plotBands: [{
 				value: Math.round( parseFloat(max/2) * 10 ) / 10,
@@ -710,7 +716,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 
 
 function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance ){
-	console.log(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value)
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
