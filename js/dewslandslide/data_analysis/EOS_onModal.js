@@ -371,7 +371,13 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
-							chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+							}else{
+								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
+							}
+							
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -458,7 +464,13 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-							chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+							
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+							}else{
+								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+							}
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -467,6 +479,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site
 						}
+						console.log(series_data2)
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
@@ -546,7 +559,13 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
-							chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+							if(all_raindata[2].length != 0){
+								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+							}else{
+								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+							}
+							
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -581,6 +600,18 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		}
 	}
 	let dataSubmit = { date:list_dates,table:site}
+
+	if(max_value != -Infinity){
+		var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
+	}else{
+		if( series_data != undefined){
+			var maxValue = Math.max(0,(max_value-parseFloat(max)))+parseFloat(max)
+		}else{
+			var maxValue = undefined
+		}
+	}
+	
+
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -608,13 +639,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 				fontSize: '10px'
 			}
 		},
-		noData: {
-			style: {
-				fontWeight: 'bold',
-				fontSize: '15px',
-				color: '#303030'
-			}
-		},
 		xAxis: {
 			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
 			type: 'datetime',
@@ -634,7 +658,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			title: {
 				text: 'Value (mm)',
 			},
-			max: Math.max(0,(max_value-parseFloat(max)))+parseFloat(max) ,
+			max: maxValue,
 			min: 0,
 			plotBands: [{
 				value: Math.round( parseFloat(max/2) * 10 ) / 10,

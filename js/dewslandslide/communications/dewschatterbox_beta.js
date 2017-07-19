@@ -1265,7 +1265,6 @@ return tempConn;
 function getOngoingEvents(sites){
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
-		console.log(events);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 		.done(function(response) {
 			siteids = JSON.parse(response);
@@ -1281,7 +1280,6 @@ function getOngoingEvents(sites){
 								narrative_template = gintags_msg_details[1]+" sent surficial measurement <insert trend here>";
 							}
 						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
-
 							var tagOffices = [];
 							$('input[name="offices"]:checked').each(function() {
 								tagOffices.push(this.value);
@@ -1314,7 +1312,6 @@ function getOngoingEvents(sites){
 							'ewi_sms_timestamp': gintags_msg_details[2],
 							'narrative_template': narrative_template
 						}
-
 						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 						.done(function(response) {
 							var start = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -3411,11 +3408,15 @@ $("#confirm-narrative").on('click',function(){
 	console.log(data.tags);
 	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
 		getGintagGroupContacts(data);
-		console.log(tags);
 		for (var counter = 0; counter < tags.length; counter++) {
 			if (tags[counter] == "#EwiMessage" || tags[counter] == "#GroundMeasReminder") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					getOngoingEvents(tagSitenames[tag_counter]);
+					if (tagSitenames[tag_counter] == "MES") {
+						var mes_sites = ['MSL','MSU'];
+						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
+							getOngoingEvents(mes_sites[msl_msu_counter]);
+						}
+					}
 				}
 				break;
 			}
