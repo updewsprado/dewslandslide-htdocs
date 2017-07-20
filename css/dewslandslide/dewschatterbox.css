@@ -15,6 +15,13 @@ body {
 .bg-white {
   background-color: #fff;
 }
+.search-opt {
+  margin-bottom: 10px;
+}
+
+#gintags {
+  display: none;
+}
 
 #testing-site-indicator {
   background-color: red;
@@ -24,6 +31,37 @@ body {
   z-index: 1031;
 }
 
+#bg-image-info {
+  min-width: 100%;
+  min-height: 100%;
+  position: relative;
+  opacity: .15;
+}
+
+.notes{
+  position: absolute;
+  margin: 0 7%;
+}
+
+.typeahead { z-index: 1051; }
+
+#GenInfo-content{
+  width: 70%;
+  margin-left: 15%;
+  min-height: 300px;
+  min-width: 500px;
+}
+
+.carousel-caption {
+  color: #676767;
+}
+
+.notes h4{
+padding-top: 15px;
+}
+.notes p{
+margin-left: 15px;
+}
 
 .tagged {
   border-style: solid;
@@ -36,6 +74,15 @@ body {
   width: 97.2%;
   min-width: 75%;
   right: 11%
+}
+
+#notice-modal {
+  margin: 0;
+  padding: 0;
+}
+
+#no-bg-img {
+  background-image: none;
 }
 
 #search-contacts {
@@ -220,6 +267,8 @@ body {
   max-height: 400px;
   overflow-y: scroll;
   padding-right: 10px;
+  padding-left: 0px;
+  margin-top: 10px;
 }
 
 #response-contact-container_wrapper {

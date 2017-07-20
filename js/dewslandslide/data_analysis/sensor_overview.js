@@ -1,4 +1,23 @@
 $(document).ready(function(e) {
+	
+	d3.select(window).on("resize", resize2)
+	function resize2() {
+		d3.selectAll("#svg-alert").remove();
+		d3.selectAll("#svg-presence").remove();
+		svg.selectAll(".dot").remove();
+		svg.selectAll(".dot1").remove();
+		svg.selectAll(".dot2").remove();
+		svg.selectAll(".line").remove();
+		svg.selectAll(".tick").remove();
+		svg.selectAll(".axislabel").remove();
+		initAlertPlot();
+		dataPresencePlot();
+	}
+	$(document).ready(function(){
+		$('[data-toggle="tooltip"]').tooltip();   
+	});
+
+
 	$.get("../api/AllSiteDetails").done(function(data){
 		var all_sites_details = JSON.parse(data);
 		var map_pins=[]
@@ -7,7 +26,6 @@ $(document).ready(function(e) {
 		}
 		initMap(map_pins)
 	})
-
 	function initMap(map_pins) {
 		var map = new google.maps.Map(document.getElementById('map-canvas'), {
 			zoom: 6,

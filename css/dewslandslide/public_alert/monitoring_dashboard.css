@@ -70,10 +70,23 @@ hr {
 	background-color: rgba(60, 60, 60, 0.5);
 }
 
+#ewi-recipients-container {
+	display: inline-flex;
+	margin-bottom: 10px;
+}
+
+#ewi-recipients-container label{
+	padding-top: 5px;
+}
+
 .close { margin-top: -3px; }
 
 #send-btn-ewi-amd,#edit-btn-ewi-amd {
     margin-top: 10px;
+}
+
+#additional-recipients {
+    margin-bottom: 5px;
 }
 
 #ewi-asap-modal,#success-ewi-modal{
@@ -183,3 +196,7 @@ label.error {
     font-style: italic;
     margin: 10px 0 0 10px;
 }
+
+h3.popover-title { font-weight: bold; font-size: 16px!important; background: #C0C0C0; }
+.popover-content { background: #A9A9A9; }
+#reminder { font-size: 13px; color: red; font-weight: bold; }

@@ -2,44 +2,21 @@
 /****
  *
  *  Created by Kevin Dhale dela Cruz
- *  JS file for Accomplishment Report Filing Form [reports/accomplishment_report.php]
+ *  JS file for Accomplishment Report Filing Form - 
+ *  End-of-Shift Report Tab [reports/accomplishment_report.php]
  *  [host]/reports/accomplishment/form
  *  
 ****/
 
 $(document).ready(function() 
 {
-    CKEDITOR.replace( 'report', {height: 400} );
 
-    let setElementHeight = function () {
-        let window_h = $(window).height() - $(".navbar-fixed-top").height();
-        $('#page-wrapper').css('min-height', window_h);
-    };
-
-    $(window).on("resize", function () {
-        setElementHeight();
-    }).resize();
+    let current_user_id = $("#current_user_id").attr("value");
 
     /*** Initialize Date/Time Input Fields ***/
     $(function () {
     	$('.timestamp').datetimepicker({
             format: 'YYYY-MM-DD HH:mm:00',
-            allowInputToggle: true,
-            widgetPositioning: {
-                horizontal: 'right',
-                vertical: 'bottom'
-            }
-        });
-        $('.timestamp_date').datetimepicker({
-            format: 'YYYY-MM-DD',
-            allowInputToggle: true,
-            widgetPositioning: {
-                horizontal: 'right',
-                vertical: 'bottom'
-            }
-        });
-        $('.timestamp_time').datetimepicker({
-            format: 'HH:mm:00',
             allowInputToggle: true,
             widgetPositioning: {
                 horizontal: 'right',
@@ -95,376 +72,6 @@ $(document).ready(function()
             $('.shift_start_others').data("DateTimePicker").maxDate(e.date);
         });
     });
-
-    let narrativeTable = null, narratives = [], original = [];
-    let hasEdit = false;
-    narrativeTable = showNarrative(narratives);
-
-    reposition("#saveNarrativeModal");
-
-    $("#event_id").change(function () {
-        let event_id = $(this).val();
-        if( event_id != "")
-        {
-            if(hasEdit)
-            {
-                $("#save_message, #cancel").hide();
-                $("#change_message, #discard").show();
-                $('#saveNarrativeModal').modal({ backdrop: 'static', keyboard: false });
-                $("#saveNarrativeModal").modal("show");
-            }
-            else getNarratives(event_id);
-        }
-        else 
-        {
-            narrativeTable.clear();
-            narrativeTable.draw();
-            hasEdit = false;
-        }
-    });
-
-    function getNarratives(event_id) 
-    {
-        $.get( "../../accomplishment/getNarratives/" + event_id, function (data) {
-                //callback(data);
-                original = data.slice(0);
-                narratives = data.slice(0);
-                console.log(narratives);
-                narrativeTable.clear();
-                narrativeTable.rows.add(narratives).draw();
-        }, "json");
-    }
-
-    let index_global = null;
-    jQuery.validator.addMethod("isUniqueTimestamp", function(value, element, param) {
-    	let timestamp = null;
-    	if( $(element).prop('id') == "timestamp_time" )
-    	{
-    		let date = $("#timestamp_date").val();
-        	timestamp = date + " " + value;
-    	} else timestamp = $("#timestamp_edit").val();
-
-        let i = narratives.map( el => el.timestamp ).indexOf(timestamp);
-        if( $(element).prop("id") === 'timestamp_time' ) 
-        { 
-        	if( i < 0 ) return true; else false; 
-        }
-        else { if( i < 0 || i == index_global ) return true; else false; }
-
-    }, "Add a new timestamp or edit the entry with the same timestamp to include new narrative development.");
-
-    jQuery.validator.addMethod("noSpace", function(value, element) { 
-        console.log(value[0]);
-        return value.trim() != ""; 
-    }, "Write a narrative before adding.");
-
-    $("#narrativeForm").validate(
-    {
-        rules: {
-            timestamp_date: {
-                required: true,
-            },
-            timestamp_time: {
-                required: true,
-                isUniqueTimestamp: true
-            },
-            event_id: {
-                required: true
-            },
-            narrative: {
-                required: true,
-                noSpace: true
-            }
-        },
-        errorPlacement: function ( error, element ) {
-
-            var placement = $(element).closest('.form-group');
-            //console.log(placement);
-            
-            if( $(element).hasClass("cbox_trigger_switch") )
-            {
-                $("#errorLabel").append(error).show();
-            }
-            else if (placement) {
-                $(placement).append(error)
-            } else {
-                error.insertAfter(placement);
-            } //remove on success 
-
-            element.parents( ".form-group" ).addClass( "has-feedback" );
-
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !element.next( "span" )[ 0 ] ) {
-                if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-                if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
-                if(element.is("input[type=number]")) element.next("span").css({"top": "18px", "right": "13px"});
-            }
-        },
-        success: function ( label, element ) {
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !$( element ).next( "span" )) {
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-
-            $(element).closest(".form-group").children("label.error").remove();
-        },
-        highlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-error" ).removeClass( "has-success" );
-            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-remove" ).removeClass( "glyphicon-ok" );
-        },
-        unhighlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-success" ).removeClass( "has-error" );
-            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-ok" ).removeClass( "glyphicon-remove" );
-        },
-        submitHandler: function (form) 
-        {
-            let data = $( "#narrativeForm" ).serializeArray();
-            let temp = {};
-            data.forEach(function (value) { 
-                if(value.name != "timestamp_time" && value.name != "timestamp_date") temp[value.name] = value.value == "" ? null : value.value; 
-            })
-           temp.timestamp = $("#timestamp_date").val() + " " + $("#timestamp_time").val();
-           temp.narrative = temp.narrative.trim();
-
-            console.log("ADDED", temp);
-            narratives.push(temp);
-            console.log("NEW", narratives);
-            hasEdit = true;
-            narrativeTable.clear();
-            narrativeTable.rows.add(narratives).draw();
-        }
-    });
-
-    function showNarrative(result) 
-    {
-        var table = $('#narrativeTable').DataTable({
-            data: result,
-            "columns": [
-                { 
-                    "data": "timestamp",
-                    "render": function (data, type, full) {
-                        return full.timestamp == null ? "N/A" : moment(full.timestamp).format("DD MMMM YYYY, HH:mm:ss");
-                    },
-                    "name": "timestamp",
-                    className: "text-right"
-                },
-                {
-                    data: "narrative"
-                },
-                {
-                    data: "id",
-                    "render": function (data, type, full) {
-                        if (typeof data == 'undefined')
-                            return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
-                        else return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>';
-                    },
-                    className: "text-center"
-                }
-            ],
-            "columnDefs": [
-                { "orderable": false, "targets": [1, 2] }
-            ],
-            dom: 'Bfrtip',
-            "buttons": [
-                {
-                    className: 'btn-sm btn-danger save',
-                    text: 'Save Narratives',
-                    action: function ( e, dt, node, config ) 
-                    {
-                        $("#save_message, #cancel").show();
-                        $("#change_message, #discard").hide();
-                        $("#saveNarrativeModal").modal("show");
-                    }
-                }
-            ],
-            "processing": true,
-            "order" : [[0, "desc"]],
-            "filter": true,
-            "info": false,
-            "paginate": true        
-        });
-
-        $("td").css("vertical-align", "middle");
-
-        return table;
-    }
-
-    function delegate(self) 
-    {
-        let index = narrativeTable.row(self.parents("tr")).index();
-        let x = narratives.slice(index, index + 1).pop();
-        let temp = {};
-        for (var key in x) {
-            if (x.hasOwnProperty(key)) {
-                temp[key] = x[key];
-            }
-        }
-        index_global = temp.id = index;
-        console.log(temp);
-        console.log(narratives);
-        for (var key in temp) {
-            if (temp.hasOwnProperty(key)) {
-                $("#" + key + "_edit").val(temp[key]);
-            }
-        }
-    }
-
-    reposition("#editModal");
-
-    $("#narrativeTable tbody").on("click", "tr .glyphicon-trash", function (e) {
-        let self = $(this);
-        delegate(self);
-        $(".delete-warning").show();
-        $("#editModal input, #editModal textarea").prop("disabled", true);
-        $("#update").hide();
-        $('#editModal').modal({ backdrop: 'static', keyboard: false, show: true });
-    });
-
-    $("#delete").click(function () {
-        narratives.splice(index_global, 1);
-        narrativeTable.clear();
-        narrativeTable.rows.add(narratives).draw();
-    });
-
-    $("#narrativeTable tbody").on("click", "tr .glyphicon-edit", function (e) {
-        let self = $(this);
-        delegate(self);
-        $(".delete-warning").hide();
-        $("#update").show();
-        $("#editModal input, #editModal textarea").prop("disabled", false);
-        $('#editModal').modal({ backdrop: 'static', keyboard: false, show: true });
-    });
-
-    let edit_validate = $("#editForm").validate(
-    {
-        rules: {
-            timestamp_edit: {
-                required: true,
-                isUniqueTimestamp: true
-            },
-            narrative_edit: {
-                required: true
-            }
-        },
-        errorPlacement: function ( error, element ) {
-
-            var placement = $(element).closest('.form-group');
-            //console.log(placement);
-            
-            if( $(element).hasClass("cbox_trigger_switch") )
-            {
-                $("#errorLabel").append(error).show();
-            }
-            else if (placement) {
-                $(placement).append(error)
-            } else {
-                error.insertAfter(placement);
-            } //remove on success 
-
-            element.parents( ".form-group" ).addClass( "has-feedback" );
-
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !element.next( "span" )[ 0 ] ) {
-                if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
-                if(element.is("select")) element.next("span").css({"top": "18px", "right": "30px"});
-                if(element.is("input[type=number]")) element.next("span").css({"top": "18px", "right": "13px"});
-            }
-        },
-        success: function ( label, element ) {
-            // Add the span element, if doesn't exists, and apply the icon classes to it.
-            if ( !$( element ).next( "span" )) {
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-
-            $(element).closest(".form-group").children("label.error").remove();
-        },
-        highlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-error" ).removeClass( "has-success" );
-            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-remove form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-remove" ).removeClass( "glyphicon-ok" );
-        },
-        unhighlight: function ( element, errorClass, validClass ) {
-            $( element ).parents( ".form-group" ).addClass( "has-success" ).removeClass( "has-error" );
-            if($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
-                $( element ).nextAll( "span.glyphicon" ).remove();
-                $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
-            }
-            else $( element ).next( "span" ).addClass( "glyphicon-ok" ).removeClass( "glyphicon-remove" );
-        },
-        submitHandler: function (form) 
-        {
-            let data = $( "#editForm" ).serializeArray();
-            let temp = {};
-            data.forEach(function (value) {
-                value.name = value.name.replace("_edit", "");
-                temp[value.name] = value.value == "" ? null : value.value;
-            });
-
-            console.log(temp);
-            let index = temp.id;
-            narratives[index].timestamp = temp.timestamp;
-            narratives[index].narrative = temp.narrative;
-            if(typeof narratives[index].id !== 'undefined') narratives[index].isEdited = true;
-            console.log("NAR", narratives);
-            $("#editModal").modal("hide");
-            hasEdit = true;
-
-            narrativeTable.clear();
-            narrativeTable.rows.add(narratives).draw();
-        }
-    });
-
-    $("#cancel").click(function () { edit_validate.resetForm(); })
-
-    $("#save_narrative").click(function () 
-    {
-        $("#saveNarrativeModal").modal('hide');
-        setTimeout(function () 
-        {
-            $("#loading .progress-bar").text("Saving...");
-            $("#loading").modal("show");
-
-            let data = { narratives: narratives };
-            $.ajax({
-                url: "../../accomplishment/insertNarratives",
-                type: "POST",
-                data : data,
-                success: function(result, textStatus, jqXHR)
-                {
-                    $('.js-loading-bar').modal('hide');
-                    console.log(result);
-                    setTimeout(function () 
-                    {
-                        reposition("#saveNarrativeSuccess");
-                        $('#saveNarrativeSuccess').modal({ backdrop: 'static', keyboard: false, show: true });
-                    }, 500);
-                },
-                error: function(xhr, status, error) {
-                  var err = eval("(" + xhr.responseText + ")");
-                  alert(err.Message);
-                }
-            });
-        }, 500)
-        
-    });
-
-    $(".okay, #discard").click(function (argument) {
-        let event_id = $("#event_id").val();
-        getNarratives(event_id);
-        hasEdit = false;
-    });
-
 
     /***==============================================================***/
 
@@ -672,7 +279,7 @@ $(document).ready(function()
 
                     let report = "";
                     let end = formData.end;
-                    let start = moment(formData.start).add(1, 'hour').format("YYYY-MM-DD HH:ss:mm");
+                    let start = moment(formData.start).add(1, 'hour').format("YYYY-MM-DD HH:mm:ss");
                     let form = {
                         start: start,
                         end: end,
@@ -680,32 +287,84 @@ $(document).ready(function()
 
                     let promises = [];
 
-                    latest_releases.forEach(function (release) {
+                    latest_releases.forEach(function (release, index) {
 
                         form.event_id = release.first_trigger.event_id;
-                        promises.push( $.getJSON( "../../accomplishment/getNarrativesForShift", form)
+                        // promises.push( $.getJSON( "../../accomplishment/getNarrativesForShift", form)
+                        // .then(function (nar) {
+                        //     report = makeReport(formData, release, nar);
+                        //     return report;
+                        // }) );
+
+                        // $("#reports_nav").append('<li class="' + isActive + '"><a data-toggle="tab" href="#report_field_' + release.site + '"><strong>' + release.site.toUpperCase() + '</strong></a></li>');
+                        // $("#reports_field").append('<div id="report_field_' + release.site + '" class="tab-pane fade' + isActive + '"></div>');
+                        
+                        $("#reports_nav_sample").clone().attr("id", "report_nav_" + release.site).attr("style", "").appendTo("#reports_nav");
+                        $("#reports_nav_sample").attr("style", "display:none;").removeClass("active");
+                        $("#report_nav_" + release.site + " a").attr("href", "#report_field_" + release.site).html("<strong>" + release.site.toUpperCase() + "</strong>").removeClass("active");
+
+                        $("#reports_field_sample").clone().attr("id", "report_field_" + release.site).removeClass("in active").attr("hidden", false).appendTo("#reports_field");
+                        $("#reports_field_sample").attr("hidden", true).removeClass("in active");
+                        $("#report_field_" + release.site + " .submit_buttons").attr({id: "submit_" + release.site, disabled: false, "data-value": release.site});
+
+                        $("#graph_checkbox_sample").clone().attr("id", "graph_checkbox_" + release.site).attr("hidden", false).appendTo("#report_field_" + release.site + " .graphs-div");
+
+                        $("#graph_checkbox_" + release.site + " .rainfall_checkbox").attr("value", "rain_" + release.site);
+                        $("#graph_checkbox_" + release.site + " .surficial_checkbox").attr("value", "surficial_" + release.site);
+
+                        $("#report_field_" + release.site + " textarea").attr("id", "report_" + release.site);
+
+                        // Get sensor columns for graph options
+                        $.get( "/../../accomplishment/getSensorColumns/" + release.site, function (data) {
+                            data.forEach(function (column) {
+                                $("#subsurface_option_sample").clone().attr({id: "subsurface_option_" + column.name, style:""})
+                                    .appendTo("#graph_checkbox_" + release.site + " .subsurface_options");
+                                $("#subsurface_option_" + column.name + " a")
+                                    .html("<input type='checkbox' class='subsurface_checkbox' value='subsurface_" + column.name + "'>&emsp;" + column.name.toUpperCase());
+                            });
+                        }, "json");
+
+                        if( index == 0 ) { 
+                            $("#report_nav_" + release.site).addClass("active"); 
+                            $("#report_field_" + release.site).addClass("in active");  
+                        }
+
+                        $.getJSON( "/../../accomplishment/getNarrativesForShift", form)
                         .then(function (nar) {
                             report = makeReport(formData, release, nar);
-                            return report;
-                        }) );
+                            
+                            $("#report_" + release.site).val(report);
+                                let name = "report_" + release.site;
+                                let editor = CKEDITOR.instances[name];
+                                if (editor) { editor.destroy(true); }
+                                    CKEDITOR.replace( name, {height: 300} );
 
-                    });
-
-                    $.when.apply($, promises).then(function () {
-                        let report = "";
-                        let reports = [].slice.call(arguments);
-                        reports.forEach(function (x) {
-                            report = report + x;
-                        })
-
-                        CKEDITOR.instances.report.setData('', function () {
-                            CKEDITOR.instances['report'].insertHtml(report);
-                            CKEDITOR.instances['report'].focus();
+                            if( index == latest_releases.length - 1 ) {
+                                $('.dropdown-toggle').dropdown();
+                                $('.js-loading-bar').modal('hide'); 
+                            }
                         });
-
-                        $('.js-loading-bar').modal('hide');
-
                     });
+
+                    if( latest_releases.length == 0 ) {  $('.js-loading-bar').modal('hide'); }
+
+                    // $.when.apply($, promises).then(function () {
+                    //     let report = "";
+                    //     let reports = [].slice.call(arguments);
+                    //     reports.forEach(function (x) {
+                    //         report = report + x;
+                    //     })
+
+                    //     CKEDITOR.instances.report.setData('', function () {
+                    //         CKEDITOR.instances['report'].insertHtml(report);
+                    //         CKEDITOR.instances['report'].focus();
+                    //     });
+
+                    //     $('.js-loading-bar').modal('hide');
+
+                    // });
+                    
+                   // $('.js-loading-bar').modal('hide');
 
                 });
             });
@@ -719,7 +378,7 @@ $(document).ready(function()
 
         let start_report = "====== REPORT FOR " + x.site.toUpperCase() + " ======<br/><b>END-OF-SHIFT REPORT (" + x.mt.replace(/[^A-Z]/g, '') + ", " + x.ct.replace(/[^A-Z]/g, '') + ")</b><br/>";
 
-        console.log(x);
+        // console.log(x);
 
         let shift_start = "<b>SHIFT START:<br/>" + moment(shift.start).format("MMMM DD, YYYY, hh:mm A") + "</b>";
         let shift_end = "<b>SHIFT END:<br/>" + moment(shift.end).format("MMMM DD, YYYY, hh:mm A")  + "</b>";
@@ -786,23 +445,22 @@ $(document).ready(function()
 
     function basisToRaise(trigger, x) {
         let raise = {
-            "D": ["a monitoring request of the LGU/LLMC", "On-Demand"],
+            "D": ["a monitoring request of the LGU/LEWC", "On-Demand"],
             "R": ["accumulated rainfall value exceeding threshold level", "Rainfall"],
             "E": ["a detection of landslide-triggering earthquake", "Earthquake"],
-            "g": ["significant surficial movement", "LLMC Ground Measurement"],
+            "g": ["significant surficial movement", "LEWC Ground Measurement"],
             "s": ["significant underground movement", "Sensor"],
-            "G": ["critical surficial movement","LLMC Ground Measurement"],
+            "G": ["critical surficial movement","LEWC Ground Measurement"],
             "S": ["critical underground movement","Sensor"]
         }
 
         return raise[trigger][x];
     }
 
-
     function getShiftReleases(formData, callback) 
     {
         $.ajax({
-            url: "../../accomplishment/getShiftReleases",
+            url: "/../../accomplishment/getShiftReleases",
             type: "GET",
             data : formData,
             success: function(response, textStatus, jqXHR)
@@ -811,10 +469,16 @@ $(document).ready(function()
                 if(result.length != 0) callback(result);
                 else {
                     $("#loading").modal("hide");
-                    CKEDITOR.instances.report.setData('', function () {
+                    /*CKEDITOR.instances.report.setData('', function () {
                         CKEDITOR.instances['report'].insertText("No early warning information released for this shift.");
                         CKEDITOR.instances['report'].focus();
+                    });*/
+                    $(".reports_nav_list, .reports_field_list").each(function (index, obj) {
+                        if( obj.id !== "reports_nav_sample" && obj.id !== "reports_field_sample" ) $(obj).remove();
                     });
+
+                    $("#reports_nav_sample").attr("style", "").addClass("active");
+                    $("#reports_field_sample").attr("hidden", false).addClass("in active");
                 }
             },
             error: function(xhr, status, error) {
@@ -826,7 +490,7 @@ $(document).ready(function()
 
     function getShiftTriggers(ids, callback) 
     {
-        $.get( "../../accomplishment/getShiftTriggers",
+        $.get( "/../../accomplishment/getShiftTriggers",
             {"releases": ids.release_ids, "events": ids.event_ids}, function (data) {
                 callback(data);
         }, "json")
@@ -835,10 +499,11 @@ $(document).ready(function()
         });
     }
 
-
-    /**
-     * VALIDATION AREA
-    **/
+    /******************************************
+     *
+     *   VALIDATION AREA
+     * 
+     *****************************************/
 
     function checkTimestamp(value, element) 
     {
@@ -930,6 +595,73 @@ $(document).ready(function()
         }
     });
 
+
+    /******************************************
+     *
+     *   GRAPH INCLUSION ON END-OF-SHIFT
+     * 
+     *****************************************/
+
+    $(document).on("click", ".subsurface_options a", function (link) {
+        $(this).children("input").trigger("click");
+    });
+    
+    $(document).on("change", ".rainfall_checkbox, .surficial_checkbox, .subsurface_checkbox", function (cbox) {
+        cbox.stopPropagation();
+
+        if( $(this).is(":checked") ) {
+            let x = this.value.split("_");
+            let type = x[0], site = x[1];
+
+            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site, "_blank", "menubar=0");
+        }
+    });
+
+    // File uploading 
+    $(document).on('click', '.browse', function() {
+        let file = $(this).parent().parent().parent().find('.file');
+        file.trigger('click');
+    });
+
+    $(document).on('change', '.file', function() {
+        let files = $(this)[0].files;
+
+        let filenames = "";
+        for (let i = 0; i < files.length; i++) {
+            if( i == 0 ) filenames = files[i].name;
+            else filenames += ", " + files[i].name;
+        }
+
+        $(this).parent().find('.form-control').val(filenames);
+    });
+
+    $(document).on("click", ".submit_buttons", function (btn) {
+        let site = $(this).attr("data-value");
+        let svg = [];
+        $("#graph_checkbox_" + site).find("input[type=checkbox]:checked")
+        .each(function (index, cbox) {
+            let val = $(this).val();
+            if( val.search("subsurface") == -1 ) {
+                let x = val.search("_");
+                val = val.slice(0, x);
+            }
+            svg.push(val);
+        });
+
+        $("#loading .progress-bar").text("Rendering end-of-shift charts...");
+        $('#loading').modal("show");
+        $.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: current_user_id})
+        .done(function (data) {
+            if(data == "Finished") {
+                $('#loading').modal("hide");
+                window.location.href = "/../../chart_export/viewPDF/Graph Attachment for " + site.toUpperCase() +".pdf";
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus);
+        });
+    });
+
     /******************************************
      *
      *   OTHERS TAB (ACCOMPLISHMENT GENERAL)
@@ -1000,7 +732,7 @@ $(document).ready(function()
 
             let formData = 
             {
-                staff_id: parseInt($("#staff_id").attr("value")),
+                staff_id: parseInt($("#current_user_id").attr("value")),
                 shift_start: $("#shift_start_others").val(),
                 shift_end: $("#shift_end_others").val(),
                 summary: $("#summary").val()
@@ -1030,4 +762,5 @@ $(document).ready(function()
 
         }
     });
+    
 });

@@ -78,8 +78,11 @@ $(document).ready(function()
 
     var options = [];
 
-    $( '#object.dropdown-menu a' ).on( 'click', function( event )
+    $('#objectButton').dropdown();
+
+    $( '#objectList.dropdown-menu a' ).on( 'click', function( event )
     {
+        console.log("Clicked");
         var $target = $( event.currentTarget ),
         val = $target.attr( 'data-value' ),
         $inp = $target.find( 'input' ),

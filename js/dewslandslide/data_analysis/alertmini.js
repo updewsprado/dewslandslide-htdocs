@@ -4,49 +4,7 @@ var nodeAlertJSON = 0;
 var nodeStatusJSON = 0;
 var maxNodesJSON = 0;
 
-function JSON2CSV(objArray) {
-	var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
 
-	var str = '';
-	var line = '';
-
-	if ($("#labels").is(':checked')) {
-		var head = array[0];
-		if ($("#quote").is(':checked')) {
-			for (var index in array[0]) {
-				var value = index + "";
-				line += '"' + value.replace(/"/g, '""') + '",';
-			}
-		} else {
-			for (var index in array[0]) {
-				line += index + ',';
-			}
-		}
-
-		line = line.slice(0, -1);
-		str += line + '\r\n';
-	}
-
-	for (var i = 0; i < array.length; i++) {
-		var line = '';
-
-		if ($("#quote").is(':checked')) {
-			for (var index in array[i]) {
-				var value = array[i][index] + "";
-				line += '"' + value.replace(/"/g, '""') + '",';
-			}
-		} else {
-			for (var index in array[i]) {
-				line += array[i][index] + ',';
-			}
-		}
-
-		line = line.slice(0, -1);
-		str += line + '\r\n';
-	}
-	return str;
-	
-}
 
 // Set the dimensions of the canvas / graph
 var cWidth = 0;
@@ -78,13 +36,18 @@ var tip = d3.tip()
   .html(function(d) {
 	var alert,status,id_ts,comment;
 	
-	if((parseFloat(d.xalert) > 0) || (parseFloat(d.yalert) > 0) || (parseFloat(d.zalert) > 0)) {
-		alert = "<strong>Alerts:</strong> <span style='color:red'>" + Number((d.xalert).toFixed(3)) 
-				+ ", " + Number((d.yalert).toFixed(3)) 
-				+ ", " + Number((d.zalert).toFixed(3)) +"</span><Br/>";
-	}
-	else {
+	if(d.vel_alert == 0) {
+		alert = "<strong>Alerts:</strong> <span style='color:#4A6C6F'> 0 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else if(d.disp_alert == 1){
+		alert = "<strong>Alerts:</strong> <span style='color:#846075'> 1 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else if(d.disp_alert == 2){
+		alert = "<strong>Alerts:</strong> <span style='color:#AF5D63'> 2 axis alert </span><Br/>";
+		ts = "<strong>Date Trigger:</strong> <span style='color:red'>" + d.timestamp + "</span><Br/>";
+	}else {
 		alert = "";
+		ts = "";
 	}
 	
 	if(typeof d.status === 'undefined'){
@@ -105,47 +68,47 @@ var tip = d3.tip()
 		comment = "";
 	}
 	else {
-		comment = "<strong>Comment:</strong> <span style='color:red'>" + dAlert + "</span>";
+		comment = "<strong>Comment:</strong> <span style='color:red'>" + d.comment + "</span>";
 	}  
   
-    return id_ts 
-		+ "<strong>Site:</strong> <span style='color:red'>" + d.site + "</span><Br/>"
-		+ "<strong>Node ID:</strong> <span style='color:red'>" + d.node + "</span><Br/>"
-		+ alert + status + comment
-		;
+   if(typeof d.flagger === 'undefined' ) {
+		flagger_name = "";
+	}
+	else {
+		flagger_name = "<strong>Flagger:</strong> <span style='color:red'>" + d.flagger + "</span><Br/>";
+	} 
+	return id_ts +ts+
+	"<strong>Site:</strong> <span style='color:#33cc33'>" + d.site + "</span><Br/>" +
+	"<strong>Node ID:</strong> <span style='color:#ff9933'>" + d.node + "</span><Br/>" +
+	alert + status + flagger_name +comment;
   });
 
 //initialize dimensions
-function init_dims() {
-	cWidth = document.getElementById('mini-alert-canvas').clientWidth * .95;
-	//cHeight = document.getElementById('minialertcanvas').offsetHeight;
-	cHeight = document.getElementById('mini-alert-canvas').clientHeight * 1.5;
-	
-	//margin = {top: cHeight * 0.10, right: cWidth * 0.015, bottom: cHeight * 0.10, left: cWidth * 0.065};
+function init_dims(divID) {
+	cWidth = document.getElementById(divID).clientWidth * .95;
+	cHeight = document.getElementById(divID).clientHeight * 1.5;
+
 	margin = {top: 0, right: 0, bottom: 0, left: 0};
 	width = cWidth - margin.left - margin.right;
 	height = cHeight - margin.top - margin.bottom;
-	
 	graphDim = {gWidth: width, gHeight: height};	
 	
 	// Set the ranges
-	x = d3.scale.linear().range([0, graphDim.gWidth]);
+	x = d3.scale.linear().range([0, graphDim.gWidth+150]);
 	y = d3.scale.linear().range([graphDim.gHeight, 0]);
-	yOrd = d3.scale.ordinal()
-					.rangeRoundBands([graphDim.gHeight, 0], .1);
+	yOrd = d3.scale.ordinal().rangeRoundBands([graphDim.gHeight, 0], .1);
 					
 	// Define the line
 	yvalline = d3.svg.line()	
-		//.interpolate("monotone")
 	    .x(function(d) { return x(d.xval); })
 	    .y(function(d) { return y(d.yval); });
 	    
 	// Adds the svg canvas
-	svg = d3.select("#mini-alert-canvas")
+	svg = d3.select("#"+divID)
 		.append("svg")
         .attr("id", "svg-alertmini") 	
-	        .attr("width", width + margin.left + margin.right)
-	        .attr("height", height + margin.top + margin.bottom)
+	        .attr("width", width + margin.left + margin.right+150)
+	        .attr("height", 25)
 	    .append("g")
 	        .attr("transform", 
 	              "translate(" + margin.left + "," + margin.top + ")");
@@ -197,19 +160,16 @@ var siteMaxNodes = [];
 var maxNode;
 var tester = [];
 
-function getSiteMaxNodes(xOffset) {
-	//url = "../temp/getSiteMaxNodes.php";
-	//maxNodesJSON = <?php echo $siteMaxNodes; ?>;
-	
+function getSiteMaxNodes(xOffset,maxNodesJSON) {
 	var delay = 500;
 	var data = maxNodesJSON;
 	
 	siteMaxNodes = data;
-	
 	//add node links to nodes with normal status
 	var urlBase = "http://" + window.location.hostname + "/";
-	var urlNodeExt = "gold/node/";		
-	
+	var urlNodeExt = "data_analysis/node/";		
+	var start = moment().subtract(7, 'days').format('YYYY-MM-DD'); 
+	var end = moment().add(1, 'days').format('YYYY-MM-DD');
 	maxNode = d3.max(data, function(d) { return parseFloat(d.maxall); });
 	
 	// Scale the range of the data
@@ -219,17 +179,14 @@ function getSiteMaxNodes(xOffset) {
 	var cellw = (graphDim.gWidth / maxNode) * 0.9;
 	var cellh = yOrd.rangeBand(); //9;
 	
-	for (i = 0; i < siteMaxNodes.length; i++) {
-		
-		for (j = 1; j <= siteMaxNodes[i].nodes; j++) {
+		for (j = 1; j <= siteMaxNodes[0].nodes; j++) {
 			tester.push(
-				{site: siteMaxNodes[i].site, node: j }
+				{site: siteMaxNodes[0].site, node: j }
 			);
 		}
-	}
-	
+	var data_svg = tester.slice((tester.length-siteMaxNodes[0].nodes),tester.length)
 	svg.selectAll(".cell_default")
-		.data(tester)
+		.data(data_svg)
 	.enter().append("rect")
 		.attr("class", "cell_default")
 		.attr('x', function(d){
@@ -238,20 +195,18 @@ function getSiteMaxNodes(xOffset) {
 		.attr('y', function(d){
 			return yOrd(d.site);
 		})
-		.attr('width', cellw)
-		.attr('height', cellh)
+		.attr('width', cellw +2)
+		.attr('height', cellh - 8)
 		.style("cursor", "pointer")
 		.on('mouseover', tip.show)
 		.on('mouseout', tip.hide)
 		.on("click", function(d){
-	        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
+	        document.location.href = urlBase+urlNodeExt+d.site+'/'+ d.node+'/'+start+'/'+end;
 	    });	
 }
 
 var nodeStatuses = [];
-function getNodeStatus(xOffset) {
-	//nodeStatusJSON = <?php echo $nodeStatus; ?>;
-	
+function getNodeStatus(xOffset,nodeStatusJSON) {
 		var data = nodeStatusJSON;
 		
 		nodeStatuses = data;
@@ -291,102 +246,94 @@ function getNodeStatus(xOffset) {
 }
 
 var alertdata = [];
-function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
-	// Get the data
+function generateAlertPlot(url, title, xOffset, isLegends, graphNum,maxNodesJSON,nodeStatusJSON,data) {
+	$.getJSON( "/../../temp/data/node_alert_json.json").done(function(json) {
+	var start = moment().subtract(7, 'days').format('YYYY-MM-DD'); 
+	var end = moment().add(1, 'days').format('YYYY-MM-DD');
+	var sample_value =JSON.parse(json);
 	var jsondata = [];
-	getSiteMaxNodes(xOffset);
-	
-	var delay1 = 1000;//1 second
+	getSiteMaxNodes(xOffset,maxNodesJSON,data);
+	var delay1 = 1000;
+	var data = [];
+		if(maxNodesJSON[0].site == sample_value[0].site ){
+			for (var i = 0; i < sample_value.length; i++) {
+				data.push({node:sample_value[i].id,site:sample_value[i].site,timestamp:sample_value[i].timestamp,
+					disp_alert:sample_value[i].disp_alert,vel_alert:sample_value[i].vel_alert,col_alert:sample_value[i].col_alert})
+			}
+		}
+		
+	jsondata = data;
+	data.forEach(function(d) {
+		d.node = parseInt(d.node);
+		d.xalert = parseFloat(d.xalert);
+		d.yalert = parseFloat(d.yalert);
+		d.zalert = parseFloat(d.zalert);
+	});
 
-			var data = url;
-			
-			jsondata = data;
+	alertdata = data;
+	var horOff = xOffset + ((graphDim.gWidth / maxNode) * 0.9)/2;
 	
-			data.forEach(function(d) {
-				d.node = parseInt(d.node);
-				d.xalert = parseFloat(d.xalert);
-				d.yalert = parseFloat(d.yalert);
-				d.zalert = parseFloat(d.zalert);
-			});
-			
-			alertdata = data;
-			
-			var horOff = xOffset + ((graphDim.gWidth / maxNode) * 0.9)/2;
+	var textMOver = function() {
+		var text = d3.select(this);
+
+		text.attr("text-transform", "uppercase" );
+	};
+
+	var textMOut = function() {
+		var text = d3.select(this);
+		text.attr("text-transform", "lowercase" );
+	};
 	
-			var textMOver = function() {
-				var text = d3.select(this);
-				//text.attr("color", "steelblue" );
-				text.attr("text-transform", "uppercase" );
-			};
- 
-			var textMOut = function() {
-				var text = d3.select(this);
-				//text.attr("color", "black" );
-				text.attr("text-transform", "lowercase" );
-			};
+		
+	var urlBase = "http://" + window.location.hostname + "/";
+	var urlExt = "data_analysis/site/";	
+	var urlNodeExt = "data_analysis/node/";		
+
+	d3.selectAll("text")
+	.filter(function(d){ return typeof(d) == "string"; })
+	.style("cursor", "pointer")
+	.on('mouseover', textMOver)
+	.on('mouseout', textMOut)
+	.on("click", function(d){
+		document.location.href = urlBase + urlExt + d;
+	});
+
+	var cellw = (graphDim.gWidth / maxNode) * 0.9;
+	var cellh = yOrd.rangeBand(); ;
 	
-			// Add hyperlinks to Y Axis ticks
-			var urlBase = "http://" + window.location.hostname + "/";
-			var urlExt = "gold/site/";	
-			var urlNodeExt = "gold/node/";		
-			
-			d3.selectAll("text")
-			    .filter(function(d){ return typeof(d) == "string"; })
-			    .style("cursor", "pointer")
-			    .on('mouseover', textMOver)
-				.on('mouseout', textMOut)
-			    .on("click", function(d){
-			        document.location.href = urlBase + urlExt + d;
-			    });
-				
-			var cellw = (graphDim.gWidth / maxNode) * 0.9;
-			var cellh = yOrd.rangeBand(); //9;
-	
-			svg.selectAll(".cell")
-					.data(data)
-				.enter().append("rect")
-					.attr("class", "cell")
-					.attr('x', function(d){
-						return x(d.node) + xOffset;
-					})
-					.attr('y', function(d){
-						return yOrd(d.site);
-					})
-					.attr('fill', function(d){
-						var xdata, ydata, zdata;
-					
-						if((d.xalert > 0) || (d.yalert > 0) || (d.zalert > 0)) {
-							if(d.xalert > 0)
-								xdata = 1;
-							else
-								xdata = 0;
-								
-							if(d.yalert > 0)
-								ydata = 1;
-							else
-								ydata = 0;
-								
-							if(d.zalert > 0)
-								zdata = 1;
-							else
-								zdata = 0;
-						
-							var r = 85 * (xdata + ydata + zdata);
-							var b = 255 - (xdata + ydata + zdata) * 80;					
-							return color = d3.rgb(r, 174, b);
-						}
-						else {
-							return color = d3.rgb(3, 137, 156);
-						}
-					})
-					.attr('width', cellw)
-					.attr('height', cellh)
-					.style("cursor", "pointer")
-					.on('mouseover', tip.show)
-					.on('mouseout', tip.hide)
-					.on("click", function(d){
-				        document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node;
-				    });	
+	svg.selectAll(".cell")
+	.data(data)
+	.enter().append("rect")
+	.attr("class", "cell")
+	.attr('x', function(d){
+		return x(d.node) + xOffset;
+	})
+	.attr('y', function(d){
+		return yOrd(d.site);
+	})
+	.attr('fill', function(d){
+		var xdata, ydata, zdata;
+		if(d.vel_alert == 0){
+			xdata = 1;
+			color = d3.rgb(74, 108, 111);
+			return color;
+		}else if(d.vel_alert == 1){
+			color = d3.rgb(132, 96, 117);
+			return color;
+
+		}else if(d.vel_alert == 2){
+			color = d3.rgb(175, 93, 99);
+			return color;
+		}
+	})
+	.attr('width', cellw+2)
+	.attr('height', cellh-8)
+	.style("cursor", "pointer")
+	.on('mouseover', tip.show)
+	.on('mouseout', tip.hide)
+	.on("click", function(d){
+		document.location.href = urlBase + urlNodeExt + d.site + '/' + d.node+'/'+ start+'/'+end;
+	});	
 	
 			// Add the Legend
 			if(isLegends){
@@ -481,22 +428,21 @@ function generateAlertPlot(url, title, xOffset, isLegends, graphNum) {
 			}				
 	
 	//Draw the node status symbol
-	getNodeStatus(xOffset);	
-
+	getNodeStatus(xOffset,nodeStatusJSON);	
+	})
 }
 		
-function showData() {
-	//nodeAlertJSON = <?php echo $nodeAlerts; ?>;
-	
-	generateAlertPlot(nodeAlertJSON, "Accelerometer Movement Alert Map", 0, false, 1);
+function showData(nodeAlertJSON,maxNodesJSON,nodeStatusJSON) {
+	generateAlertPlot(nodeAlertJSON, "Accelerometer Movement Alert Map", 0, false, 1,maxNodesJSON,nodeStatusJSON);
+
 }
 
-function initAlertPlot() {
-	init_dims();
-	showData();
+function initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,divID) {
+	init_dims(divID);
+	showData(nodeAlertJSON,maxNodesJSON,nodeStatusJSON);
 }
 
-//window.onload = initPosPlot();
+
 
 
 

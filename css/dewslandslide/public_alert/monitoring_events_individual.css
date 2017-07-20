@@ -43,10 +43,10 @@
 #header { background-color: white; z-index: 1; }
 
 .highlight {
-    border: 3px solid black !important;
+    border: 8px solid black !important;
     outline: none !important;
-    border-color: #0d89eb !important;
-    box-shadow: 0 0 25px #0d89eb !important;
+    border-color: #0577ff !important;
+    box-shadow: 0 0 15px #0d49eb !important;
 }
 
 hr { margin: 10px 0 10px; }
@@ -256,6 +256,11 @@ hr { margin: 10px 0 10px; }
     background-color: rgba(128, 128, 128, 0.49);
 }
 
+.bootstrap-tagsinput {
+  min-width: 100%;
+  font-size: 16px;
+}
+
 /*** BULLETIN ***/
 
 .text-area {
@@ -352,3 +357,7 @@ hr { margin: 10px 0 10px; }
 
 #bulletinModal .modal-body { padding-bottom: 0; }
 #resultModal .modal-body { font-size: 14px; }
+
+h3.popover-title { font-weight: bold; font-size: 16px!important; background: #C0C0C0; }
+.popover-content { background: #A9A9A9; }
+#reminder { font-size: 13px; color: red; font-weight: bold; }
