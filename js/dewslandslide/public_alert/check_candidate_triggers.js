@@ -24,10 +24,17 @@ console.log( JSON.stringify(response) );
 
 function checkCandidateTriggers(cache, ongoing) {
 
-	var alerts = cache.alerts,
+	var all_alerts = cache.alerts,
 		invalids = cache.invalids,
-		no_alerts = cache.no_alerts,
+		alerts = [],
+		no_alerts = [],
 		final = [];
+
+	// Separate all sites with A0 to higher ones
+	all_alerts.forEach( function (x) {
+		if( x.alert == "A0" ) no_alerts.push(x);
+		else alerts.push(x);
+	});
 
 	// Get all the latest and overdue releases on site
 	let merged_arr = ongoing.latest.concat(ongoing.overdue);
