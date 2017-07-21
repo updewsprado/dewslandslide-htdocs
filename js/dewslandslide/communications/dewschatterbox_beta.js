@@ -410,6 +410,7 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 	var tag_indicator = "";
+	var psgc_scope_filter = [0,0,6,4,2];
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -3225,9 +3226,24 @@ function siteSelection(sites,user_sites = []) {
 		var site = sites[i];
 		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 		for (var counter = 0; counter < user_sites.length; counter++) {
-			// TODO : PSGC FILTER LOGIC HERE
+			// TODO : OPTIMIZE BETTER LOGIC FOR THIS.
+			if (user_sites[counter].org_psgc_source.length < 9) {
+				user_sites[counter].org_psgc_source = "0"+user_sites[counter].org_psgc_source;
+				user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
+				user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(1);
+				var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
+				for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+					user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
+				}
+			} else {
+				var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
+				user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
+				for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+					user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
+				}
+			}
 			if (user_sites[counter].org_psgc_source == site.psgc_source) {
-				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc).prop('checked',true);
+				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc_source).prop('checked',true);
 			}
 		}
 	}
