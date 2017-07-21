@@ -36,6 +36,11 @@
   color: blue;
 }
 
+#emp-response-contact-container_wrapper,#comm-response-contact-container_wrapper {
+  overflow: scroll;
+  max-height: 350px;
+}
+
 textarea {
     resize: none;
 }

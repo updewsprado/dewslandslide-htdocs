@@ -2296,20 +2296,23 @@ String.prototype.capitalize = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-$('#response-contact-container').on('click', 'tr:has(td)', function(){
-	var table = $('#response-contact-container').DataTable();
+$('#comm-response-contact-container').on('click', 'tr:has(td)', function(){
+	var table = $('#comm-response-contact-container').DataTable();
 	var data = table.row(this).data();
-	if ($('#contact-category').val() == "ccontacts") {
-		var msg = {
-			'type': 'loadCommunityContact',
-			'data': data.user_id
-		};
-	} else {
-		var msg = {
-			'type': 'loadDewslContact',
-			'data': data.user_id
-		};	
-	}
+	var msg = {
+		'type': 'loadCommunityContact',
+		'data': data.user_id
+	};
+	conn.send(JSON.stringify(msg));
+});
+
+$('#emp-response-contact-container').on('click', 'tr:has(td)', function(){
+	var table = $('#emp-response-contact-container').DataTable();
+	var data = table.row(this).data();
+	var msg = {
+		'type': 'loadDewslContact',
+		'data': data.user_id
+	};	
 	conn.send(JSON.stringify(msg));
 });
 
@@ -2317,7 +2320,8 @@ $('#btn-contact-settings').click(function() {
 
 	$('#employee-contact-wrapper').prop('hidden', true);
 	$('#community-contact-wrapper').prop('hidden', true);
-	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#comm-response-contact-container_wrapper').prop('hidden',true);
+	$('#emp-response-contact-container_wrapper').prop('hidden',true);
 	$('#update-contact-container').prop('hidden',true);
 
 	$('#contact-category option').prop('selected', function() {
@@ -2945,7 +2949,8 @@ $('#contact-category').on('change',function(){
 	reset_ec();
 
 	$('#update-contact-container').prop('hidden',true);
-	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#comm-response-contact-container_wrapper').prop('hidden',true);
+	$('#emp-response-contact-container_wrapper').prop('hidden',true);
 	$('#employee-contact-wrapper').prop('hidden', true);
 	$('#community-contact-wrapper').prop('hidden', true);
 });
@@ -2963,7 +2968,8 @@ $('#settings-cmd').on('change',function(){
 
 	if ($('#contact-category').val() == "econtacts") 
 {		if ($('#settings-cmd').val() == "addcontact") {
-			$('#response-contact-container_wrapper').prop('hidden',true);
+			$('#emp-response-contact-container_wrapper').prop('hidden',true);
+			$('#comm-response-contact-container_wrapper').prop('hidden',true);
 			$('#community-contact-wrapper').prop('hidden', true);
 			$('#employee-contact-wrapper').prop('hidden', false);
 		} else if ($('#settings-cmd').val() == "updatecontact") {
@@ -2977,7 +2983,8 @@ $('#settings-cmd').on('change',function(){
 		}
 	} else if ($('#contact-category').val() == "ccontacts") {
 		if ($('#settings-cmd').val() == "addcontact") {
-			$('#response-contact-container_wrapper').prop('hidden',true);
+			$('#emp-response-contact-container_wrapper').prop('hidden',true);
+			$('#comm-response-contact-container_wrapper').prop('hidden',true);
 			$('#employee-contact-wrapper').prop('hidden', true);
 			$('#community-contact-wrapper').prop('hidden', false);
 		} else if ($('#settings-cmd').val() == "updatecontact") {	
@@ -3004,22 +3011,20 @@ function getComContact(){
 }}
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
-	$('#response-contact-container').DataTable({
+	$('#comm-response-contact-container').DataTable({
 		destroy: true,
-		"scrollY": 300,
-		"scrollX": true,
 		data: cmmty_contact_data,
 		columns: [
-		{ 'data': 'user_id', title: "ID #" },
-		{ 'data': 'salutation', title: "Salutation" },
-		{ 'data': 'firstname', title: "Firstname" },
-		{ 'data': 'lastname', title: "Lastname" },
-		{ 'data': 'middlename', title: "Middlename" },
-		{ 'data': 'nickname', title: "Nickname" },
-		{ 'data': 'active_status', title: "Active Status" }
+		{ 'data': 'user_id'},
+		{ 'data': 'salutation' },
+		{ 'data': 'firstname'},
+		{ 'data': 'lastname'},
+		{ 'data': 'middlename'},
+		{ 'data': 'nickname'},
+		{ 'data': 'active_status'}
 		]
 	});
-	$('#response-contact-container').show();
+	$('#comm-response-contact-container').prop('hidden',false);
 }
 
 function getEmpContact(){
@@ -3037,28 +3042,27 @@ function addNewEmpContact() {
 }
 
 function displayDataTableEmployeeContacts(dwsl_contact_data) {
-	$('#response-contact-container').DataTable({
+	$('#emp-response-contact-container').DataTable({
 		destroy: true,
-		"scrollY": 300,
-		"scrollX": true,
 		data: dwsl_contact_data,
 		columns: [
-		{ 'data': 'user_id', title: "ID #" },
-		{ 'data': 'salutation', title: "Salutation" },
-		{ 'data': 'firstname', title: "Firstname" },
-		{ 'data': 'lastname', title: "Lastname" },
-		{ 'data': 'middlename', title: "Middlename" },
-		{ 'data': 'nickname', title: "Nickname" },
-		{ 'data': 'team', title: "Team" },
-		{ 'data': 'active_status', title: "Active Status" }
+		{ 'data': 'user_id'},
+		{ 'data': 'salutation'},
+		{ 'data': 'firstname'},
+		{ 'data': 'lastname'},
+		{ 'data': 'middlename'},
+		{ 'data': 'nickname'},
+		{ 'data': 'team'},
+		{ 'data': 'active_status'}
 		]
 	});
-	$('#response-contact-container').show();
+	$('#emp-response-contact-container').prop('hidden',false);
 }
 
 function updateDwslContact(dwsl_contact) {
 	$('#go_back').prop('hidden',false);
-	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#emp-response-contact-container_wrapper').prop('hidden',true);
+	$('#comm-response-contact-container_wrapper').prop('hidden',true);
 	$('#ec_id').val(dwsl_contact.contact_info.id);
 	$('#firstname_ec').val(dwsl_contact.contact_info.firstname);
 	$('#lastname_ec').val(dwsl_contact.contact_info.lastname);
@@ -3136,9 +3140,10 @@ function updateDwslContact(dwsl_contact) {
 }
 
 function updateCmmtyContact(cmmty_contact) {
-	console.log(cmmty_contact.ewi_data.ewi_status);
+	console.log(cmmty_contact.org_data);
 	$('#go_back').prop('hidden',false);
-	$('#response-contact-container_wrapper').prop('hidden',true);
+	$('#emp-response-contact-container_wrapper').prop('hidden',true);
+	$('#comm-response-contact-container_wrapper').prop('hidden',true);
 	$('#cc_id').val(cmmty_contact.contact_info.id);
 	$('#firstname_cc').val(cmmty_contact.contact_info.firstname);
 	$('#lastname_cc').val(cmmty_contact.contact_info.lastname);
@@ -3208,6 +3213,7 @@ function updateCmmtyContact(cmmty_contact) {
 }
 
 function siteSelection(sites,user_sites = []) {
+	console.log(user_sites);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3217,10 +3223,10 @@ function siteSelection(sites,user_sites = []) {
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
-		console.log(sites[i]);
-		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 		for (var counter = 0; counter < user_sites.length; counter++) {
-			if (user_sites[counter].org_psgc == site.psgc) {
+			// TODO : PSGC FILTER LOGIC HERE
+			if (user_sites[counter].org_psgc_source == site.psgc_source) {
 				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc).prop('checked',true);
 			}
 		}
@@ -3229,6 +3235,7 @@ function siteSelection(sites,user_sites = []) {
 }
 
 function orgSelection(orgs,user_orgs = []) {
+	console.log(user_orgs);
 	var column_count = 7;
 	$('#new-org').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3238,10 +3245,9 @@ function orgSelection(orgs,user_orgs = []) {
 	for (var i = 0; i < orgs.length; i++) {
 		var modIndex = i % 7;
 		var org = orgs[i];
-		console.log(orgs[i]);
 		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
 		for (var counter = 0; counter < user_orgs.length; counter++) {
-			if (user_orgs[counter].org_name == org.org_name) {
+			if (user_orgs[counter].org_name.toUpperCase() == org.org_name.toUpperCase()) {
 				$("#orgs-cc-"+modIndex).find(".checkbox").find("#id_"+org.org_name).prop('checked',true);
 			}
 		}
