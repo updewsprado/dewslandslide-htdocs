@@ -126,6 +126,14 @@ function sendViaAlertMonitor(dashboard_data){
 	} else {
 		var alert_site_name = "";
 		var alert_level = "";
+		
+		// HOTFIX OF ND sites
+		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1) {
+			dashboard_data.internal_alert_level = "A1-R";
+		} else if (dashboard_data.internal_alert_level.indexOf('ND-E') > -1) {
+			dashboard_data.internal_alert_level = "A1-E";
+		}
+
 		if (dashboard_data.name == "msu" || dashboard_data.name == "msl") {
 			alert_site_name = "mes";
 		} else {
