@@ -495,6 +495,8 @@ function surficialAnalysis(site,crack_id) {
 				var line = [];
 				var series_data_vel =[];
 				var series_data_dis =[];
+				var a_time =[], v_time = [];
+				var vatSeries=[];
 				for(var i = 0; i < dvtdata.gnd["surfdisp"].length; i++){
 					dvtgnd.push([dvtdata.gnd["ts"][i],dvtdata.gnd["surfdisp"][i]]);
 					catdata.push(i);
@@ -517,6 +519,15 @@ function surficialAnalysis(site,crack_id) {
 					up.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_up[i],ground_analysis_data["av"].a_threshold_down[i]]);
 					line.push([ground_analysis_data["av"].v_threshold[i],ground_analysis_data["av"].a_threshold_line[i]]);
 				}
+				
+				for (var i = 0; i < ground_analysis_data["vat"].a_n.length; i++) {
+					a_time.push([ground_analysis_data["vat"].ts_n[i],ground_analysis_data["vat"].a_n[i]])
+					v_time.push([ground_analysis_data["vat"].ts_n[i],ground_analysis_data["vat"].v_n[i]])
+				}
+				vatSeries.push({name:'acceleration',data:a_time,id:'dataseries',type:'line'})
+				vatSeries.push({name:'velocity',data:v_time,id:'dataseries',type:'line',yAxis: 1})
+				chartProcessSurficialAnalysis2('analysisVAT',vatSeries,'Velocity and  Acceleration Vs Time Chart of '+crack_id,site)
+
 				var series_data_name_vel =[vGraph,up,down,line,last];
 				var series_name =["Data","Threshold","TL","LPoint"];
 				series_data_vel.push({name:series_name[0],data:series_data_name_vel[0],id:'dataseries',type:'line'})
@@ -525,11 +536,12 @@ function surficialAnalysis(site,crack_id) {
 					marker: { symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'} })
 				series_data_vel.push({name:series_name[1],data:series_data_name_vel[1],type:'arearange', lineWidth: 0, fillOpacity: 0.2,zIndex: 0})
 
-				chartProcess('analysisVelocity',series_data_vel,'Velocity Chart of '+crack_id)
-
+				// $('#surficialgeneral').val('analysisVelocity')
+				// $('#surficialgeneral').selectpicker('refresh')
+				chartProcessSurficialAnalysis3('analysisVelocity',series_data_vel,'Velocity Acceleration Chart of '+crack_id,site)
 				series_data_dis.push({name:series_name[0],data:dvtgnd,type:'scatter'})
 				series_data_dis.push({name:'Interpolation',data:dvt,marker:{enabled: true, radius: 0}})
-				chartProcess('analysisDisplacement',series_data_dis,' Displacement Chart of '+crack_id)
+				chartProcessSurficialAnalysis('analysisDisplacement',series_data_dis,' Displacement Interpolation Chart of '+crack_id,site)
 			}else{
 				$("#analysisVelocity").empty()
 				$("#analysisVelocity").append('<div class="text-center"> <h3>No Data</h3> </div>')
@@ -609,7 +621,181 @@ function chartProcess(id,data_series,name){
 		});
 }
 
+function chartProcessSurficialAnalysis(id,data_series,name,site){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
+			},
+			title: {
+				text: 'Date'
+			},
+		},
+		yAxis:{
+			title: {
+				text: 'Displacement(cm) '
+			}
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+	$("#analysisVelocity").addClass("in");
 
+}
+function chartProcessSurficialAnalysis2(id,data_series,name,site){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
+			},
+			title: {
+				text: 'Time(Days)'
+			},
+		},
+		yAxis: [{ 
+
+			title: {
+				text: 'Velocity (cm/day)',
+				style: {
+					color: Highcharts.getOptions().colors[1]
+				}
+			}
+		}, { 
+			title: {
+				text: 'Acceleration (cm/days^2)',
+				style: {
+					color: Highcharts.getOptions().colors[0]
+				}
+			},
+			labels: {
+
+				style: {
+					color: Highcharts.getOptions().colors[0]
+				}
+			},
+			opposite: true
+		}],
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: false
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+}
+function chartProcessSurficialAnalysis3(id,data_series,name,site){
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			panning: true,
+			panKey: 'shift',
+			width:750
+		},
+		title: {
+			text: name,
+		},
+		subtitle: {
+			text: 'Source: '+ (site).toUpperCase()
+		},
+		xAxis: {
+			title: {
+				text: 'Velocity(cm/day)'
+			},
+		},
+		yAxis:{
+			title: {
+				text: 'Acceleration(cm/day^2)'
+			}
+		},
+		tooltip: {
+			header:'{point.x:%Y-%m-%d}: {point.y:.2f}',
+			shared: true,
+			crosshairs: true
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: true
+				}
+			}
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+
+}
 
 function chartProcess2(id,data_series,name){
 	var site = $('#sitegeneral').val();
