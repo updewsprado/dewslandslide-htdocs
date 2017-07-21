@@ -478,7 +478,7 @@ function somsV2(data,mode){
 			for (i = 0; i < result.length; i++) {
 				var rawData=[] ;
 				var time = Date.parse(result[i].ts);
-				rawData.push(time,  parseFloat(result[i].mval1));
+				rawData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 				rawDataSeries.push(rawData);
 			}
 			var mode= "0";
@@ -504,7 +504,7 @@ function somsUnfiltered(data,soms_msgid,name,mode){
 			for (i = 0; i < result.length; i++) {
 				var somsData=[] ;
 				var time = Date.parse(result[i].timestamp);
-				somsData.push(time,  parseFloat(result[i].mval1));
+				somsData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 				somsDataSeries.push(somsData);
 			}
 
@@ -539,7 +539,7 @@ function somsfiltered(data,dataSoms,series){
 				for (i = 0; i < result.length; i++) {
 					var filterData=[];
 					var time =  Date.parse(result[i].ts);
-					filterData.push(time,  parseFloat(result[i].mval1));
+					filterData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 					filterDataSeries.push(filterData);
 				}
 				series_data.push(series)
