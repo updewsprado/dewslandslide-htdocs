@@ -425,7 +425,7 @@ function buildDashboardTables( data )
 			}
 		} else {
 			console.log("Entered Here reload", key)
-			reloadTable(tables[key], alerts[key]);
+			reloadTable(tables[key], alerts[key], key);
 		}
 
 		if( key !== 'markers' ) tableCSSifEmpty(key, alerts[key]);
@@ -678,11 +678,16 @@ function tableCSSifEmpty( table, data )
     }
 }
 
-function reloadTable(table, data) {
+function reloadTable(table, data, tbl_name) {
 	table.clear();
     table.rows.add(data).draw();
 
     ["latest", "extended", "overdue", "candidate"].forEach(function (table) { tableCSSifEmpty(table, data); });
+	if( tbl_name == "latest" ) {
+    	data.forEach(function (x) {
+			checkIfAlreadySent(x.latest_release_id, x.event_id, x.data_timestamp);
+		});
+    }
 }
 
 /********** END OF TABLE BUILDING **********/
