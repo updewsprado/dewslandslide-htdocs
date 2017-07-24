@@ -132,6 +132,8 @@ function sendViaAlertMonitor(dashboard_data){
 			dashboard_data.internal_alert_level = "A1-R";
 		} else if (dashboard_data.internal_alert_level.indexOf('ND-E') > -1) {
 			dashboard_data.internal_alert_level = "A1-E";
+		} else if (dashboard_data.internal_alert_level.indexOf('A1-Rx') > -1) {
+			dashboard_data.internal_alert_level = "A1-R";
 		}
 
 		if (dashboard_data.name == "msu" || dashboard_data.name == "msl") {
@@ -3413,7 +3415,6 @@ $("#confirm-narrative").on('click',function(){
 		tagSitenames.push(this.value);
 	});
 	gintags_msg_details.tags = data.tags;
-	console.log(data.tags);
 	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
 		getGintagGroupContacts(data);
 		for (var counter = 0; counter < tags.length; counter++) {
@@ -3424,6 +3425,8 @@ $("#confirm-narrative").on('click',function(){
 						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
 							getOngoingEvents(mes_sites[msl_msu_counter]);
 						}
+					} else {
+						getOngoingEvents(tagSitenames[tag_counter]);
 					}
 				}
 				break;
