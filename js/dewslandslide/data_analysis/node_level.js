@@ -792,38 +792,38 @@ function chartProcess(id,data_series,name,color){
 						// 			}
 						// 		}
 						// 	}
-						},
-						area: {
-							marker: {
-								lineWidth: 3,
-								lineColor: null 
-							}
+					},
+					area: {
+						marker: {
+							lineWidth: 3,
+							lineColor: null 
 						}
+					}
 
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0,
+					itemStyle: {
+						color: '#E0E0E3'
 					},
-					legend: {
-						layout: 'vertical',
-						align: 'right',
-						verticalAlign: 'middle',
-						borderWidth: 0,
-						itemStyle: {
-							color: '#E0E0E3'
-						},
-						itemHoverStyle: {
-							color: '#FFF'
-						},
-						itemHiddenStyle: {
-							color: '#606063'
-						}
+					itemHoverStyle: {
+						color: '#FFF'
 					},
-					credits: {
-						enabled: false
-					},
-					series:data_series	
-				}, function(chart) { 
-                    syncronizeCrossHairs(chart,id);
+					itemHiddenStyle: {
+						color: '#606063'
+					}
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series	
+			}, function(chart) { 
+				syncronizeCrossHairs(chart,id);
 
-                });
+			});
 			var chart = $('#'+id).highcharts();
 			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 				var series4 = chart.series[(data_series.length-5)];
@@ -915,14 +915,16 @@ function syncronizeCrossHairs(chart,id_chart) {
 		var xAxis = chart.xAxis[0];
 
 		for (var i = 0; i < all_ids.length; i++) {
-			var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
-			xAxis1.removePlotLine("myPlotLineId");
-			xAxis1.addPlotLine({
-				value: chart.xAxis[0].translate(x, true),
-				width: 1,
-				color: 'red',                 
-				id: "myPlotLineId"
-			});
+			if($('#'+all_ids[i]).highcharts() != undefined){
+				var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+				xAxis1.removePlotLine("myPlotLineId");
+				xAxis1.addPlotLine({
+					value: chart.xAxis[0].translate(x, true),
+					width: 1,
+					color: 'red',                 
+					id: "myPlotLineId"
+				});
+			}
 		}
 
 	});
@@ -943,17 +945,21 @@ function zoomEvent(id_chart,zmRange,xMin,xMax) {
 	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
 	
 	for (var i = 0; i < all_ids.length; i++) {
-		$('#'+all_ids[i]).highcharts().xAxis[0].options.tickInterval =zmRange;
-		$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().xAxis[0].options.tickInterval =zmRange;
+			$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		}
 	}
 	
 	
 	removeSpecificArray(all_ids, id_chart)
 
 	for (var i = 0; i < all_ids.length; i++) {
-		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
-		$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
-		$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		}
 	}
 	
 }
