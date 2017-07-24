@@ -2402,13 +2402,16 @@ function reset_ec() {
 		'<label for="mobile_ec_0">Mobile #:</label>'+
 		'<input type="text" class="form-control" id="mobile_ec_0" name="mobile_ec_0" value="" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Mobile ID #:</label>'+
 		'<input type="text" id="mobile_ec_id_0" class="form-control" value="" disabled>'+
 		'</div>'+
-		'<div class="col-md-2">'+
+		'<div class="col-md-4">'+
 		'<label>Mobile # Status:</label>'+
-		'<input type="text" id="mobile_ec_status_0" class="form-control" value="">'+
+		'<select class="form-control" id="mobile_cc_status_0" class="form-control" value="">'+
+		'<option value="1">Active</option>'+
+		'<option value="0">Inactive</option>'+
+		'</select>'+
 		'</div>'+
 		'<div class="col-md-2">'+
 		'<label>Mobile # Priority:</label>'+
@@ -2422,7 +2425,7 @@ function reset_ec() {
 		'<label for="landline_ec_0">Landline #:</label>'+
 		'<input type="text" class="form-control" id="landline_ec_0" name="landline_ec" value="" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Landline ID #:</label>'+
 		'<input type="text" id="landline_ec_id_0" class="form-control" value="" disabled>'+
 		'</div>'+
@@ -2460,13 +2463,16 @@ function reset_cc() {
 	'<label for="mobile_cc_0">Mobile #:</label>'+
 	'<input type="text" class="form-control" id="mobile_cc_0" name="mobile_cc_0" value="" required>'+
 	'</div>'+
-	'<div class="col-md-4">'+
+	'<div class="col-md-4" hidden>'+
 	'<label>Mobile ID #:</label>'+
 	'<input type="text" id="mobile_cc_id_0" class="form-control" value="" disabled>'+
 	'</div>'+
-	'<div class="col-md-2">'+
+	'<div class="col-md-4">'+
 	'<label>Mobile # Status:</label>'+
-	'<input type="text" id="mobile_cc_status_0" class="form-control" value="">'+
+	'<select class="form-control" id="mobile_cc_status_0" class="form-control" value="">'+
+	'<option value="1">Active</option>'+
+	'<option value="0">Inactive</option>'+
+	'</select>'+
 	'</div>'+
 	'<div class="col-md-2">'+
 	'<label>Mobile # Priority:</label>'+
@@ -2480,7 +2486,7 @@ function reset_cc() {
 	'<label for="landline_cc_0">Landline #:</label>'+
 	'<input type="text" class="form-control" id="landline_cc_0" name="landline_cc_0" value="" required>'+
 	'</div>'+
-	'<div class="col-md-4">'+
+	'<div class="col-md-4" hidden>'+
 	'<label>Landline ID #:</label>'+
 	'<input type="text" id="landline_cc_id_0" class="form-control" value="" disabled>'+
 	'</div>'+
@@ -2678,6 +2684,11 @@ function setEWILocation(consEWI){
 $('#ewi-date-picker').datetimepicker({
 	locale: 'en',
 	format: 'YYYY-MM-DD HH:mm:ss'
+});
+
+$('.birthdate').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD'
 });
 
 $('#edit-btn-ewi-amd').click(function(){
@@ -3091,7 +3102,7 @@ function updateDwslContact(dwsl_contact) {
 			'<label for="landline_ec_'+(counter)+'">Landline #:</label>'+
 			'<input type="text" class="form-control" id="landline_ec_'+(counter)+'" name="landline_ec_'+(counter)+'" value="'+dwsl_contact.landline_data[counter].landline_number+'" required>'+
 			'</div>'+
-			'<div class="col-md-4">'+
+			'<div class="col-md-4" hidden>'+
 			'<label>Landline ID #:</label>'+
 			'<input type="text" id="landline_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.landline_data[counter].landline_id+'" disabled>'+
 			'</div>'+
@@ -3115,13 +3126,16 @@ function updateDwslContact(dwsl_contact) {
 			'<label for="mobile_ec_'+(counter)+'">Mobile #:</label>'+
 			'<input type="text" class="form-control" id="mobile_ec_'+(counter)+'" name="mobile_ec_'+(counter)+'" value="'+dwsl_contact.mobile_data[counter].number+'" required>'+
 			'</div>'+
-			'<div class="col-md-4">'+
+			'<div class="col-md-4" hidden>'+
 			'<label>Mobile ID #:</label>'+
 			'<input type="text" id="mobile_ec_id_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_id+'" disabled>'+
 			'</div>'+
-			'<div class="col-md-2">'+
+			'<div class="col-md-4">'+
 			'<label>Mobile # Status:</label>'+
-			'<input type="text" id="mobile_ec_status_'+(counter)+'" class="form-control" value="'+dwsl_contact.mobile_data[counter].number_status+'">'+
+			'<select class="form-control" id="mobile_cc_status_'+(counter)+'" class="form-control" value="">'+
+			'<option value="1">Active</option>'+
+			'<option value="0">Inactive</option>'+
+			'</select>'+
 			'</div>'+
 			'<div class="col-md-2">'+
 			'<label>Mobile # Priority:</label>'+
@@ -3165,7 +3179,7 @@ function updateCmmtyContact(cmmty_contact) {
 			'<label for="landline_cc_'+(counter)+'">Landline #:</label>'+
 			'<input type="text" class="form-control" id="landline_cc_'+(counter)+'" name="landline_cc_'+(counter)+'" value="'+cmmty_contact.landline_data[counter].landline_number+'" required>'+
 			'</div>'+
-			'<div class="col-md-4">'+
+			'<div class="col-md-4" hidden>'+
 			'<label>Landline ID #:</label>'+
 			'<input type="text" id="landline_cc_id_'+(counter)+'" class="form-control" value="'+cmmty_contact.landline_data[counter].landline_id+'" disabled>'+
 			'</div>'+
@@ -3189,13 +3203,16 @@ function updateCmmtyContact(cmmty_contact) {
 			'<label for="mobile_ec_'+(counter)+'">Mobile #:</label>'+
 			'<input type="text" class="form-control" id="mobile_cc_'+(counter)+'" name="mobile_cc_'+(counter)+'" value="'+cmmty_contact.mobile_data[counter].number+'" required>'+
 			'</div>'+
-			'<div class="col-md-4">'+
+			'<div class="col-md-4" hidden>'+
 			'<label>Mobile ID #:</label>'+
 			'<input type="text" id="mobile_cc_id_'+(counter)+'" class="form-control" value="'+cmmty_contact.mobile_data[counter].number_id+'" disabled>'+
 			'</div>'+
-			'<div class="col-md-2">'+
+			'<div class="col-md-4">'+
 			'<label>Mobile # Status:</label>'+
-			'<input type="text" id="mobile_cc_status_'+(counter)+'" class="form-control" value="'+cmmty_contact.mobile_data[counter].number_status+'">'+
+			'<select class="form-control" id="mobile_cc_status_'+(counter)+'" class="form-control" value="">'+
+			'<option value="1">Active</option>'+
+			'<option value="0">Inactive</option>'+
+			'</select>'+
 			'</div>'+
 			'<div class="col-md-2">'+
 			'<label>Mobile # Priority:</label>'+
@@ -3252,6 +3269,7 @@ function siteSelection(sites,user_sites = []) {
 
 function orgSelection(orgs,user_orgs = []) {
 	console.log(user_orgs);
+	console.log(orgs);
 	var column_count = 7;
 	$('#new-org').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -3938,7 +3956,7 @@ function addAdditionalLandlineEc(){
 		'<label for="landline_ec_'+landline_count+'">Landline #:</label>'+
 		'<input type="text" class="form-control" id="landline_ec_'+landline_count+'" name="landline_ec" value="" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Landline ID #:</label>'+
 		'<input type="text" id="landline_ec_id_'+landline_count+'" class="form-control" value="" disabled>'+
 		'</div>'+
@@ -3955,13 +3973,16 @@ function addAdditionalNumberEc(){
 		'<label for="mobile_ec">Mobile #:</label>'+
 		'<input type="text" class="form-control" id="mobile_ec_'+mobile_count+'" name="mobile_ec" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Mobile ID #:</label>'+
 		'<input type="text" id="mobile_ec_id_'+mobile_count+'"class="form-control" value="" disabled>'+
 		'</div>'+
-		'<div class="col-md-2">'+
+		'<div class="col-md-4">'+
 		'<label>Mobile # Status:</label>'+
-		'<input type="text" id="mobile_ec_status_'+mobile_count+'"class="form-control" value="">'+
+		'<select class="form-control" id="mobile_cc_status_'+mobile_count+'" class="form-control" value="">'+
+		'<option value="1">Active</option>'+
+		'<option value="0">Inactive</option>'+
+		'</select>'+
 		'</div>'+
 		'<div class="col-md-2">'+
 		'<label>Mobile # Priority:</label>'+
@@ -3976,7 +3997,7 @@ function addAdditionalLandlineCc(){
 		'<label for="landline_cc_'+landline_count+'">Landline #:</label>'+
 		'<input type="text" class="form-control" id="landline_cc_'+landline_count+'" name="landline_cc" value="" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Landline ID #:</label>'+
 		'<input type="text" id="landline_cc_id_'+landline_count+'" class="form-control" value="" disabled>'+
 		'</div>'+
@@ -3993,13 +4014,16 @@ function addAdditionalNumberCc(){
 		'<label for="mobile_cc">Mobile #:</label>'+
 		'<input type="text" class="form-control" id="mobile_cc_'+mobile_count+'" name="mobile_cc" required>'+
 		'</div>'+
-		'<div class="col-md-4">'+
+		'<div class="col-md-4" hidden>'+
 		'<label>Mobile ID #:</label>'+
 		'<input type="text" id="mobile_cc_id_'+mobile_count+'"class="form-control" value="" disabled>'+
 		'</div>'+
-		'<div class="col-md-2">'+
+		'<div class="col-md-4">'+
 		'<label>Mobile # Status:</label>'+
-		'<input type="text" id="mobile_cc_status_'+mobile_count+'"class="form-control" value="">'+
+		'<select class="form-control" id="mobile_cc_status_'+mobile_count+'" class="form-control" value="">'+
+		'<option value="1">Active</option>'+
+		'<option value="0">Inactive</option>'+
+		'</select>'+
 		'</div>'+
 		'<div class="col-md-2">'+
 		'<label>Mobile # Priority:</label>'+
