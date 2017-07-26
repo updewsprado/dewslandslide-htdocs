@@ -4222,6 +4222,7 @@ function downloadSvg() {
 				all_data.push($('#heatmap_container').html())
 			}
 		}
+
 		/***************Deleted Part for Highchart***********************/
 
 		$(".highcharts-root").removeAttr("xmlns");
@@ -4243,12 +4244,12 @@ function downloadSvg() {
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 460);
 			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 460);
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 70);
 			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
