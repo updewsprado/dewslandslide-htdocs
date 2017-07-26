@@ -4350,8 +4350,8 @@ function downloadSvg() {
 
 		if(all_sensor_accel != 0){
 			for (var i = 0; i < all_sensor_accel.length; i++) {
-				$( "#"+all_sensor_accel[i]+" .highcharts-container").attr( "x", 70);
-				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 300 );
+				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 350 );
 			}
 
 			for (var i = 0; i < all_sensor_accel.length; i++) {
