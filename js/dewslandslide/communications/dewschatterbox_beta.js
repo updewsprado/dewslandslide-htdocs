@@ -1873,7 +1873,7 @@ function displayGroupTagsForThread () {
 			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
-
+	console.log(groupTags);
 	tempText = tempText + "]; [Offices: ";
 	var tempCountOffices = groupTags.offices.length;
 	for (i in groupTags.offices) {
@@ -2012,11 +2012,27 @@ $(document).on("click","#quick-release-display li",function(){
 
 	user = "You";
 
-	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+	var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
 
 	var tagSitenames = [];
 	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
+	$('input[name="sitenames"]').prop('checked',false);
+	$('input[name="offices"]').prop('checked',false);
 	$('input[name="opt-ewi-recipients"]').prop('checked',true);
+
+	$('input[name="sitenames"]:unchecked').each(function() {
+		if (tagSitenames[0] == $(this).val()) {
+			$(this).prop('checked',true);
+		}
+	});
+
+	for (var counter = 0; counter < tagOffices.length; counter++) {
+		$('input[name="offices"]:unchecked').each(function() {
+			if (tagOffices[counter] == $(this).val()) {
+				$(this).prop('checked',true);
+			}
+		});
+	}
 
 	groupTags = {
 		'type': 'smsloadrequestgroup',
