@@ -1894,9 +1894,11 @@ function displayGroupTagsForThread (orgs,sites) {
 	var tempText = "[Sitenames: ";
 	var tempCountSitenames = groupTags.sitenames.length;
 	$("#convo-header .panel-body").text("");
+	$('#convo-header .panel-body').empty();
 
 	for (var counter = 0; counter < sites.length; counter++) {
 		tempText = tempText+sites[counter].toUpperCase()+",";
+		$('#convo-header .panel-body').append($('<div class="col-xs-2" style="padding-bottom: 5px;"><select id="'+sites[counter]+'_quick_navigate" class="form-control btn-success"><option selected value="'+sites[counter]+'">'+sites[counter].toUpperCase()+'</select></div>'));
 	}
 
 	tempText = tempText.slice(0,-1);
