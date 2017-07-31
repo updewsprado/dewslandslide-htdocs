@@ -3511,8 +3511,6 @@ function displayNarrativeConfirmation(gintag_details){
 }
 
 function insertGintagService(data){
-	debugger;
-	console.log("TEST");
 	var tags = $('#gintags').val();
 	var gintags;
 	var gintags_collection = [];
