@@ -153,7 +153,8 @@ $(document).ready(function(e){
     	templateData['backbone_message'] = $('#update-backbone').val();
     	templateData['last_modified'] = moment().format("YYYY-MM-DD H:mm A")+"/"+first_name+"/"+tagger_user_id;
     	if ($('#submit_backbone').text() == "CREATE") {
-            templateData['alert_status'] = $('#alert_status').val();
+            templateData['alert_status'] = $('#bb_alert_status').val();
+            console.log(templateData);
     		$.post('../communications/addbackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
     			console.log(data);

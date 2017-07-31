@@ -5,13 +5,16 @@ $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var category = values[6]
 	var site = values[7]
+	var to_time = values[9]
+	var from_time = values[8]
 	var connection_id = values[5]
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
-		var to = moment().add(1,'days').format('YYYY-MM-DD')
+		var from = moment(from_time.slice(0,10)+" " +to_time.slice(13,23)).format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
+		console.log(site,from,to)
 	}else  if(category == "surficial"){
 		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
 		var to = moment().add(1,'days').format('YYYY-MM-DD')
@@ -48,8 +51,8 @@ $(document).ready(function(e) {
 
 		surficialGraph(dataSubmit)
 	}else if(category == "subsurface"){
-		var from = 'n'
-		var to = 'n'
+		var from = from_time
+		var to = to_time
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
 		$(".selectpicker").selectpicker('refresh')
@@ -110,7 +113,8 @@ function SelectdaysOption(id) {
 			from = moment().subtract(5,'year').format('YYYY-MM-DD')
 		}
 
-		var to = moment().add(1,'days').format('YYYY-MM-DD');
+		var to_time = values[9]
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
 
 		if(category == "rain"){
 			RainFallProcess(site,from,to)
@@ -479,7 +483,6 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site
 						}
-						console.log(series_data2)
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
