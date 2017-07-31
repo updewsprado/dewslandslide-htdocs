@@ -132,6 +132,8 @@ function sendViaAlertMonitor(dashboard_data){
 			dashboard_data.internal_alert_level = "A1-R";
 		} else if (dashboard_data.internal_alert_level.indexOf('ND-E') > -1) {
 			dashboard_data.internal_alert_level = "A1-E";
+		} else if (dashboard_data.internal_alert_level.indexOf('A1-Rx') > -1) {
+			dashboard_data.internal_alert_level = "A1-R";
 		}
 
 		if (dashboard_data.name == "msu" || dashboard_data.name == "msl") {
@@ -169,7 +171,7 @@ function sendViaAlertMonitor(dashboard_data){
 							number = temp;
 						});
 						if (dashboard_data.status == "extended") {
-							if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV") {
+							if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV" && contacts[counter].office != "REG8") {
 								var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
 								default_recipients.push(detailed);
 								$('#ewi-recipients-dashboard').tagsinput('add',detailed);
@@ -1871,7 +1873,7 @@ function displayGroupTagsForThread () {
 			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
-
+	console.log(groupTags);
 	tempText = tempText + "]; [Offices: ";
 	var tempCountOffices = groupTags.offices.length;
 	for (i in groupTags.offices) {
@@ -2010,11 +2012,27 @@ $(document).on("click","#quick-release-display li",function(){
 
 	user = "You";
 
-	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+	var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
 
 	var tagSitenames = [];
 	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
+	$('input[name="sitenames"]').prop('checked',false);
+	$('input[name="offices"]').prop('checked',false);
 	$('input[name="opt-ewi-recipients"]').prop('checked',true);
+
+	$('input[name="sitenames"]:unchecked').each(function() {
+		if (tagSitenames[0] == $(this).val()) {
+			$(this).prop('checked',true);
+		}
+	});
+
+	for (var counter = 0; counter < tagOffices.length; counter++) {
+		$('input[name="offices"]:unchecked').each(function() {
+			if (tagOffices[counter] == $(this).val()) {
+				$(this).prop('checked',true);
+			}
+		});
+	}
 
 	groupTags = {
 		'type': 'smsloadrequestgroup',
@@ -3413,7 +3431,6 @@ $("#confirm-narrative").on('click',function(){
 		tagSitenames.push(this.value);
 	});
 	gintags_msg_details.tags = data.tags;
-	console.log(data.tags);
 	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
 		getGintagGroupContacts(data);
 		for (var counter = 0; counter < tags.length; counter++) {
@@ -3424,6 +3441,8 @@ $("#confirm-narrative").on('click',function(){
 						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
 							getOngoingEvents(mes_sites[msl_msu_counter]);
 						}
+					} else {
+						getOngoingEvents(tagSitenames[tag_counter]);
 					}
 				}
 				break;
