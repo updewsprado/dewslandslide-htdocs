@@ -11,6 +11,20 @@
 	opacity: .2;
 }
 
+.loading-wrapper {
+  max-height: 200px;
+  max-width: 200px;
+}
+
+#chatterbox-loading .modal-dialog {
+  max-width: 175px;
+}
+
+.loading-wrapper img{
+  max-height: 140px;
+  max-width: 140px;
+}
+
 .nav-margin {
 	margin-top: 45px;
 }
