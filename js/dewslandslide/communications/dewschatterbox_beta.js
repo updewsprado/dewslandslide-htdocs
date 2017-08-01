@@ -925,6 +925,17 @@ $(document).ready(function() {
 		for (var i = alerts.length - 1; i >= 0; i--) {
 			msg = alerts[i];
 			updateLatestPublicRelease(msg);
+			$('input[name="sitenames"]:unchecked').each(function() {
+				if ($(this).val().toLowerCase() == alerts[i].name) {
+					if (alerts[i].status == "on-going") {
+						$(this).parent().css('color','red');
+					} else if (alerts[i].status == "extended") {
+						$(this).parent().css('color','blue');
+					} else {
+						$(this).parent().css('color','green');
+					}
+				}
+			});
 		}
 	}
 
@@ -2871,6 +2882,7 @@ function getOfficesAndSitenames () {
 	} catch(err) {
 	}
 }
+
 function getInitialQuickInboxMessages () {
 	var msg = {
 		'type': 'smsloadquickinboxrequest'
