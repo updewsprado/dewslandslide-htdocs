@@ -168,6 +168,7 @@ function cb(start, end) {
 		}
 	})
 	SelectedSite(fromDate,toDate);
+	// console.log(fromDate,toDate)
 	
 }
 /************************/
@@ -215,9 +216,10 @@ function SelectedSite(from,to) {
 		$('.node-panel').hide();
 		$('.download').show()
 		SelectdaysOption('surperimpose')
-		CheckBoxSite(selected_site,from,to)
+		var from_customize = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
+		CheckBoxSite(selected_site,from_customize,to)
 		$(".site_level").append('<div class="col-md-12" id="raincharts"></div>')
-		RainFallProcess(selected_site,from,to)
+		RainFallProcess(selected_site,from_customize,to)
 		$.ajax({url: "/api/SiteDetails/"+selected_site , dataType: "json",success: function(result){
 			$('.columngeneral').empty();
 			$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
@@ -335,6 +337,7 @@ function SelectdaysOption(id,category) {
 
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
 			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
@@ -354,13 +357,14 @@ function SelectdaysOption(id,category) {
 			fdate = moment($("#reportrange0 span").text()).subtract(5,'year').format('YYYY-MM-DD')
 		}
 		var site = $("#sitegeneral").val();
-		var tdate = moment().add(1,'days').format('YYYY-MM-DD');
+		var tdate = moment($("#reportrange0 span").text()).add(1,'days').format('YYYY-MM-DD');
 
 		let dataTableSubmit = { 
 			site : site, 
 			fdate : fdate,
 			tdate : tdate
 		}
+		
 		if(id == "surperimpose"){
 			surficialGraph(dataTableSubmit)
 
@@ -4186,7 +4190,7 @@ function NodeOnSelectDay(column,tdate) {
 		let dataSubmit = { 
 			site : (column).toLowerCase(), 
 			fdate : fdate,
-			tdate : tdate,
+			tdate : moment($("#reportrange0 span").text()).subtract(1,'days').format('YYYY-MM-DD'),
 			node:node_id
 		}
 		NodeProcess(dataSubmit,list_checkbox)
