@@ -40,7 +40,7 @@ function getNormalAndLockedIssues(data) {
 
         let isPage = window.location.pathname.includes("issues_and_reminders");
 
-        $.get("/../issues_and_reminders/modal", {normal: data.normal, locked: data.locked})
+        $.post("/../issues_and_reminders/modal", {normal: JSON.stringify(data.normal), locked: JSON.stringify(data.locked)})
         .done(function (data) {
             if( $("#issues_and_reminders_modal").length == 0 ) {
                 $("#page-wrapper .container").append("<div id='issues_and_reminders_modal'></div>")
