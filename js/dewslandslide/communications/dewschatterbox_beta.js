@@ -2543,7 +2543,7 @@ function reset_cc() {
 	$('#rel_cc').val('');
 	$('#numbers_cc').val('');
 	$('#numbers_cc').tagsinput("removeAll");
-	$('#office_cc').val("LLMC");
+	$('#office_cc').val("LEWC");
 	$('#sitename_cc').val("AGB");
 	$('#rel').val("Y");
 	$('#ewirecipient').val("1");
@@ -2769,7 +2769,7 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
