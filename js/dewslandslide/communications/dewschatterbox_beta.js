@@ -2052,7 +2052,7 @@ $(document).on("click","#quick-release-display li",function(){
 
 	user = "You";
 
-	var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
+	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 	var tagSitenames = [];
 	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
@@ -2543,7 +2543,7 @@ function reset_cc() {
 	$('#rel_cc').val('');
 	$('#numbers_cc').val('');
 	$('#numbers_cc').tagsinput("removeAll");
-	$('#office_cc').val("LEWC");
+	$('#office_cc').val("LLMC");
 	$('#sitename_cc').val("AGB");
 	$('#rel').val("Y");
 	$('#ewirecipient').val("1");
@@ -2769,7 +2769,7 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
+		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
