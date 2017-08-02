@@ -395,6 +395,7 @@ $(document).ready(function() {
 	var messages = [];
 	var searchResults = [];
 	var quick_inbox_registered = [];
+	var quick_event_inbox = [];
 	var quick_inbox_unknown = [];
 	var quick_release = [];
 	var temp, tempMsg, tempUser, tempRequest;
@@ -668,6 +669,19 @@ $(document).ready(function() {
 				} catch(err) {
 				}
 			}
+			$(targetInbox).html(quick_inbox_html);
+			$(targetInbox).scrollTop(0);
+		}
+		if (msg.onevent == 1) {
+			if (msg.user != "You"){
+				var targetInbox;
+				var quick_inbox_html;
+				msg.isunknown = 0;
+				targetInbox = "#quick-event-inbox-display";
+				quick_event_inbox.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
+			}
+
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
 		}
@@ -2016,7 +2030,7 @@ try {
 
 var qiFullContact = null;
 
-$(document).on("click","#quick-inbox-display li",function(){
+$(document).on("click","#quick-inbox-display li,#quick-event-inbox-display li",function(){
 	$('#chatterbox-loading').modal('show');
 	$('input[name="offices"]').attr('checked', false);
 	$('input[name="sitenames"]').attr('checked', false);
