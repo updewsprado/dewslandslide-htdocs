@@ -2052,7 +2052,7 @@ $(document).on("click","#quick-release-display li",function(){
 
 	user = "You";
 
-	var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
+	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 	var tagSitenames = [];
 	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
