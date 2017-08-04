@@ -1567,8 +1567,30 @@ $('#btn-search-global').click(function(){
 		case "global-search":
 		searchMessageGlobal($('#search-global-keyword').val());
 		break;
+		case "timestamp-sent-search":
+		searchTimestampsent($('#search-from-date').val(),$('#search-to-date').val());
+		break;
+		case "timestamp-written-search":
+		searchTimestampwritten($('#search-from-date').val(),$('#search-to-date').val());
+		break;
+		case "unknown-number-search":
+		searchUnknownNumber($('#search-global-keyword').val());
+		break;
+		case "general-search":
+		searchGeneralMessages($('#search-global-keyword').val());
+		break;
 	}
 });
+
+$('input[name="opt-search"]').on('change',function(){
+	if ($(this).val() == "timestamp-sent-search" || $(this).val() == "timestamp-written-search") {
+		$('#time-div-container').show();
+		$('#key-div-container').hide();
+	} else {
+		$('#time-div-container').hide();
+		$('#key-div-container').show();
+	}
+})
 
 function searchMessage(){
 	messages = [];
@@ -1647,10 +1669,43 @@ function searchMessageGlobal(searchKey){
 }
 
 function searchGintagMessages(searchKey){
-	console.log(searchKey);
 	request = {
 		'type': "searchGintagMessages",
 		'searchKey': searchKey
+	}
+	conn.send(JSON.stringify(request));
+}
+
+function searchTimestampsent(fromDate,toDate){
+	request = {
+		'type': "searchTimestampsent",
+		'searchFromDate': fromDate,
+		'searchToDate': toDate
+	}
+	conn.send(JSON.stringify(request));
+}
+
+function searchTimestampwritten(fromDate,toDate){
+	request = {
+		'type': "searchTimestampwritten",
+		'searchFromDate': fromDate,
+		'searchToDate':toDate
+	}
+	conn.send(JSON.stringify(request));	
+}
+
+function searchUnknownNumber(unknownNumber){
+	request = {
+		'type': "searchUnknownNumber",
+		'searchKey': unknownNumber
+	}
+	conn.send(JSON.stringify(request));	
+}
+
+function searchGeneralMessages(message){
+	request = {
+		'type': "searchGeneralMessages",
+		'searchKey': message
 	}
 	conn.send(JSON.stringify(request));
 }
@@ -2725,6 +2780,11 @@ function setEWILocation(consEWI){
 }
 
 $('#ewi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'YYYY-MM-DD HH:mm:ss'
+});
+
+$('#search-to-date-picker,#search-from-date-picker').datetimepicker({
 	locale: 'en',
 	format: 'YYYY-MM-DD HH:mm:ss'
 });
