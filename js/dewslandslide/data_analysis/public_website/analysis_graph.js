@@ -129,10 +129,15 @@ function cb_surficial(start,end) {
 
 
 function cb_subsurface(start,end) {
-	$("#subsurface").append('<div class="col-md-12 sub"><div id="column_sub" class="collapse in">'+
-		'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="colspangraph1"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="colspangraph2"></div></div></div>')
-	allSensorPosition('magta',start.format('YYYY-MM-DD'),end.format('YYYY-MM-DD'))
+	
 	$('#reportrangesubsurface span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD')); 
+	$.ajax({url: "/api/SiteDetails/mag", dataType: "json",success: function(result){
+		for (var i = 0; i < result.length; i++) {
+			$("#subsurface").append('<div class="col-md-12 sub"><div id="column_sub" class="collapse in">'+
+		'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="colspangraph1'+i+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="colspangraph2'+i+'"></div></div></div>')
+			allSensorPosition(result[i].name,start.format('YYYY-MM-DD'),end.format('YYYY-MM-DD'),i)
+		}
+	}})
 }
 
 function getRanges(array) {
@@ -771,7 +776,7 @@ function rainFiltering(id_format){
 			}
 		}
 	}	
-	console.log(with_data_default)
+
 	$("#"+with_data_default[0]).show();
 	$("#"+with_data_default[0]+"2").show();
 }
@@ -938,17 +943,16 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 
 /*Surficial Graph*/
 
-function allSensorPosition(site,fdate,tdate) {
+function allSensorPosition(site,fdate,tdate,i) {
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
 			var data = JSON.parse(result);
-			console.log(data)
-			columnPosition(data[0].c,site)	
+			columnPosition(data[0].c,site,i)	
 		}
 	});
 }
-function columnPosition(data_result,site) {
+function columnPosition(data_result,site,iId) {
 	if(data_result!= "error"){
 		var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
@@ -1007,13 +1011,13 @@ function columnPosition(data_result,site) {
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			
 		}
-		chartProcessInverted("colspangraph1",fseries,"Displacement (m)",site,'Dowslope Movement',parameters_data)
-		chartProcessInverted("colspangraph2",fseries2,"Displacement (m)",site, 'Across-Slope Movement', parameters_data)
+		chartProcessInverted("colspangraph1"+iId,fseries,"Displacement (m)",site,'Dowslope Movement',parameters_data,iId)
+		chartProcessInverted("colspangraph2"+iId,fseries2,"Displacement (m)",site, 'Across-Slope Movement', parameters_data,iId)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
 
-function chartProcessInverted(id,data_series,name,site,header,parameters_data){
+function chartProcessInverted(id,data_series,name,site,header,parameters_data,iId){
 	var all_down =[] , all_lat = [];
 	
 	for (var i = 0; i < parameters_data.data_all.length; i++) {
@@ -1024,7 +1028,7 @@ function chartProcessInverted(id,data_series,name,site,header,parameters_data){
 	var filter_lat=(removeDuplicates(all_lat)).sort()
 
 	var to_yplot = parameters_data.last_date.id
-	if(id == "colspangraph1"){
+	if(id == "colspangraph1"+iId){
 		var to_xplot = parseFloat((filter_down[filter_down.length-1]))+3;
 		var from_xplot = parseFloat((filter_down[filter_down.length-1])) - .5;
 		var x_nameplot = 'US'
@@ -1036,7 +1040,7 @@ function chartProcessInverted(id,data_series,name,site,header,parameters_data){
 		var x_nameplot = 'L'
 		var y_nameplot = 'R'
 	}
-	console.log(to_xplot)
+
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
