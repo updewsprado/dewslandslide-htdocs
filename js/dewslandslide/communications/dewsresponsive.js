@@ -12,6 +12,7 @@ $(document).ready(function() {
 		$('.division').css({"max-height": division_height});
 		$('#quick-inbox-display').css({"height": division_height-158});
 		$('#quick-inbox-unknown-display').css({"height": division_height-158});
+		$('#quick-event-inbox-display').css({"height": division_height-158});
 		$('#quick-release-display').css({"height": division_height-219});
 		$('.chat-message').css({"height": division_height-308});
 	}
