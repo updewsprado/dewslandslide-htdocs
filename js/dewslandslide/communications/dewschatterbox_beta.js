@@ -976,6 +976,7 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
+			$('#chatterbox-loading').modal('hide');
 			console.log("Connection established!");
 			enableCommands();
 
@@ -1037,6 +1038,14 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadGlobalSearched"){
 				$('#chatterbox-loading').modal('hide');
+				loadSearchedMessage(msg);
+			} else if (msg.type == "searchedTimestampwritten") {
+				$('#chatterbox-loading').modal('hide');
+				console.log(msg);
+				loadSearchedMessage(msg);
+			} else if (msg.type == "searchedTimestampsent") {
+				$('#chatterbox-loading').modal('hide');
+				console.log(msg);
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
@@ -1560,24 +1569,25 @@ $('#btn-standard-search').click(function(){
 });
 
 $('#btn-search-global').click(function(){
+	$('#chatterbox-loading').modal('show');
 	switch($('input[name="opt-search"]:checked').val()) {
 		case "gintag-search":
-		searchGintagMessages($('#search-global-keyword').val());
+		searchGintagMessages($('#search-global-keyword').val(),$('#search-limit').val());
 		break;
 		case "global-search":
-		searchMessageGlobal($('#search-global-keyword').val());
+		searchMessageGlobal($('#search-global-keyword').val(),$('#search-limit').val());
 		break;
 		case "timestamp-sent-search":
-		searchTimestampsent($('#search-from-date').val(),$('#search-to-date').val());
+		searchTimestampsent($('#search-from-date').val(),$('#search-to-date').val(),$('#search-limit').val());
 		break;
 		case "timestamp-written-search":
-		searchTimestampwritten($('#search-from-date').val(),$('#search-to-date').val());
+		searchTimestampwritten($('#search-from-date').val(),$('#search-to-date').val(),$('#search-limit').val());
 		break;
 		case "unknown-number-search":
-		searchUnknownNumber($('#search-global-keyword').val());
+		searchUnknownNumber($('#search-global-keyword').val(),$('#search-limit').val());
 		break;
 		case "general-search":
-		searchGeneralMessages($('#search-global-keyword').val());
+		searchGeneralMessages($('#search-global-keyword').val(),$('#search-limit').val());
 		break;
 	}
 });
@@ -1659,53 +1669,59 @@ function searchMessageGroup(){
 	conn.send(JSON.stringify(request));
 }
 
-function searchMessageGlobal(searchKey){
+function searchMessageGlobal(searchKey,searchLimit){
 	request = {
 		'type': "searchMessageGlobal",
-		'searchKey': searchKey
+		'searchKey': searchKey,
+		'searchLimit': searchLimit
 	}
 	console.log(request);
 	conn.send(JSON.stringify(request));
 }
 
-function searchGintagMessages(searchKey){
+function searchGintagMessages(searchKey,searchLimit){
 	request = {
 		'type': "searchGintagMessages",
-		'searchKey': searchKey
+		'searchKey': searchKey,
+		'searchLimit': searchLimit
 	}
 	conn.send(JSON.stringify(request));
 }
 
-function searchTimestampsent(fromDate,toDate){
+function searchTimestampsent(fromDate,toDate,searchLimit){
 	request = {
 		'type': "searchTimestampsent",
 		'searchFromDate': fromDate,
-		'searchToDate': toDate
+		'searchToDate': toDate,
+		'searchLimit': searchLimit
 	}
 	conn.send(JSON.stringify(request));
 }
 
-function searchTimestampwritten(fromDate,toDate){
+function searchTimestampwritten(fromDate,toDate,searchLimit){
 	request = {
 		'type': "searchTimestampwritten",
 		'searchFromDate': fromDate,
-		'searchToDate':toDate
+		'searchToDate':toDate,
+		'searchLimit': searchLimit
 	}
 	conn.send(JSON.stringify(request));	
 }
 
-function searchUnknownNumber(unknownNumber){
+function searchUnknownNumber(unknownNumber,searchLimit){
 	request = {
 		'type': "searchUnknownNumber",
-		'searchKey': unknownNumber
+		'searchKey': unknownNumber,
+		'searchLimit': searchLimit
 	}
 	conn.send(JSON.stringify(request));	
 }
 
-function searchGeneralMessages(message){
+function searchGeneralMessages(message,searchLimit){
 	request = {
 		'type': "searchGeneralMessages",
-		'searchKey': message
+		'searchKey': message,
+		'searchLimit': searchLimit
 	}
 	conn.send(JSON.stringify(request));
 }
@@ -1910,7 +1926,7 @@ function loadSearchedMessage(msg){
 		console.log(targetLi.offsetTop);
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
-	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags"){
+	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags" || msg.type == "searchedTimestampwritten" || msg.type == "searchedTimestampsent"){
 		messages = [];
 		var searchedResult = msg.data;
 		var res;
