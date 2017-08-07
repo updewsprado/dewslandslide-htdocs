@@ -71,13 +71,6 @@ function dateselection() {
 	
 }
 
-function removeSpecificArray(array, element) {
-	const index = array.indexOf(element);
-	array.splice(index, 1);
-}
-
-
-
 
 function removeSpecificArray(array, element) {
 	const index = array.indexOf(element);
