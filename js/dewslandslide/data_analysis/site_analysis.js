@@ -2283,6 +2283,7 @@ function PiezoOnSelect() {
 }
 
 function allSensorPosition(site,fdate,tdate) {
+	console.log(site,fdate,tdate)
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
