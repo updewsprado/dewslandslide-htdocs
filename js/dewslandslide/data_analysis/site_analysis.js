@@ -57,6 +57,7 @@ function dateselection() {
 	$('#reportrange0').daterangepicker({
 		singleDatePicker: true,
 		startDate: end,
+		showDropdowns: true
 	}, cb);
 
 	cb(start, end);
