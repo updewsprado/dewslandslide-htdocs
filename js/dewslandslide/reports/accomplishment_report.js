@@ -612,8 +612,9 @@ $(document).ready(function()
         if( $(this).is(":checked") ) {
             let x = this.value.split("_");
             let type = x[0], site = x[1];
-
-            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site, "_blank", "menubar=0");
+            let shift_start = $("#shift_start").val();
+            let shift_end = $("#shift_end").val();
+            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site + "/" + shift_start + "/" + shift_end, "_blank", "menubar=0");
         }
     });
 
