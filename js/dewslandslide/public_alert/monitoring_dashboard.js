@@ -146,6 +146,7 @@ $(document).ready( function() {
 
 		tagInvalidTriggers( row );
 
+		// Automatically check trigger_switch if invalid area is empty
 		$(".trigger_switch").each( function (count, item) {
 			if( $("#" + item.value + "_area .invalid_area").html() === "" ) {
 				$(item).prop("checked", true);
@@ -310,8 +311,21 @@ $(document).ready( function() {
 	        let aX = temp.internal_alert_level.slice(0,2);
 	        temp.public_alert_level = aX == "ND" ? "A1" : aX;
 	        temp.status = entry.status;
-	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 	        temp.reporter_1 = $("#reporter_1").attr("value-id");
+
+	        // Don't include un-checked retriggers for rain and sensor
+	        $(".trigger_switch").each( function (count, item) {
+	        	if ( !$(item).is(":checked") ) {
+	        		let x = null;
+	        		let haystack = entry.trigger_list.join("").toUpperCase();
+	        		x = item.value == "rain" ? "R" : "S";
+	        		let index = haystack.indexOf(x);
+	        		entry.trigger_list.splice(index, 1);
+	        		// console.log(haystack, index, entry.trigger_list);
+	        	}
+			});
+
+			temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 
 	        if( temp.trigger_list != null ) 
 	        {
@@ -827,6 +841,7 @@ function toggleTriggerOnRelease(trigger_type, alert, merged_index) {
 	
 	let invalid_list = alert.invalid_list;
 	let orig_public_alert = alert.internal_alert.slice(0, 2);
+	let orig_internal_alert = alert.internal_alert.slice(3);
 
 	if ( alert.status != "valid" ) {
 		let alert = $("#internal_alert_level").val();
@@ -837,10 +852,13 @@ function toggleTriggerOnRelease(trigger_type, alert, merged_index) {
 			invalid_list.forEach( function (trigger) {
 				if( trigger.source == trigger_type ) {
 					if (trigger_type == "rain") {
-						internal_alert += "R";
+						if (orig_internal_alert.indexOf('R') == -1) 
+							internal_alert += "R";
 					} else {
 						public_alert = trigger.alert;
-						internal_alert += trigger.alert == 'A3' ? "S" : "s";
+						let x = trigger.alert == 'A3' ? "S" : "s";
+						if (orig_internal_alert.indexOf(x) == -1) 
+							internal_alert += x;
 					}
 				}
 			});
@@ -849,10 +867,12 @@ function toggleTriggerOnRelease(trigger_type, alert, merged_index) {
 			invalid_list.forEach( function (trigger) {
 				if( trigger.source == trigger_type ) {
 					if (trigger_type == "rain") {
-						internal_alert = internal_alert.replace(/R/g, "");
+						if (orig_internal_alert.indexOf('R') == -1) 
+							internal_alert = internal_alert.replace(/R/g, "");
 					} else {
 						x = trigger.alert == 'A3' ? "S" : "s";
-						internal_alert = internal_alert.replace(x, "");
+						if (orig_internal_alert.indexOf(x) == -1) 
+							internal_alert = internal_alert.replace(x, "");
 						public_alert = orig_public_alert;
 					}
 				}
