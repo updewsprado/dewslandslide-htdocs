@@ -17,7 +17,6 @@ $(document).ajaxStop(function () {
 
 });
 
-
 $(document).ready(function(e) {
 
 	downloadSvg();
