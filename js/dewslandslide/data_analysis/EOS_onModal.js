@@ -654,6 +654,17 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			},
 			title: {
 				text: 'Date',
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax)
+					}
+				}
 			}
 		},
 
@@ -735,6 +746,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			enabled: false
 		},
 		series:series_data
+	},function(chart) { 
+		syncronizeCrossHairs(chart,id);
+
 	});
 
 
@@ -1628,4 +1642,64 @@ function svgChart(idBox) {
 	})
 
 
+}
+
+/*syncronizegraph*/
+
+function syncronizeCrossHairs(chart,id_chart,category) {
+	var all_ids = $('#raincharts .collapse ').map(function() {
+		return this.id;
+	}).get();
+
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			if($('#'+all_ids[i]).highcharts() != undefined){
+				var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+				xAxis1.removePlotLine("myPlotLineId");
+				xAxis1.addPlotLine({
+					value: chart.xAxis[0].translate(x, true),
+					width: 1,
+					color: 'red',                 
+					id: "myPlotLineId"
+				})
+			}
+		}
+		
+	});
+
+
+}
+
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+
+	var all_ids =['rain_senslope','rain_senslope2','rain_arq','rain_arq','rain1','rain12',
+	'rain2','rain22','rain3','rain32']
+	
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		}
+		
+	}
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		}
+	}
+	
 }

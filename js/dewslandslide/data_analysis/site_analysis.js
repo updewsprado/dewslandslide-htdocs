@@ -72,6 +72,7 @@ function dateselection() {
 }
 
 
+
 function removeSpecificArray(array, element) {
 	const index = array.indexOf(element);
 	array.splice(index, 1);
@@ -129,12 +130,14 @@ function getRanges(array) {
 		rstart = array[i];
 		rend = rstart;
 		while (array[i + 1] - array[i] == 1) {
+
 			rend = array[i + 1];
 			i++;
 		}
 		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
 	}
 	return ranges;
+
 }
 
 function cb(start, end) {
@@ -794,7 +797,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
-	// console.log(max_plot_time
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
@@ -2308,7 +2310,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-		var data = data_result;
+var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -4240,6 +4242,7 @@ function downloadSvg() {
 		$( ".svg_container" ).empty();
 		var all_data = [];
 
+
 		/*SUPERIMPOSED GROUND*/
 		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
 			$("#ground_graph .highcharts-container .highcharts-root").attr("xmlns","http://www.w3.org/2000/svg");
@@ -4255,6 +4258,7 @@ function downloadSvg() {
 		}
 
 		/***************Deleted Part for Highchart***********************/
+
 
 		$(".highcharts-root").removeAttr("xmlns");
 		$(".highcharts-root").removeAttr("version");
@@ -4383,11 +4387,19 @@ function downloadSvg() {
 			for (var i = 0; i < all_sensor_accel.length; i++) {
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 350 );
+
+			}
+
+			for (var i = 0; i < all_sensor_accel.length; i++) {
+				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
+
 			}
 
 			for (var i = 0; i < all_sensor_accel.length; i++) {
 				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
 			}
+			
+			all_data.push($('#aceSvg').html());
 			
 			all_data.push($('#aceSvg').html());
 			
@@ -4484,5 +4496,6 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
 		}
 	}
-	
+
 }
+

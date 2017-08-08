@@ -377,11 +377,11 @@ function sendViaAlertMonitor(dashboard_data){
 								$('#ewi-asap-modal').modal('toggle');
 							}
 						});
-					}
-				});
-			}
-		});
-	}
+}
+});
+}
+});
+}
 }
 
 $(document).ready(function() {
@@ -395,6 +395,7 @@ $(document).ready(function() {
 	var messages = [];
 	var searchResults = [];
 	var quick_inbox_registered = [];
+	var quick_event_inbox = [];
 	var quick_inbox_unknown = [];
 	var quick_release = [];
 	var temp, tempMsg, tempUser, tempRequest;
@@ -671,6 +672,19 @@ $(document).ready(function() {
 			$(targetInbox).html(quick_inbox_html);
 			$(targetInbox).scrollTop(0);
 		}
+		if (msg.onevent == 1) {
+			if (msg.user != "You"){
+				var targetInbox;
+				var quick_inbox_html;
+				msg.isunknown = 0;
+				targetInbox = "#quick-event-inbox-display";
+				quick_event_inbox.unshift(msg);
+				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
+			}
+
+			$(targetInbox).html(quick_inbox_html);
+			$(targetInbox).scrollTop(0);
+		}
 	}
 
 	function updateLatestPublicRelease(msg) {
@@ -925,6 +939,17 @@ $(document).ready(function() {
 		for (var i = alerts.length - 1; i >= 0; i--) {
 			msg = alerts[i];
 			updateLatestPublicRelease(msg);
+			$('input[name="sitenames"]:unchecked').each(function() {
+				if ($(this).val().toLowerCase() == alerts[i].name) {
+					if (alerts[i].status == "on-going") {
+						$(this).parent().css('color','red');
+					} else if (alerts[i].status == "extended") {
+						$(this).parent().css('color','blue');
+					} else {
+						$(this).parent().css('color','green');
+					}
+				}
+			});
 		}
 	}
 
@@ -946,6 +971,7 @@ $(document).ready(function() {
 		}
 	}
 	function connectWS() {
+		$('#chatterbox-loading').modal('show');
 		console.log("trying to connect to web socket server");
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
@@ -975,12 +1001,11 @@ $(document).ready(function() {
 		};
 
 		tempConn.onmessage = function(e) {
-			console.log(e);
 			var msg = JSON.parse(e.data);
 			tempMsg = msg;
 			msgType = msg.type;
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				initLoadMessageHistory(msg);
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
@@ -994,29 +1019,30 @@ $(document).ready(function() {
 				loadOldMessages(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 				msgType = "searchMessage";
 			} else if (msg.type == "searchMessageGlobal") {
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "searchMessageGroup") {
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 				msgType = "searchMessageGroup";
 			} else if (msg.type == "searchGintags") {
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched"){
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadGlobalSearched"){
-				$('#loading').modal('hide');
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
 			} else if (msg.type == "latestAlerts"){
 				initLoadLatestAlerts(msg);
+				$('#chatterbox-loading').modal('hide');
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -1273,6 +1299,7 @@ return tempConn;
 }
 
 function getOngoingEvents(sites){
+	console.log(sites);
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
@@ -1281,6 +1308,7 @@ function getOngoingEvents(sites){
 			for (var counter = 0; counter < events.length; counter++) {
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
+						debugger;
 						var narrative_template = "";
 						console.log(gintags_msg_details);
 						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
@@ -1294,6 +1322,12 @@ function getOngoingEvents(sites){
 							$('input[name="offices"]:checked').each(function() {
 								tagOffices.push(this.value);
 							});
+
+							if  (tagOffices.length == 0) {
+								tagOffices = [];
+								var contactIdentifier = $('#contact-indicator').val().split(" ");
+								tagOffices.push(contactIdentifier[1]);
+							}
 
 							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
 								if (narrative_recipients.length > 0) {
@@ -1367,7 +1401,7 @@ function getOngoingEvents(sites){
 				}
 			}
 		});
-	});
+});
 }
 
 function waitForSocketConnection() {
@@ -1510,6 +1544,7 @@ function displayContactNamesForThread (source="normal") {
 	}
 	$("#convo-header .panel-heading").text(tempText);
 	$("#convo-header .panel-body").text(contactInfo[0].numbers);
+	$("#contact-indicator").val(tempText);
 	document.title = tempText;
 }
 
@@ -1525,7 +1560,6 @@ $('#btn-standard-search').click(function(){
 });
 
 $('#btn-search-global').click(function(){
-	$('#loading').modal('show');
 	switch($('input[name="opt-search"]:checked').val()) {
 		case "gintag-search":
 		searchGintagMessages($('#search-global-keyword').val());
@@ -1996,23 +2030,29 @@ try {
 
 var qiFullContact = null;
 
-$(document).on("click","#quick-inbox-display li",function(){
+$(document).on("click","#quick-inbox-display li,#quick-event-inbox-display li",function(){
+	$('#chatterbox-loading').modal('show');
+	$('input[name="offices"]').attr('checked', false);
+	$('input[name="sitenames"]').attr('checked', false);
 	quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 });
 
 $(document).on("click","#quick-inbox-unknown-display li",function(){
+	$('#chatterbox-loading').modal('show');
+	$('input[name="offices"]').attr('checked', false);
+	$('input[name="sitenames"]').attr('checked', false);
 	quickInboxStartChat($(this).closest('li').find("input[type='text']").val());
 });
 
 $(document).on("click","#quick-release-display li",function(){
-	$('#loading').modal('show');
+	$('#chatterbox-loading').modal('show');
 	counters = 0;
 	convoFlagger = false;
 	groupTags = [];
 
 	user = "You";
 
-	var tagOffices = ['LEWC','BLGU','MLGU','PLGU','REG8'];
+	var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 
 	var tagSitenames = [];
 	tagSitenames.push($(this).closest('li').find("input[type='text']").val().toUpperCase());
@@ -2112,7 +2152,6 @@ function startChat(source="normal") {
 	conn.send(JSON.stringify(msgHistory));
 }
 $('#go-chat').click(function() {
-	$('#loading').modal('show');
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
 	tempTimestamp = "";
@@ -2294,7 +2333,7 @@ function loadGroupsEmployee(){
 }
 
 $('#go-load-groups').click(function() {
-	$('#loading').modal('show');
+	$('#chatterbox-loading').modal('show');
 	groupTags = [];
 	tempTimestampYou = "";
 	tempTimestampGroup = "";
@@ -2523,27 +2562,27 @@ $('#alert_status').on('change',function(){
 		$('#alert-lvl').empty();
 		$('#internal-alert').empty();
 
-	    $('#alert-lvl').append($('<option>', { 
-	        value: "------------",
-	        text : "------------" 
-	    }));
+		$('#alert-lvl').append($('<option>', { 
+			value: "------------",
+			text : "------------" 
+		}));
 
-	    $('#internal-alert').append($('<option>', { 
-	        value: "------------",
-	        text : "------------" 
-	    }));
+		$('#internal-alert').append($('<option>', { 
+			value: "------------",
+			text : "------------" 
+		}));
 
 		for (var counter = 0; counter < response.length; counter++) {
 			if (response[counter].alert_symbol_level.toLowerCase().indexOf('alert') > -1) {
-				 $('#alert-lvl').append($('<option>', { 
-			        value: response[counter].alert_symbol_level,
-			        text : response[counter].alert_symbol_level 
-			    }));
+				$('#alert-lvl').append($('<option>', { 
+					value: response[counter].alert_symbol_level,
+					text : response[counter].alert_symbol_level 
+				}));
 			} else {
-				 $('#internal-alert').append($('<option>', { 
-			        value: response[counter].alert_symbol_level,
-			        text : response[counter].alert_symbol_level 
-			    }));
+				$('#internal-alert').append($('<option>', { 
+					value: response[counter].alert_symbol_level,
+					text : response[counter].alert_symbol_level 
+				}));
 			}
 		}
 	});
@@ -2556,10 +2595,10 @@ $('#btn-ewi').on('click',function(){
 	$('#alert_lvl').empty();
 	$('#internal_alert').empty();
 
-    $('#alert_status').append($('<option>', { 
-        value: "------------",
-        text : "------------" 
-    }));
+	$('#alert_status').append($('<option>', { 
+		value: "------------",
+		text : "------------" 
+	}));
 
 	$.ajax({
 		type: "GET",
@@ -2567,10 +2606,10 @@ $('#btn-ewi').on('click',function(){
 		dataType: "json",
 		success: function(response){
 			$.each(response, function (i, response) {
-			    $('#alert_status').append($('<option>', { 
-			        value: response.alert_status,
-			        text : response.alert_status 
-			    }));
+				$('#alert_status').append($('<option>', { 
+					value: response.alert_status,
+					text : response.alert_status 
+				}));
 			});
 		}
 	});
@@ -2871,6 +2910,7 @@ function getOfficesAndSitenames () {
 	} catch(err) {
 	}
 }
+
 function getInitialQuickInboxMessages () {
 	var msg = {
 		'type': 'smsloadquickinboxrequest'
@@ -3430,6 +3470,12 @@ $("#confirm-narrative").on('click',function(){
 	$('input[name="sitenames"]:checked').each(function() {
 		tagSitenames.push(this.value);
 	});
+
+	if (tagSitenames.length == 0 ) {
+		var contactIdentifier = $('#contact-indicator').val().split(" ");
+		tagSitenames.push(contactIdentifier[0]);
+	}
+
 	gintags_msg_details.tags = data.tags;
 	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
 		getGintagGroupContacts(data);
@@ -3526,7 +3572,14 @@ function insertGintagService(data){
 		tagSitenames.push(this.value);
 	});
 
-	if (tagOffices.length != 0 && tagSitenames.length != 0) {
+	if  (tagOffices.length == 0 && tagSitenames.length == 0) {
+		tagOffices = [];
+		tagSitenames = [];
+		var contactIdentifier = $('#contact-indicator').val().split(" ");
+		tagOffices.push(contactIdentifier[1]);
+		tagSitenames.push(contactIdentifier[0]);
+	}
+	// if (tagOffices.length != 0 && tagSitenames.length != 0) {
 		if (data[1] == "You") {
 			var gintag_details = {
 				"office" : tagOffices,
@@ -3559,7 +3612,7 @@ function insertGintagService(data){
 					"data": data,
 					"cmd": "insert"
 				};
-			
+
 				if ($.inArray("#EwiResponse",tags) != -1) {
 					tag_indicator = "#EwiResponse"
 				} else if ($.inArray('#GroundMeas',tags) != -1) {
@@ -3614,26 +3667,26 @@ function insertGintagService(data){
 			}
 		}
 
-	} else {
-		for (var i = 0; i < tags.length;i++) {
-			gintags_collection = [];
-			gintags = {
-				'tag_name': tags[i],
-				'tag_description': "communications",
-				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-				'tagger': tagger_user_id,	
-				'table_element_id': data[5],
-				'table_used': data[6],
-				'remarks': ""
-			}
-			gintags_collection.push(gintags);
-			$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-			.done(function(response) {
-				$( "#messages li" ).eq(message_li_index).addClass("tagged");
-			});
-		}
-		$.notify("GINTAG successfully tagged!","success");
-	}
+	// } else {
+	// 	for (var i = 0; i < tags.length;i++) {
+	// 		gintags_collection = [];
+	// 		gintags = {
+	// 			'tag_name': tags[i],
+	// 			'tag_description': "communications",
+	// 			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
+	// 			'tagger': tagger_user_id,	
+	// 			'table_element_id': data[5],
+	// 			'table_used': data[6],
+	// 			'remarks': ""
+	// 		}
+	// 		gintags_collection.push(gintags);
+	// 		$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
+	// 		.done(function(response) {
+	// 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
+	// 		});
+	// 	}
+	// 	$.notify("GINTAG successfully tagged!","success");
+	// }
 }
 
 function removeIndividualGintag(gintag_details){
