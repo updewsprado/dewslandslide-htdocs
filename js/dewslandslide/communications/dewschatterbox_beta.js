@@ -1151,19 +1151,24 @@ $(document).ready(function() {
 
 								var current_release_day = moment(start).startOf('day').format('YYYY-MM-DD HH:mm:ss');
 
-								if (moment(rounded_release).hour() % 4 == 0) {
+								if (moment(moment(event_details.data_timestamp).add(30,'m')).hour() % 4 != 0) {
+									var onset = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
+								}
+
+								if (moment(rounded_release).hour() % 4 == 0 && moment(event_details.data_timestamp).hour() % 4 == 0) {
 									last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
 								} else {
-									last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
+									last_rounded_release = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
 								}
 
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
 									'last_release_time': last_rounded_release,
-									'data_timestamp': moment(rounded_release).subtract(30,'m').format('YYYY-MM-DD HH:mm:ss')
+									'data_timestamp': event_details.data_timestamp
 								}
 
+								console.log(lastReleaseData);
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
 									console.log(data);
 									var response = JSON.parse(data);
@@ -1176,7 +1181,7 @@ $(document).ready(function() {
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
 											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
-											'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+											'narrative_template': "No acknowledgement from the community for "+moment(last_rounded_release).format('hh:mm A')+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 											console.log(data);
