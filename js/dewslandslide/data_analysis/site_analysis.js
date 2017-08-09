@@ -4262,10 +4262,11 @@ function downloadSvg() {
 
 		/*RAINFALL*/
 
-		var all_raincharts = $('#raincharts .collapse ').map(function() {
+		var all_raincharts = $('#raincharts .rain_graph ').map(function() {
 			return this.id;
 		}).get();
 
+		console.log(all_raincharts)
 		var ids0 = []
 		for (var i = 0; i < all_raincharts.length; i++) {
 			if(all_raincharts[i].length < 6 || all_raincharts[i] == 'rain_arq' || all_raincharts[i] == 'rain_senslope'){
@@ -4292,6 +4293,7 @@ function downloadSvg() {
 		var ids = $('#raincharts .rain_graph .highcharts-container ').map(function() {
 			return this.id;
 		}).get();
+
 
 		for (var i = 0; i < ids.length; i++) {
 			$("#rainfallsvg").append($('#'+ids[i]).html())
