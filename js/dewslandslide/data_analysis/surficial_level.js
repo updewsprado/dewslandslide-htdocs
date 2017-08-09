@@ -809,30 +809,30 @@ function chartProcess2(id,data_series,name){
 		list_dates.push(site+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
 	}
 	let dataSubmit = { date:list_dates,table:'gndmeas'}
-	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-		var result = JSON.parse(data)
-		var all_crack_id = []
-		for (var i = 0; i < result.length; i++) {
-			var remark_parse = ((result[i].remarks).split("/"))
-			all_crack_id.push(remark_parse[1])
-		}
-		var label_crack = removeDuplicates(all_crack_id);
-		var all_data_tag =[]
-		for (var a = 0; a < label_crack.length; a++) {
-			var collect =[]
-			for (var i = 0; i < result.length; i++) {
-				var remark_parse = ((result[i].remarks).split("/"))
-				if(remark_parse[1] == label_crack[a] ){
-					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-				}
-			}
-			all_data_tag.push(collect)
-		}
+	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+	// 	var result = JSON.parse(data)
+	// 	var all_crack_id = []
+	// 	for (var i = 0; i < result.length; i++) {
+	// 		var remark_parse = ((result[i].remarks).split("/"))
+	// 		all_crack_id.push(remark_parse[1])
+	// 	}
+	// 	var label_crack = removeDuplicates(all_crack_id);
+	// 	var all_data_tag =[]
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		var collect =[]
+	// 		for (var i = 0; i < result.length; i++) {
+	// 			var remark_parse = ((result[i].remarks).split("/"))
+	// 			if(remark_parse[1] == label_crack[a] ){
+	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
+	// 			}
+	// 		}
+	// 		all_data_tag.push(collect)
+	// 	}
 
-		for (var a = 0; a < label_crack.length; a++) {
-			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-		}
-		data_series.push({name:'Tag'})
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
+	// 	}
+	// 	data_series.push({name:'Tag'})
 		Highcharts.setOptions({
 			global: {
 				timezoneOffset: -8 * 60
@@ -918,8 +918,6 @@ function chartProcess2(id,data_series,name){
 			}
 			
 		});
-		
-	});
 }
 
 function submittedMeas(){
