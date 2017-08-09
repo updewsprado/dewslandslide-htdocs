@@ -8,6 +8,7 @@ $(document).ajaxStop(function () {
 $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var current_site = values[5];
+	$(".svgBox").hide()
 	$("#soms_search_tool").hide()
 	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)

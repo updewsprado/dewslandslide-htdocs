@@ -72,6 +72,7 @@ function dateselection() {
 }
 
 
+
 function removeSpecificArray(array, element) {
 	const index = array.indexOf(element);
 	array.splice(index, 1);
@@ -129,12 +130,14 @@ function getRanges(array) {
 		rstart = array[i];
 		rend = rstart;
 		while (array[i + 1] - array[i] == 1) {
+
 			rend = array[i + 1];
 			i++;
 		}
 		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
 	}
 	return ranges;
+
 }
 
 function cb(start, end) {
@@ -240,6 +243,8 @@ function SelectedSite(to) {
 			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
 			tdate : to+" "+current_time
 		}
+		
+
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
 			$('.crackgeneral').empty();
 			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
@@ -337,6 +342,7 @@ function SurficialOnSelect() {
 function SelectdaysOption(id,category) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
 			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')+
@@ -367,7 +373,7 @@ function SelectdaysOption(id,category) {
 		var tdate = moment($("#reportrange0 span").text()).format('YYYY-MM-DD')+" "+$('#time0').val();
 
 		let dataTableSubmit = { 
-			site : site, 
+			site : site.toLowerCase(), 
 			fdate : fdate,
 			tdate : tdate
 		}
@@ -793,8 +799,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
-	// console.log(max_plot_time
-
+	// console.log(max_plot_time)
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -1229,7 +1234,7 @@ function RainFallOnSelect(){
 	})
 }
 
-function dataTableProcess(dataSubmit,crack_name) {  
+function dataTableProcess(dataSubmit,crack_name) { 
 	$('#tooltip_surficial').tooltip('show')
 	$.post("../surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
 		var result= JSON.parse(data_result);
@@ -1245,9 +1250,9 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
-		// var fdate = moment().subtract(3,'months').format('YYYY-MM-DD')+" "+$('#time0').val();
+
 		let dataTableSubmit1 = { 
-			site : dataSubmit.site, 
+			site : dataSubmit.site.toLowerCase(), 
 			fdate : dataSubmit.fdate,
 			tdate : dataSubmit.tdate,
 			crack_name:crack_name,
@@ -2307,7 +2312,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-		var data = data_result;
+var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -4239,6 +4244,7 @@ function downloadSvg() {
 		$( ".svg_container" ).empty();
 		var all_data = [];
 
+
 		/*SUPERIMPOSED GROUND*/
 		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
 			$("#ground_graph .highcharts-container .highcharts-root").attr("xmlns","http://www.w3.org/2000/svg");
@@ -4257,6 +4263,8 @@ function downloadSvg() {
 
 		$(".highcharts-root").removeAttr("xmlns");
 		$(".highcharts-root").removeAttr("version");
+
+
 
 		/***************Deleted Part for Highchart***********************/
 
@@ -4347,6 +4355,7 @@ function downloadSvg() {
 
 			for (var i = 0; i < all_piezometer.length; i++) {
 				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
+
 			}
 			if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
 				all_data.push($('#pzSvg').html());
@@ -4385,6 +4394,7 @@ function downloadSvg() {
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 350 );
 			}
+
 
 			for (var i = 0; i < all_sensor_accel.length; i++) {
 				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
@@ -4486,4 +4496,6 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 		}
 	}
 	
+
 }
+
