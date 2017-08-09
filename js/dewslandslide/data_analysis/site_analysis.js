@@ -240,6 +240,7 @@ function SelectedSite(to) {
 			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
 			tdate : to+" "+current_time
 		}
+		
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
 			$('.crackgeneral').empty();
 			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
@@ -367,7 +368,7 @@ function SelectdaysOption(id,category) {
 		var tdate = moment($("#reportrange0 span").text()).format('YYYY-MM-DD')+" "+$('#time0').val();
 
 		let dataTableSubmit = { 
-			site : site, 
+			site : site.toLowerCase(), 
 			fdate : fdate,
 			tdate : tdate
 		}
@@ -793,8 +794,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
-	// console.log(max_plot_time
-
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -1229,7 +1228,7 @@ function RainFallOnSelect(){
 	})
 }
 
-function dataTableProcess(dataSubmit,crack_name) {  
+function dataTableProcess(dataSubmit,crack_name) { 
 	$('#tooltip_surficial').tooltip('show')
 	$.post("../surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
 		var result= JSON.parse(data_result);
@@ -1245,9 +1244,8 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
-		// var fdate = moment().subtract(3,'months').format('YYYY-MM-DD')+" "+$('#time0').val();
 		let dataTableSubmit1 = { 
-			site : dataSubmit.site, 
+			site : dataSubmit.site.toLowerCase(), 
 			fdate : dataSubmit.fdate,
 			tdate : dataSubmit.tdate,
 			crack_name:crack_name,
