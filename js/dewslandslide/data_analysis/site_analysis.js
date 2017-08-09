@@ -237,7 +237,7 @@ function SelectedSite(to) {
 
 		let dataSubmit_surficial = {
 			site : (selected_site).toLowerCase(),
-			fdate : moment(to+" "+current_time).subtract(1,'months').format('YYYY-MM-DD')+" "+current_time,
+			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
 			tdate : to+" "+current_time
 		}
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
@@ -337,7 +337,6 @@ function SurficialOnSelect() {
 function SelectdaysOption(id,category) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
-		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
 			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')+
@@ -429,7 +428,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 
 		for (var i = 0; i < ids1.length; i++) {
 			$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+ids1[i]+'"><button type="button">'+ids2[i].toUpperCase()+'</button></a></li>')
-			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="collapse"></div></div>')
+			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="rain_graph collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="rain_graph collapse"></div></div>')
 			dropdowlistAppendValue(ids1[i],ids2[i].toUpperCase(),'#rainfallgeneral');
 		}
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
@@ -972,16 +971,16 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show == "#rain_arq"){
-		$("#rain_arq").addClass("in");
-		$("#rain_arq2").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
+		$("#rain_arq2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
-		$("#rain_senslope2").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
+		$("#rain_senslope2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
-		$(div_data_show+"2").addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
+		$(div_data_show+"2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1191,13 +1190,13 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show== "#rain_arq"){
-		$("#rain_arq").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1218,10 +1217,10 @@ function RainFallOnSelect(){
 			if(selected_rain ==  all_rain_name[a]){
 				var div1 = document.getElementById((all_rain_id[a]).slice(1,15));
 				var collapse_id = div1.getAttribute("class");
-				if( collapse_id == "in"){
+				if( collapse_id == "rain_graph in"){
 					$(all_rain_id[a]).switchClass("in" , "collapse");
 					$(all_rain_id[a]+"2").switchClass("in" , "collapse");
-				}else{
+				}else if(collapse_id == "rain_graph collapse"){
 					$(all_rain_id[a]).switchClass("collapse" , "in");
 					$(all_rain_id[a]+"2").switchClass("collapse" , "in");
 				}
@@ -1246,10 +1245,10 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
-		var fdate = moment().subtract(3,'months').format('YYYY-MM-DD')+" "+$('#time0').val();
+		// var fdate = moment().subtract(3,'months').format('YYYY-MM-DD')+" "+$('#time0').val();
 		let dataTableSubmit1 = { 
 			site : dataSubmit.site, 
-			fdate : fdate,
+			fdate : dataSubmit.fdate,
 			tdate : dataSubmit.tdate,
 			crack_name:crack_name,
 			last:last_goodData,
@@ -1521,7 +1520,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 	});	
 }
-function surficialGraph(dataTableSubmit) {  
+function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -4290,7 +4289,7 @@ function downloadSvg() {
 			$('#rainfallsvg').attr("height", "1950");
 		}
 
-		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
+		var ids = $('#raincharts .rain_graph .highcharts-container ').map(function() {
 			return this.id;
 		}).get();
 
