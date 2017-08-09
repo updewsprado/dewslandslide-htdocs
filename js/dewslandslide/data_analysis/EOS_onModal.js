@@ -1048,9 +1048,11 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
+	// console.log("/api/SensorAllAnalysisData/"+site+"/n/"+tdate)
+	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/n/"+tdate,
 		dataType: "json",
 		success: function(result){
+			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
