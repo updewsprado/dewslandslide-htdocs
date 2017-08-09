@@ -1048,7 +1048,7 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	// console.log("/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate)
+	console.log("/api/SensorAllAnalysisData/"+site+"/n/"+tdate)
 	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/n/"+tdate,
 		dataType: "json",
 		success: function(result){
