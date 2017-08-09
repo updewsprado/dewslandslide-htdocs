@@ -4266,7 +4266,7 @@ function downloadSvg() {
 			return this.id;
 		}).get();
 
-		console.log(all_raincharts)
+		
 		var ids0 = []
 		for (var i = 0; i < all_raincharts.length; i++) {
 			if(all_raincharts[i].length < 6 || all_raincharts[i] == 'rain_arq' || all_raincharts[i] == 'rain_senslope'){
