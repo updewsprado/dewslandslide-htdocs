@@ -1798,15 +1798,14 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 		user = "You";
 
 		conn.send(JSON.stringify(request));
-	} else if (type == "searchedTimestampsent" || type == "searchedTimestampwritten") {
-		contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
-
+	} else if (type == "searchedTimestampsent") {
+		// contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 		// $("#current-contacts h4").text(user);
 		// document.title = user;
 		contactnumTrimmed = [];
 
 		request = {
-			'type': 'smsloadTimestampsent',
+			'type': 'smsLoadTimestampsentSearched',
 			'sms_id': sms_id,
 			'user': user,
 			'user_number': user_number,
@@ -1815,7 +1814,19 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 		}
 		contactnumTrimmed = [user_number];
 		user = "You";
-		console.log(request);
+		conn.send(JSON.stringify(request));	
+	} else if (type == "searchedTimestampwritten") {
+		request = {
+			'type': 'smsLoadTimestampwrittenSearched',
+			'sms_id': sms_id,
+			'user': user,
+			'user_number': user_number,
+			'sms_msg': sms_message,
+			'timestamp': timestamp
+		}
+		contactnumTrimmed = [user_number];
+		user = "You";
+		conn.send(JSON.stringify(request));	
 	}
 }
 
