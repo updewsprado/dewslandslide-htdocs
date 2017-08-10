@@ -1736,10 +1736,11 @@ $(document).on("click","#search-result li",function(){
 
 $(document).on("click","#search-global-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
-	loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
+	console.log(data);
+	loadSearchKey(data[0],data[1],data[2],data[3],data[4],data[5]);
 })
 
-function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null){
+function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null,sms_id = ""){
 	$('#search-result-modal').modal('hide');
 	coloredTimestamp = "id_"+timestamp;
 	if (type == "searchMessage") {
@@ -1779,7 +1780,6 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 		};
 
 		conn.send(JSON.stringify(request));
-
 	} else if (type == "searchMessageGlobal" || type == "searchGintags"){
 		contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 
@@ -1798,7 +1798,24 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 		user = "You";
 
 		conn.send(JSON.stringify(request));
+	} else if (type == "searchedTimestampsent" || type == "searchedTimestampwritten") {
+		contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 
+		// $("#current-contacts h4").text(user);
+		// document.title = user;
+		contactnumTrimmed = [];
+
+		request = {
+			'type': 'smsloadTimestampsent',
+			'sms_id': sms_id,
+			'user': user,
+			'user_number': user_number,
+			'sms_msg': sms_message,
+			'timestamp': timestamp
+		}
+		contactnumTrimmed = [user_number];
+		user = "You";
+		console.log(request);
 	}
 }
 
