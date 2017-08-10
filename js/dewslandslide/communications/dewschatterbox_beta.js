@@ -128,7 +128,7 @@ function sendViaAlertMonitor(dashboard_data){
 		var alert_level = "";
 		
 		// HOTFIX OF ND sites
-		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1) {
+		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1 || dashboard_data.internal_alert_level.indexOf('ND') > -1) {
 			dashboard_data.internal_alert_level = "A1-R";
 		} else if (dashboard_data.internal_alert_level.indexOf('ND-E') > -1) {
 			dashboard_data.internal_alert_level = "A1-E";
@@ -1155,7 +1155,7 @@ $(document).ready(function() {
 									var onset = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
 								}
 
-								if (moment(rounded_release).hour() % 4 == 0 && moment(event_details.data_timestamp).hour() % 4 == 0) {
+								if (moment(rounded_release).hour() % 4 == 0 && moment(event_details.data_timestamp).add(30,'m').hour() % 4 == 0) {
 									last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
 								} else {
 									last_rounded_release = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
@@ -1168,7 +1168,6 @@ $(document).ready(function() {
 									'data_timestamp': event_details.data_timestamp
 								}
 
-								console.log(lastReleaseData);
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
 									console.log(data);
 									var response = JSON.parse(data);
@@ -1313,7 +1312,6 @@ function getOngoingEvents(sites){
 			for (var counter = 0; counter < events.length; counter++) {
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
-						debugger;
 						var narrative_template = "";
 						console.log(gintags_msg_details);
 						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
