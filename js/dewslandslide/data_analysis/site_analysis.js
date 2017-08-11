@@ -17,7 +17,6 @@ $(document).ajaxStop(function () {
 
 });
 
-
 $(document).ready(function(e) {
 
 	downloadSvg();
@@ -58,6 +57,7 @@ function dateselection() {
 	$('#reportrange0').daterangepicker({
 		singleDatePicker: true,
 		startDate: end,
+		showDropdowns: true
 	}, cb);
 
 	cb(start, end);
@@ -129,12 +129,12 @@ function getRanges(array) {
 		rstart = array[i];
 		rend = rstart;
 		while (array[i + 1] - array[i] == 1) {
-      rend = array[i + 1];
-      i++;
-  }
-  ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
-}
-return ranges;
+			rend = array[i + 1];
+			i++;
+		}
+		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
+	}
+	return ranges;
 }
 
 function cb(start, end) {
@@ -237,9 +237,10 @@ function SelectedSite(to) {
 
 		let dataSubmit_surficial = {
 			site : (selected_site).toLowerCase(),
-			fdate : moment(to+" "+current_time).subtract(1,'months').format('YYYY-MM-DD')+" "+current_time,
+			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
 			tdate : to+" "+current_time
 		}
+		
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
 			$('.crackgeneral').empty();
 			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
@@ -337,7 +338,6 @@ function SurficialOnSelect() {
 function SelectdaysOption(id,category) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
-		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
 			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')+
@@ -368,7 +368,7 @@ function SelectdaysOption(id,category) {
 		var tdate = moment($("#reportrange0 span").text()).format('YYYY-MM-DD')+" "+$('#time0').val();
 
 		let dataTableSubmit = { 
-			site : site, 
+			site : site.toLowerCase(), 
 			fdate : fdate,
 			tdate : tdate
 		}
@@ -429,7 +429,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 
 		for (var i = 0; i < ids1.length; i++) {
 			$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+ids1[i]+'"><button type="button">'+ids2[i].toUpperCase()+'</button></a></li>')
-			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="collapse"></div></div>')
+			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="rain_graph collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="rain_graph collapse"></div></div>')
 			dropdowlistAppendValue(ids1[i],ids2[i].toUpperCase(),'#rainfallgeneral');
 		}
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
@@ -503,7 +503,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						var series_data = [];
 						var series_data2 = [];
 						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
-					
+
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -545,8 +545,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-		
-	}
+
+}
 }
 
 function getRainArq(site,dataSubmit,max_rain,id,distance) {
@@ -644,7 +644,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-	}
+}
 }
 
 function getRainNoah(site,dataSubmit,max_rain,id,distance) {
@@ -744,7 +744,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-	}
+}
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,max_value,distance,allDataResult){
@@ -794,7 +794,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
-	// console.log(max_plot_time)
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -971,16 +970,16 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show == "#rain_arq"){
-		$("#rain_arq").addClass("in");
-		$("#rain_arq2").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
+		$("#rain_arq2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
-		$("#rain_senslope2").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
+		$("#rain_senslope2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
-		$(div_data_show+"2").addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
+		$(div_data_show+"2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1190,13 +1189,13 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show== "#rain_arq"){
-		$("#rain_arq").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1217,10 +1216,10 @@ function RainFallOnSelect(){
 			if(selected_rain ==  all_rain_name[a]){
 				var div1 = document.getElementById((all_rain_id[a]).slice(1,15));
 				var collapse_id = div1.getAttribute("class");
-				if( collapse_id == "in"){
+				if( collapse_id == "rain_graph in"){
 					$(all_rain_id[a]).switchClass("in" , "collapse");
 					$(all_rain_id[a]+"2").switchClass("in" , "collapse");
-				}else{
+				}else if(collapse_id == "rain_graph collapse"){
 					$(all_rain_id[a]).switchClass("collapse" , "in");
 					$(all_rain_id[a]+"2").switchClass("collapse" , "in");
 				}
@@ -1229,7 +1228,7 @@ function RainFallOnSelect(){
 	})
 }
 
-function dataTableProcess(dataSubmit,crack_name) {  
+function dataTableProcess(dataSubmit,crack_name) { 
 	$('#tooltip_surficial').tooltip('show')
 	$.post("../surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
 		var result= JSON.parse(data_result);
@@ -1245,10 +1244,9 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
-		var fdate = moment().subtract(3,'months').format('YYYY-MM-DD')+" "+$('#time0').val();
 		let dataTableSubmit1 = { 
-			site : dataSubmit.site, 
-			fdate : fdate,
+			site : dataSubmit.site.toLowerCase(), 
+			fdate : dataSubmit.fdate,
 			tdate : dataSubmit.tdate,
 			crack_name:crack_name,
 			last:last_goodData,
@@ -1520,7 +1518,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 	});	
 }
-function surficialGraph(dataTableSubmit) {  
+function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -2105,7 +2103,7 @@ function CheckBoxColumn(site,column,to){
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
-			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
+			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD')+" "+$('#time0').val(),to+" "+$('#time0').val())
 			SubOnSelect()
 		}else{
 			$(".subsurface_analysis_div").empty()
@@ -2307,7 +2305,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-var data = data_result;
+		var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -2641,8 +2639,14 @@ function chartProcessInverted(id,data_series,name,site){
 				},
 			},
 			series: {
-				lineWidth: 1
-			}
+				lineWidth: 1,
+				states: {
+					hover: {
+						enabled: true,
+						lineWidth: 8
+					}
+				}
+			},
 		},
 		tooltip: {
 			formatter: function() {
@@ -2768,14 +2772,14 @@ function SubOnSelectDay(column,tdate) {
 	$("#sub_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_day =($(this).find('option').eq(clickedIndex).val());
 		if(selected_day =="3d"){
-			var fdate = (moment().subtract(3,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(3,'days')).format('YYYY-MM-DD');
 		}else if(selected_day =="5d"){
-			var fdate = (moment().subtract(5,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(5,'days')).format('YYYY-MM-DD');
 		}else if(selected_day =="7d"){
-			var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(7,'days')).format('YYYY-MM-DD');
 		}
-		var time = moment().format('HH:mm:ss')
-		allSensorPosition(column,fdate+"T"+time,tdate+"T"+time)
+		var time = $('#time0').val()
+		allSensorPosition(column,fdate+" "+time,tdate)
 	})
 }
 function HeatmapOnSelect(column) {
@@ -4256,10 +4260,11 @@ function downloadSvg() {
 
 		/*RAINFALL*/
 
-		var all_raincharts = $('#raincharts .collapse ').map(function() {
+		var all_raincharts = $('#raincharts .rain_graph ').map(function() {
 			return this.id;
 		}).get();
 
+		
 		var ids0 = []
 		for (var i = 0; i < all_raincharts.length; i++) {
 			if(all_raincharts[i].length < 6 || all_raincharts[i] == 'rain_arq' || all_raincharts[i] == 'rain_senslope'){
@@ -4283,9 +4288,10 @@ function downloadSvg() {
 			$('#rainfallsvg').attr("height", "1950");
 		}
 
-		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
+		var ids = $('#raincharts .rain_graph .highcharts-container ').map(function() {
 			return this.id;
 		}).get();
+
 
 		for (var i = 0; i < ids.length; i++) {
 			$("#rainfallsvg").append($('#'+ids[i]).html())
@@ -4479,4 +4485,3 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 	}
 	
 }
-
