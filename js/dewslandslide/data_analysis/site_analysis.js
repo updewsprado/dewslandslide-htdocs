@@ -1316,7 +1316,6 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/last10GroundData/"+dataSubmit.site,  success: function(data_result) {
-
 			var result = JSON.parse(data_result)
 			var organize_ground_data = []
 			var ground_data_all =[]
@@ -3089,20 +3088,21 @@ function heatmapProcess(site,tdate,day){
 					var time_object = [];
 					var x_and_y=[];
 					var data_series_filtered=[]
+					console.log(moment(time_date).format('YYYY-MM-DD HH:MM:ss'),day)
 					if( day == '1d'){
 						for (var i = 0; i < 48; i++) {
-							time_template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i,'minutes').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
 						}
 					}else if( day == '3d'){
 						for (var i = 0; i < 36; i++) {
-							time_template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							time_template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
@@ -3121,23 +3121,29 @@ function heatmapProcess(site,tdate,day){
 					if(obj_list_time.length != 0){
 						var nodata_timestamp=[]
 						var data_filteredTime =[]
-						
 						for (var i = 0; i < obj_list_time.length; i++) {
 							removeSpecificArray(time_template,obj_list_time[i])
 						}
+
+						
+						
 						for (var a = 0; a < time_template.length; a++) {
 							for (var i = 0; i < obj_list_id.length; i++) {
 								nodata_timestamp.push({id:obj_list_id[i].id,ts:time_template[a],value: NaN})
 							}
 						}
+
+						
+
 						for (var i = 0; i < series_data.length; i++) {
 							nodata_timestamp.push({id:series_data[i].id,ts:series_data[i].ts,value:series_data[i].value})
 						}
-
+						
 						for (var i = 0; i < template.length; i++) {
 							for (var a = 0; a < nodata_timestamp.length; a++) {
 								if( Date.parse(template[i]) == Date.parse(nodata_timestamp[a].ts)){
 									data_filteredTime.push(nodata_timestamp[a])
+
 								}
 							}
 						}
