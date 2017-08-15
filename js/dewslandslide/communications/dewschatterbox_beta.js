@@ -1047,6 +1047,8 @@ $(document).ready(function() {
 				$('#chatterbox-loading').modal('hide');
 				console.log(msg);
 				loadSearchedMessage(msg);
+			} else if (msg.type == "smsloadTimestampsentSearched") {
+				console.log(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
 			} else if (msg.type == "latestAlerts"){
