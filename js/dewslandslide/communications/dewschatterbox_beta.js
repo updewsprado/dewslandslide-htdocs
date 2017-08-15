@@ -1303,7 +1303,6 @@ return tempConn;
 }
 
 function getOngoingEvents(sites){
-	console.log(sites);
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
@@ -1313,7 +1312,6 @@ function getOngoingEvents(sites){
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
 						var narrative_template = "";
-						console.log(gintags_msg_details);
 						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
@@ -2062,6 +2060,10 @@ $(document).on("click","#quick-release-display li",function(){
 	$('input[name="sitenames"]').prop('checked',false);
 	$('input[name="offices"]').prop('checked',false);
 	$('input[name="opt-ewi-recipients"]').prop('checked',true);
+
+	if (tagSitenames[0] == "MSL" || tagSitenames[0] == "MSU") {
+			tagSitenames[0] = "MES";
+	}
 
 	$('input[name="sitenames"]:unchecked').each(function() {
 		if (tagSitenames[0] == $(this).val()) {
@@ -3521,7 +3523,14 @@ $("#confirm-narrative").on('click',function(){
 		for (var counter = 0; counter < tags.length;counter++) {
 			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeas") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					getOngoingEvents(tagSitenames[tag_counter]);
+					if (tagSitenames[tag_counter] == "MES") {
+						var mes_sites = ['MSL','MSU'];
+						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
+							getOngoingEvents(mes_sites[msl_msu_counter]);
+						}
+					} else {
+						getOngoingEvents(tagSitenames[tag_counter]);
+					}
 				}
 				break;
 			}
