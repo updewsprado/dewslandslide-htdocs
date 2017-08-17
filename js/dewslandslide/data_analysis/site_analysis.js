@@ -18,7 +18,7 @@ $(document).ajaxStop(function () {
 });
 
 $(document).ready(function(e) {
-
+	$('.tag').hide()
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -234,7 +234,14 @@ function SelectedSite(to) {
 	})
 
 		/*SUPERIMPOSED SURFICIAL*/
-
+		$('#saveTAG').empty()
+		$('#saveTAG').append('<div class="form-group tag_ids"><label>Tags</label>'+
+            '<input type="text" class="form-control" id="tag_ids" placeholder="Ex: #AccelDrift or #Drift" data-role="tagsinput" value="#newffd">'+
+          '</div><div class="form-group"><label for="formGroupExampleInput">Timestamp</label>'+
+            '<input type="text" class="form-control" id="tag_time" disabled=""></div>'+
+          '<div class="form-group"><label for="formGroupExampleInput2">Comment</label>'+
+            '<textarea class="form-control" rows="5" id="comment"></textarea></div>'+
+          '<button type="button" class="close" class="btn-sm" id="tag_submit">SAVE</button><br>')
 		let dataSubmit_surficial = {
 			site : (selected_site).toLowerCase(),
 			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
@@ -435,7 +442,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeTime"></div>');
 		$(".maxPlot").hide();
-		submittedMeas(dataSubmit,'na','rain');
+		// submittedMeas(dataSubmit,'na','rain');
 		RainFallOnSelect()
 	});
 
@@ -1538,7 +1545,7 @@ function surficialGraph(dataTableSubmit) {
 				for (var i = 0; i < result.length; i++) {
 					if(crack_name[a] == result[i].crack_id){
 						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
+						data.push({x:Date.parse(result[i].ts) ,y:result[i].meas ,id: result[i].id} );
 					}
 				}
 			}
@@ -1572,113 +1579,117 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 	for (var i = 0; i < allDataResult.length; i++) {
 		list_dates.push(site+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
 	}
+	// console.log(allDataResult[0].id,allDataResult[allDataResult.length-1].id)
+	let dataSubmit = {table:'gndmeas',from_id:allDataResult[0].id,to_id:allDataResult[allDataResult.length-1].id,site:site}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		$('#'+id).empty();
+		var result_unfiltered = JSON.parse(data)
+
+		var all_cracks = [];
+
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			all_cracks.push(result_unfiltered[i].crack_id)
+		}
+
+		var all_collected_tags =[]
+		var filtered_crack_id = removeDuplicates(all_cracks);
 	
-	let dataSubmit = { date:list_dates,table:'gndmeas'}
-	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-	// 	var result_unfiltered = JSON.parse(data)
-	// 	var result = [];
-	// 	for (var i = 0; i < result_unfiltered.length; i++) {
-	// 		if (result_unfiltered[i].tag_description == "ground analysis") {
-	// 			result.push(result_unfiltered[i])
-	// 		}
-	// 	}
-	// 	$('#'+id).empty();
-	// 	var all_crack_id = []
-	// 	for (var i = 0; i < result.length; i++) {
-	// 		var remark_parse = ((result[i].remarks).split("/"))
-	// 		all_crack_id.push(remark_parse[1])
-	// 	}
-	// 	var label_crack = removeDuplicates(all_crack_id);
-	// 	var all_data_tag =[]
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		var collect =[]
-	// 		for (var i = 0; i < result.length; i++) {
-	// 			var remark_parse = ((result[i].remarks).split("/"))
-	// 			if(remark_parse[1] == label_crack[a] ){
-	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-	// 			}
-	// 		}
-	// 		all_data_tag.push(collect)
-	// 	}
-
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-	// 	}
-	// 	data_series.push({name:'Tag'})
-
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 400,
-			width:$("#ground_graph").width()
-		},
-		title: {
-			text: name,
-		},
-		subtitle: {
-			text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
-		},
-		yAxis:{
-			title: {
-				text: 'Displacement (cm)'
+		for (var i = 0; i < filtered_crack_id.length; i++) {
+			var list = []
+			for (var a = 0; a < result_unfiltered.length; a++) {
+				if( filtered_crack_id[i] == result_unfiltered[a].crack_id){
+					list.push({x:Date.parse(result_unfiltered[a].timestamp),text:"",value:result_unfiltered[a].remarks,title:result_unfiltered[a].tag_name})
+				}
 			}
-		},
-		xAxis: {
-			min:Date.parse(dataTableSubmit.fdate),
-			max:Date.parse(dataTableSubmit.tdate),
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
+			all_collected_tags.push(list)
+		}
+
+		
+		for (var a = 0; a < filtered_crack_id.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_collected_tags[a],onSeries:filtered_crack_id[a],width:100,showInLegend: false,visible:true})
+		}
+		var result = [];
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			if (result_unfiltered[i].tag_description == "ground analysis") {
+				result.push(result_unfiltered[i])
+			}
+		}
+		
+		data_series.push({name:'Tag'})
+
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'line',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				height: 400,
+				width:$("#ground_graph").width()
 			},
 			title: {
-				text: 'Date'
+				text: name,
 			},
-		},
-		tooltip: {
-			split: true,
-			crosshairs: true,
-		},
-		plotOptions: {
-			line: {
-				marker: {
-					enabled: true
+			subtitle: {
+				text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
+			},
+			yAxis:{
+				title: {
+					text: 'Displacement (cm)'
 				}
 			},
-			series: {
-				marker: {
-					radius: 3
+			xAxis: {
+				min:Date.parse(dataTableSubmit.fdate),
+				max:Date.parse(dataTableSubmit.tdate),
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
 				},
-				cursor: 'pointer',
-					// point: {
-					// 	events: {
-					// 		click: function () {
-					// 			if(this.series.name == "Tag"){
-					// 				$("#tagModal").modal("show");
-					// 				$("#comment-model").empty();
-					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-					// 			}else{
-					// 				$("#annModal").modal("show");
-					// 				$(".tag").hide();
-					// 				$('#tag_ids').tagsinput('removeAll');
-					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-					// 				$("#tag_value").val(this.y)
-					// 				$("#tag_crack").val(this.series.name)
-					// 				$("#tag_description").val('ground analysis')
-					// 				$("#tag_tableused").val('gndmeas')
-					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-					// 			}
-					// 		}
-					// 	}
-					// }
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				split: true,
+				crosshairs: true,
+			},
+			plotOptions: {
+				line: {
+					marker: {
+						enabled: true
+					}
+				},
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+								}else{
+									$("#annModal").modal("show");
+									$(".tag").hide();
+									$('#tag_ids').tagsinput('removeAll');
+									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+									$("#tag_value").val(this.id)
+									$("#tag_crack").val(this.series.name)
+									$("#tag_description").val('ground analysis')
+									$("#tag_tableused").val('gndmeas')
+									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								}
+							}
+						}
+					}
 				},
 			},
 			credits: {
@@ -1686,23 +1697,23 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 			},
 			series:data_series
 		});
-	var chart = $('#'+id).highcharts();
-	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-		var series = chart.series[(data_series.length-1)];
-		for (var i = 0; i < label_crack.length; i++) {
-			if (series.visible) {
-				(chart.series[((data_series.length-(i+1))-1)]).update({
-					visible: true,
-				});
-			}else {
-				(chart.series[((data_series.length-(i+1))-1)]).update({
-					visible: false,
-				});
+		var chart = $('#'+id).highcharts();
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < label_crack.length; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
 			}
-		}
-	});
+		});
 
-	// });
+	});
 
 }
 
@@ -1713,9 +1724,9 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
 		var time = (($("#tag_time").val()).slice(2,10)).toString()
-		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_element_id = $("#tag_value").val();
 		var table_used = $("#tag_tableused").val();
-		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var remarks = $("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -1728,7 +1739,7 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				'remarks' : remarks
 			})
 		}
-
+		console.log(dataSubmit)
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) { 
@@ -1740,7 +1751,7 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 			if( category == 'surficial'){
 				chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
 			}else if (category == 'rain'){
-				let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
+				// let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
 				
 			}
 		})
@@ -3088,7 +3099,7 @@ function heatmapProcess(site,tdate,day){
 					var time_object = [];
 					var x_and_y=[];
 					var data_series_filtered=[]
-					console.log(moment(time_date).format('YYYY-MM-DD HH:MM:ss'),day)
+					
 					if( day == '1d'){
 						for (var i = 0; i < 48; i++) {
 							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
