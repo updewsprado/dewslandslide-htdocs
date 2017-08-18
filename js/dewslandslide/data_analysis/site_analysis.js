@@ -1700,7 +1700,7 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 		var chart = $('#'+id).highcharts();
 		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 			var series = chart.series[(data_series.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
+			for (var i = 0; i < all_cracks.length; i++) {
 				if (series.visible) {
 					(chart.series[((data_series.length-(i+1))-1)]).update({
 						visible: true,
@@ -1739,7 +1739,6 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				'remarks' : remarks
 			})
 		}
-		console.log(dataSubmit)
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) { 
@@ -2113,6 +2112,7 @@ function CheckBoxColumn(site,column,to){
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
+			
 			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD')+" "+$('#time0').val(),to+" "+$('#time0').val())
 			SubOnSelect()
 		}else{
@@ -2151,7 +2151,7 @@ function CheckBoxColumn(site,column,to){
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			var time = moment($("#reportrange0 span").text()+" "+$("#time0").val()).format('YYYY-MM-DD HH:mm:ss');
 			heatmapProcess(column,time,'3d')
 		}
 	});
@@ -2843,7 +2843,7 @@ function HeatmapOnSelectDay(column) {
 		}
 		$("#daygeneral").val(day);
 		$("#daygeneral").selectpicker('refresh');
-		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
+		heatmapProcess(column,(moment(tdate+" "+$("#time0").val()).format("YYYY-MM-DD HH:ss:mm")),day)
 	})
 }
 
@@ -2990,7 +2990,13 @@ function SiteInfo(site){
 	});
 }
 
-function heatmapProcess(site,tdate,day){
+function heatmapProcess(site,tsdate,day){
+	if(tsdate.slice(14,16) < 30){
+		var time_set = '00:00'
+	}else if(tsdate.slice(14,16) > 30){
+		var time_set = '30:00'
+	}
+	var tdate = tsdate.slice(0,14)+time_set
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -3120,14 +3126,16 @@ function heatmapProcess(site,tdate,day){
 						}
 					}else if( day == '30d'){
 						for (var i = 0; i < 30; i++) {
-							time_template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
+
+							time_template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
 						}
 					}
+					
 					template.reverse()
 					if(obj_list_time.length != 0){
 						var nodata_timestamp=[]
@@ -3167,7 +3175,6 @@ function heatmapProcess(site,tdate,day){
 								}
 							}
 						}
-						
 						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
 					}else{
 						var total_node = $('#total_node').val();
