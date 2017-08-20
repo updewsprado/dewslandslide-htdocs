@@ -37,7 +37,7 @@ function loadBulletin(id1, id2) {
             }   
         }
         bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
-        bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+        bulletin_timestamp = moment(bulletin_timestamp, 'MMMM DD, YYYY, h:mm A');
 
         let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
 
