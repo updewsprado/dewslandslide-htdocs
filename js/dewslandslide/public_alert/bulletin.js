@@ -62,6 +62,9 @@ function loadBulletin(id1, id2) {
 
                 let str = "As of " + release_time + ", " + loc + " is under " + alert + " based on " + basis.join(", ") + ".";
                 $("#info").val( str + "\n\n" + text );
+                
+                $('#recipients').tagsinput('add', 'phivolcs-dynaslope@googlegroups.com');
+                $('#recipients').tagsinput('add', 'phivolcs-senslope@googlegroups.com');
             }
             bulletin_timestamp = moment(bulletin_timestamp, 'MMMM DD, YYYY, h:mm A');          
         }, "json");
