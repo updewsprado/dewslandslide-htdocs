@@ -675,7 +675,6 @@ function chartProcessSurficialAnalysis(id,data_series,name,site){
 	});
 	$("#analysisVelocity").addClass("in");
 
-
 }
 function chartProcessSurficialAnalysis2(id,data_series,name,site){
 	Highcharts.setOptions({
@@ -797,9 +796,6 @@ function chartProcessSurficialAnalysis3(id,data_series,name,site){
 	});
 
 }
-
-
-
 
 function chartProcess2(id,data_series,name){
 	var site = $('#sitegeneral').val();

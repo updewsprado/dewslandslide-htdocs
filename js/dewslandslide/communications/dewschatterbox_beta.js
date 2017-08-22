@@ -81,25 +81,25 @@ function sendViaAlertMonitor(dashboard_data){
 
 		var currentTime = moment().format("YYYY-MM-DD HH:mm");
 		if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
-			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
 
 			final_template = final_template.replace("(next_ewi_time)","04:00 AM");
 			final_template = final_template.replace("(next_ewi_date)","mamayang");
 		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
-			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
 
 			final_template = final_template.replace("(next_ewi_time)","08:00 AM");
 			final_template = final_template.replace("(next_ewi_date)","mamayang");
 		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 11:30 AM");
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-11:30 AM");
 			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
 
 			final_template = final_template.replace("(next_ewi_time)","12:00 NN");
 			final_template = final_template.replace("(next_ewi_date)","mamayang");
 		} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-			final_template = final_template.replace("(gndmeas_time_submission)","bago mag 3:30 PM");
+			final_template = final_template.replace("(gndmeas_time_submission)","bago mag-3:30 PM");
 			final_template = final_template.replace("(gndmeas_date_submission)","mamaya");
 
 			final_template = final_template.replace("(next_ewi_time)","04:00 PM");
@@ -128,7 +128,7 @@ function sendViaAlertMonitor(dashboard_data){
 		var alert_level = "";
 		
 		// HOTFIX OF ND sites
-		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1) {
+		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1 || dashboard_data.internal_alert_level.indexOf('ND') > -1) {
 			dashboard_data.internal_alert_level = "A1-R";
 		} else if (dashboard_data.internal_alert_level.indexOf('ND-E') > -1) {
 			dashboard_data.internal_alert_level = "A1-E";
@@ -317,7 +317,7 @@ function sendViaAlertMonitor(dashboard_data){
 
 									var current_time = moment().format('LL');
 									template = template.replace("(current_date_time)",current_time+" "+meridiem);
-									template = template.replace("(current_date)",moment().format("D MMMM, YYYY"));
+									template = template.replace("(current_date)",moment().format("MMMM D, YYYY"));
 								} else {
 									var meridiem = moment(dashboard_data.event_start).format("hh:mm A");
 									if (meridiem.slice(-8) == "12:00 AM") {
@@ -329,29 +329,29 @@ function sendViaAlertMonitor(dashboard_data){
 
 									var current_time = moment().format('LL');
 									template = template.replace("(current_date_time)",current_time+" "+meridiem);
-									template = template.replace("(current_date)",moment().format("D MMMM, YYYY"));
+									template = template.replace("(current_date)",moment().format("MMMM D, YYYY"));
 								}
 
 								if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","04:00 AM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag 07:30 AM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","08:00 AM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag 11:30 AM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-11:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","12:00 NN");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag 3:30 PM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-:30 PM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","04:00 PM");
@@ -364,7 +364,7 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
-									template = template.replace("(gndmeas_date_submission)","bukas "+moment().add(1,'d').format("D MMMM YYYY"));
+									template = template.replace("(gndmeas_date_submission)","bukas "+moment().add(1,'d').format("MMMM D, YYYY"));
 
 									template = template.replace("(next_ewi_time)","12:00 MN");
 									template = template.replace("(next_ewi_date)","bukas ng");
@@ -1155,7 +1155,7 @@ $(document).ready(function() {
 									var onset = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
 								}
 
-								if (moment(rounded_release).hour() % 4 == 0 && moment(event_details.data_timestamp).hour() % 4 == 0) {
+								if (moment(rounded_release).hour() % 4 == 0 && moment(event_details.data_timestamp).add(30,'m').hour() % 4 == 0) {
 									last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
 								} else {
 									last_rounded_release = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
@@ -1168,7 +1168,6 @@ $(document).ready(function() {
 									'data_timestamp': event_details.data_timestamp
 								}
 
-								console.log(lastReleaseData);
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
 									console.log(data);
 									var response = JSON.parse(data);
@@ -1313,7 +1312,6 @@ function getOngoingEvents(sites){
 			for (var counter = 0; counter < events.length; counter++) {
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
-						debugger;
 						var narrative_template = "";
 						console.log(gintags_msg_details);
 						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {

@@ -137,7 +137,6 @@ function getRanges(array) {
 		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
 	}
 	return ranges;
-
 }
 
 function cb(start, end) {
@@ -4265,7 +4264,6 @@ function downloadSvg() {
 		$(".highcharts-root").removeAttr("version");
 
 
-
 		/***************Deleted Part for Highchart***********************/
 
 		/*RAINFALL*/
@@ -4334,6 +4332,7 @@ function downloadSvg() {
 
 			for (var i = 0; i < all_surficial.length; i++) {
 				$("#surficialsvg").append($('#'+all_surficial[i]+' .highcharts-container').html())
+
 			}
 
 			if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
@@ -4355,8 +4354,8 @@ function downloadSvg() {
 
 			for (var i = 0; i < all_piezometer.length; i++) {
 				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
-
 			}
+
 			if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
 				all_data.push($('#pzSvg').html());
 			}
@@ -4498,4 +4497,5 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 	
 
 }
+
 
