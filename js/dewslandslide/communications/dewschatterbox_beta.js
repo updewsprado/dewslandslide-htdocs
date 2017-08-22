@@ -350,7 +350,7 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(next_ewi_time)","12:00 NN");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag-:30 PM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-3:30 PM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","04:00 PM");
