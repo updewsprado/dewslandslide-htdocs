@@ -126,7 +126,6 @@ function sendViaAlertMonitor(dashboard_data){
 	} else {
 		var alert_site_name = "";
 		var alert_level = "";
-		
 		// HOTFIX OF ND sites
 		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1 || dashboard_data.internal_alert_level.indexOf('ND') > -1) {
 			dashboard_data.internal_alert_level = "A1-R";
@@ -373,6 +372,7 @@ function sendViaAlertMonitor(dashboard_data){
 								}
 								$('#msg').val(template);
 								$('#site-abbr').val(dashboard_data["name"]);
+								$('#extended_status').val(dashboard_data["status"]+","+dashboard_data["day"]);
 								$('#constructed-ewi-amd').val(template);
 								$('#ewi-asap-modal').modal('toggle');
 							}
@@ -426,6 +426,7 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 	var tag_indicator = "";
+	var dasboard_data_holder;
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -2778,8 +2779,17 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
-
+		var extended_indicator = $('#extended_status').val().split(",");
+		if (extended_indicator[0] == "extended") {
+			if (extended_indicator[1] == 0) {
+				var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+			} else {
+				var tagOffices = ['LLMC','BLGU','MLGU','REG8'];
+			}
+		} else {
+			var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		}
+	
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
 
