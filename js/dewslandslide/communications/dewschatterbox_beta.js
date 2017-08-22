@@ -1142,6 +1142,7 @@ $(document).ready(function() {
 								var start = moment().format('YYYY-MM-DD HH:mm:ss');
 								var rounded_release;
 								var last_rounded_release;
+								var previous_release;
 
 								if (moment(start).minute() < 30) {
 									var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
@@ -1161,10 +1162,13 @@ $(document).ready(function() {
 									last_rounded_release = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
 								}
 
+								previous_release = moment(last_rounded_release).subtract(210,'m').format('YYYY-MM-DD HH:mm:ss');
+
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
 									'last_release_time': last_rounded_release,
+									'previous_release': previous_release,
 									'data_timestamp': event_details.data_timestamp
 								}
 
