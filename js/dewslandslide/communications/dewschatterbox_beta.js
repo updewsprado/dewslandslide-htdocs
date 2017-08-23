@@ -970,6 +970,7 @@ $(document).ready(function() {
 			$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" type="checkbox" value="'+sitename+'">'+sitename+'</label></div>');
 		}
 	}
+	
 	function connectWS() {
 		$('#chatterbox-loading').modal('show');
 		console.log("trying to connect to web socket server");
@@ -1041,14 +1042,19 @@ $(document).ready(function() {
 				loadSearchedMessage(msg);
 			} else if (msg.type == "searchedTimestampwritten") {
 				$('#chatterbox-loading').modal('hide');
-				console.log(msg);
 				loadSearchedMessage(msg);
 			} else if (msg.type == "searchedTimestampsent") {
 				$('#chatterbox-loading').modal('hide');
-				console.log(msg);
+				loadSearchedMessage(msg);
+			} else if (msg.type == "searchedUnknownNumber") {
+				$('#chatterbox-loading').modal('hide');
 				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadTimestampsentSearched") {
-				console.log(msg);
+				$('#chatterbox-loading').modal('hide');
+				loadSearchedMessage(msg);
+			} else if (msg.type == "smsloadTimestampwrittenSearched") {
+				$('#chatterbox-loading').modal('hide');
+				loadSearchedMessage(msg);
 			} else if (msg.type == "smsloadquickinbox") {
 				initLoadQuickInbox(msg)
 			} else if (msg.type == "latestAlerts"){
@@ -1732,13 +1738,13 @@ var coloredTimestamp;
 
 $(document).on("click","#search-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
-	console.log(($(this).closest('li')).find("input[id='msg_details']").val());
+	$('#chatterbox-loading').modal('show');
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4]);
 })
 
 $(document).on("click","#search-global-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
-	console.log(data);
+	$('#chatterbox-loading').modal('show');
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4],data[5]);
 })
 
@@ -1782,7 +1788,7 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 		};
 
 		conn.send(JSON.stringify(request));
-	} else if (type == "searchMessageGlobal" || type == "searchGintags"){
+	} else if (type == "searchMessageGlobal" || type == "searchGintags" || type == "searchedUnknownNumber"){
 		contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
 
 		$("#current-contacts h4").text(user);
@@ -1801,9 +1807,6 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 
 		conn.send(JSON.stringify(request));
 	} else if (type == "searchedTimestampsent") {
-		// contactInfo = [{'fullname':user,'numbers': '0'+trimmedContactNum(user_number)}];
-		// $("#current-contacts h4").text(user);
-		// document.title = user;
 		contactnumTrimmed = [];
 
 		request = {
@@ -1917,8 +1920,9 @@ function loadSearchedMessage(msg){
 		targetLi.style.borderWidth = "5px";
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
-	} else if (msg.type == "smsloadGlobalSearched"){
+	} else if (msg.type == "smsloadGlobalSearched" || msg.type == "smsloadTimestampsentSearched" || msg.type == "smsloadTimestampwrittenSearched"){
 		messages = [];
+		contactnumTrimmed = [];
 		var searchedResult = msg.data;
 		var res;
 		var contact_header = "";
@@ -1927,7 +1931,7 @@ function loadSearchedMessage(msg){
 				res = searchedResult[i];
 				updateGlobalMessage(res);
 				if (contact_header == ""){
-					if (res.user != "You"){
+					if (res.user != "You" || res.sender != "You"){
 						contact_header = res.user;
 					}
 				}
@@ -1941,8 +1945,10 @@ function loadSearchedMessage(msg){
 		$('#messages').html(messages_html);
 		counters = 0;
 
-		$("#current-contacts h4").text(contact_header);
-		document.title = contact_header;
+		$("#convo-header .panel-heading").text(msg.talking_to);
+		contactnumTrimmed.push("0"+msg.mobile_no);
+		$("#convo-header .panel-body").text(contactnumTrimmed);
+		$("#contact-indicator").val(msg.talking_to);
 
 		$('#main-container').removeClass('hidden');
 		$('#search-global-message-modal').modal('hide');
@@ -1956,7 +1962,8 @@ function loadSearchedMessage(msg){
 		console.log(targetLi.offsetTop);
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
-	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags" || msg.type == "searchedTimestampwritten" || msg.type == "searchedTimestampsent"){
+	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags" || msg.type == "searchedTimestampwritten" || msg.type == "searchedTimestampsent" || msg.type == "searchedUnknownNumber"){
+		console.log(msg);
 		messages = [];
 		var searchedResult = msg.data;
 		var res;
@@ -1983,7 +1990,7 @@ function loadSearchedMessage(msg){
 }
 
 function updateGlobalMessage(msg){
-	if (msg.user == "You") {
+	if (msg.user == "You" || msg.sender == "You") {
 		msg.isyou = 1;
 		searchResults.push(msg);
 	} else {
@@ -2330,15 +2337,14 @@ $('#send-msg').on('click',function(){
 				};
 
 				conn.send(JSON.stringify(temp_msg_holder));
-
+				
 				msgType = "smssendgroup";
 				testMsg = msg;
 				counters = 0;
 				messages = [];
 				$('#msg').val('');	
 			}
-		}
-		else {
+		} else {
 			var text = $('#msg').val();
 
 			var normalized = [];
