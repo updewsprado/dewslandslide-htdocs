@@ -808,6 +808,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
+	console.log(fdate,tdate)
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
