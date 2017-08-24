@@ -95,6 +95,7 @@ function SelectdaysOption(id) {
 		$('.modal-backdrop').remove();
 		$('#loading').modal('toggle');
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		var to_time = values[9]
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
 		var from;
 		if(selected_days == "7 days"){
@@ -115,7 +116,7 @@ function SelectdaysOption(id) {
 			from = moment(to).subtract(5,'year').format('YYYY-MM-DD HH:mm:ss')
 		}
 
-		var to_time = values[9]
+		
 		
 
 		if(category == "rain"){
@@ -759,22 +760,44 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 
 
 function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance ){
-	console.log(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance)
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var  list_dates =[];
-	for (var i = 1; i < duration.asDays(); i++) {
-		list_dates.push(site.slice(0,3)+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	}
-	let dataSubmit = { date:list_dates,table:site}
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		}
-	});
+	// var  list_dates =[];
+	// for (var i = 1; i < duration.asDays(); i++) {
+	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	// }
+	// let dataSubmit = { date:list_dates,table:site}
+	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+	// 	var result = JSON.parse(data);
+	// 	var result_filtered = [];
+	// 	for (var i = 0; i < result.length; i++) {
+	// 		if(site == result[i].table_used){
+	// 			result_filtered.push(result[i])
+	// 		}
+	// 	}
+	// 	var label_crack = ["24hrs","72hrs","15mins"]
+	// 	var all_data_tag =[]
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		var collect =[]
+	// 		for (var i = 0; i < result_filtered.length; i++) {
+	// 			var remark_parse = ((result_filtered[i].remarks).split("/"))
+
+	// 			if(remark_parse[1] == label_crack[a] ){
+	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result_filtered[i].tag_name})
+	// 			}
+	// 		}
+
+	// 		all_data_tag.push(collect)
+
+	// 	}
+
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
+	// 	}
+	// 	series_data.push({name:'Tag'})
 	var cumulative_time = ($('#cumulativeTime').text()).split(",")
 	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
@@ -785,12 +808,19 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
+	var colors= ["#EBF5FB","#0000FF","#FF0000"]
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		}
+	});
 	$("#"+id+"2").highcharts({
 		chart: {
 			type: 'column',
 			zoomType: 'x',
 			panning: true,
-			height: 300,
+			height: 400,
+			width: 370
 		},
 		title: {
 			text:' <b>Rainfall Data </b>',
@@ -805,7 +835,8 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			}
 		},
 		xAxis: {
-			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
+			min:Date.parse(fdate),
+			max:Date.parse(tdate),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -815,6 +846,17 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			title: {
 				text: 'Date'
 			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'rain')
+					}
+				}
+			}
 
 		},
 		yAxis: {
@@ -832,50 +874,71 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		},
 
 		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
+						}
+					}
+				}
+			},
 			series: {
 				marker: {
 					radius: 3
 				},
 				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name == "Tag"){
-								$("#tagModal").modal("show");
-								$("#comment-model").empty();
-								$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-							}else{
-								$("#annModal").modal("show");
-								$(".tag").hide();
-								$('#tag_ids').tagsinput('removeAll');
-								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-								$("#tag_value").val(this.y)
-								$("#tag_crack").val(this.series.name)
-								$("#tag_description").val('rain analysis')
-								$("#tag_tableused").val(site)
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-							}
-						}
+					// point: {
+					// 	events: {
+					// 		click: function () {
+					// 			if(this.series.name == "Tag"){
+					// 				$("#tagModal").modal("show");
+					// 				$("#comment-model").empty();
+					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+					// 			}else{
+					// 				$("#annModal").modal("show");
+					// 				$(".tag").hide();
+					// 				$('#tag_ids').tagsinput('removeAll');
+					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+					// 				$("#tag_value").val(this.y)
+					// 				$("#tag_crack").val(this.series.name)
+					// 				$("#tag_description").val('rain analysis')
+					// 				$("#tag_tableused").val(site)
+					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+					// 			}
+					// 		}
+					// 	}
+					// }
+
+				},
+				area: {
+					marker: {
+						lineWidth: 3,
+						lineColor: null 
 					}
 				}
 
 			},
-			area: {
-				marker: {
-					lineWidth: 3,
-					lineColor: null 
-				}
-			}
+			legend: {
+				enabled: false
+			},
+			credits: {
+				enabled: false
+			},
+			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id+"2",'rain');
 
-		},
-		legend: {
-			enabled: false
-		},
-		credits: {
-			enabled: false
-		},
-		series:series_data
-	});
+		});
 
 
 	setTimeout(function(){
@@ -1051,11 +1114,9 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	// console.log("/api/SensorAllAnalysisData/"+site+"/n/"+tdate)
-	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/n/"+tdate,
+	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
-			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
