@@ -1801,6 +1801,7 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				'issue' : issue,
 				'status': status
 			}
+			
 			if( ($('#issue').val()).length != 0 ){
 				$("#tagModal").modal("hide");
 				$.post("http://"+host+"/generalinformation/removeGintagsId",{gintags:dataSubmit}).done(function(data) { 
@@ -1853,6 +1854,7 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 					'status': status
 				})
 			}
+			
 			if( ($('#issue').val()).length != 0 ){
 				$("#annModal").modal("hide");
 				$.post("http://"+host+"/generalinformation/updateGintagsId",{gintags:dataSubmit[0]}).done(function(data) { 
