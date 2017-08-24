@@ -126,7 +126,6 @@ function sendViaAlertMonitor(dashboard_data){
 	} else {
 		var alert_site_name = "";
 		var alert_level = "";
-		
 		// HOTFIX OF ND sites
 		if (dashboard_data.internal_alert_level.indexOf('ND-R') > -1 || dashboard_data.internal_alert_level.indexOf('ND') > -1) {
 			dashboard_data.internal_alert_level = "A1-R";
@@ -351,7 +350,7 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(next_ewi_time)","12:00 NN");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
-									template = template.replace("(gndmeas_time_submission)","bago mag-:30 PM");
+									template = template.replace("(gndmeas_time_submission)","bago mag-3:30 PM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
 									template = template.replace("(next_ewi_time)","04:00 PM");
@@ -373,6 +372,7 @@ function sendViaAlertMonitor(dashboard_data){
 								}
 								$('#msg').val(template);
 								$('#site-abbr').val(dashboard_data["name"]);
+								$('#extended_status').val(dashboard_data["status"]+","+dashboard_data["day"]);
 								$('#constructed-ewi-amd').val(template);
 								$('#ewi-asap-modal').modal('toggle');
 							}
@@ -426,6 +426,7 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 	var tag_indicator = "";
+	var dasboard_data_holder;
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -1142,6 +1143,7 @@ $(document).ready(function() {
 								var start = moment().format('YYYY-MM-DD HH:mm:ss');
 								var rounded_release;
 								var last_rounded_release;
+								var previous_release;
 
 								if (moment(start).minute() < 30) {
 									var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
@@ -1161,10 +1163,13 @@ $(document).ready(function() {
 									last_rounded_release = moment(event_details.data_timestamp).format('YYYY-MM-DD HH:mm:ss');
 								}
 
+								previous_release = moment(last_rounded_release).subtract(210,'m').format('YYYY-MM-DD HH:mm:ss');
+
 								var lastReleaseData = {
 									'event_id': event_details.event_id,
 									'current_release_time': rounded_release,
 									'last_release_time': last_rounded_release,
+									'previous_release': previous_release,
 									'data_timestamp': event_details.data_timestamp
 								}
 
@@ -1303,7 +1308,6 @@ return tempConn;
 }
 
 function getOngoingEvents(sites){
-	console.log(sites);
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
@@ -1313,7 +1317,6 @@ function getOngoingEvents(sites){
 				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 					if (events[counter].site_id == siteids[siteid_counter].id) {
 						var narrative_template = "";
-						console.log(gintags_msg_details);
 						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
 							if (gintags_msg_details.tags === "#EwiResponse") {
 								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
@@ -2063,6 +2066,10 @@ $(document).on("click","#quick-release-display li",function(){
 	$('input[name="offices"]').prop('checked',false);
 	$('input[name="opt-ewi-recipients"]').prop('checked',true);
 
+	if (tagSitenames[0] == "MSL" || tagSitenames[0] == "MSU") {
+			tagSitenames[0] = "MES";
+	}
+
 	$('input[name="sitenames"]:unchecked').each(function() {
 		if (tagSitenames[0] == $(this).val()) {
 			$(this).prop('checked',true);
@@ -2772,8 +2779,17 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
-
+		var extended_indicator = $('#extended_status').val().split(",");
+		if (extended_indicator[0] == "extended") {
+			if (extended_indicator[1] == 0) {
+				var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+			} else {
+				var tagOffices = ['LLMC','BLGU','MLGU','REG8'];
+			}
+		} else {
+			var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
+		}
+	
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
 
@@ -3521,7 +3537,14 @@ $("#confirm-narrative").on('click',function(){
 		for (var counter = 0; counter < tags.length;counter++) {
 			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeas") {
 				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					getOngoingEvents(tagSitenames[tag_counter]);
+					if (tagSitenames[tag_counter] == "MES") {
+						var mes_sites = ['MSL','MSU'];
+						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
+							getOngoingEvents(mes_sites[msl_msu_counter]);
+						}
+					} else {
+						getOngoingEvents(tagSitenames[tag_counter]);
+					}
 				}
 				break;
 			}
