@@ -436,18 +436,18 @@ function heatmapProcess(site,tdate,day){
 					var data_series_filtered=[]
 					if( day == '1d'){
 						for (var i = 0; i < 48; i++) {
-							time_template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
 						}
 					}else if( day == '3d'){
 						for (var i = 0; i < 36; i++) {
-							time_template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i*4,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							time_template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
