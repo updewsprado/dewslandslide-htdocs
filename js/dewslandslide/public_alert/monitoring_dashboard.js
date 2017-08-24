@@ -10,8 +10,8 @@
 let realtime_cache = {}, ongoing = [], candidate_triggers = [];
 let isTableInitialized = false;
 let latest_table = null, extended_table = null, overdue_table = null, candidate_table = null;
-let modalForm = null, entry = {};
-let sitesList = [];
+let modalForm = null, entry = {}, current_row = {};
+let sitesList = [], merged_arr = [];
 
 let lookup = { "r1":["rain","rain","R"], "r2":["rain","rain","R"], "l2":["ground","ground_1","g"], "l3":["ground","ground_2","G"], "L2":["sensor","sensor_1","s"], "L3":["sensor","sensor_2","S"], "d1":["od","od","D"], "e1":["eq","eq","E"] };
 let lookup2 = { "rain":["R"], "eq":["E"], "ground":["g","G"], "sensor":["s","S"], "on-demand":["D"]};
@@ -21,7 +21,6 @@ let setElementHeight = function () {
     let col_height = $("#column_2").height();
     $('#map-canvas').css('min-height', col_height-20);
 };
-
 
 
 $(document).ready( function() {
@@ -79,6 +78,12 @@ $(document).ready( function() {
 
 	/********** END OF AUTOMATED PDF SENDING **********/ 
 
+	/**************************************************
+	 * 
+	 * 		DASHBOARD EWI WEB RELEASE MECHANISM
+	 * 
+	***************************************************/
+
 	reposition("#releaseModal");
 
 	setInterval( function () { $("#release_time").val(moment().format("HH:mm:00")); }, 1000);
@@ -92,6 +97,7 @@ $(document).ready( function() {
 		entry = {};
 		let i = $(this).parents("tr");
 		let row = candidate_table.row(i).data();
+		current_row = row;
 		let site = row.site;
 
 		$("#timestamp_entry").val(row.timestamp);
@@ -99,7 +105,7 @@ $(document).ready( function() {
 		$("#site").val(sitesList[row.site]);
 		$("#comments").val("");
 
-		let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
+		merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
 
@@ -147,55 +153,36 @@ $(document).ready( function() {
 			$("#release").prop("disabled", false);
 		}
 
+		tagInvalidTriggers( row );
+
+		// Automatically check trigger_switch if invalid area is empty
+		$(".trigger_switch").each( function (count, item) {
+			if( $("#" + item.value + "_area .invalid_area").html() === "" ) {
+				$(item).prop("checked", true);
+			}
+		});
+
+		//toggleTriggerOnRelease( row, index );
 		$("#releaseModal").modal({ backdrop: 'static', keyboard: false, show: true});	
 		//console.log(entry);
 	});
+
+	$(".trigger_switch").click( function () {
+		let index = merged_arr.map(x => current_row.site).indexOf(site);
+		toggleTriggerOnRelease(this.value, current_row, index);
+	});
+
+	/*$("#candidate tbody").on( "click", 'tr .glyphicon-remove', function(x) 
+	{
+		reposition("#manualInputModal")
+		$("#manualInputModal").modal("show");
+	});*/
 
 	$("#candidate tbody").on( "click", 'tr .glyphicon-info-sign', function(x) 
 	{
 		reposition("#manualInputModal")
 		$("#manualInputModal").modal("show");
 	});
-
-	function showModalTriggers(row, latest) 
-	{
-		let list = row.retriggerTS;
-		let arr = [];
-		list.forEach(function (x) {
-			if( moment(x.timestamp).isAfter(latest) || latest == null )
-			{
-				arr.push(x);
-			}
-		});
-
-		["r1","e1","l2","l3","L2","L3","d1","e1"].forEach(function (x) {
-			let y = lookup[x];
-			$("#" + y[0] + "_area").hide();
-			$("#trigger_" + y[1]).val("").prop({readonly:false, disabled:true});
-			$("#trigger_" + y[1] + "_info").val("").prop("disabled", true);
-			if( x == "d1" ) $(".od_group, #reason").prop("disabled", true);
-			else if( x == "e1" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", true);
-		});
-
-		let retriggers = [];
-		arr.forEach(function (x) {
-			let y = lookup[x.retrigger];
-			$("#" + y[0] + "_area").show();
-			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["info"] : row.tech_info[y[0] + "_tech"];
-			$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
-			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
-			else if( y[2] == "E" ) {
-				let x = row.tech_info[y[1] + "_tech"];
-				$("#magnitude").val(x.magnitude).prop("disabled", false);
-				$("#longitude").val(x.longitude).prop("disabled", false);
-				$("#latitude").val(x.latitude).prop("disabled", false);
-			}
-			retriggers.push(y[2]);
-		});
-
-		return retriggers;
-	}
 
 	jQuery.validator.addMethod("isInvalid", function(value, element, param) {
 	        if (entry.status == "invalid") { 
@@ -211,6 +198,25 @@ $(document).ready( function() {
     }, "Choose at least one of the two groups as requester.");
 
     jQuery.validator.addClassRules({od_group: {"at_least_one": true}});
+
+    jQuery.validator.addMethod("at_least_one_invalid", function(value, element, param) {
+        let alert = $("#internal_alert_level").val();
+        let internal_alert = alert.slice(3);
+
+    	if( entry.status == "new" ) {
+    		//console.log("NEW", $('.trigger_switch:checked:enabled') );
+    		if ( $('.trigger_switch:checked:enabled').length == 0 ) return false;
+    		else return true;
+        } else if ( internal_alert == "" ) {
+        	return false;
+        } else {
+        	$(".trigger_switch").closest(".form-group").children("label.error").remove();
+        	return true;
+        }
+
+    }, "Check the box of invalid trigger to be released.");
+
+	$.validator.addClassRules({ "trigger_switch": { "at_least_one_invalid": true } });
 
 	modalForm = $("#modalForm").validate(
 	{
@@ -259,11 +265,11 @@ $(document).ready( function() {
 	    	var placement = $(element).closest('.form-group');
 	        //console.log(placement);
 	        
-	        if( $(element).hasClass("cbox_trigger_switch") )
+	        /*if( $(element).hasClass("trigger_switch") )
 	        {
 	            $("#errorLabel").append(error).show();
 	        }
-	        else if (placement) {
+	        else */if (placement) {
 	            $(placement).append(error)
 	        } else {
 	            error.insertAfter(placement);
@@ -286,6 +292,8 @@ $(document).ready( function() {
 	        if ( !$( element ).next( "span" )) {
 	            $( "<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>" ).insertAfter( $( element ) );
 	        }
+
+	        $(element).closest(".form-group").children("label.error").remove();
 	    },
 	    highlight: function ( element, errorClass, validClass ) {
 	        $( element ).parents( ".form-group" ).addClass( "has-error" ).removeClass( "has-success" );
@@ -312,8 +320,21 @@ $(document).ready( function() {
 	        let aX = temp.internal_alert_level.slice(0,2);
 	        temp.public_alert_level = aX == "ND" ? "A1" : aX;
 	        temp.status = entry.status;
-	        temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 	        temp.reporter_1 = $("#reporter_1").attr("value-id");
+
+	        // Don't include un-checked retriggers for rain and sensor
+	        $(".trigger_switch").each( function (count, item) {
+	        	if ( !$(item).is(":checked") ) {
+	        		let x = null;
+	        		let haystack = entry.trigger_list.join("").toUpperCase();
+	        		x = item.value == "rain" ? "R" : "S";
+	        		let index = haystack.indexOf(x);
+	        		entry.trigger_list.splice(index, 1);
+	        		// console.log(haystack, index, entry.trigger_list);
+	        	}
+			});
+
+			temp.trigger_list = entry.trigger_list.length == 0 ? null : entry.trigger_list;
 
 	        if( temp.trigger_list != null ) 
 	        {
@@ -386,6 +407,7 @@ $(document).ready( function() {
 	});
 });
 
+/********** END OF DASHBOARD EWI WEB RELEASE MECHANISM **********/
 
 /*****************************************
  * 
@@ -395,7 +417,6 @@ $(document).ready( function() {
 
 function buildDashboardTables( data )
 {
-
 	if ( data.code == "existingAlerts" )
 	{
 		ongoing = jQuery.extend(true, {}, data.alerts);
@@ -404,7 +425,7 @@ function buildDashboardTables( data )
 	let tables = {"latest":latest_table, "extended":extended_table, "overdue":overdue_table, "candidate":candidate_table};
 	let alerts = data.alerts;
 
-	if( alerts == null ) 
+	if( alerts == null  ) 
 	{
         console.log("=== ERROR PROCESSING ALERTS! ===");
         console.log(data.error);
@@ -654,15 +675,21 @@ function buildDashboardTables( data )
 	    	{
 		        "emptyTable": "There are no current candidate triggers."
 		    },
-		   /* "rowCallback": function( row, data, index ) 
+		    "rowCallback": function( row, data, index ) 
 		    {
-	            switch(data.day)
-	            {
-	            	case 1: $(row).addClass("day-one"); break;
-	                case 2: $(row).addClass("day-two"); break;
-	                case 3: $(row).addClass("day-three"); break;
-	            }
-		  	}*/
+		    	if( data.status == "valid" ) {
+		    		$(row).attr("style", "background-color: rgba(0,128,0,0.5)");
+		    	} else if ( data.status)
+
+		    	switch ( data.status ) {
+		    		case "valid": $(row).attr("style", "background-color: rgba(0,128,0,0.5)");
+		    					break;
+		    		case "partial": $(row).attr("style", "background-color: rgba(255,165,0,0.5)"); break;
+		    		case "invalid": $(row).attr("style", "background-color: rgba(255,0,0,0.5)");
+		    					break;
+		    	}
+	            // console.log(data.status);
+		  	}
 	    });
 	}
 	
@@ -748,203 +775,129 @@ function initialize_map(markers)
  * 
 ******************************************/
 
-function getRealtimeAlerts(data)
+function tagInvalidTriggers (row) {
+
+	$(".invalid_area").empty();
+	let invalid_list = row.invalid_list;
+
+	if( typeof invalid_list != "undefined") {
+		let status = row.status;
+		// console.log(invalid_list, "AKO INVALID LIST");
+
+		$.each( invalid_list, function (count, trigger) {
+			let template = $("#invalid_template").html();
+			template = $(template).show();
+			let x = "#" + trigger.source + "_area";
+			$(x + " .invalid_area").append(template);
+			$(x + " .invalid_area" + " #timestamp").text( moment(trigger.timestamp).format("MMM. D, YYYY, H:mm") );
+			$(x + " .invalid_area" + " #staff").text( trigger.iomp );
+			let remarks = trigger.remarks == "" ? "---" :  trigger.remarks;
+			$(x + " .invalid_area" + " #remarks").text( remarks );
+		});
+	}
+}
+
+function showModalTriggers(row, latest) 
 {
-	if(typeof data.is_bad != 'undefined')
-	{
-		console.log(data.is_bad);
-	}
-	else {
-		let cache = jQuery.extend(true, {}, data);
-
-		if( Object.keys(realtime_cache).length === 0 && realtime_cache.constructor === Object || typeof realtime_cache.alerts !== 'undefined' && realtime_cache.alerts[0].timestamp !== cache.alerts[0].timestamp ) 
-		{	
-			realtime_cache.no_alerts = cache.alerts.filter(function (x) {
-				return x.alert == "A0";
-			});
-
-			// Get only alerts with alerts
-			realtime_cache.alerts = cache.alerts.filter(function (x) {
-				return x.alert != "A0";
-			});
-
-			realtime_cache.invalids = cache.invalids.slice(0);
-		}
-		else {
-			console.log("No new data.");
-		}
-	}
-}
-
-function getOnGoingAndExtended(data) {
-	ongoing = jQuery.extend(true, {}, data.ongoing);
-
-	try {
-		candidate = checkCandidateTriggers(realtime_cache);
-	} catch (err) {
-		console.log(err);
-		candidate = null;
-	}
-}
-
-function checkCandidateTriggers(cache) {
-  
-	console.log(JSON.stringify(cache));
-	console.log(JSON.stringify(ongoing));
-
-	let alerts = cache.alerts,
-		invalids = cache.invalids,
-		no_alerts = cache.no_alerts,
-		final = [];
-
-	// Get all the latest and overdue releases on site
-	let merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
-
-	alerts.forEach( function (alert) {
-		let retriggers = alert.retriggerTS;
-		
-		// Check sites if it is in invalid list 
-		// yet have legitimate alerts
-		function getAllInvalids(arr, val) {
-		    var site_invalids = [], i;
-		    for(i = 0; i < arr.length; i++)
-		        if (arr[i].site === val)
-		            site_invalids.push(arr[i]);
-		    site_invalids.sort(function(a,b) {return (a.alert > b.alert) ? -1 : ((b.alert > a.alert) ? 1 : 0);} );
-		    return site_invalids;
-		}
-
-		let site_invalids = getAllInvalids(invalids, alert.site);
-
-		let isInvalid = false;
-		let isValidButNeedsManual = false;
-		let merged_arr_sites = merged_arr.map(x => x.name);
-		site_invalids.forEach(function (invalid)
+	let list = row.retriggerTS;
+	let arr = [];
+	list.forEach(function (x) {
+		if( moment(x.timestamp).isAfter(latest) || latest == null )
 		{
-			// Get alerts sources from the alerts array and invalids array
-			let invalid_source = invalid.source;
-			let alerts_source = alert.source.split(",");
-
-			alerts_source.forEach(function (source) {
-				if (source == invalid_source)
-				{
-					function getRetriggerIndex (trigger) {
-						let temp = retriggers.map(x => x.retrigger).indexOf(trigger);
-						return temp;
-					};
-
-					// Check if alert exists on database
-					// Mark isInvalid TRUE to prevent being pushed to final
-					// if alert is really invalid and has no active alert
-					if( merged_arr_sites.indexOf(invalid.site) == -1 && alerts_source.length == 1 )
-						{ isInvalid = true; }
-					else if (source == "sensor") {
-						let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
-						if(isL2Available > -1 && invalid.alert == "A3") {
-							alert.alert =  "A2";
-							alert.internal_alert = alert.internal_alert.replace(/S0*/g, "s").replace("A3", "A2");
-							alert.retriggerTS.splice(getRetriggerIndex("L3"), 1);
-						} else {
-							alert.alert =  "A1";
-							alert.internal_alert = alert.internal_alert.replace(/[sS]0*/g, "");
-
-							let hasSensorData = alert.sensor_alert.filter( x => x.alert != "ND" );
-							if ( hasSensorData == 0 && alert.ground_alert == "g0" ) alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "ND");
-							else alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "A1");
-							
-							alert.retriggerTS.splice(getRetriggerIndex("L2"), 1);
-						}
-					}
-					else if(source == "rain")
-					{
-						// Check if alert exists on database already
-						let index_on_database = merged_arr_sites.indexOf(invalid.site);
-						if( index_on_database > -1 
-							&& merged_arr[index_on_database].internal_alert_level.includes("R") == true )
-						{
-							// If already exist and it has rain that became invalid,
-							// recommend manual input
-							isValidButNeedsManual = true;
-						}
-						else {
-							// Rain trigger is plain invalid
-							alert.internal_alert = alert.internal_alert.replace(/R0*/g, "");
-							alert.retriggerTS.splice(getRetriggerIndex("r1"), 1);
-						}
-					}
-				}
-			});
-		});	
-
-		if(alert.internal_alert.length <= 3) isInvalid = true;
-		
-		let forUpdating = true;
-		retriggers = alert.retriggerTS;
-
-		if( !isValidButNeedsManual && !isInvalid )
-		{
-			let maxDate = moment( Math.max.apply(null, retriggers.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
-			let max = null;
-			for (let i = 0; i < retriggers.length; i++) {
-				if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
-			}
-			console.log("MAX", max, "RETRIGGERS", retriggers);
-			alert.latest_trigger_timestamp = max.timestamp;
-			alert.trigger = max.retrigger;
-		}
-
-		// Check if alert entry is already updated on latest/overdue table
-		for (let i = 0; i < merged_arr.length; i++) 
-		{
-			//console.log(merged_arr[i]);
-			if( merged_arr[i].name == alert.site )
-			{
-				// Tag the site on merged_arr as cleared
-				// else if not, it is candidate for lowering already
-				merged_arr[i].checked = true;
-
-				if( moment(merged_arr[i].data_timestamp).isSame(alert.timestamp) )
-				{
-					forUpdating = false; break;
-				}
-
-				if ( moment(merged_arr[i].trigger_timestamp).isSameOrAfter(alert.latest_trigger_timestamp) )
-				{
-					alert.latest_trigger_timestamp = "end";
-					alert.trigger = "No new triggers";
-				}
-
-				if(isValidButNeedsManual) 
-				{
-					alert.latest_trigger_timestamp = "manual";
-					alert.trigger = "manual";
-					alert.validity = "manual";
-					alert.isManual = true;
-				}
-			}
-		}
-
-		if(forUpdating && !isInvalid) final.push(alert);
-
-	});
-
-	// Tag a site as candidate for lowering if it has alert
-	// on site but already A0 on json
-	merged_arr.forEach(function (a) {
-		if ( typeof a.checked == "undefined" )
-		{
-			let index = no_alerts.map( x => x.site ).indexOf(a.name);
-			let x = no_alerts[index];
-			//console.log(a);
-
-			x.latest_trigger_timestamp = "end";
-			x.trigger = "No new triggers";
-			x.validity = "end";
-			final.push(x);
+			arr.push(x);
 		}
 	});
 
-	return final;
+	["r1","e1","l2","l3","L2","L3","d1","e1"].forEach(function (x) {
+		let y = lookup[x];
+		$("#" + y[0] + "_area").hide();
+		$("#trigger_" + y[1]).val("").prop({readonly:false, disabled:true});
+		$("#trigger_" + y[1] + "_info").val("").prop("disabled", true);
+		$(".trigger_switch").prop({disabled: true, checked:false});
+		if( x == "d1" ) $(".od_group, #reason").prop("disabled", true);
+		else if( x == "e1" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", true);
+	});
+
+	let retriggers = [];
+	arr.forEach(function (x) {
+		let y = lookup[x.retrigger];
+		$("#" + y[0] + "_area").show();
+		$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
+		let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["info"] : row.tech_info[y[0] + "_tech"];
+		$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
+
+		$(".trigger_switch[value=" + y[0] + "]").prop("disabled", false);
+
+		if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
+		else if( y[2] == "E" ) {
+			let x = row.tech_info[y[1] + "_tech"];
+			$("#magnitude").val(x.magnitude).prop("disabled", false);
+			$("#longitude").val(x.longitude).prop("disabled", false);
+			$("#latitude").val(x.latitude).prop("disabled", false);
+		}
+		retriggers.push(y[2]);
+	});
+
+	return retriggers;
+}
+
+function toggleTriggerOnRelease(trigger_type, alert, merged_index) {
+	
+	let invalid_list = alert.invalid_list;
+	let orig_public_alert = alert.internal_alert.slice(0, 2);
+	let orig_internal_alert = alert.internal_alert.slice(3);
+
+	if ( alert.status != "valid" ) {
+		let alert = $("#internal_alert_level").val();
+		let public_alert = alert.slice(0, 2);
+		let internal_alert = alert.slice(3);
+
+		if( $(".trigger_switch[value=" + trigger_type + "]").prop("checked") ) {
+			invalid_list.forEach( function (trigger) {
+				if( trigger.source == trigger_type ) {
+					if (trigger_type == "rain") {
+						if (orig_internal_alert.indexOf('R') == -1) 
+							internal_alert += "R";
+					} else {
+						public_alert = trigger.alert;
+						let x = trigger.alert == 'A3' ? "S" : "s";
+						if (orig_internal_alert.indexOf(x) == -1) 
+							internal_alert += x;
+					}
+				}
+			});
+		} else {
+			// Remove trigger letter on internal alert level
+			invalid_list.forEach( function (trigger) {
+				if( trigger.source == trigger_type ) {
+					if (trigger_type == "rain") {
+						if (orig_internal_alert.indexOf('R') == -1) 
+							internal_alert = internal_alert.replace(/R/g, "");
+					} else {
+						x = trigger.alert == 'A3' ? "S" : "s";
+						if (orig_internal_alert.indexOf(x) == -1) 
+							internal_alert = internal_alert.replace(x, "");
+						public_alert = orig_public_alert;
+					}
+				}
+			});
+		}
+
+		let alert_list = internal_alert.split(/([A-z]0?)/g);
+		let ordered_internal = orderInternalAlertTriggers(alert_list);
+		$("#internal_alert_level").val(public_alert + "-" + ordered_internal);
+	}
+}
+
+function orderInternalAlertTriggers( internal ) {
+	internal.sort( function( a, b ) 
+    {
+        let arr = { "S":5, "s":5, "s0":5, "G":4, "g":4, "g0":4, "R":3, "R0":3, "E":2, "D":1 };
+        let x = arr[a], y = arr[b];
+        if( x>y ) return -1; else return 1;
+    });
+
+    return internal.join("");
 }
 
 function getSites() {
