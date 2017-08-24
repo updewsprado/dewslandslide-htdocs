@@ -213,7 +213,9 @@ function checkCandidateTriggers(cache, ongoing) {
 
 				if ( moment(merged_arr[i].trigger_timestamp).isSameOrAfter(alert.latest_trigger_timestamp) )
 				{
+
 					// alert.status = "valid";
+
 					alert.latest_trigger_timestamp = "end";
 					alert.trigger = "No new triggers";
 				}
