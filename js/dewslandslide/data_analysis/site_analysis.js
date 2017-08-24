@@ -18,7 +18,7 @@ $(document).ajaxStop(function () {
 });
 
 $(document).ready(function(e) {
-
+	$('.tag').hide()
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -72,6 +72,7 @@ function dateselection() {
 }
 
 
+
 function removeSpecificArray(array, element) {
 	const index = array.indexOf(element);
 	array.splice(index, 1);
@@ -108,6 +109,29 @@ function bouncer(arr) {
 }
 
 
+function modalTemplate(dataTableSubmit,allDataResult,category){
+	$('#saveTAG').empty()
+	$('#saveTAG').append('<div class="form-group tag_ids"><label>Tags</label>'+
+		'<input type="text" class="form-control" id="tag_ids" placeholder="Ex: #AccelDrift or #Drift" data-role="tagsinput" value="">'+
+		'</div><div class="form-group"><label for="formGroupExampleInput">Timestamp</label>'+
+		'<input type="text" class="form-control" id="tag_time" disabled=""></div>'+
+		'<div class="form-group"><label for="formGroupExampleInput2">Remarks</label>'+
+		'<textarea class="form-control comment" rows="5" id="comment"></textarea></div>'+
+		'<p id="modal_trigger"><button type="button"  class="btn-sm btn-success pull-right" id="tag_submit">'+
+		'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button><br></p>')
+	$("#ground_graph").empty();
+	$("#graphS2").empty();
+	$("#graphS2").append('<div id="ground_graph" ></div>');
+	$("#annModal").modal("hide");
+	var series_data_tag = JSON.parse($("#tag_series").val())
+	if( category == 'surficial'){
+		chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
+	}else if (category == 'rain'){
+		// let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
+
+	}
+}
+
 function doSortDates(dates){
 	var swapped;
 	do {
@@ -129,6 +153,7 @@ function getRanges(array) {
 		rstart = array[i];
 		rend = rstart;
 		while (array[i + 1] - array[i] == 1) {
+
 			rend = array[i + 1];
 			i++;
 		}
@@ -234,13 +259,22 @@ function SelectedSite(to) {
 	})
 
 		/*SUPERIMPOSED SURFICIAL*/
-
+		$('#saveTAG').empty()
+		$('#saveTAG').append('<div class="form-group tag_ids"><label>Tags</label>'+
+			'<input type="text" class="form-control" id="tag_ids" placeholder="Ex: #AccelDrift or #Drift" data-role="tagsinput" value="">'+
+			'</div><div class="form-group"><label for="formGroupExampleInput">Timestamp</label>'+
+			'<input type="text" class="form-control" id="tag_time" disabled=""></div>'+
+			'<div class="form-group"><label for="formGroupExampleInput2">Remarks</label>'+
+			'<textarea class="form-control comment" rows="5" id="comment"></textarea></div>'+
+			'<p id="modal_trigger"><button type="button"  class="btn-sm btn-success pull-right" id="tag_submit">'+
+			'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button><br></p>')
 		let dataSubmit_surficial = {
 			site : (selected_site).toLowerCase(),
 			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
 			tdate : to+" "+current_time
 		}
 		
+
 		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
 			$('.crackgeneral').empty();
 			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
@@ -338,6 +372,7 @@ function SurficialOnSelect() {
 function SelectdaysOption(id,category) {
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
 			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')+
@@ -435,7 +470,7 @@ function RainFallProcess(curSite,fromDate,toDate){
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeTime"></div>');
 		$(".maxPlot").hide();
-		submittedMeas(dataSubmit,'na','rain');
+		// submittedMeas(dataSubmit,'na','rain');
 		RainFallOnSelect()
 	});
 
@@ -794,6 +829,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
+	// console.log(max_plot_time)
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -1244,6 +1280,7 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
+
 		let dataTableSubmit1 = { 
 			site : dataSubmit.site.toLowerCase(), 
 			fdate : dataSubmit.fdate,
@@ -1538,7 +1575,7 @@ function surficialGraph(dataTableSubmit) {
 				for (var i = 0; i < result.length; i++) {
 					if(crack_name[a] == result[i].crack_id){
 						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
+						data.push({x:Date.parse(result[i].ts) ,y:result[i].meas ,id: result[i].id} );
 					}
 				}
 			}
@@ -1560,7 +1597,6 @@ function surficialGraph(dataTableSubmit) {
 	});	
 }
 function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult){
-	submittedMeas(dataTableSubmit,allDataResult,'surficial');
 	var site = $('#sitegeneral').val();
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
@@ -1572,113 +1608,128 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 	for (var i = 0; i < allDataResult.length; i++) {
 		list_dates.push(site+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
 	}
+	if(allDataResult.length != 0){
+		var dataSubmit = {table:'gndmeas',from_id:allDataResult[0].id,to_id:allDataResult[allDataResult.length-1].id,site:site}
+	}else{
+		var dataSubmit = {table:'gndmeas',from_id:'0',to_id:'0',site:site}
+	}
 	
-	let dataSubmit = { date:list_dates,table:'gndmeas'}
-	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-	// 	var result_unfiltered = JSON.parse(data)
-	// 	var result = [];
-	// 	for (var i = 0; i < result_unfiltered.length; i++) {
-	// 		if (result_unfiltered[i].tag_description == "ground analysis") {
-	// 			result.push(result_unfiltered[i])
-	// 		}
-	// 	}
-	// 	$('#'+id).empty();
-	// 	var all_crack_id = []
-	// 	for (var i = 0; i < result.length; i++) {
-	// 		var remark_parse = ((result[i].remarks).split("/"))
-	// 		all_crack_id.push(remark_parse[1])
-	// 	}
-	// 	var label_crack = removeDuplicates(all_crack_id);
-	// 	var all_data_tag =[]
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		var collect =[]
-	// 		for (var i = 0; i < result.length; i++) {
-	// 			var remark_parse = ((result[i].remarks).split("/"))
-	// 			if(remark_parse[1] == label_crack[a] ){
-	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-	// 			}
-	// 		}
-	// 		all_data_tag.push(collect)
-	// 	}
+	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		$('#'+id).empty();
+		var result_unfiltered = JSON.parse(data)
 
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-	// 	}
-	// 	data_series.push({name:'Tag'})
+		var all_cracks = [];
 
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		},
-	});
-	$("#"+id).highcharts({
-		chart: {
-			type: 'line',
-			zoomType: 'x',
-			panning: true,
-			panKey: 'shift',
-			height: 400,
-			width:$("#ground_graph").width()
-		},
-		title: {
-			text: name,
-		},
-		subtitle: {
-			text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
-		},
-		yAxis:{
-			title: {
-				text: 'Displacement (cm)'
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			all_cracks.push(result_unfiltered[i].crack_id)
+		}
+
+		var all_collected_tags =[]
+		var filtered_crack_id = removeDuplicates(all_cracks);
+
+		for (var i = 0; i < filtered_crack_id.length; i++) {
+			var list = []
+			for (var a = 0; a < result_unfiltered.length; a++) {
+				if( filtered_crack_id[i] == result_unfiltered[a].crack_id){
+					list.push({x:Date.parse(result_unfiltered[a].timestamp),text:"",value:result_unfiltered[a].remarks,title:result_unfiltered[a].tag_name,
+						id:result_unfiltered[a].gintags_id,ref_id:result_unfiltered[a].tag_id_fk,table_id:result_unfiltered[a].id})
+				}
 			}
-		},
-		xAxis: {
-			min:Date.parse(dataTableSubmit.fdate),
-			max:Date.parse(dataTableSubmit.tdate),
-			type: 'datetime',
-			dateTimeLabelFormats: { 
-				month: '%e. %b %Y',
-				year: '%b'
+			all_collected_tags.push(list)
+		}
+
+		for (var a = 0; a < filtered_crack_id.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_collected_tags[a],onSeries:filtered_crack_id[a],width:100,showInLegend: false,visible:true})
+		}
+		var result = [];
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			if (result_unfiltered[i].tag_description == "ground analysis") {
+				result.push(result_unfiltered[i])
+			}
+		}
+		
+		data_series.push({name:'Tag'})
+
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+		});
+		$("#"+id).highcharts({
+			chart: {
+				type: 'line',
+				zoomType: 'x',
+				panning: true,
+				panKey: 'shift',
+				height: 400,
+				width:$("#ground_graph").width()
 			},
 			title: {
-				text: 'Date'
+				text: name,
 			},
-		},
-		tooltip: {
-			split: true,
-			crosshairs: true,
-		},
-		plotOptions: {
-			line: {
-				marker: {
-					enabled: true
+			subtitle: {
+				text: 'Source: ' + (dataTableSubmit.site).toUpperCase()
+			},
+			yAxis:{
+				title: {
+					text: 'Displacement (cm)'
 				}
 			},
-			series: {
-				marker: {
-					radius: 3
+			xAxis: {
+				min:Date.parse(dataTableSubmit.fdate),
+				max:Date.parse(dataTableSubmit.tdate),
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%b'
 				},
-				cursor: 'pointer',
-					// point: {
-					// 	events: {
-					// 		click: function () {
-					// 			if(this.series.name == "Tag"){
-					// 				$("#tagModal").modal("show");
-					// 				$("#comment-model").empty();
-					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-					// 			}else{
-					// 				$("#annModal").modal("show");
-					// 				$(".tag").hide();
-					// 				$('#tag_ids').tagsinput('removeAll');
-					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-					// 				$("#tag_value").val(this.y)
-					// 				$("#tag_crack").val(this.series.name)
-					// 				$("#tag_description").val('ground analysis')
-					// 				$("#tag_tableused").val('gndmeas')
-					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-					// 			}
-					// 		}
-					// 	}
-					// }
+				title: {
+					text: 'Date'
+				},
+			},
+			tooltip: {
+				split: true,
+				crosshairs: true,
+			},
+			plotOptions: {
+				line: {
+					marker: {
+						enabled: true
+					}
+				},
+				series: {
+					marker: {
+						radius: 3
+					},
+					cursor: 'pointer',
+					point: {
+						events: {
+							click: function () {
+								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+								$('#tag_ids').tagsinput('removeAll');
+								$("#tag_value").val(this.id)
+								$("#tag_crack").val(this.series.name)
+								$("#tag_description").val('ground analysis')
+								$("#tag_tableused").val('gndmeas')
+								$("#tag_id").val(this.ref_id)
+								$('#tag_table_id').val(this.table_id)
+								$('#tag_hash').val(this.title)
+								$('#tag_comments').val(this.value)
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value+'<br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag">'
+										+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>&nbsp;<button type="button" class="btn btn-info edit_tag" id="edit_tag">'
+										+'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit</button>')
+								}else{
+									$("#annModal").modal("show");
+									
+								}
+								submittedMeas(dataTableSubmit,allDataResult,'surficial');
+							}
+						}
+					}
 				},
 			},
 			credits: {
@@ -1686,36 +1737,36 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 			},
 			series:data_series
 		});
-	var chart = $('#'+id).highcharts();
-	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-		var series = chart.series[(data_series.length-1)];
-		for (var i = 0; i < label_crack.length; i++) {
-			if (series.visible) {
-				(chart.series[((data_series.length-(i+1))-1)]).update({
-					visible: true,
-				});
-			}else {
-				(chart.series[((data_series.length-(i+1))-1)]).update({
-					visible: false,
-				});
+		var chart = $('#'+id).highcharts();
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < all_cracks.length; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
 			}
-		}
-	});
+		});
 
-	// });
+	});
 
 }
 
 function submittedMeas(dataTableSubmit,allDataResult,category){
+	var host = window.location.host;
 	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").tagsinput("items");
 		var tag_description = $("#tag_description").val();
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
-		var time = (($("#tag_time").val()).slice(2,10)).toString()
-		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_element_id = $("#tag_value").val();
 		var table_used = $("#tag_tableused").val();
-		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var remarks = $("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -1728,24 +1779,119 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				'remarks' : remarks
 			})
 		}
-
-		var host = window.location.host;
-		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
-		.done(function(data) { 
-			$("#ground_graph").empty();
-			$("#graphS2").empty();
-			$("#graphS2").append('<div id="ground_graph" ></div>');
-			$("#annModal").modal("hide");
-			var series_data_tag = JSON.parse($("#tag_series").val())
-			if( category == 'surficial'){
-				chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
-			}else if (category == 'rain'){
-				let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
-				
+		saveUpdateTag(dataSubmit,dataTableSubmit,allDataResult,category)
+	});
+	$('#delete_tag').on( "click", function(){
+		$("#comment-model").empty();
+		$("#comment-model").append('<label>Comments:</label><textarea id="issue"></textarea><br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag_comment">'
+			+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>')
+		
+		$('#delete_tag_comment').on( "click", function(){
+			var gintags_id =  $("#tag_value").val();
+			var tag_name_id = $("#tag_id").val();
+			var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+			var tagger = $("#current_user_id").val();
+			var table_element_id = $("#tag_table_id").val();
+			var table_used = $("#tag_tableused").val();
+			var remarks = $("#tag_comments").val();
+			var issue = $('#issue').val();
+			var status = 'deleted';
+			let dataSubmit = { 
+				'gintags_id' :gintags_id,
+				'tag_name_id' : tag_name_id, 
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks,
+				'issue' : issue,
+				'status': status
 			}
-		})
+			
+			if( ($('#issue').val()).length != 0 ){
+				$("#tagModal").modal("hide");
+				$.post("http://"+host+"/generalinformation/removeGintagsId",{gintags:dataSubmit}).done(function(data) { 
+					if(data == "true"){
+						modalTemplate(dataTableSubmit,allDataResult,category)
+					}
+
+				})
+			}
+		});
 		
 	});
+	$('.edit_tag').click(function(){
+		$("#tagModal").modal("hide");
+		var hash_tag = $("#tag_hash").val();
+		var remarks_tag = $("#tag_comments").val();
+		$("#tag_ids").tagsinput('add', hash_tag);
+		$(".comment").val(remarks_tag)
+		$("#modal_trigger").empty();
+		$('#modal_trigger').append('<div class="form-group"><label for="formGroupExampleInput2">Comments</label>'+
+			'<textarea class="form-control comment" rows="3" id="issue"></textarea></div>'+
+			'<br><button type="button"  class="btn-sm btn-success pull-right" id="tag_update"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>'+
+			' UPDATE</button><br>')
+		$("#annModal").modal("show");
+		$('#tag_update').on( "click", function(){
+			var gintags_id =  $("#tag_value").val();
+			var tag_name = $("#tag_ids").tagsinput("items");
+			var tag_name_id = $("#tag_id").val();
+			var tag_description = $("#tag_description").val();
+			var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+			var tagger = $("#current_user_id").val();
+			var table_element_id = $("#tag_table_id").val();
+			var table_used = $("#tag_tableused").val();
+			var remarks = $("#comment").val();
+			var issue = $("#issue").val();
+			var status = 'update';
+			var dataSubmit = [];
+			for (var i = 0; i < tag_name.length; i++) {
+				dataSubmit.push({ 
+					'gintags_id' :gintags_id,
+					'tag_name': tag_name[i],
+					'tag_description':tag_description,
+					'tag_name_id' : tag_name_id, 
+					'timestamp' : timestamp,
+					'tagger' : tagger,
+					'table_element_id' : table_element_id,
+					'table_used' :  table_used,
+					'remarks' : remarks,
+					'issue':issue,
+					'status': status
+				})
+			}
+			
+			if( ($('#issue').val()).length != 0 ){
+				$("#annModal").modal("hide");
+				$.post("http://"+host+"/generalinformation/updateGintagsId",{gintags:dataSubmit[0]}).done(function(data) { 
+					if(data == "true"){
+						if(tag_name.length > 1){
+							var added_tag = [];
+							for (var i = 1; i < dataSubmit.length; i++) {
+								added_tag.push(dataSubmit[i])
+							}
+							saveUpdateTag(added_tag,dataTableSubmit,allDataResult,category)
+						}else{
+							modalTemplate(dataTableSubmit,allDataResult,category)
+						}
+						
+					}
+				})
+
+				
+
+			}
+			
+		});
+	});
+}
+
+function saveUpdateTag(dataSubmit,dataTableSubmit,allDataResult,category) {
+	var host = window.location.host;
+	$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+	.done(function(data) { 
+			modalTemplate(dataTableSubmit,allDataResult,category)
+		})
 }
 
 
@@ -2102,6 +2248,7 @@ function CheckBoxColumn(site,column,to){
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
+			
 			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD')+" "+$('#time0').val(),to+" "+$('#time0').val())
 			SubOnSelect()
 		}else{
@@ -2140,7 +2287,7 @@ function CheckBoxColumn(site,column,to){
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			var time = moment($("#reportrange0 span").text()+" "+$("#time0").val()).format('YYYY-MM-DD HH:mm:ss');
 			heatmapProcess(column,time,'3d')
 		}
 	});
@@ -2304,7 +2451,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-		var data = data_result;
+var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -2832,7 +2979,7 @@ function HeatmapOnSelectDay(column) {
 		}
 		$("#daygeneral").val(day);
 		$("#daygeneral").selectpicker('refresh');
-		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
+		heatmapProcess(column,(moment(tdate+" "+$("#time0").val()).format("YYYY-MM-DD HH:ss:mm")),day)
 	})
 }
 
@@ -2979,7 +3126,13 @@ function SiteInfo(site){
 	});
 }
 
-function heatmapProcess(site,tdate,day){
+function heatmapProcess(site,tsdate,day){
+	if(tsdate.slice(14,16) < 30){
+		var time_set = '00:00'
+	}else if(tsdate.slice(14,16) > 30){
+		var time_set = '30:00'
+	}
+	var tdate = tsdate.slice(0,14)+time_set
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -3088,7 +3241,7 @@ function heatmapProcess(site,tdate,day){
 					var time_object = [];
 					var x_and_y=[];
 					var data_series_filtered=[]
-					console.log(moment(time_date).format('YYYY-MM-DD HH:MM:ss'),day)
+					
 					if( day == '1d'){
 						for (var i = 0; i < 48; i++) {
 							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
@@ -3109,14 +3262,16 @@ function heatmapProcess(site,tdate,day){
 						}
 					}else if( day == '30d'){
 						for (var i = 0; i < 30; i++) {
-							time_template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
-							template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
-							time_object.push({index:i,ts:moment(time_date ).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
+
+							time_template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
 							for (var a = 0; a < obj_list_id.length; a++) {
 								x_and_y.push({x:i,y:a})
 							}
 						}
 					}
+					
 					template.reverse()
 					if(obj_list_time.length != 0){
 						var nodata_timestamp=[]
@@ -3156,7 +3311,6 @@ function heatmapProcess(site,tdate,day){
 								}
 							}
 						}
-						
 						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
 					}else{
 						var total_node = $('#total_node').val();
@@ -4243,6 +4397,7 @@ function downloadSvg() {
 		$( ".svg_container" ).empty();
 		var all_data = [];
 
+
 		/*SUPERIMPOSED GROUND*/
 		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
 			$("#ground_graph .highcharts-container .highcharts-root").attr("xmlns","http://www.w3.org/2000/svg");
@@ -4261,6 +4416,7 @@ function downloadSvg() {
 
 		$(".highcharts-root").removeAttr("xmlns");
 		$(".highcharts-root").removeAttr("version");
+
 
 		/***************Deleted Part for Highchart***********************/
 
@@ -4330,6 +4486,7 @@ function downloadSvg() {
 
 			for (var i = 0; i < all_surficial.length; i++) {
 				$("#surficialsvg").append($('#'+all_surficial[i]+' .highcharts-container').html())
+
 			}
 
 			if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
@@ -4352,6 +4509,7 @@ function downloadSvg() {
 			for (var i = 0; i < all_piezometer.length; i++) {
 				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
 			}
+
 			if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
 				all_data.push($('#pzSvg').html());
 			}
@@ -4389,6 +4547,7 @@ function downloadSvg() {
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
 				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 350 );
 			}
+
 
 			for (var i = 0; i < all_sensor_accel.length; i++) {
 				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
@@ -4490,4 +4649,7 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 		}
 	}
 	
+
 }
+
+

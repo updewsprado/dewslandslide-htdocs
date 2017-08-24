@@ -37,7 +37,7 @@ function loadBulletin(id1, id2) {
             }   
         }
         bulletin_timestamp = datetime.replace('MN', 'AM').replace('NN', 'PM');
-        bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');
+        bulletin_timestamp = moment(bulletin_timestamp, 'MMMM DD, YYYY, h:mm A');
 
         let isBulletinSent = parseInt($("#" + release_id).attr("data-sent"));
 
@@ -62,8 +62,11 @@ function loadBulletin(id1, id2) {
 
                 let str = "As of " + release_time + ", " + loc + " is under " + alert + " based on " + basis.join(", ") + ".";
                 $("#info").val( str + "\n\n" + text );
+                
+                $('#recipients').tagsinput('add', 'phivolcs-dynaslope@googlegroups.com');
+                $('#recipients').tagsinput('add', 'phivolcs-senslope@googlegroups.com');
             }
-            bulletin_timestamp = moment(bulletin_timestamp, 'DD MMMM YYYY, h:mm A');          
+            bulletin_timestamp = moment(bulletin_timestamp, 'MMMM DD, YYYY, h:mm A');          
         }, "json");
     });
 
@@ -208,7 +211,7 @@ function sendMail(text, subject, filename, recipients) {
 
                     let people = recipients.map(function (x) {
                         if(x == "rusolidum@phivolcs.dost.gov.ph") return x = "RUS";
-                        else if(x == "asdaag@yahoo.com") return x = "ASD";
+                        else if(x == "asdaag48@gmail.com") return x = "ASD";
                         else if(x == "hyunbin_vince@yahoo.com") return x = "KDDC";
                         else return x;
                     });
