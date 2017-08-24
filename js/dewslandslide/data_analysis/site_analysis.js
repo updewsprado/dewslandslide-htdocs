@@ -493,7 +493,6 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
-					
 					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
 					var max = max_rain;
 					var max_array_data = [];
@@ -1019,7 +1018,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 		$('#rainfallgeneral').val(rain_name)
 	}
 
-	$('#rainfallgeneral').selectpicker('refresh')
+	$('#rainfallgeneral').selectpicker('refreshs')
 	// });
 
 }
