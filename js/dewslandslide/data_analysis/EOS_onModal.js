@@ -819,8 +819,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			type: 'column',
 			zoomType: 'x',
 			panning: true,
-			height: 400,
-			width: 370
+			height: 300,
 		},
 		title: {
 			text:' <b>Rainfall Data </b>',
