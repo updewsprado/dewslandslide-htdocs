@@ -135,6 +135,17 @@ function sendViaAlertMonitor(dashboard_data){
 			dashboard_data.internal_alert_level = "A1-R";
 		}
 
+		// HOTFIX OF g0/r0/s0 sites
+
+		if (dashboard_data.internal_alert_level.indexOf('A2-g0') > -1) {
+			dashboard_data.internal_alert_level = "A2-G";
+		} else if (dashboard_data.internal_alert_level.indexOf('A1-R0') > -1) {
+			dashboard_data.internal_alert_level = "A1-R";
+		} else if (dashboard_data.internal_alert_level.indexOf('A2-s0') > -1 || dashboard_data.internal_alert_level.indexOf('A3-S0') > -1) {
+			dashboard_data.internal_alert_level = "A3-S";
+		}
+
+
 		if (dashboard_data.name == "msu" || dashboard_data.name == "msl") {
 			alert_site_name = "mes";
 		} else {
