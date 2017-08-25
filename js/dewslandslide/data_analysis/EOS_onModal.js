@@ -11,8 +11,8 @@ $(document).ready(function(e) {
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment(from_time.slice(0,10)+" " +to_time.slice(13,23)).format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
@@ -51,8 +51,8 @@ $(document).ready(function(e) {
 
 		surficialGraph(dataSubmit)
 	}else if(category == "subsurface"){
-		var from = from_time
-		var to = to_time
+		var from = 'n'
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
 		$(".selectpicker").selectpicker('refresh')
@@ -65,6 +65,7 @@ $(document).ready(function(e) {
 				'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 		}
 		allSensorPosition(site,from,to)
+		console.log(from,to)
 	}
 
 });
@@ -94,27 +95,29 @@ function SelectdaysOption(id) {
 		$('.modal-backdrop').remove();
 		$('#loading').modal('toggle');
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
-		var from;
-		if(selected_days == "7 days"){
-			from = moment().subtract(7,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "10 days"){
-			from = moment().subtract(10,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "2 weeks"){
-			from = moment().subtract(14,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "1 month"){
-			from = moment().subtract(30,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "3 months"){
-			from = moment().subtract(90,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "6 months"){
-			from = moment().subtract(120,'days').format('YYYY-MM-DD')
-		}else if(selected_days == "1 year"){
-			from = moment().subtract(1,'year').format('YYYY-MM-DD')
-		}else if(selected_days == "Customize"){
-			from = moment().subtract(5,'year').format('YYYY-MM-DD')
-		}
-
 		var to_time = values[9]
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
+		var from;
+		if(selected_days == "7 days"){
+			from = moment(to).subtract(7,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "10 days"){
+			from = moment(to).subtract(10,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "2 weeks"){
+			from = moment(to).subtract(14,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "1 month"){
+			from = moment(to).subtract(30,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "3 months"){
+			from = moment(to).subtract(90,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "6 months"){
+			from = moment(to).subtract(120,'days').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "1 year"){
+			from = moment(to).subtract(1,'year').format('YYYY-MM-DD HH:mm:ss')
+		}else if(selected_days == "Customize"){
+			from = moment(to).subtract(5,'year').format('YYYY-MM-DD HH:mm:ss')
+		}
+
+		
+		
 
 		if(category == "rain"){
 			RainFallProcess(site,from,to)
@@ -161,6 +164,21 @@ function deleteNan(arr) {
 	return arr.filter(function(item){ 
 		return typeof item == "string" || (typeof item == "number" && item);
 	});
+}
+
+function getRanges(array) {
+	var ranges = [], rstart, rend;
+	for (var i = 0; i < array.length; i++) {
+		rstart = array[i];
+		rend = rstart;
+		while (array[i + 1] - array[i] == 1) {
+
+			rend = array[i + 1];
+			i++;
+		}
+		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
+	}
+	return ranges;
 }
 
 function bouncer(arr) {
@@ -321,9 +339,9 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -337,32 +355,29 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)	
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: divname[i],fillOpacity: 0.4, zIndex:  (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -371,7 +386,11 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'senslope',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
@@ -388,7 +407,11 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'senslope',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
 						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
@@ -414,9 +437,9 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -430,32 +453,29 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)	
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}						
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : divname[i],fillOpacity: 0.4, zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -464,7 +484,11 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'arq',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
@@ -481,7 +505,11 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'arq',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
@@ -508,9 +536,10 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
+						
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -524,32 +553,31 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-							}		
-						}
+						var nodata_nval=getRanges(nval)
+						
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							
+						}
+						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 =[];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -558,7 +586,11 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'noah',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
@@ -575,7 +607,11 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'noah',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
@@ -762,16 +798,39 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var  list_dates =[];
-	for (var i = 1; i < duration.asDays(); i++) {
-		list_dates.push(site.slice(0,3)+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	}
-	let dataSubmit = { date:list_dates,table:site}
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		}
-	});
+	// var  list_dates =[];
+	// for (var i = 1; i < duration.asDays(); i++) {
+	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	// }
+	// let dataSubmit = { date:list_dates,table:site}
+	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+	// 	var result = JSON.parse(data);
+	// 	var result_filtered = [];
+	// 	for (var i = 0; i < result.length; i++) {
+	// 		if(site == result[i].table_used){
+	// 			result_filtered.push(result[i])
+	// 		}
+	// 	}
+	// 	var label_crack = ["24hrs","72hrs","15mins"]
+	// 	var all_data_tag =[]
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		var collect =[]
+	// 		for (var i = 0; i < result_filtered.length; i++) {
+	// 			var remark_parse = ((result_filtered[i].remarks).split("/"))
+
+	// 			if(remark_parse[1] == label_crack[a] ){
+	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result_filtered[i].tag_name})
+	// 			}
+	// 		}
+
+	// 		all_data_tag.push(collect)
+
+	// 	}
+
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
+	// 	}
+	// 	series_data.push({name:'Tag'})
 	var cumulative_time = ($('#cumulativeTime').text()).split(",")
 	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
@@ -782,6 +841,13 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
+	console.log(fdate,tdate)
+	var colors= ["#EBF5FB","#0000FF","#FF0000"]
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		}
+	});
 	$("#"+id+"2").highcharts({
 		chart: {
 			type: 'column',
@@ -802,7 +868,8 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			}
 		},
 		xAxis: {
-			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
+			min:Date.parse(fdate),
+			max:Date.parse(tdate),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -812,6 +879,17 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			title: {
 				text: 'Date'
 			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'rain')
+					}
+				}
+			}
 
 		},
 		yAxis: {
@@ -829,50 +907,71 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		},
 
 		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
+						}
+					}
+				}
+			},
 			series: {
 				marker: {
 					radius: 3
 				},
 				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name == "Tag"){
-								$("#tagModal").modal("show");
-								$("#comment-model").empty();
-								$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-							}else{
-								$("#annModal").modal("show");
-								$(".tag").hide();
-								$('#tag_ids').tagsinput('removeAll');
-								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-								$("#tag_value").val(this.y)
-								$("#tag_crack").val(this.series.name)
-								$("#tag_description").val('rain analysis')
-								$("#tag_tableused").val(site)
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-							}
-						}
+					// point: {
+					// 	events: {
+					// 		click: function () {
+					// 			if(this.series.name == "Tag"){
+					// 				$("#tagModal").modal("show");
+					// 				$("#comment-model").empty();
+					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+					// 			}else{
+					// 				$("#annModal").modal("show");
+					// 				$(".tag").hide();
+					// 				$('#tag_ids').tagsinput('removeAll');
+					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+					// 				$("#tag_value").val(this.y)
+					// 				$("#tag_crack").val(this.series.name)
+					// 				$("#tag_description").val('rain analysis')
+					// 				$("#tag_tableused").val(site)
+					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+					// 			}
+					// 		}
+					// 	}
+					// }
+
+				},
+				area: {
+					marker: {
+						lineWidth: 3,
+						lineColor: null 
 					}
 				}
 
 			},
-			area: {
-				marker: {
-					lineWidth: 3,
-					lineColor: null 
-				}
-			}
+			legend: {
+				enabled: false
+			},
+			credits: {
+				enabled: false
+			},
+			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id+"2",'rain');
 
-		},
-		legend: {
-			enabled: false
-		},
-		credits: {
-			enabled: false
-		},
-		series:series_data
-	});
+		});
 
 
 	setTimeout(function(){
