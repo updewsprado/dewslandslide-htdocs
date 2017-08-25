@@ -51,7 +51,7 @@ $(document).ready(function(e) {
 
 		surficialGraph(dataSubmit)
 	}else if(category == "subsurface"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var from = 'n'
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
