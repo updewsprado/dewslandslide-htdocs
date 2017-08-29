@@ -409,6 +409,16 @@ $(document).ready(function(e) {
 				var color_alert_list=["#99ff99","#ffb366","#ff6666"]
 				var label_color = removeDuplicates(color_label);
 				
+				var table = $('#ground_table').DataTable();
+
+				$('#ground_table tbody').on( 'click', 'td', function () {
+					var cell_crack_name = $(this).parent().find('td')
+					var split_1 = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
+					var table_cell_value = table.cell( this ).data().split('"')
+					var cell_data = table_cell_value[1].split('/')
+					console.log(split_1)
+					$("#groundModal").modal("show")
+				} );
 				for(var n = 0 ; n < label_color.length ; n++){
 					if(label_color[n] == "#99ff99"){
 						$("#A0").show();
