@@ -1856,6 +1856,23 @@ try {
 } catch (err) {
 }
 
+function paginate(data) {
+	console.log(data);
+	for (var page = 1; page < data.totalPages; page++) {
+		$('#searched-key-pages').append('<li class="page-item"><a class="page-link" href="#">'+page+'</a></li>');	
+	}
+
+	$('#searched-key-pages').twbsPagination({
+        totalPages: data.totalPages,
+        visiblePages: 7,
+        onPageClick: function (event, page) {
+            $('#page-content').text('Page ' + page);
+        }
+	});
+
+	$('#searched-key-pages').show();
+}
+
 function loadSearchedMessage(msg){
 	counters = 0;
 	if (msg.type == "searchMessage" || msg.type == "searchMessageGroup") {
@@ -1963,15 +1980,39 @@ function loadSearchedMessage(msg){
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
 	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags" || msg.type == "searchedTimestampwritten" || msg.type == "searchedTimestampsent" || msg.type == "searchedUnknownNumber"){
-		console.log(msg);
 		messages = [];
 		var searchedResult = msg.data;
+		var currentPos = 1;
+		var itemPerPage = 50;
+		var totalItems = searchedResult.length;
+		var totalPages = Math.round(totalItems / itemPerPage);
 		var res;
+
+		$('#searched-key-pages').empty();
 		try {
-			for (var i =  0; i < searchedResult.length; i++) {
-				res = searchedResult[i];
-				updateGlobalMessage(res);
-				counters++;
+			if (totalItems > 50) {
+				console.log("Candidate for paginate");
+				var msg_search_data = {
+					'curretPost': currentPos,
+					'itemPerPage': itemPerPage,
+					'totalItems': totalItems,
+					'totalPages': totalPages,
+					'data': searchedResult
+				}
+
+				paginate(msg_search_data);
+
+				for (var i =  0; i < 50; i++) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					counters++;
+				}
+			} else {
+				for (var i =  0; i < searchedResult.length; i++) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					counters++;
+				}
 			}
 		} catch(err) {
 			console.log("No Result/Invalid Request");
