@@ -124,6 +124,28 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 	} else {
+		$('#send-btn-ewi-amd').prop('disabled',true);
+		
+		console.log(dashboard_data);
+		console.log('DISABLE');
+
+		var current_client_time = moment().format('YYYY-MM-DD HH:mm:ss');
+		var remainder = moment(current_client_time).minute() % 30;
+		var client_release_time = moment(current_client_time).subtract(remainder,"m").format("YYYY-MM-DD HH:mm:00");
+
+		if (client_release_time == dashboard_data.event_start) {
+			console.log('ENABLE');
+			$('#send-btn-ewi-amd').prop('disabled',false);
+		} else {
+			if (moment(current_client_time).hours() % 4 == 0) {
+				console.log('ENABLE');
+				$('#send-btn-ewi-amd').prop('disabled',false);
+			} else if (dashboard_data.event_start == dashboard_data.data_timestamp) {
+				console.log('ENABLE');
+				$('#send-btn-ewi-amd').prop('disabled',false);
+			}
+		}
+
 		var alert_site_name = "";
 		var alert_level = "";
 		// HOTFIX OF ND sites
