@@ -418,8 +418,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-		
-	}
+
+}
 }
 
 function getRainArq(site,dataSubmit,max_rain,id,distance) {
@@ -517,7 +517,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 
 				}
 			})
-	}
+}
 }
 
 function getRainNoah(site,dataSubmit,max_rain,id,distance) {
@@ -618,7 +618,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-	}
+}
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value ){
@@ -1194,15 +1194,20 @@ function columnPosition(data_result,site) {
 				listId.push(AlllistId[i])
 			}
 		}
+		var all_col_data = []
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
 				if(listDate[i] == data[a].ts){
 					fdatadown.push({x:data[a].downslope,y:data[a].depth})
 					fdatalat.push({x:data[a].latslope,y:data[a].depth})
+					all_col_data.push(data[a].latslope)
+					all_col_data.push(data[a].downslope)
 				}
 			}
 		}
-
+		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_col_data))))
+		var max_value = (Math.max.apply(null, bouncer(removeDuplicates(all_col_data))))
+		console.log(min_value)
 		for(var a = 0; a < fdatadown.length; a++){
 			var num = fdatadown.length-(listId.length*a);
 			if(num >= 0 ){
@@ -1221,8 +1226,8 @@ function columnPosition(data_result,site) {
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			
 		}
-		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(m)",site)
-		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(m)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(m)",site,min_value,max_value)
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(m)",site,min_value,max_value)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
@@ -1232,11 +1237,11 @@ function displacementPosition(data_result,data_result_v,site) {
 		var data = data_result;
 		var totalId =[] , listid = [0] ,allTime=[] ,allId=[] , totId = [];
 		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
-		var disData1 = [] , disData2 = [];
+		var disData1 = [] 
 		var fseries = [], fseries2 = [];
 		var c1series =[], c2series =[];
 		var d1= [] , d2 =[] , n1=[], n2=[];
-
+		
 		for(var i = 0; i < data[0].disp.length; i++){
 			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
 				totalId.push(data[0].disp[i]);
@@ -1252,6 +1257,7 @@ function displacementPosition(data_result,data_result_v,site) {
 				}
 			}
 		}
+		
 		for(var i = 1; i < fixedId.length-1; i++){
 			if(fixedId[i].id != fixedId[i+1].id){
 				allIdData.push(i)
@@ -1263,46 +1269,47 @@ function displacementPosition(data_result,data_result_v,site) {
 				break;
 			}
 		}
-
-		for(var i = fixedId.length - 1; i >= 0 ; i--){
+		for(var i = fixedId.length-1; i >= 0 ; i--){
 			var num = fixedId.length-(totId.length*i);
 			if(num >= 0 ){
 				listid.push(num);
 			}
 		}
-
-		for(var a = 1; a < (listid.length-1); a++){
+		for(var a = 1; a < (listid.length); a++){
 			if(listid[a] != undefined){
-				disData1.push(fixedId.slice(listid[a],listid[a+1]));
-				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
+				disData1.push(fixedId.slice(listid[a-1],listid[a+1]));
 			}
 		}
 		
+		var all_val = [];
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
-				d2.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base)*1000)})
-
+				d1.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base))*1000})
+				d2.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base))*1000})
+				all_val.push(((disData1[a][i].downslope-data[0].cml_base))*1000)
+				all_val.push(((disData1[a][i].latslope-data[0].cml_base))*1000)
 			}
 		}
-
-		for(var i = 0; i < disData1.length; i++){
-			n1.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
-				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
-			n2.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
-				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
+		
+		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_val))))
+		var diff = (min_value/data[0].disp.length)
+		for(var i = 1; i < disData1.length; i++){
+			n1.push({from:((disData1[i][1].downslope-data[0].cml_base)*1000)+.15,to:((disData1[i][1].downslope-data[0].cml_base)*1000)-diff,
+				label: {text: i,style: {color: '#1c1c1c'}}})
+			n2.push({from:((disData1[i][1].latslope-data[0].cml_base)*1000)+.15,to:((disData1[i][1].downslope-data[0].cml_base)*1000)-diff,
+				label: {text: i,style: {color: '#1c1c1c'}}})
 		}
-
 		for(var a = 0; a < data[0].cumulative.length; a++){
 			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
 			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
 		}
+		
 		fseries.push({name:'cumulative', data:c1series,type: 'area'});
-		fseries2.push({name:'cumulative', data:c1series,type: 'area'});
+		fseries2.push({name:'cumulative', data:c2series,type: 'area'});
 		for(var a = 1; a < disData1.length+1; a++){
 			var color = parseInt((255 / disData1.length)*(a))
-			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
-			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries.push({name:(a-1), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a-1), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
 		velocityPosition(data_result_v,totalId.length,disData1[0],site,n1); 
 		fseries.push({name:'unselect'})
@@ -1483,7 +1490,7 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 
 }
 
-function chartProcessInverted(id,data_series,name,site){
+function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1513,12 +1520,15 @@ function chartProcessInverted(id,data_series,name,site){
 			}
 		},
 		xAxis:{
+			min:minVal,
+			max:(maxVal + 0.02 ),
 			gridLineWidth: 1,
 			title: {
 				text: name
 			}
 		},
 		yAxis:{
+
 			title: {
 				text: 'Depth (m)'
 			}
