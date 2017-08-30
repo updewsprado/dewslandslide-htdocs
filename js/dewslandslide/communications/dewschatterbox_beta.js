@@ -437,7 +437,9 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 	var tag_indicator = "";
+	var searched_cache = [];
 	var dasboard_data_holder;
+
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -1873,6 +1875,37 @@ try {
 } catch (err) {
 }
 
+function paginate(data) {
+
+	// Initialize pages
+	var temp = [];
+	for (var item_counter = 1; item_counter <= data.totalItems; item_counter++) {
+		if (item_counter % 50 != 0) {
+			temp.push(data.data[item_counter]);
+		} else {
+			searched_cache.push(temp);
+			temp = [];
+			temp.push(data.data[item_counter]);
+		}
+	}
+
+	$('#searched-key-pages').show();
+	$('#searched-key-pages').twbsPagination({
+		totalPages: data.totalPages,
+		visiblePages: 7,
+		onPageClick: function (event, page) {
+			for (var paginate_counter = 0; paginate_counter < searched_cache[page-1].length; paginate_counter++) {
+				updateGlobalMessage(searched_cache[page-1][paginate_counter]);
+			}
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#search-global-result').html(messages_html);
+			var maxScroll = $(document).height() - $(window).height();
+			$('#search-global-result').scrollTop(maxScroll);
+			searchResults = [];
+		}
+	});
+}
+
 function loadSearchedMessage(msg){
 	counters = 0;
 	if (msg.type == "searchMessage" || msg.type == "searchMessageGroup") {
@@ -1980,24 +2013,44 @@ function loadSearchedMessage(msg){
 		$('html, body').scrollTop(targetLi.offsetTop - 300);
 
 	} else if (msg.type == "searchMessageGlobal"  || msg.type == "searchGintags" || msg.type == "searchedTimestampwritten" || msg.type == "searchedTimestampsent" || msg.type == "searchedUnknownNumber"){
-		console.log(msg);
 		messages = [];
 		var searchedResult = msg.data;
+		var currentPos = 1;
+		var itemPerPage = 50;
+		var totalItems = searchedResult.length;
+		var totalPages = Math.round(totalItems / itemPerPage);
 		var res;
+
+		$('#searched-key-pages').empty();
 		try {
-			for (var i =  0; i < searchedResult.length; i++) {
-				res = searchedResult[i];
-				updateGlobalMessage(res);
-				counters++;
+			if (totalItems > 50) {
+				console.log("Candidate for paginate");
+				var msg_search_data = {
+					'curretPost': currentPos,
+					'itemPerPage': itemPerPage,
+					'totalItems': totalItems,
+					'totalPages': totalPages,
+					'data': searchedResult
+				}
+
+				paginate(msg_search_data);
+				searchResults = [];
+			} else {
+				for (var i =  0; i < searchedResult.length; i++) {
+					res = searchedResult[i];
+					updateGlobalMessage(res);
+					counters++;
+				}
+
+				var messages_html = messages_template_both({'messages': searchResults});
+				$('#search-global-result').html(messages_html);
+				var maxScroll = $(document).height() - $(window).height();
+				$('#search-global-result').scrollTop(maxScroll);
 			}
 		} catch(err) {
 			console.log("No Result/Invalid Request");
+			console.log(err.message);
 		}
-
-		var messages_html = messages_template_both({'messages': searchResults});
-		$('#search-global-result').html(messages_html);
-		var maxScroll = $(document).height() - $(window).height();
-		$('#search-global-result').scrollTop(maxScroll);
 
 	} else {
 		console.log("No Result/Invalid Request");
