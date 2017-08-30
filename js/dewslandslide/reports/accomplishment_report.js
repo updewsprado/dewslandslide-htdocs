@@ -466,6 +466,11 @@ $(document).ready(function()
             success: function(response, textStatus, jqXHR)
             {
                 result = JSON.parse(response);
+                
+                $(".reports_nav_list, .reports_field_list").each(function (index, obj) {
+                    if( obj.id !== "reports_nav_sample" && obj.id !== "reports_field_sample" ) $(obj).remove();
+                });
+                
                 if(result.length != 0) callback(result);
                 else {
                     $("#loading").modal("hide");
@@ -473,9 +478,6 @@ $(document).ready(function()
                         CKEDITOR.instances['report'].insertText("No early warning information released for this shift.");
                         CKEDITOR.instances['report'].focus();
                     });*/
-                    $(".reports_nav_list, .reports_field_list").each(function (index, obj) {
-                        if( obj.id !== "reports_nav_sample" && obj.id !== "reports_field_sample" ) $(obj).remove();
-                    });
 
                     $("#reports_nav_sample").attr("style", "").addClass("active");
                     $("#reports_field_sample").attr("hidden", false).addClass("in active");
@@ -612,8 +614,9 @@ $(document).ready(function()
         if( $(this).is(":checked") ) {
             let x = this.value.split("_");
             let type = x[0], site = x[1];
-
-            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site, "_blank", "menubar=0");
+            let shift_start = $("#shift_start").val();
+            let shift_end = $("#shift_end").val();
+            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site + "/" + shift_start + "/" + shift_end, "_blank", "menubar=0");
         }
     });
 
