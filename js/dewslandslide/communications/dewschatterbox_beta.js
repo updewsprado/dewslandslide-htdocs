@@ -426,6 +426,7 @@ $(document).ready(function() {
 	var socket = "";
 	var narrative_recipients = [];
 	var tag_indicator = "";
+	var searched_cache = [];
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -1857,20 +1858,34 @@ try {
 }
 
 function paginate(data) {
-	console.log(data);
-	for (var page = 1; page < data.totalPages; page++) {
-		$('#searched-key-pages').append('<li class="page-item"><a class="page-link" href="#">'+page+'</a></li>');	
+
+	// Initialize pages
+	var temp = [];
+	for (var item_counter = 1; item_counter <= data.totalItems; item_counter++) {
+		if (item_counter % 50 != 0) {
+			temp.push(data.data[item_counter]);
+		} else {
+			searched_cache.push(temp);
+			temp = [];
+			temp.push(data.data[item_counter]);
+		}
 	}
 
-	$('#searched-key-pages').twbsPagination({
-        totalPages: data.totalPages,
-        visiblePages: 7,
-        onPageClick: function (event, page) {
-            $('#page-content').text('Page ' + page);
-        }
-	});
-
 	$('#searched-key-pages').show();
+	$('#searched-key-pages').twbsPagination({
+		totalPages: data.totalPages,
+		visiblePages: 7,
+		onPageClick: function (event, page) {
+			for (var paginate_counter = 0; paginate_counter < searched_cache[page-1].length; paginate_counter++) {
+				updateGlobalMessage(searched_cache[page-1][paginate_counter]);
+			}
+			var messages_html = messages_template_both({'messages': searchResults});
+			$('#search-global-result').html(messages_html);
+			var maxScroll = $(document).height() - $(window).height();
+			$('#search-global-result').scrollTop(maxScroll);
+			searchResults = [];
+		}
+	});
 }
 
 function loadSearchedMessage(msg){
@@ -2001,27 +2016,23 @@ function loadSearchedMessage(msg){
 				}
 
 				paginate(msg_search_data);
-
-				for (var i =  0; i < 50; i++) {
-					res = searchedResult[i];
-					updateGlobalMessage(res);
-					counters++;
-				}
+				searchResults = [];
 			} else {
 				for (var i =  0; i < searchedResult.length; i++) {
 					res = searchedResult[i];
 					updateGlobalMessage(res);
 					counters++;
 				}
+
+				var messages_html = messages_template_both({'messages': searchResults});
+				$('#search-global-result').html(messages_html);
+				var maxScroll = $(document).height() - $(window).height();
+				$('#search-global-result').scrollTop(maxScroll);
 			}
 		} catch(err) {
 			console.log("No Result/Invalid Request");
+			console.log(err.message);
 		}
-
-		var messages_html = messages_template_both({'messages': searchResults});
-		$('#search-global-result').html(messages_html);
-		var maxScroll = $(document).height() - $(window).height();
-		$('#search-global-result').scrollTop(maxScroll);
 
 	} else {
 		console.log("No Result/Invalid Request");
