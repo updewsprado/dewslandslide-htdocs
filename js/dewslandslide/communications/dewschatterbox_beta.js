@@ -965,6 +965,16 @@ $(document).ready(function() {
 		}
 	}
 
+	function initLoadGroupMessageQA(siteMembers) {
+		if (siteMembers.data == NULL) {
+			return;
+		}
+
+		console.log("Loading Site members");
+		console.log("Clearing Quick access group messge section");
+		$('#group-message-display').empty();
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -1055,6 +1065,8 @@ $(document).ready(function() {
 			} else if (msg.type == "latestAlerts"){
 				initLoadLatestAlerts(msg);
 				$('#chatterbox-loading').modal('hide');
+			} else if (msg.type == "groupMessageQuickAcces") {
+				initLoadGroupMessageQA(msg);
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -1942,6 +1954,15 @@ function displayGroupTagsForThread () {
 	document.title = tempText;
 }
 
+function displayGroupMembersForQuickAccess(offices,sites) {
+	var data = {
+		'offices': offices,
+		'sites': sites,
+		'type': 'groumMembersForQuickAccess'
+	}
+	conn.send(JSON.stringify(data));
+}
+
 function displayDetailsForThread(siteabr){
 	$.post('../chatterbox/getsitbangprovmun', {sites: siteabr}).done(function(response){
 		var site_details = JSON.parse(response);
@@ -2101,6 +2122,7 @@ $(document).on("click","#quick-release-display li",function(){
 		'sitenames': tagSitenames
 	};
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
@@ -2322,6 +2344,7 @@ function loadGroupsCommunity(){
 		'sitenames': tagSitenames
 	};
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
