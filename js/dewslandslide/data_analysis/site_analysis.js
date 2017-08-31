@@ -17,8 +17,8 @@ $(document).ajaxStop(function () {
 
 });
 
-
 $(document).ready(function(e) {
+	$('.tag').hide()
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
 		$(this).addClass("open");
@@ -57,51 +57,21 @@ function dateselection() {
 	$('#reportrange0').daterangepicker({
 		singleDatePicker: true,
 		startDate: end,
+		showDropdowns: true
 	}, cb);
 
 	cb(start, end);
 
-	
+	$('#time0').datetimepicker({
+		format: 'HH:mm:00',
+		defaultDate: new Date(),
+	});
 	$('#collapseSite' ).switchClass( "collapse", "in");
 
 	
 }
 
-function removeSpecificArray(array, element) {
-	const index = array.indexOf(element);
-	array.splice(index, 1);
-}
 
-
-function cb(start, end) {
-	$('#reportrange0 span').html(end.format('YYYY-MM-DD'));
-	var parse_time = $('#reportrange0 span').text();
-	var fromDate = start.format('YYYY-MM-DD');
-	var toDate = moment(parse_time).add(1,'days').format('YYYY-MM-DD');
-	$('.checkbox').prop('disabled', true);
-	$('.checkbox').prop('checked', false);
-	$('.site_checkbox').prop('disabled', true);
-	$('.site_checkbox').prop('checked', false);
-	$('.site-panel').slideDown();
-	$('.sitegeneral').empty();
-	$('.site_collapse').slideUp()
-	$('.column_collapse').slideUp()
-	$('.node_collapse').slideUp()
-	$('.column-panel').slideUp();
-	$('.node-panel').slideUp();
-	$('#download').hide();
-	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
-	$('#sitegeneral').selectpicker();
-	$('#sitegeneral').append('<option >Select Site</option>')
-	$.get("../site_level_page/getAllSiteNames").done(function(data){
-		var per_site = JSON.parse(data);
-		for (a = 0; a <  per_site.length; a++) {
-			dropdowlistAppendValue(per_site[a].name, (per_site[a].name).toUpperCase(),'#sitegeneral');
-		}
-	})
-	SelectedSite(fromDate,toDate);
-	
-}
 
 function removeSpecificArray(array, element) {
 	const index = array.indexOf(element);
@@ -139,6 +109,29 @@ function bouncer(arr) {
 }
 
 
+function modalTemplate(dataTableSubmit,allDataResult,category){
+	$('#saveTAG').empty()
+	$('#saveTAG').append('<div class="form-group tag_ids"><label>Tags</label>'+
+		'<input type="text" class="form-control" id="tag_ids" placeholder="Ex: #AccelDrift or #Drift" data-role="tagsinput" value="">'+
+		'</div><div class="form-group"><label for="formGroupExampleInput">Timestamp</label>'+
+		'<input type="text" class="form-control" id="tag_time" disabled=""></div>'+
+		'<div class="form-group"><label for="formGroupExampleInput2">Remarks</label>'+
+		'<textarea class="form-control comment" rows="5" id="comment"></textarea></div>'+
+		'<p id="modal_trigger"><button type="button"  class="btn-sm btn-success pull-right" id="tag_submit">'+
+		'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button><br></p>')
+	$("#ground_graph").empty();
+	$("#graphS2").empty();
+	$("#graphS2").append('<div id="ground_graph" ></div>');
+	$("#annModal").modal("hide");
+	var series_data_tag = JSON.parse($("#tag_series").val())
+	if( category == 'surficial'){
+		chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
+	}else if (category == 'rain'){
+		// let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
+
+	}
+}
+
 function doSortDates(dates){
 	var swapped;
 	do {
@@ -154,15 +147,58 @@ function doSortDates(dates){
 	} while (swapped);
 }
 
+function getRanges(array) {
+	var ranges = [], rstart, rend;
+	for (var i = 0; i < array.length; i++) {
+		rstart = array[i];
+		rend = rstart;
+		while (array[i + 1] - array[i] == 1) {
+
+			rend = array[i + 1];
+			i++;
+		}
+		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
+	}
+	return ranges;
+}
+
+function cb(start, end) {
+	$('#reportrange0 span').html(end.format('YYYY-MM-DD'));
+	var parse_time = $('#reportrange0 span').text();
+	var toDate = moment(parse_time).format('YYYY-MM-DD');
+	$('.checkbox').prop('disabled', true);
+	$('.checkbox').prop('checked', false);
+	$('.site_checkbox').prop('disabled', true);
+	$('.site_checkbox').prop('checked', false);
+	$('.site-panel').slideDown();
+	$('.sitegeneral').empty();
+	$('.site_collapse').slideUp()
+	$('.column_collapse').slideUp()
+	$('.node_collapse').slideUp()
+	$('.column-panel').slideUp();
+	$('.node-panel').slideUp();
+	$('#download').hide();
+	$('.sitegeneral').append('<label for="sitegeneral">Site</label><br><select class="selectpicker"  id="sitegeneral" data-live-search="true"></select>');
+	$('#sitegeneral').selectpicker();
+	$('#sitegeneral').append('<option >Select Site</option>')
+	$.get("../site_level_page/getAllSiteNames").done(function(data){
+		var per_site = JSON.parse(data);
+		for (a = 0; a <  per_site.length; a++) {
+			dropdowlistAppendValue(per_site[a].name, (per_site[a].name).toUpperCase(),'#sitegeneral');
+		}
+	})
+	SelectedSite(toDate);
+	
+}
 /************************/
 /***SITE LEVEL PROCESS***/
 /************************/
 
-function SelectedSite(from,to) {
+function SelectedSite(to) {
 	$("#sitegeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_site = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
 		var panel_div_name =["site","column","node"];
-		var panel_name=["Site","Column","Node"]
+		var panel_name=["Site","Column","Node"];
 		$("#analysis_panel_body").empty();
 		for(var a = 0; a < panel_div_name.length; a++){
 			$("#analysis_panel_body").append('<div class=" panel panel-info '+panel_div_name[a]+'_collapse"><div class="panel-heading"><h1 class="header_right_level">'+panel_name[a]+' Overview</h1>'+
@@ -198,10 +234,15 @@ function SelectedSite(from,to) {
 		$('.column_checkbox').prop('disabled', true);
 		$('.node-panel').hide();
 		$('.download').show()
-		SelectdaysOption('surperimpose')
-		CheckBoxSite(selected_site,from,to)
 		$(".site_level").append('<div class="col-md-12" id="raincharts"></div>')
-		RainFallProcess(selected_site,from,to)
+
+		var from_customize = moment(to).subtract(7,'days').format('YYYY-MM-DD')
+		var current_time= $('#time0').val();
+		SelectdaysOption('surperimpose')
+		CheckBoxSite(selected_site,from_customize+" "+current_time,to+" "+current_time)
+		RainFallProcess(selected_site,from_customize+" "+current_time,to+" "+current_time)
+
+
 		$.ajax({url: "/api/SiteDetails/"+selected_site , dataType: "json",success: function(result){
 			$('.columngeneral').empty();
 			$('.columngeneral').append('<label for="columngeneral">Column</label><br><select class="selectpicker"  id="columngeneral" data-live-search="true"></select>');
@@ -213,15 +254,28 @@ function SelectedSite(from,to) {
 					dropdowlistAppendValue(result[b].name, (result[b].name).toUpperCase(),'#columngeneral');	
 				}
 			}
-			SelectedColumn(selected_site,from,to);
+			SelectedColumn(selected_site,to);
 		}
 	})
-		let dataSubmit = {
+
+		/*SUPERIMPOSED SURFICIAL*/
+		$('#saveTAG').empty()
+		$('#saveTAG').append('<div class="form-group tag_ids"><label>Tags</label>'+
+			'<input type="text" class="form-control" id="tag_ids" placeholder="Ex: #AccelDrift or #Drift" data-role="tagsinput" value="">'+
+			'</div><div class="form-group"><label for="formGroupExampleInput">Timestamp</label>'+
+			'<input type="text" class="form-control" id="tag_time" disabled=""></div>'+
+			'<div class="form-group"><label for="formGroupExampleInput2">Remarks</label>'+
+			'<textarea class="form-control comment" rows="5" id="comment"></textarea></div>'+
+			'<p id="modal_trigger"><button type="button"  class="btn-sm btn-success pull-right" id="tag_submit">'+
+			'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button><br></p>')
+		let dataSubmit_surficial = {
 			site : (selected_site).toLowerCase(),
-			fdate : from,
-			tdate : to
+			fdate : moment(to).subtract(3,'months').format('YYYY-MM-DD')+" "+current_time,
+			tdate : to+" "+current_time
 		}
-		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){
+		
+
+		$.post("../surficial_page/getDatafromGroundCrackName", {data : dataSubmit_surficial} ).done(function(data_result){
 			$('.crackgeneral').empty();
 			$('.crackgeneral').append('<label for="crackgeneral">Cracks</label><br><select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
 			$('#crackgeneral').selectpicker();
@@ -232,7 +286,7 @@ function SelectedSite(from,to) {
 				dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
 				crack_name.push(result[i].crack_id)
 			}
-			dataTableProcess(dataSubmit,crack_name)
+			dataTableProcess(dataSubmit_surficial,crack_name)
 
 		});
 	});
@@ -316,35 +370,44 @@ function SurficialOnSelect() {
 }
 
 function SelectdaysOption(id,category) {
-
 	$("#"+id+"_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		// console.log(selected_days,$("#reportrange0 span").text())
 		var fdate;
 		if(selected_days == "7 days"){
-			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(7,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "10 days"){
-			fdate = moment($("#reportrange0 span").text()).subtract(10,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(10,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "2 weeks"){
-			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(14,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "1 month"){
-			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(30,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "3 months"){
-			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(90,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "6 months"){
-			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(120,'days').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "1 year"){
-			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(1,'year').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}else if(selected_days == "all"){
-			fdate = moment($("#reportrange0 span").text()).subtract(5,'year').format('YYYY-MM-DD')
+			fdate = moment($("#reportrange0 span").text()).subtract(5,'year').format('YYYY-MM-DD')+
+			" "+$('#time0').val()
 		}
 		var site = $("#sitegeneral").val();
-		var tdate = moment().add(1,'days').format('YYYY-MM-DD');
+		var tdate = moment($("#reportrange0 span").text()).format('YYYY-MM-DD')+" "+$('#time0').val();
 
 		let dataTableSubmit = { 
-			site : site, 
+			site : site.toLowerCase(), 
 			fdate : fdate,
 			tdate : tdate
 		}
+		
 		if(id == "surperimpose"){
 			surficialGraph(dataTableSubmit)
 
@@ -401,13 +464,13 @@ function RainFallProcess(curSite,fromDate,toDate){
 
 		for (var i = 0; i < ids1.length; i++) {
 			$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse" data-target="#'+ids1[i]+'"><button type="button">'+ids2[i].toUpperCase()+'</button></a></li>')
-			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="collapse"></div></div>')
+			$("#raincharts").append('<div class="col-md-6"><div id="'+ids1[i]+'2" class="rain_graph collapse"></div></div><div class="col-md-6"><div id="'+ids1[i]+'" class="rain_graph collapse"></div></div>')
 			dropdowlistAppendValue(ids1[i],ids2[i].toUpperCase(),'#rainfallgeneral');
 		}
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeMax">'+ids1.length+'</div>');
 		$("#raincharts").append('<div class="maxPlot" id="cumulativeTime"></div>');
 		$(".maxPlot").hide();
-		submittedMeas(dataSubmit,'na','rain');
+		// submittedMeas(dataSubmit,'na','rain');
 		RainFallOnSelect()
 	});
 
@@ -452,25 +515,21 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)		
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
@@ -478,6 +537,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
+
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -519,8 +580,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-		
-	}
+
+}
 }
 
 function getRainArq(site,dataSubmit,max_rain,id,distance) {
@@ -553,26 +614,22 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)		
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
-						console.log(all_ts)
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
@@ -580,6 +637,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -621,7 +679,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-	}
+}
 }
 
 function getRainNoah(site,dataSubmit,max_rain,id,distance) {
@@ -655,32 +713,30 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)						
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-							}		
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							
 						}
+						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -695,6 +751,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							max_rain:max_rain,
 							distance:distance
 						}
+
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,negative,dataTableSubmit,max_value,distance,jsonRespo);
 							if(all_raindata[2].length != 0){
@@ -722,7 +779,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					}
 				}
 			})
-	}
+}
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,max_value,distance,allDataResult){
@@ -731,6 +788,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
+
 	// var  list_dates =[];
 	// for (var i = 0; i < allDataResult.length; i++) {
 	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
@@ -771,6 +829,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			max_plot_time.push(cumulative_time[i])
 		}
 	}
+	// console.log(max_plot_time)
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -799,7 +858,8 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			}
 		},
 		xAxis: {
-			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
+			min:Date.parse(fdate),
+			max:Date.parse(tdate),
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e %b %Y',
@@ -810,6 +870,17 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 			},
 			title: {
 				text: 'Date',
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'rain')
+					}
+				}
 			}
 		},
 
@@ -882,7 +953,25 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 						lineWidth: 3,
 						lineColor: null 
 					}
-				}
+				},
+				scatter: {
+					marker: {
+						radius: 5,
+						states: {
+							hover: {
+								enabled: true,
+								lineColor: 'rgb(100,100,100)'
+							}
+						}
+					},
+					states: {
+						hover: {
+							marker: {
+								enabled: false
+							}
+						}
+					}
+				},
 
 			},
 			legend: {
@@ -892,6 +981,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 				enabled: false
 			},
 			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id,'rain');
+
 		});
 	// var chart = $('#'+id).highcharts();
 	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
@@ -914,16 +1006,16 @@ function chartProcessRain(series_data ,id , data_source ,site ,max ,negative,dat
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show == "#rain_arq"){
-		$("#rain_arq").addClass("in");
-		$("#rain_arq2").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
+		$("#rain_arq2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
-		$("#rain_senslope2").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
+		$("#rain_senslope2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
-		$(div_data_show+"2").addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
+		$(div_data_show+"2").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1008,7 +1100,8 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 			}
 		},
 		xAxis: {
-			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
+			min:Date.parse(fdate),
+			max:Date.parse(tdate),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -1018,6 +1111,17 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 			title: {
 				text: 'Date'
 			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'rain')
+					}
+				}
+			}
 
 		},
 		yAxis: {
@@ -1035,6 +1139,24 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 		},
 
 		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
+						}
+					}
+				}
+			},
 			series: {
 				marker: {
 					radius: 3
@@ -1078,6 +1200,9 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 				enabled: false
 			},
 			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id+"2",'rain');
+
 		});
 	// var chart = $('#'+id).highcharts();
 	// $( ".highcharts-series-"+(series_data.length-1) ).click(function() {
@@ -1100,13 +1225,13 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max,dataTableSub
 	var rain_name =(filtered_rain_name[1]).toString()
 	var div_data_show = show_div[7].toString()
 	if(div_data_show== "#rain_arq"){
-		$("#rain_arq").addClass("in");
+		$("#rain_arq").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else if(div_data_show== "#rain_senslope"){
-		$("#rain_senslope").addClass("in");
+		$("#rain_senslope").switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}else{
-		$(div_data_show).addClass("in");
+		$(div_data_show).switchClass("collapse" , "in");
 		$('#rainfallgeneral').val(rain_name)
 	}
 
@@ -1127,10 +1252,10 @@ function RainFallOnSelect(){
 			if(selected_rain ==  all_rain_name[a]){
 				var div1 = document.getElementById((all_rain_id[a]).slice(1,15));
 				var collapse_id = div1.getAttribute("class");
-				if( collapse_id == "in"){
+				if( collapse_id == "rain_graph in"){
 					$(all_rain_id[a]).switchClass("in" , "collapse");
 					$(all_rain_id[a]+"2").switchClass("in" , "collapse");
-				}else{
+				}else if(collapse_id == "rain_graph collapse"){
 					$(all_rain_id[a]).switchClass("collapse" , "in");
 					$(all_rain_id[a]+"2").switchClass("collapse" , "in");
 				}
@@ -1139,7 +1264,7 @@ function RainFallOnSelect(){
 	})
 }
 
-function dataTableProcess(dataSubmit,crack_name) {  
+function dataTableProcess(dataSubmit,crack_name) { 
 	$('#tooltip_surficial').tooltip('show')
 	$.post("../surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
 		var result= JSON.parse(data_result);
@@ -1155,10 +1280,10 @@ function dataTableProcess(dataSubmit,crack_name) {
 			last:last_goodData,
 			all_data_last:result,
 		}
-		var fdate = moment().subtract(90,'days').format('YYYY-MM-DD');
+
 		let dataTableSubmit1 = { 
-			site : dataSubmit.site, 
-			fdate : fdate,
+			site : dataSubmit.site.toLowerCase(), 
+			fdate : dataSubmit.fdate,
 			tdate : dataSubmit.tdate,
 			crack_name:crack_name,
 			last:last_goodData,
@@ -1228,7 +1353,6 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/last10GroundData/"+dataSubmit.site,  success: function(data_result) {
-
 			var result = JSON.parse(data_result)
 			var organize_ground_data = []
 			var ground_data_all =[]
@@ -1430,7 +1554,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 	});	
 }
-function surficialGraph(dataTableSubmit) {  
+function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -1451,7 +1575,7 @@ function surficialGraph(dataTableSubmit) {
 				for (var i = 0; i < result.length; i++) {
 					if(crack_name[a] == result[i].crack_id){
 						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
+						data.push({x:Date.parse(result[i].ts) ,y:result[i].meas ,id: result[i].id} );
 					}
 				}
 			}
@@ -1473,7 +1597,6 @@ function surficialGraph(dataTableSubmit) {
 	});	
 }
 function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult){
-	submittedMeas(dataTableSubmit,allDataResult,'surficial');
 	var site = $('#sitegeneral').val();
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
@@ -1485,40 +1608,48 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 	for (var i = 0; i < allDataResult.length; i++) {
 		list_dates.push(site+((moment(allDataResult[i].ts).format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
 	}
+	if(allDataResult.length != 0){
+		var dataSubmit = {table:'gndmeas',from_id:allDataResult[0].id,to_id:allDataResult[allDataResult.length-1].id,site:site}
+	}else{
+		var dataSubmit = {table:'gndmeas',from_id:'0',to_id:'0',site:site}
+	}
 	
-	let dataSubmit = { date:list_dates,table:'gndmeas'}
 	$.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		$('#'+id).empty();
 		var result_unfiltered = JSON.parse(data)
+
+		var all_cracks = [];
+
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			all_cracks.push(result_unfiltered[i].crack_id)
+		}
+
+		var all_collected_tags =[]
+		var filtered_crack_id = removeDuplicates(all_cracks);
+
+		for (var i = 0; i < filtered_crack_id.length; i++) {
+			var list = []
+			for (var a = 0; a < result_unfiltered.length; a++) {
+				if( filtered_crack_id[i] == result_unfiltered[a].crack_id){
+					list.push({x:Date.parse(result_unfiltered[a].timestamp),text:"",value:result_unfiltered[a].remarks,title:result_unfiltered[a].tag_name,
+						id:result_unfiltered[a].gintags_id,ref_id:result_unfiltered[a].tag_id_fk,table_id:result_unfiltered[a].id})
+				}
+			}
+			all_collected_tags.push(list)
+		}
+
+		for (var a = 0; a < filtered_crack_id.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_collected_tags[a],onSeries:filtered_crack_id[a],width:100,showInLegend: false,visible:true})
+		}
 		var result = [];
 		for (var i = 0; i < result_unfiltered.length; i++) {
 			if (result_unfiltered[i].tag_description == "ground analysis") {
 				result.push(result_unfiltered[i])
 			}
 		}
-		$('#'+id).empty();
-		var all_crack_id = []
-		for (var i = 0; i < result.length; i++) {
-			var remark_parse = ((result[i].remarks).split("/"))
-			all_crack_id.push(remark_parse[1])
-		}
-		var label_crack = removeDuplicates(all_crack_id);
-		var all_data_tag =[]
-		for (var a = 0; a < label_crack.length; a++) {
-			var collect =[]
-			for (var i = 0; i < result.length; i++) {
-				var remark_parse = ((result[i].remarks).split("/"))
-				if(remark_parse[1] == label_crack[a] ){
-					collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result[i].tag_name})
-				}
-			}
-			all_data_tag.push(collect)
-		}
-
-		for (var a = 0; a < label_crack.length; a++) {
-			data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
-		}
-		data_series.push({name:'Tag'})
 		
+		data_series.push({name:'Tag'})
+
 		Highcharts.setOptions({
 			global: {
 				timezoneOffset: -8 * 60
@@ -1545,7 +1676,8 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 				}
 			},
 			xAxis: {
-
+				min:Date.parse(dataTableSubmit.fdate),
+				max:Date.parse(dataTableSubmit.tdate),
 				type: 'datetime',
 				dateTimeLabelFormats: { 
 					month: '%e. %b %Y',
@@ -1570,27 +1702,34 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 						radius: 3
 					},
 					cursor: 'pointer',
-					// point: {
-					// 	events: {
-					// 		click: function () {
-					// 			if(this.series.name == "Tag"){
-					// 				$("#tagModal").modal("show");
-					// 				$("#comment-model").empty();
-					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-					// 			}else{
-					// 				$("#annModal").modal("show");
-					// 				$(".tag").hide();
-					// 				$('#tag_ids').tagsinput('removeAll');
-					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-					// 				$("#tag_value").val(this.y)
-					// 				$("#tag_crack").val(this.series.name)
-					// 				$("#tag_description").val('ground analysis')
-					// 				$("#tag_tableused").val('gndmeas')
-					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-					// 			}
-					// 		}
-					// 	}
-					// }
+					point: {
+						events: {
+							click: function () {
+								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+								$('#tag_ids').tagsinput('removeAll');
+								$("#tag_value").val(this.id)
+								$("#tag_crack").val(this.series.name)
+								$("#tag_description").val('ground analysis')
+								$("#tag_tableused").val('gndmeas')
+								$("#tag_id").val(this.ref_id)
+								$('#tag_table_id').val(this.table_id)
+								$('#tag_hash').val(this.title)
+								$('#tag_comments').val(this.value)
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value+'<br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag">'
+										+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>&nbsp;<button type="button" class="btn btn-info edit_tag" id="edit_tag">'
+										+'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit</button>')
+								}else{
+									$("#annModal").modal("show");
+									
+								}
+								submittedMeas(dataTableSubmit,allDataResult,'surficial');
+							}
+						}
+					}
 				},
 			},
 			credits: {
@@ -1601,7 +1740,7 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 		var chart = $('#'+id).highcharts();
 		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
 			var series = chart.series[(data_series.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
+			for (var i = 0; i < all_cracks.length; i++) {
 				if (series.visible) {
 					(chart.series[((data_series.length-(i+1))-1)]).update({
 						visible: true,
@@ -1613,21 +1752,21 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 				}
 			}
 		});
-		
+
 	});
 
 }
 
 function submittedMeas(dataTableSubmit,allDataResult,category){
+	var host = window.location.host;
 	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").tagsinput("items");
 		var tag_description = $("#tag_description").val();
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
-		var time = (($("#tag_time").val()).slice(2,10)).toString()
-		var table_element_id = $("#sitegeneral").val()+(time.replace(/-/g, ""));
+		var table_element_id = $("#tag_value").val();
 		var table_used = $("#tag_tableused").val();
-		var remarks = $("#sitegeneral").val()+"/"+($("#tag_crack").val()).replace(/ /g,"")+"/"+$("#tag_value").val()+"/"+moment($("#tag_time").val())+"/"+$("#comment").val();
+		var remarks = $("#comment").val();
 		var dataSubmit = [];
 		for (var i = 0; i < tag_name.length; i++) {
 			dataSubmit.push({ 
@@ -1640,24 +1779,119 @@ function submittedMeas(dataTableSubmit,allDataResult,category){
 				'remarks' : remarks
 			})
 		}
-
-		var host = window.location.host;
-		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
-		.done(function(data) { 
-			$("#ground_graph").empty();
-			$("#graphS2").empty();
-			$("#graphS2").append('<div id="ground_graph" ></div>');
-			$("#annModal").modal("hide");
-			var series_data_tag = JSON.parse($("#tag_series").val())
-			if( category == 'surficial'){
-				chartProcessSurficial('ground_graph',series_data_tag,'Superimposed Surficial Graph',dataTableSubmit,allDataResult)
-			}else if (category == 'rain'){
-				let category = {tag : 'fromTag' , selectedDay:$('#rainfall_days .rainfall_select .btn .pull-left').val()}
-				
+		saveUpdateTag(dataSubmit,dataTableSubmit,allDataResult,category)
+	});
+	$('#delete_tag').on( "click", function(){
+		$("#comment-model").empty();
+		$("#comment-model").append('<label>Comments:</label><textarea id="issue"></textarea><br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag_comment">'
+			+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>')
+		
+		$('#delete_tag_comment').on( "click", function(){
+			var gintags_id =  $("#tag_value").val();
+			var tag_name_id = $("#tag_id").val();
+			var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+			var tagger = $("#current_user_id").val();
+			var table_element_id = $("#tag_table_id").val();
+			var table_used = $("#tag_tableused").val();
+			var remarks = $("#tag_comments").val();
+			var issue = $('#issue').val();
+			var status = 'deleted';
+			let dataSubmit = { 
+				'gintags_id' :gintags_id,
+				'tag_name_id' : tag_name_id, 
+				'timestamp' : timestamp,
+				'tagger' : tagger,
+				'table_element_id' : table_element_id,
+				'table_used' :  table_used,
+				'remarks' : remarks,
+				'issue' : issue,
+				'status': status
 			}
-		})
+			
+			if( ($('#issue').val()).length != 0 ){
+				$("#tagModal").modal("hide");
+				$.post("http://"+host+"/generalinformation/removeGintagsId",{gintags:dataSubmit}).done(function(data) { 
+					if(data == "true"){
+						modalTemplate(dataTableSubmit,allDataResult,category)
+					}
+
+				})
+			}
+		});
 		
 	});
+	$('.edit_tag').click(function(){
+		$("#tagModal").modal("hide");
+		var hash_tag = $("#tag_hash").val();
+		var remarks_tag = $("#tag_comments").val();
+		$("#tag_ids").tagsinput('add', hash_tag);
+		$(".comment").val(remarks_tag)
+		$("#modal_trigger").empty();
+		$('#modal_trigger').append('<div class="form-group"><label for="formGroupExampleInput2">Comments</label>'+
+			'<textarea class="form-control comment" rows="3" id="issue"></textarea></div>'+
+			'<br><button type="button"  class="btn-sm btn-success pull-right" id="tag_update"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>'+
+			' UPDATE</button><br>')
+		$("#annModal").modal("show");
+		$('#tag_update').on( "click", function(){
+			var gintags_id =  $("#tag_value").val();
+			var tag_name = $("#tag_ids").tagsinput("items");
+			var tag_name_id = $("#tag_id").val();
+			var tag_description = $("#tag_description").val();
+			var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+			var tagger = $("#current_user_id").val();
+			var table_element_id = $("#tag_table_id").val();
+			var table_used = $("#tag_tableused").val();
+			var remarks = $("#comment").val();
+			var issue = $("#issue").val();
+			var status = 'update';
+			var dataSubmit = [];
+			for (var i = 0; i < tag_name.length; i++) {
+				dataSubmit.push({ 
+					'gintags_id' :gintags_id,
+					'tag_name': tag_name[i],
+					'tag_description':tag_description,
+					'tag_name_id' : tag_name_id, 
+					'timestamp' : timestamp,
+					'tagger' : tagger,
+					'table_element_id' : table_element_id,
+					'table_used' :  table_used,
+					'remarks' : remarks,
+					'issue':issue,
+					'status': status
+				})
+			}
+			
+			if( ($('#issue').val()).length != 0 ){
+				$("#annModal").modal("hide");
+				$.post("http://"+host+"/generalinformation/updateGintagsId",{gintags:dataSubmit[0]}).done(function(data) { 
+					if(data == "true"){
+						if(tag_name.length > 1){
+							var added_tag = [];
+							for (var i = 1; i < dataSubmit.length; i++) {
+								added_tag.push(dataSubmit[i])
+							}
+							saveUpdateTag(added_tag,dataTableSubmit,allDataResult,category)
+						}else{
+							modalTemplate(dataTableSubmit,allDataResult,category)
+						}
+						
+					}
+				})
+
+				
+
+			}
+			
+		});
+	});
+}
+
+function saveUpdateTag(dataSubmit,dataTableSubmit,allDataResult,category) {
+	var host = window.location.host;
+	$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
+	.done(function(data) { 
+			modalTemplate(dataTableSubmit,allDataResult,category)
+		})
 }
 
 
@@ -1929,10 +2163,10 @@ function chartProcessSurficialAnalysis3(id,data_series,name,site){
 /**COLUMN LEVEL PROCESS**/
 /************************/
 
-function SelectedColumn(site,from,to) {
+function SelectedColumn(site,to) {
 	$("#columngeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_column = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
-		CheckBoxColumn(site,selected_column,from,to)
+		CheckBoxColumn(site,selected_column,to)
 		$('.column_collapse').slideDown()
 		$('.node-panel').slideDown();
 		$('.node_collapse').slideUp()
@@ -1959,6 +2193,8 @@ function SelectedColumn(site,from,to) {
 			$(".bootstrap-select").click(function () {
 				$(this).addClass("open");
 			});
+			$('#total_node').attr('value',result[0].num_nodes)
+
 			for (c = 0; c <  result.length; c++) {
 				for (d = 0; d <  result[c].num_nodes; d++) {
 					dropdowlistAppendValue((d+1),(d+1),'#nodegeneral');
@@ -1970,7 +2206,7 @@ function SelectedColumn(site,from,to) {
 	});
 }
 
-function CheckBoxColumn(site,column,from,to){
+function CheckBoxColumn(site,column,to){
 	$('.column_checkbox').empty()
 	$('.crackgeneral').slideUp()
 	var list_checkbox =["data_presence","sub_surface_analysis","communication_health","node_summary","heatmap","piezo"];
@@ -2006,13 +2242,14 @@ function CheckBoxColumn(site,column,from,to){
 			$(".selectpicker").selectpicker('refresh')
 			var title = ["Column","Displacement","Velocity"]
 			var id_title =["column","dis","velocity"]
-			var id_div=[["colspangraph","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+			var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
 			for(var a = 0; a < title.length; a++){
 				$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
 				$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse">'+
 					'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 			}
-			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD'),to)
+			
+			allSensorPosition(column,(moment(to).subtract(3, 'days')).format('YYYY-MM-DD')+" "+$('#time0').val(),to+" "+$('#time0').val())
 			SubOnSelect()
 		}else{
 			$(".subsurface_analysis_div").empty()
@@ -2045,14 +2282,13 @@ function CheckBoxColumn(site,column,from,to){
 			$(".column_level").append('<div class="col-md-12" id="heatmap_header"></div>')
 			$("#heatmap_header").empty();
 			$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
-				'<div class="pull-right"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/></div>'+
-				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select><div id="heatmap_div"></div>')
+				'<div class="pull-right heatmap_container_div"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/>'+
+				'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div><div id="heatmap_div"></div>')
 			$("#reportrange3").hide();
 			$("#daygeneral").val('3d');
 			$("#daygeneral").selectpicker('refresh');
-			var time = moment($("#reportrange0 span").text()).add(1,"days").format('YYYY-MM-DDTHH:mm');
+			var time = moment($("#reportrange0 span").text()+" "+$("#time0").val()).format('YYYY-MM-DD HH:mm:ss');
 			heatmapProcess(column,time,'3d')
-			HeatmapOnSelectDay(column)
 		}
 	});
 	$('#'+list_checkbox[5]+'_checkbox').prop('checked', false);
@@ -2086,7 +2322,7 @@ function piezometer(curSite,site){
 				}
 			});},
 			success: function(result) { 
-				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
+				$("#piezometer_div").append('<div class="col-md-12"><div id="freq_div"  class="collapse in"></div></div></div><div class="col-md-12"><div class="collapse" id="temp_div"></div></div></div>')
 				dropdowlistAppendValue('#freq_div','Frequency','#piezogeneral');
 				dropdowlistAppendValue('#temp_div','Temperature','#piezogeneral');
 				$("#piezogeneral").val('Frequency');
@@ -2215,7 +2451,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-		var data = data_result;
+var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -2232,7 +2468,7 @@ function columnPosition(data_result,site) {
 				break;
 			}
 		}
-
+		listDate.sort()
 		for(var i = 0; i < AlllistId.length; i++){
 			if(AlllistId[i] != AlllistId[i+1]){
 				listId.push(AlllistId[i])
@@ -2241,8 +2477,8 @@ function columnPosition(data_result,site) {
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
 				if(listDate[i] == data[a].ts){
-					fdatadown.push([data[a].downslope,data[a].depth])
-					fdatalat.push([data[a].latslope,data[a].depth])
+					fdatadown.push({x:data[a].downslope,y:data[a].depth})
+					fdatalat.push({x:data[a].latslope,y:data[a].depth})
 				}
 			}
 		}
@@ -2263,8 +2499,9 @@ function columnPosition(data_result,site) {
 			var color = parseInt((255 / fAlldown.length)*(a+1))
 			fseries.push({name:listDate[a].slice(0,16), data:fAlldown[a] ,color:inferno[color]})
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
+			
 		}
-		chartProcessInverted("colspangraph",fseries,"Horizontal Displacement, downslope(m)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement, downslope(m)",site)
 		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement, across slope(m)",site)
 		$("#column_sub").switchClass("collapse","in");
 	}     
@@ -2548,8 +2785,14 @@ function chartProcessInverted(id,data_series,name,site){
 				},
 			},
 			series: {
-				lineWidth: 1
-			}
+				lineWidth: 1,
+				states: {
+					hover: {
+						enabled: true,
+						lineWidth: 8
+					}
+				}
+			},
 		},
 		tooltip: {
 			formatter: function() {
@@ -2675,14 +2918,14 @@ function SubOnSelectDay(column,tdate) {
 	$("#sub_days").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
 		var selected_day =($(this).find('option').eq(clickedIndex).val());
 		if(selected_day =="3d"){
-			var fdate = (moment().subtract(3,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(3,'days')).format('YYYY-MM-DD');
 		}else if(selected_day =="5d"){
-			var fdate = (moment().subtract(5,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(5,'days')).format('YYYY-MM-DD');
 		}else if(selected_day =="7d"){
-			var fdate = (moment().subtract(7,'days')).format('YYYY-MM-DD');
+			var fdate = (moment(tdate).subtract(7,'days')).format('YYYY-MM-DD');
 		}
-		var time = moment().format('HH:mm:ss')
-		allSensorPosition(column,fdate+"T"+time,tdate+"T"+time)
+		var time = $('#time0').val()
+		allSensorPosition(column,fdate+" "+time,tdate)
 	})
 }
 function HeatmapOnSelect(column) {
@@ -2709,7 +2952,7 @@ function HeatmapOnSelect(column) {
 		var time = timevalue.slice(11,16);
 		var day = $("#daygeneral").val();
 		$("#heatmap_div").empty();
-		heatmapProcess(column,(tdate+"T"+time),day)
+		// heatmapProcess(column,(tdate+"T"+time),day)
 
 	})
 }
@@ -2717,6 +2960,12 @@ function HeatmapOnSelect(column) {
 
 function HeatmapOnSelectDay(column) {
 	$("#daygeneral").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+		var start = moment().format('MM-DD-YYYY HH:mm');
+		$("#heatmap_header").empty();
+		$("#heatmap_header").append('<br><h4><b>Soms Heatmap </b></h4>'+
+			'<div class="pull-right heatmap_container_div"><input id="reportrange3" class="reportrange3 pull-center" type="text" name="datefilter3" style="height: 34px;"value="'+start+'" placeholder="Select Timestamp"/>'+
+			'<select class="daygeneral pull-right selectpicker" id="daygeneral"><option value="1d">1 Day</option> <option value="3d">3 Days</option><option value="30d">30 Days</option></select></div><div id="heatmap_div"></div>')
+		$("#reportrange3").hide();
 		var selected_day = ($(this).find('option').eq(clickedIndex).text()).toLowerCase();
 		var timevalue = $("#reportrange0 span").text();
 		var tdate = timevalue.slice(0,10);
@@ -2728,7 +2977,9 @@ function HeatmapOnSelectDay(column) {
 		}else if( selected_day == "30 days"){
 			var day = '30d'
 		}
-		heatmapProcess(column,(moment(tdate).format("MM-DD-YYYY")+"T00:00"),day)
+		$("#daygeneral").val(day);
+		$("#daygeneral").selectpicker('refresh');
+		heatmapProcess(column,(moment(tdate+" "+$("#time0").val()).format("YYYY-MM-DD HH:ss:mm")),day)
 	})
 }
 
@@ -2872,15 +3123,19 @@ function SiteInfo(site){
 		$("#info_column").empty();
 		$("#info_site").append(result[0].barangay+" "+result[0].municipality+" "+result[0].province+"("+result[0].name.toUpperCase().slice(0,3)+")")
 		$("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")")
-		// $("#info_column").append(result[0].name.toUpperCase()+"(v"+result[0].version+")<br>Date install("+result[0].date_install +") <br> Date Activation("+result[0].date_activation+")")
 	});
 }
 
-function heatmapProcess(site,tdate,day){
+function heatmapProcess(site,tsdate,day){
+	if(tsdate.slice(14,16) < 30){
+		var time_set = '00:00'
+	}else if(tsdate.slice(14,16) > 30){
+		var time_set = '30:00'
+	}
+	var tdate = tsdate.slice(0,14)+time_set
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
-			// HeatmapOnSelect(site)
 			HeatmapOnSelectDay(site)
 			$("#heatmap_checkbox").empty()
 			$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
@@ -2896,15 +3151,20 @@ function heatmapProcess(site,tdate,day){
 				$("#heatmap_container").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"></div>')
 				var result = JSON.parse(data_result)
+				var total_node = $('#total_node').val();
 				var all_time =[]
 				var all_nodes = []
 				var pattern_time =[]
+				var list_id=[]
+				for (var i = 0; i < parseFloat(total_node); i++) {
+					list_id.push((i+1))
+				}
 				for (a = 0; a < result.length; a++) {
 					all_time.push(result[a].ts)
 					all_nodes.push(result[a].id)
 				}
 				var list_time = removeDuplicates(all_time)
-				var list_id = removeDuplicates(all_nodes)
+				
 				var number_all =[]
 				for (b = 0; b < list_id.length; b++) {
 					for (c = 0; c < list_time.length; c++) {
@@ -2971,7 +3231,108 @@ function heatmapProcess(site,tdate,day){
 					obj_list_id.push({index:l,id:list_id[l]})
 				}
 
-				heatmapVisual(series_data,obj_list_time,obj_list_id,site)
+				if(obj_list_time.length == 48 || obj_list_time.length == 36 || obj_list_time.length == 30){
+					heatmapVisual(series_data,obj_list_time,obj_list_id,site)
+					
+				}else{
+					var time_date = Date.parse(tdate.replace('T',' '))
+					var template = [];
+					var time_template = [];
+					var time_object = [];
+					var x_and_y=[];
+					var data_series_filtered=[]
+					
+					if( day == '1d'){
+						for (var i = 0; i < 48; i++) {
+							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i,'minutes').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '3d'){
+						for (var i = 0; i < 36; i++) {
+							time_template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '30d'){
+						for (var i = 0; i < 30; i++) {
+
+							time_template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(tdate.slice(0,10)).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}
+					
+					template.reverse()
+					if(obj_list_time.length != 0){
+						var nodata_timestamp=[]
+						var data_filteredTime =[]
+						for (var i = 0; i < obj_list_time.length; i++) {
+							removeSpecificArray(time_template,obj_list_time[i])
+						}
+
+						
+						
+						for (var a = 0; a < time_template.length; a++) {
+							for (var i = 0; i < obj_list_id.length; i++) {
+								nodata_timestamp.push({id:obj_list_id[i].id,ts:time_template[a],value: NaN})
+							}
+						}
+
+						
+
+						for (var i = 0; i < series_data.length; i++) {
+							nodata_timestamp.push({id:series_data[i].id,ts:series_data[i].ts,value:series_data[i].value})
+						}
+						
+						for (var i = 0; i < template.length; i++) {
+							for (var a = 0; a < nodata_timestamp.length; a++) {
+								if( Date.parse(template[i]) == Date.parse(nodata_timestamp[a].ts)){
+									data_filteredTime.push(nodata_timestamp[a])
+
+								}
+							}
+						}
+
+
+						for (var i = 0; i < obj_list_id.length; i++) {
+							for (var a = 0; a < data_filteredTime.length; a++) {
+								if(obj_list_id[i].id == data_filteredTime[a].id ){
+									data_series_filtered.push({id:data_filteredTime[a].id,ts:data_filteredTime[a].ts,value:data_filteredTime[a].value,x:x_and_y[a].y,y:x_and_y[a].x})
+								}
+							}
+						}
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+					}else{
+						var total_node = $('#total_node').val();
+						var obj_list_id =[];
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							obj_list_id.push({index:i,id:(i+1)})
+						}
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							for (var a = 0; a < template.length; a++) {
+								data_series_filtered.push({id:(i+1),ts:template[a],value:'null',x:i,y:a})
+								
+							}
+						}
+
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+						
+					}
+
+				}
+
 			}
 		}
 	});	
@@ -3016,8 +3377,10 @@ function heatmapVisual(series_data,list_time,list_id,site){
 		.append("svg")
 		.attr("width", width + margin.left + margin.right)
 		.attr("height", height + margin.top + margin.bottom)
+		.attr("xmlns","http://www.w3.org/2000/svg")
 		.append("g")
-		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+		;
 
 		var newFontSize = width * 62.5 / 900;
 		d3.select("html").style("font-size", newFontSize + "%");
@@ -3330,7 +3693,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 		}
 		var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 		$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-		$("#batt_div").append('<br><div id="'+id[3]+'"></div>')
+		$("#batt_div").append('<br><div id="'+id[3]+'" class="accelDiv"></div>')
 		chartProcessbattSoms(id[3],series_filtered[0],"Battery",color_series,'batt',site)
 	});
 	$.ajax({ 
@@ -3384,7 +3747,7 @@ function accelVersion1Filtered(site,node,fdate,tdate,id,list){
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
-				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+id[a]+'"  class="accelDiv"></div>')
 				chartProcessAccel(id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],site)
 			}
 		}
@@ -3476,7 +3839,7 @@ function accel2(data,series,msgid,list){
 			}
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			$(".node_level").append('<div class="col-md-12" id="batt_div"></div>')
-			$("#batt_div").append('<br><div id="'+data.id[3]+'"></div>')
+			$("#batt_div").append('<br><div id="'+data.id[3]+'"  class="accelDiv"></div>')
 			chartProcessbattSoms(data.id[3],series_filtered,"Battery",color_series,"batt",data.site)
 		}
 	});	
@@ -3582,7 +3945,7 @@ function accel2filtered(data,series,msgid,list){
 			var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 			for (a= 0; a < series_name.length; a++) {
 				$(".node_level").append('<div class="col-md-12" id="'+node_series_name[a]+'_div"></div>')
-				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"></div>')
+				$("#"+node_series_name[a]+"_div").append('<br><div id="'+data.id[a]+'"  class="accelDiv"></div>')
 				chartProcessAccel(data.id[a],series_filtered[a],series_name[a],color_series,node_series_name[a],data.site)
 			}
 		}
@@ -3660,7 +4023,7 @@ function somsfiltered(data,dataSoms,series){
 					}
 					var color_series = ["#ccf9e8","#89e794","#eaba26","#e58610","#c12040","#df39ff","#465cff","#7ab9e7","#7bf9d6","#8cf097"]
 					$(".node_level").append('<div class="col-md-12" id="soms_div"></div>')
-					$("#soms_div").append('<br><div id="'+dataSoms.id+'"></div>')
+					$("#soms_div").append('<br><div id="'+dataSoms.id+'"  class="accelDiv"></div>')
 					chartProcessbattSoms(dataSoms.id,series_filtered[0],dataSoms.id_name,color_series,'soms',data.site)
 					
 				}
@@ -3732,6 +4095,17 @@ function chartProcessAccel(id,data_series,name,color,list,site){
 				text: 'Date',
 				style:{
 					color: 'white'
+				}
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'accel')
+					}
 				}
 			}
 		},
@@ -3805,8 +4179,10 @@ function chartProcessAccel(id,data_series,name,color,list,site){
                         	enabled: false
                         },
                         series:data_series
-                    }
-                    );
+                    },function(chart) { 
+                    	syncronizeCrossHairs(chart,id,'accel');
+
+                    });
 
 }
 function chartProcessbattSoms(id,data_series,name,color,list,column){
@@ -3889,6 +4265,17 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
 				style:{
 					color: 'white'
 				}
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'accel')
+					}
+				}
 			}
 		},
 		tooltip: {
@@ -3956,8 +4343,10 @@ function chartProcessbattSoms(id,data_series,name,color,list,column){
                         	enabled: false
                         },
                         series:data_series
-                    }
-                    );
+                    },function(chart) { 
+                    	syncronizeCrossHairs(chart,id,'accel');
+
+                    });
 
 }
 
@@ -3985,7 +4374,7 @@ function NodeOnSelectDay(column,tdate) {
 		let dataSubmit = { 
 			site : (column).toLowerCase(), 
 			fdate : fdate,
-			tdate : tdate,
+			tdate : moment($("#reportrange0 span").text()).subtract(1,'days').format('YYYY-MM-DD'),
 			node:node_id
 		}
 		NodeProcess(dataSubmit,list_checkbox)
@@ -4001,16 +4390,43 @@ function downloadSvg() {
 	$("#download").on('click',function(){
 		var name_site = ((($( "tspan" ).text()).split('.')))
 		var extracted_name = (name_site[0]).split(' ');
+		var list_checkbox = ['ground_measurement','heatmap','rain_graph','surficial_velocity','piezo',
+		'sub_surface_analysis']
 		$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 		$( "#pdfsvg" ).empty();
-		$( "#rainfallsvg" ).empty();
+		$( ".svg_container" ).empty();
+		var all_data = [];
 
-		var all_data=[]
 
-		var all_raincharts = $('#raincharts .collapse ').map(function() {
+		/*SUPERIMPOSED GROUND*/
+		if ($('#'+list_checkbox[0]+'_checkbox').is(':checked')) {
+			$("#ground_graph .highcharts-container .highcharts-root").attr("xmlns","http://www.w3.org/2000/svg");
+			all_data.push($('#ground_graph .highcharts-container').html());
+		}
+		
+
+		/*HEATMAP*/
+		if ($('#'+list_checkbox[1]+'_checkbox').is(':checked')) {
+			if($('#heatmap_container').html() != undefined && ($('#heatmap_container').html()).slice(0,2) != '<h'){
+				all_data.push($('#heatmap_container').html())
+			}
+		}
+
+		/***************Deleted Part for Highchart***********************/
+
+		$(".highcharts-root").removeAttr("xmlns");
+		$(".highcharts-root").removeAttr("version");
+
+
+		/***************Deleted Part for Highchart***********************/
+
+		/*RAINFALL*/
+
+		var all_raincharts = $('#raincharts .rain_graph ').map(function() {
 			return this.id;
 		}).get();
 
+		
 		var ids0 = []
 		for (var i = 0; i < all_raincharts.length; i++) {
 			if(all_raincharts[i].length < 6 || all_raincharts[i] == 'rain_arq' || all_raincharts[i] == 'rain_senslope'){
@@ -4019,12 +4435,12 @@ function downloadSvg() {
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "x", 460);
 			$( "#"+ids0[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
 		for (var i = 0; i < ids0.length; i++) {
-			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 460);
+			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 70);
 			$( "#"+ids0[i]+"2 .highcharts-container  .highcharts-root").attr( "y", (i) * 410 );
 		}
 
@@ -4034,9 +4450,10 @@ function downloadSvg() {
 			$('#rainfallsvg').attr("height", "1950");
 		}
 
-		var ids = $('#raincharts .collapse .highcharts-container ').map(function() {
+		var ids = $('#raincharts .rain_graph .highcharts-container ').map(function() {
 			return this.id;
 		}).get();
+
 
 		for (var i = 0; i < ids.length; i++) {
 			$("#rainfallsvg").append($('#'+ids[i]).html())
@@ -4052,25 +4469,103 @@ function downloadSvg() {
 		}
 
 		ids_all.push($('#divSurficial').html());
-		
-		if($('#heatmap_container').html() != undefined){
-			ids_all.push($('#heatmap_container').html())
+		if ($('#'+list_checkbox[2]+'_checkbox').is(':checked')) {
+			all_data.push($('#rainSvg').html())
 		}
-		var all_data = [];
-		for (var i = 0; i < ids_all.length; i++) {
-			if(ids_all[i] != undefined ) {
-				all_data.push($('#'+ids_all[i]).html())
+
+		/*SURFICIAL*/
+
+		var all_surficial = $('#surficial_graphs_VD .collapse ').map(function() {
+			return this.id;
+		}).get();
+		if(all_surficial.length != 0){
+			for (var i = 0; i < all_surficial.length; i++) {
+				$( "#"+all_surficial[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_surficial[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 480 );
 			}
+
+			for (var i = 0; i < all_surficial.length; i++) {
+				$("#surficialsvg").append($('#'+all_surficial[i]+' .highcharts-container').html())
+
+			}
+
+			if ($('#'+list_checkbox[3]+'_checkbox').is(':checked')) {
+				all_data.push($('#surfSvg').html());
+			}
+		}
+
+
+		/*PIEZOMETER*/
+
+		var all_piezometer = $('#piezometer_div .collapse ').map(function() {
+			return this.id;
+		}).get();
+		if(all_piezometer.length != 0){
+			for (var i = 0; i < all_piezometer.length; i++) {
+				$( "#"+all_piezometer[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_piezometer[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 480 );
+			}
+
+			for (var i = 0; i < all_piezometer.length; i++) {
+				$("#piezosvg").append($('#'+all_piezometer[i]+' .highcharts-container').html())
+			}
+
+			if ($('#'+list_checkbox[4]+'_checkbox').is(':checked')) {
+				all_data.push($('#pzSvg').html());
+			}
+		}
+
+		/*SUBSURFACE*/
+		var all_subsurface = ['colspangraph','dis','velocity']
+		if($('#'+all_subsurface[0]+'1 .highcharts-container').html() != undefined){
+			for (var i = 0; i < all_subsurface.length; i++) {
+				$( "#"+all_subsurface[i]+"1 .highcharts-container  .highcharts-root").attr( "x", 50 );
+				$( "#"+all_subsurface[i]+"1 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'1 .highcharts-container ').html())
+			}
+
+			for (var i = 0; i < all_subsurface.length; i++) {
+				$( "#"+all_subsurface[i]+"2 .highcharts-container  .highcharts-root").attr( "x", 460 );
+				$( "#"+all_subsurface[i]+"2 .highcharts-container  .highcharts-root").attr( "y", i*900 );
+				$("#subsurfacesvg").append($('#'+all_subsurface[i]+'2 .highcharts-container').html())
+			}
+			if ($('#'+list_checkbox[5]+'_checkbox').is(':checked')) {
+				all_data.push($('#subSvg').html());
+			}
+		}
+
+		/*SENSOR*/
+
+		var all_sensor_accel = $('#node_collapse .col-md-12 .accelDiv').map(function() {
+			return this.id;
+		}).get();
+		var id =["accel-1","accel-2","accel-3","accel-v","accel-r","accel-c"]
+		all_sensor_accel.sort()
+
+		if(all_sensor_accel != 0){
+			for (var i = 0; i < all_sensor_accel.length; i++) {
+				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "x", 70);
+				$( "#"+all_sensor_accel[i]+" .highcharts-container  .highcharts-root").attr( "y", (i) * 350 );
+			}
+
+
+			for (var i = 0; i < all_sensor_accel.length; i++) {
+				$("#accelsvg").append($('#'+all_sensor_accel[i]+' .highcharts-container').html())
+			}
+			
+			all_data.push($('#aceSvg').html());
 			
 		}
 
-		all_data.push($('.svgBox').html())
+
+
+		/*RENDERING ALL GRAPH*/
 		$.post("/../chart_export/renderChart", { charts : all_data } )
 		.done(function (data) {
 			$( ".highcharts-contextbutton" ).attr( "visibility", "" );
 			if(data == "Finished")
 			{
-				// window.open("/temp/charts_render/compiled.pdf", '_blank', 'fullscreen=yes');
+				
 				$( "#pdfsvg" ).append('<iframe src="/temp/charts_render/compiled.pdf" frameborder="0" style="width:800px; height:500px;"></iframe>')
 				$("#pdfModal").modal('show');
 				$("#downloadPDF").on('click',function(){
@@ -4078,7 +4573,7 @@ function downloadSvg() {
 					$( "#renamePdf" ).attr( "download",extracted_name[3].slice(0,3)+"_Unified_Single_Attachment_"+moment().format('YYYY-MM-DD_HH:mm') );
 				});
 			}else{
-				$( "#pdfsvg" ).append('<H3>ERROR</H3>')
+				$("#pdfsvg" ).append('<H3>ERROR</H3>')
 				$("#pdfModal").modal('show');
 				$("#downloadPDF").hide();
 			}
@@ -4087,4 +4582,74 @@ function downloadSvg() {
 
 
 }
+
+
+/*syncronizegraph*/
+
+function syncronizeCrossHairs(chart,id_chart,category) {
+	if(category == 'rain'){
+		var all_ids = $('#raincharts .collapse ').map(function() {
+			return this.id;
+		}).get();
+	}else{
+		var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	}
+	
+
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			if($('#'+all_ids[i]).highcharts() != undefined){
+				var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+				xAxis1.removePlotLine("myPlotLineId");
+				xAxis1.addPlotLine({
+					value: chart.xAxis[0].translate(x, true),
+					width: 1,
+					color: 'red',                 
+					id: "myPlotLineId"
+				})
+			}
+		}
+		
+	});
+
+
+}
+
+
+function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
+	if(category == 'rain'){
+		var all_ids =['rain_senslope','rain_senslope2','rain_arq','rain_arq','rain1','rain12',
+		'rain2','rain22','rain3','rain32']
+	}else{
+		var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	}
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		}
+		
+	}
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		}
+	}
+	
+
+}
+
 

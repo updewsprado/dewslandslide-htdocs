@@ -5,13 +5,16 @@ $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var category = values[6]
 	var site = values[7]
+	var to_time = values[9]
+	var from_time = values[8]
 	var connection_id = values[5]
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment().subtract(10,'days').format('YYYY-MM-DD')
-		var to = moment().add(1,'days').format('YYYY-MM-DD')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
+		console.log(site,from,to)
 	}else  if(category == "surficial"){
 		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
 		var to = moment().add(1,'days').format('YYYY-MM-DD')
@@ -48,8 +51,8 @@ $(document).ready(function(e) {
 
 		surficialGraph(dataSubmit)
 	}else if(category == "subsurface"){
-		var from = 'n'
-		var to = 'n'
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
 		$(".selectpicker").selectpicker('refresh')
@@ -62,6 +65,7 @@ $(document).ready(function(e) {
 				'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 		}
 		allSensorPosition(site,from,to)
+		console.log(from,to)
 	}
 
 });
@@ -91,26 +95,28 @@ function SelectdaysOption(id) {
 		$('.modal-backdrop').remove();
 		$('#loading').modal('toggle');
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
 		var from;
 		if(selected_days == "7 days"){
-			from = moment().subtract(7,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(7,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "10 days"){
-			from = moment().subtract(10,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(10,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "2 weeks"){
-			from = moment().subtract(14,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(14,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "1 month"){
-			from = moment().subtract(30,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(30,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "3 months"){
-			from = moment().subtract(90,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(90,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "6 months"){
-			from = moment().subtract(120,'days').format('YYYY-MM-DD')
+			from = moment(to).subtract(120,'days').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "1 year"){
-			from = moment().subtract(1,'year').format('YYYY-MM-DD')
+			from = moment(to).subtract(1,'year').format('YYYY-MM-DD HH:mm:ss')
 		}else if(selected_days == "Customize"){
-			from = moment().subtract(5,'year').format('YYYY-MM-DD')
+			from = moment(to).subtract(5,'year').format('YYYY-MM-DD HH:mm:ss')
 		}
 
-		var to = moment().add(1,'days').format('YYYY-MM-DD');
+		var to_time = values[9]
+		
 
 		if(category == "rain"){
 			RainFallProcess(site,from,to)
@@ -479,7 +485,6 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site
 						}
-						console.log(series_data2)
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 					}
@@ -651,6 +656,17 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			},
 			title: {
 				text: 'Date',
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax)
+					}
+				}
 			}
 		},
 
@@ -732,6 +748,9 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			enabled: false
 		},
 		series:series_data
+	},function(chart) { 
+		syncronizeCrossHairs(chart,id);
+
 	});
 
 
@@ -1031,9 +1050,11 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
+	// console.log("/api/SensorAllAnalysisData/"+site+"/n/"+tdate)
+	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/n/"+tdate,
 		dataType: "json",
 		success: function(result){
+			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
@@ -1625,4 +1646,64 @@ function svgChart(idBox) {
 	})
 
 
+}
+
+/*syncronizegraph*/
+
+function syncronizeCrossHairs(chart,id_chart,category) {
+	var all_ids = $('#raincharts .collapse ').map(function() {
+		return this.id;
+	}).get();
+
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			if($('#'+all_ids[i]).highcharts() != undefined){
+				var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+				xAxis1.removePlotLine("myPlotLineId");
+				xAxis1.addPlotLine({
+					value: chart.xAxis[0].translate(x, true),
+					width: 1,
+					color: 'red',                 
+					id: "myPlotLineId"
+				})
+			}
+		}
+		
+	});
+
+
+}
+
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+
+	var all_ids =['rain_senslope','rain_senslope2','rain_arq','rain_arq','rain1','rain12',
+	'rain2','rain22','rain3','rain32']
+	
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		}
+		
+	}
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		}
+	}
+	
 }

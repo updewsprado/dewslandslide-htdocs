@@ -8,6 +8,7 @@ $(document).ajaxStop(function () {
 $(document).ready(function(e) {
 	var values = window.location.href.split("/")
 	var current_site = values[5];
+	$(".svgBox").hide()
 	$("#soms_search_tool").hide()
 	if(current_site != undefined && current_site != "Select"){
 		columnSelect(current_site)
@@ -20,6 +21,12 @@ $(document).ready(function(e) {
 	}
 
 });
+
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
 function doSortDates(dates){
 	var swapped;
 	do {
@@ -96,6 +103,7 @@ function ValueProcess(curSite) {
 	ColumnDataProcess(curSite)
 	DataPresence(curSite)
 	heatmapProcess(curSite,moment().format('YYYY-MM-DDTHH:00'),'30d')
+	$('#current_time').attr('value',moment().format('YYYY-MM-DDTHH:00'))
 	$('.daygeneral').val('30d')
 	$('#reportrange3').val(moment().add(1,'h').format('YYYY-MM-DD HH:00'))
 	$(".soms_heatmap").append('<div class="col-md-12" id="heatmap_div"></div>')
@@ -119,6 +127,7 @@ function ValueProcess(curSite) {
 		var timevalue =time.context.value
 		var tdate = timevalue.slice(0,10);
 		var time = timevalue.slice(11,16);
+		$('#current_time').attr('value',(tdate+"T"+time))
 		$('.daygeneral').prop('disabled', false);
 		$(".heatmapClass").empty()
 		$(".heatmapClass").append('<label class="daygeneral">Days:&nbsp;</label>'+
@@ -127,12 +136,17 @@ function ValueProcess(curSite) {
 			heatmapProcess(curSite,(tdate+"T"+time),$('#daygeneral').val())
 		}else{
 			$('#daygeneral').on('change', function() {
-
+				console.log('here')
 				heatmapProcess(curSite,(tdate+"T"+time),this.value)
 			})
 		}
 		
 	});
+
+	$('#daygeneral').on('change', function() {
+		var time = $('#current_time').val();
+		heatmapProcess(curSite,time,this.value)
+	})
 
 	$('input[name="datefilter2"]').on('cancel.daterangepicker', function(ev, picker) {
 		$(this).val('Select Date');
@@ -198,6 +212,8 @@ function getAlertmini(site,siteDiv){
 				maxNodesJSON = JSON.parse(result.siteMaxNodes)
 				nodeStatusJSON = JSON.parse(result.nodeStatus)
 				initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,siteDiv)
+				$('#total_node').attr('value',maxNodesJSON[0].nodes)
+				
 			}
 		});
 }
@@ -321,7 +337,6 @@ function DataPresence(site){
 
 
 function heatmapProcess(site,tdate,day){		
-	// console.log("/api/heatmap/"+site+"/"+tdate+"/"+day)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/heatmap/"+site+"/"+tdate+"/"+day,  success: function(data_result) {
@@ -329,19 +344,24 @@ function heatmapProcess(site,tdate,day){
 				$("#heatmap_container").empty()
 				$("#heatmap_div").append('<div id="heatmap_container"></div>')
 				var result = JSON.parse(data_result)
+				var total_node = $('#total_node').val();
 				var all_time =[]
 				var all_nodes = []
 				var pattern_time =[]
+				var list_id=[]
+				for (var i = 0; i < parseFloat(total_node); i++) {
+					list_id.push((i+1))
+				}
 				for (a = 0; a < result.length; a++) {
 					all_time.push(result[a].ts)
 					all_nodes.push(result[a].id)
 				}
 				var list_time = removeDuplicates(all_time)
-				var list_id = removeDuplicates(all_nodes)
+				
 				var number_all =[]
 				for (b = 0; b < list_id.length; b++) {
 					for (c = 0; c < list_time.length; c++) {
-						pattern_time.push({id:list_id[b],ts:list_time[c],cval:""})
+						pattern_time.push({id:list_id[b],ts:list_time[c],cval:"null"})
 					}
 				}
 				var sorted_data_num =[]
@@ -404,27 +424,105 @@ function heatmapProcess(site,tdate,day){
 					obj_list_id.push({index:l,id:list_id[l]})
 				}
 
-				heatmapVisual(series_data,obj_list_time,obj_list_id)
-				$("#heatmap_checkbox").empty()
-				$("#heatmap_checkbox").append('<input id="heatmap_checkbox" type="checkbox" class="checkbox"><label for="heatmap_checkbox">Soms Heatmap</label>')
-				$('#heatmap_checkbox').prop('checked', true);
-				$('input[id="heatmap_checkbox"]').on('click',function () {
-					if ($('#heatmap_checkbox').is(':checked')) {
-						$("#heatmap_div").slideDown()
-					}else{
-						$("#heatmap_div").slideUp()
+				if(obj_list_time.length == 48 || obj_list_time.length == 36 || obj_list_time.length == 30){
+					heatmapVisual(series_data,obj_list_time,obj_list_id,site)
+					
+				}else{
+					var time_date = Date.parse(tdate.replace('T',' '))
+					var template = [];
+					var time_template = [];
+					var time_object = [];
+					var x_and_y=[];
+					var data_series_filtered=[]
+					if( day == '1d'){
+						for (var i = 0; i < 48; i++) {
+							time_template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*30,'minutes').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '3d'){
+						for (var i = 0; i < 36; i++) {
+							time_template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i*2,'hours').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
+					}else if( day == '30d'){
+						for (var i = 0; i < 30; i++) {
+							time_template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							template.push(moment(time_date).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss'))
+							time_object.push({index:i,ts:moment(time_date ).subtract(i,'days').format('YYYY-MM-DD HH:mm:ss')})
+							for (var a = 0; a < obj_list_id.length; a++) {
+								x_and_y.push({x:i,y:a})
+							}
+						}
 					}
-				});
-			}else{
-				// $(".daygeneral").hide()
-				$("#heatmap_div").empty()
-				$("#heatmap_div").append('<div id="heatmap_container"><h3> NO DATA </h3></div>')
+					template.reverse()
+					if(obj_list_time.length != 0){
+						var nodata_timestamp=[]
+						var data_filteredTime =[]
+						
+						for (var i = 0; i < obj_list_time.length; i++) {
+							removeSpecificArray(time_template,obj_list_time[i])
+						}
+						for (var a = 0; a < time_template.length; a++) {
+							for (var i = 0; i < obj_list_id.length; i++) {
+								nodata_timestamp.push({id:obj_list_id[i].id,ts:time_template[a],value: NaN})
+							}
+						}
+						for (var i = 0; i < series_data.length; i++) {
+							nodata_timestamp.push({id:series_data[i].id,ts:series_data[i].ts,value:series_data[i].value})
+						}
+
+						for (var i = 0; i < template.length; i++) {
+							for (var a = 0; a < nodata_timestamp.length; a++) {
+								if( Date.parse(template[i]) == Date.parse(nodata_timestamp[a].ts)){
+									data_filteredTime.push(nodata_timestamp[a])
+								}
+							}
+						}
+
+
+						for (var i = 0; i < obj_list_id.length; i++) {
+							for (var a = 0; a < data_filteredTime.length; a++) {
+								if(obj_list_id[i].id == data_filteredTime[a].id ){
+									data_series_filtered.push({id:data_filteredTime[a].id,ts:data_filteredTime[a].ts,value:data_filteredTime[a].value,x:x_and_y[a].y,y:x_and_y[a].x})
+								}
+							}
+						}
+						
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+					}else{
+						var total_node = $('#total_node').val();
+						var obj_list_id =[];
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							obj_list_id.push({index:i,id:(i+1)})
+						}
+
+						for (var i = 0; i < parseFloat(total_node); i++) {
+							for (var a = 0; a < template.length; a++) {
+								data_series_filtered.push({id:(i+1),ts:template[a],value:'null',x:i,y:a})
+								
+							}
+						}
+
+						heatmapVisual(data_series_filtered,time_object,obj_list_id,site)
+						
+					}
+
+				}
 			}
 		}
 	});	
 }
 
-function heatmapVisual(series_data,list_time,list_id){
+function heatmapVisual(series_data,list_time,list_id,site){
 	for(var i=0;i<series_data.length;i++){
 		if(series_data[i].id == "null" || series_data[i].value == NaN ){
 			series_data.splice(i,1);
