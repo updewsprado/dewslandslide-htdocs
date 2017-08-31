@@ -409,6 +409,7 @@ $(document).ready(function() {
 	var quick_event_inbox = [];
 	var quick_inbox_unknown = [];
 	var quick_release = [];
+	var group_message_quick_access = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -465,6 +466,7 @@ $(document).ready(function() {
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var group_message_template = Handlebars.compile($('#group-message-template').html());
 		var ewi_template = Handlebars.compile($('#ewi_template').html());
 
 	} catch (err) {
@@ -705,6 +707,16 @@ $(document).ready(function() {
 			var quick_release_html = quick_release_template({'quick_release': quick_release});
 			$('#quick-release-display').html(quick_release_html);
 			$('#quick-release-display').scrollTop(0);
+		} catch(err) {
+		}
+	}
+
+	function updateGroupMessageQuickAccess(msg) {
+		try {
+			group_message_quick_access.unshift(msg);
+			var group_message_html = group_message_template({'group_message': group_message_quick_access});
+			$('#group-message-display').html(group_message_html);
+			$('#group-message-display').scrollTop(0);
 		} catch(err) {
 		}
 	}
@@ -966,13 +978,24 @@ $(document).ready(function() {
 	}
 
 	function initLoadGroupMessageQA(siteMembers) {
-		if (siteMembers.data == NULL) {
+		if (siteMembers.data == null) {
 			return;
 		}
 
-		console.log("Loading Site members");
-		console.log("Clearing Quick access group messge section");
+		var members = siteMembers.data;
+		temp = siteMembers.data;
+		var msg;
+
 		$('#group-message-display').empty();
+		var temp_array = [];
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.site,temp_array) == -1) {
+				temp_array.push(msg.site);
+				updateGroupMessageQuickAccess(msg);
+			}
+		}
 	}
 
 	function loadOfficesAndSites(msg) {
