@@ -711,10 +711,13 @@ $(document).ready(function() {
 		}
 	}
 
-	function updateGroupMessageQuickAccess(msg) {
+	function updateGroupMessageQuickAccess(msg,contacts) {
 		try {
 			group_message_quick_access.unshift(msg);
-			var group_message_html = group_message_template({'group_message': group_message_quick_access});
+			console.log(msg);
+			console.log(contacts);
+			debugger;
+			var group_message_html = group_message_template({'group_message': [msg],'contact_list':contacts});
 			$('#group-message-display').html(group_message_html);
 			$('#group-message-display').scrollTop(0);
 		} catch(err) {
@@ -978,6 +981,7 @@ $(document).ready(function() {
 	}
 
 	function initLoadGroupMessageQA(siteMembers) {
+		group_message_quick_access = [];
 		if (siteMembers.data == null) {
 			return;
 		}
@@ -987,15 +991,34 @@ $(document).ready(function() {
 		var msg;
 
 		$('#group-message-display').empty();
-		var temp_array = [];
+		var arr_sites = [];
+		var arr_contacts = [];
 
 		for (var i = members.length - 1; i >= 0; i--) {
 			msg = members[i];
-			if ($.inArray(msg.site,temp_array) == -1) {
-				temp_array.push(msg.site);
-				updateGroupMessageQuickAccess(msg);
+			if ($.inArray(msg.fullname,arr_contacts) == -1) {
+				arr_contacts.push(msg.fullname);
 			}
 		}
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.site,arr_sites) == -1) {
+				arr_sites.push(msg.site);
+				var contact_per_site = [];
+				for (var counter = 0; counter < arr_contacts.length; counter++) {
+					if (arr_contacts[counter].substring(0,3) == msg.site) {
+						var temp_contacts = {
+							'contacts': arr_contacts[counter]
+						}
+						contact_per_site.push(temp_contacts);
+					}
+				}
+
+				updateGroupMessageQuickAccess(msg,contact_per_site);
+			}
+		}
+
 	}
 
 	function loadOfficesAndSites(msg) {
@@ -1801,6 +1824,7 @@ try {
 	Handlebars.registerHelper('escape', function(variable) {
 		return variable.replace(/(['"-])/g, '\\$1');
 	});
+
 } catch (err) {
 }
 
