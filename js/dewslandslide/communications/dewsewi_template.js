@@ -170,7 +170,7 @@ $(document).ready(function(e){
     		});
     	} else {
     		templateData['id'] = tableId;
-            templateData['alert_status'] = tempStatus;
+            templateData['alert_status'] = $('#bb_alert_status').val();
     		$.post('../communications/updatebackbonemessage',{backbone_message: JSON.stringify(templateData)})
     		.done(function(data){
                 console.log(data);
