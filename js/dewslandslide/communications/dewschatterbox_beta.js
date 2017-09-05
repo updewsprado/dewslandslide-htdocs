@@ -440,6 +440,7 @@ $(document).ready(function() {
 	var narrative_recipients = [];
 	var tag_indicator = "";
 	var dasboard_data_holder;
+	var contactInfo = [];
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -617,6 +618,7 @@ $(document).ready(function() {
 							break;
 						}
 					} else {
+						console.log(msg.user.substring(0, msg.user - 8));
 						if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
 							msg.isyou = 0;
 							msg.user = contactInfo[i].fullname;
@@ -1499,33 +1501,38 @@ function waitForSocketConnection() {
 	}
 }
 function trimmedContactNum(inputContactNumber) {
-	var numbers = /^[0-9]+$/;  
+	var numbers = /^[0-9]+$/; 
+	var trimmed_collection = [];
 	var trimmed;
-	var targetNumber = inputContactNumber.replace(/[^0-9]/igm,'');
-	if(targetNumber.match(numbers)) {  
-		var size = targetNumber.length;
+	var raw = inputContactNumber.split('-');
+	if (raw.length == 1) {
+		var targetNumber = raw[0].split(',');
+	} else {
+		var targetNumber = raw[1].split(',');
+	}
+	for (var counter = 0; counter < targetNumber.length; counter++) {
+		if(targetNumber[counter].trim().match(numbers) && targetNumber[counter].trim() != "") {  
+			var size = targetNumber[counter].trim().length;
 
-		if (size == 12) {
-			trimmed = targetNumber.slice(2, size);
-		} 
-		else if (size == 11) {
-			trimmed = targetNumber.slice(1, size);
-		}
-		else if (size == 10) {
-			trimmed = targetNumber;
-		}
-		else {
-			console.log('Error: No such number in the Philippines');  
+			if (size == 12) {
+				trimmed = targetNumber[counter].trim().slice(2, size);
+			} else if (size == 11) {
+				trimmed = targetNumber[counter].trim().slice(1, size);
+			} else if (size == 10) {
+				trimmed = targetNumber[counter].trim();
+			} else {
+				console.log('Error: No such number in the Philippines');  
+				return -1;
+			}
+
+			trimmed_collection.push(trimmed);
+		} else {  
+			console.log('Please input numeric characters only');  
 			return -1;
 		}
+	}
 
-		inputContactNumber = "63" + trimmed;
-		return trimmed;
-	}  
-	else {  
-		console.log('Please input numeric characters only');  
-		return -1;
-	}  
+	return trimmed_collection;
 }
 
 function normalizedContactNum(targetNumber) {
@@ -1548,37 +1555,6 @@ function getNameSuggestions (nameQuery) {
 	conn.send(JSON.stringify(nameSuggestionRequest));
 };
 
-function parseContactInfo (multipleContactInfo) {
-	parseSingleContactInfo(multipleContactInfo);
-}
-
-function parseSingleContactInfo (singleContactInfo) {
-	var n = singleContactInfo.search(' - ');
-	var size = singleContactInfo.length;
-	testName = singleContactInfo.slice(0,n);
-	testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
-	var tempNum;
-	var searchIndex = 0;
-
-	while (searchIndex >= 0) {
-		searchIndex = testNumbers.search(",");
-		var parsedInfo = {};
-		parsedInfo.fullname = testName;
-
-		if (searchIndex < 0) {
-			parsedInfo.numbers = testNumbers;
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-		} 
-		else {
-			parsedInfo.numbers = testNumbers.slice(0,searchIndex);
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-			testNumbers = testNumbers.slice(searchIndex + 1);
-		}
-
-		multiContactsList.push(parsedInfo);
-	}
-}
-
 function getFollowingNameQuery (allNameQueries) {
 	var before = allNameQueries.match(/^.+;\s*|/)[0];
 	var size = before.length;
@@ -1600,8 +1576,6 @@ function displayContactNamesForThread (source="normal") {
 
 		var tempText = "", tempCountContacts = uniqueName.length;
 		for (i in uniqueName) {
-			console.log(uniqueName[i]);
-
 			if (i == tempCountContacts - 1)
 				tempText = tempText + uniqueName[i];
 			else
@@ -1625,10 +1599,23 @@ function displayContactNamesForThread (source="normal") {
 }
 
 
-$(document).on("click",".qa-contact-list li",function(){
-	var contacts_li_index = $(this).index();
-	var contact_fullname = ($(this).closest('li')).find("a").text();
-	$('.dropdown-input').val(contact_fullname);
+$(document).on("click",".qaccess-contacts",function(){
+	var convo_collection = [];
+	$('.qaccess-contacts:checked').each(function() {
+		convo_collection.push(this.value);
+	});
+
+	var get_convo = "";
+
+	for (var counter = 0; counter < convo_collection.length; counter++) {
+		if (counter == 0) {
+			get_convo = convo_collection[counter];
+		} else {
+			get_convo = get_convo+";"+convo_collection[counter];
+		}
+	}
+
+	$('.dropdown-input').val(get_convo);
 	$('#go-chat').trigger('click');
 });
 
@@ -2116,8 +2103,6 @@ try {
 		var size = allText.length;
 		var allNameQueries = allText.slice(0, size-2);
 		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		parseContactInfo(nameQuery);
 	}, false);
 } catch(err) {
 }
@@ -2204,33 +2189,43 @@ function quickInboxStartChat(fullContact=null) {
 
 function startChat(source="normal") {
 	convoFlagger = false;
+	contactnumTrimmed = [];
+	contactInfo = [];
 	counters = 0;
 
 	user = "You";
 
+	contactname = $('.dropdown-input').val();
+	contactnum = contactname.split(';');
+	
 	if (source == "normal") {
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
+		for (var counter = 0; counter < contactnum.length; counter++) {
+			if (contactnum[counter].trim() != "") {
+				console.log(contactnum[counter]);
+				var raw = trimmedContactNum(contactnum[counter]);
+				for (var sub_counter = 0; sub_counter < raw.length; sub_counter++) {
+					console.log(raw[sub_counter]);
+					contactnumTrimmed.push(raw[sub_counter]);
+					var contactraw_inf = {
+						'fullname': contactname,
+						'numbers': raw[sub_counter]
+					}
+					contactInfo.push(contactraw_inf);
+				}
+			}
 		}
-		else {
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
-
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
-		}
-	}
-	else if (source == "quickInbox") {
+	} else if (source == "quickInbox") {
 		contactname = qiFullContact;
 		contactnum = contactname;
 		contactnumTrimmed = [trimmedContactNum(contactnum)];
 
 		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 	}
+
 	displayContactNamesForThread(source);
 
-	if (contactnumTrimmed <= 0) {
-		alert("Error: Invalid Contact Number");
+	if (contactnumTrimmed.length <= 0) {
+		alert("Error: Invalid Contact Number here");
 		return;
 	}
 
