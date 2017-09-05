@@ -410,6 +410,7 @@ $(document).ready(function() {
 	var quick_inbox_unknown = [];
 	var quick_release = [];
 	var group_message_quick_access = [];
+	var group_contacts_quick_access = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -711,16 +712,14 @@ $(document).ready(function() {
 		}
 	}
 
-	function updateGroupMessageQuickAccess(msg,contacts) {
+	function updateGroupMessageQuickAccess(msg) {
 		try {
 			group_message_quick_access.unshift(msg);
-			console.log(msg);
-			console.log(contacts);
-			debugger;
-			var group_message_html = group_message_template({'group_message': [msg],'contact_list':contacts});
+			var group_message_html = group_message_template({'group_message': group_message_quick_access});
 			$('#group-message-display').html(group_message_html);
 			$('#group-message-display').scrollTop(0);
 		} catch(err) {
+			console.log(err.message);
 		}
 	}
 
@@ -981,6 +980,7 @@ $(document).ready(function() {
 	}
 
 	function initLoadGroupMessageQA(siteMembers) {
+		group_contacts_quick_access = [];
 		group_message_quick_access = [];
 		if (siteMembers.data == null) {
 			return;
@@ -992,7 +992,7 @@ $(document).ready(function() {
 
 		$('#group-message-display').empty();
 		var arr_sites = [];
-		var arr_contacts = [];
+		var arr_contacts = [];	
 
 		for (var i = members.length - 1; i >= 0; i--) {
 			msg = members[i];
@@ -1014,8 +1014,8 @@ $(document).ready(function() {
 						contact_per_site.push(temp_contacts);
 					}
 				}
-
-				updateGroupMessageQuickAccess(msg,contact_per_site);
+				msg.data = contact_per_site;
+				updateGroupMessageQuickAccess(msg);
 			}
 		}
 
@@ -1527,6 +1527,7 @@ function trimmedContactNum(inputContactNumber) {
 		return -1;
 	}  
 }
+
 function normalizedContactNum(targetNumber) {
 	var trimmed = trimmedContactNum(targetNumber);
 
@@ -1622,6 +1623,14 @@ function displayContactNamesForThread (source="normal") {
 	$("#contact-indicator").val(tempText);
 	document.title = tempText;
 }
+
+
+$(document).on("click",".qa-contact-list li",function(){
+	var contacts_li_index = $(this).index();
+	var contact_fullname = ($(this).closest('li')).find("a").text();
+	$('.dropdown-input').val(contact_fullname);
+	$('#go-chat').trigger('click');
+});
 
 $('#btn-standard-search').click(function(){
 	if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
@@ -2241,6 +2250,8 @@ function startChat(source="normal") {
 	tempRequest = msgHistory;
 	conn.send(JSON.stringify(msgHistory));
 }
+
+
 $('#go-chat').click(function() {
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
