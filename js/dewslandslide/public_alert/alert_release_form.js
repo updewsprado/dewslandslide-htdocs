@@ -226,36 +226,53 @@ $(document).ready(function()
 
         for (let i = 0; i < arr.length; i++) 
         {
-            let val =  $(arr[i]).val();
+            let val = $(arr[i]).val();
+            if( $("#public_alert_level").val() == "A3" ) {
+                if( val == "g0" || val == "s0" )
+                    val = val.toUpperCase(); // Turn to uppercase triggers s0/g0 if A3
+            }
             trigger_list.push( val );
 
+            // Remove duplicates on trigger_list
             trigger_list = trigger_list.filter(function(elem, index, self) {
                 return index == self.indexOf(elem);
             });
 
-            function priority( a, b, i, c = 'q' ) 
+            function priority( a, b, i, c = 'q', d = 'q' ) 
             {
-                if( $(arr[i]).val() == a || $(arr[i]).val() == b || $(arr[i]).val() == c)
+                if( $(arr[i]).val() == a || $(arr[i]).val() == b || $(arr[i]).val() == c || $(arr[i]).val() == d )
                 {
-                    let x = trigger_list.indexOf(a), y = trigger_list.indexOf(b), z = trigger_list.indexOf(c);
+                    let x = trigger_list.indexOf(a), y = trigger_list.indexOf(b), z = trigger_list.indexOf(c), z1 = trigger_list.indexOf(d);
                     let remove = function (index) { trigger_list.splice( trigger_list.indexOf(index), 1) };
 
-                    if( z > -1 ) { if( y > -1 ) remove(b); if( x > -1 ) remove(a);  }
+                    if( z > -1 || z1 > -1 ) { if( y > -1 ) remove(b); if( x > -1 ) remove(a);  }
                     else if( x > -1 ) { if(y > -1) remove(b); }
                 }
             }
 
-            priority("S", "s", i, "s0");
-            priority("G", "g", i, "g0");
+            priority("S", "s", i, "s0", "S0");
+            priority("G", "g", i, "g0", "G0");
             priority("R0", "R", i);
         };
 
         // Disable Cbox_Triggers and timestamp input if Cbox_Trigger_ND is checked
         if( this.value.indexOf("0") >= 0 )
         {
+            tech_info = null; double = false;
+            switch(this.value[0]) {
+                case "R": tech_info = "rain"; break;
+                case "g": tech_info = "ground"; double = true; break;
+                case "s": tech_info = "sensor"; double = true; break;
+            }
+
             if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) {
                 $(".cbox_trigger[value=" + this.value[0] + "]").prop("checked", false).prop("disabled", true);
                 $(".cbox_trigger[value=" + this.value[0] + "]").parent().next().children("input").prop("disabled", true).val("");
+
+                if (double) temp = "#trigger_" + tech_info + "_1_info, #trigger_" + tech_info + "_2_info";
+                else temp = "#trigger_" + tech_info + "_info";
+
+                $(temp).prop("disabled", true).val("");
             }
             else $(".cbox_trigger[value=" + this.value[0] + "]").prop("disabled", false);
 
@@ -322,6 +339,7 @@ $(document).ready(function()
             $(".cbox_trigger_nd[value=R0]").prop("checked", false).prop("disabled", true);
             $(".cbox_trigger[value=R]").prop("checked", false).prop("disabled", true);
             $(".cbox_trigger[value=R]").parent().next().children("input").prop("disabled", true).val("");
+            $("#trigger_rain_info").prop("disabled", true).val("");
             rx_internal = internal.indexOf("R") > -1 ? internal.replace(/R/g, "Rx") : internal + "rx";
         }
         else {
