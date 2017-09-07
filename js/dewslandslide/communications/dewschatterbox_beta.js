@@ -1185,8 +1185,8 @@ $(document).ready(function() {
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-									console.log(data);
 									var response = JSON.parse(data);
+									var last_rounded_release = response.res[0].narrative.substring(5,13);
 									if (response.ack == "no_ack") {
 										var narrative_details = {
 											'event_id': event_details.event_id,
@@ -1196,7 +1196,7 @@ $(document).ready(function() {
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
 											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
-											'narrative_template': "No acknowledgement from all stakeholders for "+moment(last_rounded_release).format('hh:mm A')+" EWI Release"
+											'narrative_template': "No acknowledgement from all stakeholders for "+last_rounded_release+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 											console.log(data);
