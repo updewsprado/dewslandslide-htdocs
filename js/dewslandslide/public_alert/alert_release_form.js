@@ -147,6 +147,7 @@ $(document).ready(function()
             case "A0": $(".cbox_trigger_switch").prop("checked", false).prop("disabled", true);
                     $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", false);
                     $(".cbox_trigger_nd").prop("checked", false).prop("disabled", false);
+		    $(".cbox_trigger_rx").prop("checked", false).prop("disabled", false);
                     toExtendND = false;
                     break;
             case "A1": $(".cbox_trigger_switch[value='gs'], .cbox_trigger_switch[value='ss']").prop("checked", false).prop("disabled", true);
@@ -659,6 +660,7 @@ $(document).ready(function()
             {   
                 return true;
             } else if( $(".cbox_trigger_rx").is(":checked") ) return true;
+		else if( $(".cbox_trigger_nd[value=R0]").is(":checked") ) return true;
             else if( $("#public_alert_level").val() == "A1")
             {
                 if( $(".cbox_nd").is(":checked") || $(element).is(":checked") || $(".cbox_trigger").is(":checked"))
