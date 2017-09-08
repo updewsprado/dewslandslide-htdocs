@@ -10,30 +10,7 @@ $(document).ready(function(e) {
 	$('.crack_id_form').hide()
 	$(".panel_alert").hide();
 	$("#nav-tab-container").hide();
-	$.get("../site_level_page/getAllSiteNames").done(function(data){
-		var all_sites = JSON.parse(data);
-		var names=[];
-		for (i = 0; i <  all_sites.length; i++) {
-			names.push(all_sites[i].name)
-		}
-		var select = document.getElementById('sitegeneral');
-		$("#sitegeneral").append('<option value="">SELECT</option>');
-		var i;
-		for (i = 0; i < names.length; i++) {
-			var opt = names[i];
-			var el = document.createElement("option");
-			el.textContent = opt.toUpperCase();
-
-			if(opt == "select") {
-				el.value = "none";
-			}
-			else {
-				el.value = opt;
-			}
-
-			select.appendChild(el);
-		}
-	})
+	allListSite();
 	var per_site_name=[];
 	$.get("../site_level_page/getAllSiteNamesPerSite").done(function(data){
 		var per_site = JSON.parse(data);
@@ -50,10 +27,12 @@ $(document).ready(function(e) {
 			var fromDate = $('#reportrange span').html().slice(0,10);
 			var toDate = $('#reportrange span').html().slice(13,23);
 			$("#nav-tab-container").slideDown();
+			$("#graph1").empty()
 			$("#graphS1").empty()
 			$("#graphS4").empty()
 			$("#alert_div").empty()
 			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+			$("#graph1").append('<div id="analysisVelocity" ></div><div id="analysisDisplacement" ></div><div id="analysisVAT" ></div>');
 			$('.crack_id_form').show()
 			$("#popover_note").popover('show')
 			$("#crackgeneral").empty();
@@ -74,11 +53,102 @@ $(document).ready(function(e) {
 					subSites.push(per_site_name[i])
 				}
 			}
-			let dataSubmit = { 
-				site : curSite, 
-				fdate : fromDate,
-				tdate : toDate
+			crackIdProcess(curSite,fromDate,toDate)
+		}else{
+			$("#errorMsg").modal('show')
+		}
+	});
+	var start = moment().subtract(7, 'days'); 
+	var end = moment();
+
+	$('#reportrange').daterangepicker({
+		maxDate: new Date(),
+		autoUpdateInput: true,
+		startDate: start,
+		endDate: end,
+		opens: "rigth",
+		ranges: {
+			'Today': [moment(), moment()],
+			'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+			'This Month': [moment().startOf('month'), moment().endOf('month')],
+			'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		}
+	}, cb);
+
+	cb(start, end);
+
+
+	function allListSite(){
+		$('#sitegeneral').empty();
+		$.get("../site_level_page/getAllSiteNames").done(function(data){
+			var all_sites = JSON.parse(data);
+			var names=[];
+			for (i = 0; i <  all_sites.length; i++) {
+				names.push(all_sites[i].name)
 			}
+			var select = document.getElementById('sitegeneral');
+			$("#sitegeneral").append('<option value="">SELECT</option>');
+			var i;
+			for (i = 0; i < names.length; i++) {
+				var opt = names[i];
+				var el = document.createElement("option");
+				el.textContent = opt.toUpperCase();
+
+				if(opt == "select") {
+					el.value = "none";
+				}
+				else {
+					el.value = opt;
+				}
+
+				select.appendChild(el);
+			}
+		})
+	}
+	function cb(start, end) {
+		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));   
+
+	}
+
+	$('#newData_timestamp').daterangepicker({
+		singleDatePicker: true,
+		showDropdowns: true,
+		timePicker: true,
+		startDate: end,
+		timePickerIncrement: 30,
+		locale: {
+			format: 'YYYY-MM-DD HH:mm:00'
+		}
+	}, 
+	function(start, end, label) {
+		var years = moment().diff(start, 'years');
+
+	});
+
+	function removeDuplicates(num) {
+		var x,
+		len=num.length,
+		out=[],
+		obj={};
+
+		for (x=0; x<len; x++) {
+			obj[num[x]]=0;
+		}
+		for (x in obj) {
+			out.push(x);
+		}
+		return out;
+	}
+
+	function crackIdProcess(cursite,from,to){
+		$("#crackgeneral").empty();
+		let dataSubmit = { 
+			site : cursite, 
+			fdate : from,
+			tdate : to
+		}
 			// piezometer(dataSubmit);
 			$.post("/surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){ // <----------------- Data for crack name
 				var result= JSON.parse(data_result)
@@ -111,86 +181,44 @@ $(document).ready(function(e) {
 					$("#analysisVelocity").show();
 					$("#analysisDisplacement").show();
 					$("#popover_note").popover('destroy')
-					surficialAnalysis(curSite,current_crack)
+					surficialAnalysis(cursite,current_crack)
 				});
 			});
-		}else{
-			$("#errorMsg").modal('show')
 		}
-	});
-	var start = moment().subtract(7, 'days'); 
-	var end = moment().add(1, 'days');
 
-	$('#reportrange').daterangepicker({
-		maxDate: new Date(),
-		autoUpdateInput: true,
-		startDate: start,
-		endDate: end,
-		opens: "rigth",
-		ranges: {
-			'Today': [moment(), moment()],
-			'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-			'This Month': [moment().startOf('month'), moment().endOf('month')],
-			'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-		}
-	}, cb);
-
-	cb(start, end);
-
-	function cb(start, end) {
-		$('#reportrange span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));   
-
-	}
-
-	function removeDuplicates(num) {
-		var x,
-		len=num.length,
-		out=[],
-		obj={};
-
-		for (x=0; x<len; x++) {
-			obj[num[x]]=0;
-		}
-		for (x in obj) {
-			out.push(x);
-		}
-		return out;
-	}
-
-	function dataTableProcess(dataSubmit,crack_name) {  
-
-		$.post("/surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
-			var result= JSON.parse(data_result);
-			var last_goodData =[];
-			for (i = 0; i < result.length; i++) {
-				last_goodData.push(result[i].timestamp)
-			}
-			let dataTableSubmit = { 
-				site : dataSubmit.site, 
-				fdate : dataSubmit.fdate,
-				tdate : dataSubmit.tdate,
-				crack_name:crack_name,
-				last:last_goodData,
-				all_data_last:result,
-			}
-			surficialMeasurement(dataTableSubmit)
-			surficialGraph(dataTableSubmit)
-		});
-
-	}
-
-	function surficialMeasurement(dataSubmit) {  
-		$.post("../surficial_page/getDatafromGroundData", {data : dataSubmit} ).done(function(data_result){
-			var result= JSON.parse(data_result);
-			$( "#show-option" ).tooltip({
-				show: {
-					effect: "slideDown",
-					delay: 150
+		function dataTableProcess(dataSubmit,crack_name) {  
+			$.post("/surficial_page/getDatafromGroundLatestTime", {data : dataSubmit} ).done(function(data_result){
+				var result= JSON.parse(data_result);
+				var last_goodData_unfiltered =[];
+				for (i = 0; i < result.length; i++) {
+					last_goodData_unfiltered.push(result[i].timestamp)
 				}
+				var last_goodData = removeDuplicates(last_goodData_unfiltered)
+				let dataTableSubmit = { 
+					site : dataSubmit.site, 
+					fdate : dataSubmit.fdate,
+					tdate : dataSubmit.tdate,
+					crack_name:crack_name,
+					last:last_goodData,
+					all_data_last:result,
+				}
+				surficialMeasurement(dataTableSubmit)
+				surficialGraph(dataTableSubmit)
+
 			});
-			var result= JSON.parse(data_result);
+
+		}
+
+		function surficialMeasurement(dataSubmit) {  
+			$.post("../surficial_page/getDatafromGroundData", {data : dataSubmit} ).done(function(data_result){
+				var result= JSON.parse(data_result);
+				$( "#show-option" ).tooltip({
+					show: {
+						effect: "slideDown",
+						delay: 150
+					}
+				});
+				var result= JSON.parse(data_result);
 			var columns_date =[]; // <-- header timestamp
 			var columns_date_tooltip =[]; // <-- header tooltip data
 
@@ -233,223 +261,401 @@ $(document).ready(function(e) {
 				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
 			}		
 			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
-			// gndmeasTableStats()
+			
 		});
-	}
+		}
 
-	function surficialDataTable(dataSubmit,totalSlice,columns_date) {  
-		$.ajax({ 
-			dataType: "json",
-			url: "/api/last10GroundData/"+dataSubmit.site,  success: function(data_result) {
-				var result = JSON.parse(data_result)
-				var organize_ground_data = []
-				var ground_data_all =[]
-				var allgather_ground_data =[]
-				var allts_data = []
-				var table_id_list =[]
-				var crackID_withData =[]
-				for(var a = 0; a < result.length; a++){
-					crackID_withData.push(result[a].crack_id)
-					allgather_ground_data.push(result[a].crack_id)
-					allts_data.push(result[a].crack_id)
-					for(var b = dataSubmit.last.length; b > 0; b--){
-						table_id_list.push(result[a].crack_id+b)
-						allgather_ground_data.push(result[a][dataSubmit.last[b-1]])
-						allts_data.push(dataSubmit.last[b-1])
+		function surficialDataTable(dataSubmit,totalSlice,columns_date) {  
+			$.ajax({ 
+				dataType: "json",
+				url: "/api/last10GroundData/"+dataSubmit.site,  success: function(data_result) {
+					var result = JSON.parse(data_result)
+					var organize_ground_data = []
+					var ground_data_all =[]
+					var allgather_ground_data =[]
+					var allts_data = []
+					var table_id_list =[]
+					var crackID_withData =[]
+					for(var a = 0; a < result.length; a++){
+						crackID_withData.push(result[a].crack_id)
+						allgather_ground_data.push(result[a].crack_id)
+						allts_data.push(result[a].crack_id)
+						for(var b = dataSubmit.last.length; b > 0; b--){
+							table_id_list.push(result[a].crack_id+b)
+							allgather_ground_data.push(result[a][dataSubmit.last[b-1]])
+							allts_data.push(dataSubmit.last[b-1])
+						}
 					}
-				}
 
-				var total_crackID = dataSubmit.crack_name.length
-				for(var c = 0; c < crackID_withData.length; c++){
-					dataSubmit.crack_name.splice(dataSubmit.crack_name.indexOf(crackID_withData[c]), 1 ) 
-				}
-
-				for(var d = 0; d < dataSubmit.crack_name.length; d++){
-					var no_Data_meas=[]
-					no_Data_meas.push("<center>"+dataSubmit.crack_name[d]+"</center>")
-					for(var e = 0; e < columns_date.length; e++){
-						no_Data_meas.push("<center><i>nd</i></center>")
+					var total_crackID = dataSubmit.crack_name.length
+					for(var c = 0; c < crackID_withData.length; c++){
+						dataSubmit.crack_name.splice(dataSubmit.crack_name.indexOf(crackID_withData[c]), 1 ) 
 					}
-					organize_ground_data.push(no_Data_meas)
-				}
 
-				var slice_num_meas=[]
-				
-				for(var e = 0; e < allgather_ground_data.length; e++){
-					for(var f = 0; f < crackID_withData.length; f++){
-						if(crackID_withData[f] == allgather_ground_data[e]){
-							slice_num_meas.push(e)
+					for(var d = 0; d < dataSubmit.crack_name.length; d++){
+						var no_Data_meas=[]
+						no_Data_meas.push("<center>"+dataSubmit.crack_name[d]+"</center>")
+						for(var e = 0; e < columns_date.length; e++){
+							no_Data_meas.push("<center><i>nd</i></center>")
+						}
+						organize_ground_data.push(no_Data_meas)
+					}
+
+					var slice_num_meas=[]
+
+					for(var e = 0; e < allgather_ground_data.length; e++){
+						for(var f = 0; f < crackID_withData.length; f++){
+							if(crackID_withData[f] == allgather_ground_data[e]){
+								slice_num_meas.push(e)
+							}
+						}
+					}
+
+					var differnce =[];
+					var ts_difference =[];
+					var total_alert_per_ts=[];
+					var tooltip_data=[];
+					var color_alert = [];
+					var id_null_data= [];
+					var id_null_ts= [];
+					for(var aa = allgather_ground_data.length-1; aa > 0; aa--){
+						var d1 = allgather_ground_data[aa]
+						var d2 = allgather_ground_data[aa-1]
+						var diff = (d2-d1)
+						differnce.push(allgather_ground_data[aa]+"-"+allgather_ground_data[aa-1]+"="+(allgather_ground_data[aa]-allgather_ground_data[aa-1]))
+						var now = moment(allts_data[aa]);
+						var end = moment(allts_data[aa-1]); 
+						if((d2 == "nd" || d1 == "nd") || (d2 == "nd" && d1 == "nd") ){
+							var roundoff2 = "nd"
+						}else{
+							var duration = moment.duration(now.diff(end));
+							var hours = duration.asHours();
+							ts_difference.push(allts_data[aa]+"-"+allts_data[aa-1]+"="+hours)
+							var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
+						}
+						total_alert_per_ts.push(roundoff2)
+						tooltip_data.push(roundoff2+"/"+d2+"/"+d1+"/"+aa+"/"+allts_data[aa]+"_"+allts_data[aa-1])
+						if(d1 == "nd"){
+							id_null_data.push(aa)
+							id_null_ts.push(allts_data[aa])
+						}
+					}
+
+					var ground_data_insert =[]
+					var ts_null_data = []
+
+					for(var ab = 0; ab < result.length; ab++){
+						ground_data_insert.push(result[ab].crack_id)
+						ts_null_data.push(result[ab].crack_id)
+						for(var bb = dataSubmit.last.length; bb > 0; bb--){
+							ground_data_insert.push(result[ab][dataSubmit.last[bb-1]])
+							ts_null_data.push({ts:dataSubmit.last[bb-1],meas:result[ab][dataSubmit.last[bb-1]]})
+						}
+					}
+					total_alert_per_ts.reverse()
+					tooltip_data.reverse()
+					var convert = getRanges(id_null_data.map(parseFloat).reverse())
+
+					for (var i = 0; i < convert.length; i++) {
+						if(convert[i].search('-') == -1){
+							var num_id = parseFloat(convert[i])
+							if( $.isNumeric(ground_data_insert[num_id+1]) == true && $.isNumeric(ground_data_insert[num_id-1]) == true && num_id+1 <= ground_data_insert.length-1){
+								var d1 = ground_data_insert[num_id-1]
+								var d2 = ground_data_insert[num_id+1]
+								var diff = (d2-d1)
+								var now = moment(ts_null_data[num_id-1].ts);
+								var end = moment(ts_null_data[num_id+1].ts); 
+								var duration = moment.duration(now.diff(end));
+								var hours = duration.asHours();
+								var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
+								total_alert_per_ts[num_id] = roundoff2;
+								tooltip_data[num_id]= roundoff2+"/"+d2+"/"+d1+"/"+(num_id+1)+"/"+ts_null_data[num_id+1].ts+"_"+ts_null_data[num_id-1].ts
+								// console.log(roundoff2+"/"+d2+"/"+d1+"/"+(num_id+1)+"/"+ts_null_data[num_id+1].ts+"_"+ts_null_data[num_id-1].ts)
+							}
+
+						}else{
+							var new_num = convert[i].split("-").map(parseFloat);
+							// console.log(new_num[0]-1,new_num[0]-1,parseFloat(ground_data_insert[new_num[0]-1]),parseFloat(ground_data_insert[new_num[0]-1]))
+							if(parseFloat(ground_data_insert[new_num[1]+1]) != NaN && parseFloat(ground_data_insert[new_num[0]-1]) != NaN && new_num[1]+1 <= ground_data_insert.length-1){
+								var d1 = ground_data_insert[new_num[0]-1]
+								var d2 = ground_data_insert[new_num[1]+1]
+								var diff = (d2-d1)
+								var now = moment(ts_null_data[new_num[0]-1].ts);
+								var end = moment(ts_null_data[new_num[1]+1].ts); 
+								var duration = moment.duration(now.diff(end));
+								var hours = duration.asHours();
+								var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
+								total_alert_per_ts[new_num[1]] = roundoff2;
+								tooltip_data[new_num[1]] = roundoff2+"/"+d2+"/"+d1+"/"+(new_num[1])+"/"+ts_null_data[new_num[1]+1].ts+"_"+ts_null_data[new_num[0]-1].ts
+								// console.log(roundoff2+"/"+d2+"/"+d1+"/"+(new_num[1]+1)+"/"+ts_null_data[new_num[1]+1].ts+"_"+ts_null_data[new_num[0]-1].ts)
+							}
+						}
+					}
+
+					for(var ac = 0; ac < ground_data_insert.length; ac++){
+						ground_data_all.push('<center><b title="'+tooltip_data[ac-1]+'">'+ ground_data_insert[ac]+' </b></center>')
+					}
+					var ground_differnce = differnce;
+
+					slice_num_meas.push(allgather_ground_data.length)
+					for(var g = 0; g < slice_num_meas.length; g++){
+						organize_ground_data.push(ground_data_all.slice(slice_num_meas[g],slice_num_meas[g+1]))
+					}
+					organize_ground_data.pop();
+
+					MeasTable(dataSubmit,organize_ground_data,columns_date)
+
+					var td_number_id =[]
+					var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
+					for(var h = tableId_withData; h < total_crackID; h++){
+						td_number_id.push(h)
+					}
+					var organiz_divId = []
+					for(var i = 0 ; i < td_number_id.length ; i++){
+						for(var j = 0  ; j < dataSubmit.last.length+1 ; j++){
+							organiz_divId.push("td-"+td_number_id[i]+"-"+(j))
+						}
+					}
+
+					gndmeasTableStats(dataSubmit,totalSlice,columns_date)
+
+
+					organiz_divId.reverse()
+					total_alert_per_ts.reverse()
+					var color_alert =[]
+					for(var k = 0 ; k < total_alert_per_ts.length ; k++){
+						if(total_alert_per_ts[k] >= 1.8 ){
+							color_alert.push("#ff6666")
+						}else if(total_alert_per_ts[k] >= 0.250 && total_alert_per_ts[k]<= 1.79 ){
+							color_alert.push("#ffb366")
+						}else if(total_alert_per_ts[k] <= 0.249 && total_alert_per_ts[k] >= 0  ){
+							color_alert.push('#99ff99')
+						}else if(total_alert_per_ts[k] == "nd"){
+							color_alert.push('#fff')
+						}else{
+							color_alert.push('#fff')
+
+						}
+					}
+					for(var l = 0 ; l < organiz_divId.length ; l++){	
+						$('#'+organiz_divId[l]).attr('bgcolor',color_alert[l])
+					}
+					var color_label =[]
+					for(var m = 0 ; m < slice_num_meas.length-1 ; m++){
+						color_label.push(color_alert[(slice_num_meas[m])])
+					}
+
+					var color_alert_list=["#99ff99","#ffb366","#ff6666"]
+					var label_color = removeDuplicates(color_label);
+
+
+					for(var n = 0 ; n < label_color.length ; n++){
+						if(label_color[n] == "#99ff99"){
+							$("#A0").show();
+							$("#A0").empty();
+							$("#A0").append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>');
+						}else if(label_color[n] == "#ffb366"){
+							$("#A0").empty();
+							$("#A0").hide();
+							$("#A1").show();
+							$("#A1").empty();
+							$("#A1").append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>');
+						}else if(label_color[n] == "#ff6666"){
+							$("#A0").empty();
+							$("#A0").hide();
+							$("#A1").empty();
+							$("#A1").hide();
+							$("#A2").show();
 						}
 					}
 				}
-				
-				var differnce =[];
-				var ts_difference =[];
-				var total_alert_per_ts=[];
-				var hey=[];
-				var color_alert = [];
-				var id_null_data= [];
-				var id_null_ts= [];
-				for(var aa = allgather_ground_data.length-1; aa > 0; aa--){
-					var d1 = allgather_ground_data[aa]
-					var d2 = allgather_ground_data[aa-1]
-					var diff = (d2-d1)
-					differnce.push(allgather_ground_data[aa]+"-"+allgather_ground_data[aa-1]+"="+(allgather_ground_data[aa]-allgather_ground_data[aa-1]))
-					var now = moment(allts_data[aa]);
-					var end = moment(allts_data[aa-1]); 
-					if((d2 == "nd" || d1 == "nd") || (d2 == "nd" && d1 == "nd") ){
-						var roundoff2 = "nd"
-					}else{
-						var duration = moment.duration(now.diff(end));
-						var hours = duration.asHours();
-						ts_difference.push(allts_data[aa]+"-"+allts_data[aa-1]+"="+hours)
-						var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
-					}
-					total_alert_per_ts.push(roundoff2)
-					hey.push(roundoff2+"/"+d2+"/"+d1+"/"+aa+"/"+allts_data[aa]+"-"+allts_data[aa-1])
-					if(d1 == "nd"){
-						id_null_data.push(aa)
-						id_null_ts.push(allts_data[aa])
-					}
-				}
-				
-				var ground_data_insert =[]
-				var ts_null_data = []
-				for(var ab = 0; ab < result.length; ab++){
-					ground_data_insert.push(result[ab].crack_id)
-					ts_null_data.push(result[ab].crack_id)
-					for(var bb = dataSubmit.last.length; bb > 0; bb--){
-						ground_data_insert.push(result[ab][dataSubmit.last[bb-1]])
-						ts_null_data.push({ts:dataSubmit.last[bb-1],meas:result[ab][dataSubmit.last[bb-1]]})
-					}
-				}
-				total_alert_per_ts.reverse()
+			});	
+}
+function MeasTable(dataSubmit,organize_ground_data,columns_date) {
+	$('#ground_table').DataTable({
+		data: organize_ground_data,
+		columns: columns_date,
+		"processing": true ,
+		"paging":   false,
+		"searching": false, 
+		"createdRow": function ( row, data, index ) {
+			for(var a = dataSubmit.last.length; a > 1 ; a--){
+				$('td', row).eq(a).attr('id', 'td-' + index +'-'+ a );
+				$('tr', row).eq(a).attr('class', 'td-class-'+ a );
+				$('td', row).eq(a).attr('data-container', 'body');
+				$('td', row).eq(a).attr('data-toggle', 'tooltip');
+				$('td', row).eq(a).attr('data-original-title', '');
+				$('td', row).eq(a).attr('bgcolor', '');
 
-
-				for(var aaa = 0 ; aaa < id_null_data.length ; aaa++){
-					for(var bb = id_null_data[aaa]; bb > (id_null_data[aaa]-5); bb--){
-						if(ground_data_insert[bb] != "nd"){
-							var gd2 = ground_data_insert[bb]
-							var ts2 = moment(ts_null_data[bb].ts)
-							var num_array = bb;
-							(total_alert_per_ts[id_null_data[aaa]] = 
-								Math.abs(Math.round((gd2-ground_data_insert[id_null_data[aaa]+1])/(moment(ts_null_data[bb].ts)-moment(ts_null_data[id_null_data[aaa]+1].ts)))))
-							break;
-						}	
-					}
-				}
-				hey.reverse()
-				for(var ac = 0; ac < ground_data_insert.length; ac++){
-					ground_data_all.push('<center><b title="'+hey[ac-1]+'">'+ ground_data_insert[ac]+' </b></center>')
-				}
-				var ground_differnce = differnce;
-
-				slice_num_meas.push(allgather_ground_data.length)
-				for(var g = 0; g < slice_num_meas.length; g++){
-					organize_ground_data.push(ground_data_all.slice(slice_num_meas[g],slice_num_meas[g+1]))
-				}
-				organize_ground_data.pop();
-				
-
-				$('#ground_table').DataTable({
-					data: organize_ground_data,
-					columns: columns_date,
-					"processing": true ,
-					"paging":   false,
-					"searching": false, 
-					"createdRow": function ( row, data, index ) {
-						for(var a = dataSubmit.last.length; a > 1 ; a--){
-							$('td', row).eq(a).attr('id', 'td-' + index +'-'+ a );
-							$('tr', row).eq(a).attr('class', 'td-class-'+ a );
-							$('td', row).eq(a).attr('data-container', 'body');
-							$('td', row).eq(a).attr('data-toggle', 'tooltip');
-							$('td', row).eq(a).attr('data-original-title', '');
-							$('td', row).eq(a).attr('bgcolor', '');
-							
-						}
-					}
-				});
-				var td_number_id =[]
-				var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
-				for(var h = tableId_withData; h < total_crackID; h++){
-					td_number_id.push(h)
-				}
-				var organiz_divId = []
-				for(var i = 0 ; i < td_number_id.length ; i++){
-					for(var j = 0  ; j < dataSubmit.last.length+1 ; j++){
-						organiz_divId.push("td-"+td_number_id[i]+"-"+(j))
-					}
-				}
-				organiz_divId.reverse()
-				hey.reverse()
-				total_alert_per_ts.reverse()
-				var color_alert =[]
-				for(var k = 0 ; k < total_alert_per_ts.length ; k++){
-					if(total_alert_per_ts[k] >= 1.8 ){
-						color_alert.push("#ff6666")
-					}else if(total_alert_per_ts[k] >= 0.250 && total_alert_per_ts[k]<= 1.79 ){
-						color_alert.push("#ffb366")
-					}else if(total_alert_per_ts[k] <= 0.249 && total_alert_per_ts[k] >= 0  ){
-						color_alert.push('#99ff99')
-					}else if(total_alert_per_ts[k] == "nd"){
-						color_alert.push('#fff')
-					}else{
-						color_alert.push('#fff')
-						
-					}
-				}
-				for(var l = 0 ; l < organiz_divId.length ; l++){	
-					$('#'+organiz_divId[l]).attr('bgcolor',color_alert[l])
-				}
-				var color_label =[]
-				for(var m = 0 ; m < slice_num_meas.length-1 ; m++){
-					color_label.push(color_alert[(slice_num_meas[m])])
-				}
-
-				var color_alert_list=["#99ff99","#ffb366","#ff6666"]
-				var label_color = removeDuplicates(color_label);
-				
-				var table = $('#ground_table').DataTable();
-
-				$('#ground_table tbody').on( 'click', 'td', function () {
-					var cell_crack_name = $(this).parent().find('td')
-					var split_1 = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
-					var table_cell_value = table.cell( this ).data().split('"')
-					var cell_data = table_cell_value[1].split('/')
-					console.log(split_1)
-					$("#groundModal").modal("show")
-				} );
-				for(var n = 0 ; n < label_color.length ; n++){
-					if(label_color[n] == "#99ff99"){
-						$("#A0").show();
-						$("#A0").empty();
-						$("#A0").append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>');
-					}else if(label_color[n] == "#ffb366"){
-						$("#A0").empty();
-						$("#A0").hide();
-						$("#A1").show();
-						$("#A1").empty();
-						$("#A1").append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>');
-					}else if(label_color[n] == "#ff6666"){
-						$("#A0").empty();
-						$("#A0").hide();
-						$("#A1").empty();
-						$("#A1").hide();
-						$("#A2").show();
-					}
-				}
 			}
+		}
+	});
+}
+function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
+	var site = dataTableSubmit.site;
+	var from = dataTableSubmit.fdate;
+	var to = dataTableSubmit.tdate;
+	var table = $('#ground_table').DataTable();
+
+	$('#newData_meas').click(function(){
+		var timestamp = $('#newData_timestamp').val();
+		var meas_type =$('#newData_type').val().toUpperCase();
+		var observer_name=$('#newData_observer').val().toUpperCase();
+		var weather = $('#newData_weather').val().toUpperCase();
+		var allNewData_crack = $('.entry_crack').map(function() {
+			return this.id;
+		}).get();
+
+		var allNewData_meas = $('.entry_meas').map(function() {
+			return this.id;
+		}).get();
+		var data =[]
+		for (var i = 0; i < allNewData_crack.length; i++) {
+			data.push({
+				timestamp: timestamp,
+				meas_type: meas_type,
+				site_id: site.toUpperCase(),
+				crack_id: $('#'+allNewData_crack[i]).val(),
+				observer_name:observer_name,
+				meas: $('#'+allNewData_meas[i]).val(),
+				weather: weather
+			})
+		}
+		for (var i = 0; i < data.length; i++) {
+			AddMeasProcess(data[i],'new')
+			for (i = 1; i <  4; i++) {
+				$('.graphS'+i+'-li' ).switchClass( "active", "nav-item");
+				$('.graphS'+i+'' ).switchClass( "active", " ");
+			}
+		}
+
+	});
+	$('#ground_table tbody').on( 'click', 'td', function () {
+		$(".dataInput").prop('disabled', true);
+		
+		var cell_crack_name = $(this).parent().find('td')
+		var crack_id_cell = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
+		var table_cell_value = table.cell( this ).data().split('"')
+		var cell_data = table_cell_value[1].split('/')
+		var time_stamp = cell_data[4].split('_')
+		$("#crack_id_data").val(crack_id_cell);
+		$("#timestamp_data").val(time_stamp[0])
+		$("#meas").val(cell_data[1])
+
+		$("#groundModal").modal("show")
+		var m_data = cell_data[2];
+		var t_data = time_stamp[0];
+		
+		if(m_data != "nd"){
+			$("#buttons_div").empty();
+			$("#buttons_div").append('<button id="edit_meas"  type="button"  class="btn btn-success btn-sm">'+
+				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> EDIT</button>'+
+				' <button id="delete_meas"  type="button"  class="btn btn-danger btn-sm">'+
+				'<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> DELETE</button>')
+			var c_data = crack_id_cell;
+		}else{
+			$("#buttons_div").empty();
+			$("#buttons_div").append('<button id="add_meas"  type="button"  class="btn btn-success ">'+
+				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> ADD </button>')
+			var c_data = "none";
+			$(".dataInput").prop('disabled', false);
+			$("#meas").val(' ');
+		}
+
+		var dataSubmit = {timestamp : t_data , crack_id : c_data , site:site}
+
+		$.post("/surficial_page/getAllGroundMeasID/", {dataSubmit:dataSubmit} ).done(function(data){
+			var result = JSON.parse(data)
+			var id_data = result[0].id;
+
+			$('#edit_meas').click(function(){
+				$(".dataInput").prop('disabled', false);
+				$("#buttons_div").empty();
+				$("#buttons_div").append('<button id="save_meas"  type="button"  class="btn btn-info btn-sm">'+
+					'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button>')
+
+				$('#save_meas').click(function(){
+					$("#groundModal").modal("hide")
+					var t_data = $("#timestamp_data").val();
+					var c_data = $("#crack_id_data").val();
+					var m_data = $("#meas").val();
+					var dataSubmit = {
+						timestamp : t_data , 
+						crack_id : c_data , 
+						site:site , id:id_data,
+						meas:m_data}
+
+						$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+							$("#graphS1").empty()
+							$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+							crackIdProcess(site,from,to)
+						});
+
+					});
+
+			});
+
+			$('#delete_meas').click(function(){
+				$("#graphS1").empty()
+				var dataSubmit = {id:id_data}
+				$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+					$("#groundModal").modal("hide")
+					$("#graphS1").empty()
+					$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+					crackIdProcess(site,from,to)
+				});
+			});
+			$('#add_meas').click(function(){
+				AddMeasProcess(result[0],"old",$("#crack_id_data").val(),$("#meas").val())
+			});
+
 		});	
+	});	
 }
 
-// function gndmeasTableStats(site){
+function AddMeasProcess(data,category,crack,meas){
+	var site = $("#sitegeneral").val();
+	var from = $('#reportrange span').html().slice(0,10);
+	var to = $('#reportrange span').html().slice(13,23);
+	if(category != "new"){
+		var dataSubmit = {
+			timestamp:data.timestamp,
+			meas_type:data.meas_type,
+			site_id:data.site_id,
+			crack_id:crack,
+			observer_name:data.observer_name,
+			meas:meas,
+			weather:data.weather
+		}
+	}else{
+		var dataSubmit = data
+	}
 
-// }
+	$.post("/surficial_page/AddGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result){
+
+		$("#graphS1").empty()
+		$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+		
+		if( category != "new"){
+			$("#groundModal").modal("hide")
+		}else{
+			$('.entry_crack').attr("value"," ");
+			$('.entry_meas').attr("value"," ");
+			
+			$('.graphS1-li' ).switchClass( "nav-item", "active");
+			$('.graphS1' ).switchClass( "tab-pane", "tab-pane fade in active");
+		}
+		crackIdProcess(site,from,to)
+	});
+}
+
+
 
 function surficialGraph(dataTableSubmit) {  
+	var time = moment().format('HH:mm:ss')
 	$.ajax({ 
 		dataType: "json",
-		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
+		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+" "+time+"/"+dataTableSubmit.tdate+" "+time,  success: function(data_result) {
 			var result = JSON.parse(data_result)
 			var crackname_process = []
 			for (var a = 0; a < result.length; a++) {
@@ -843,91 +1049,91 @@ function chartProcess2(id,data_series,name){
 	// 		data_series.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend: false,visible:true})
 	// 	}
 	// 	data_series.push({name:'Tag'})
-		Highcharts.setOptions({
-			global: {
-				timezoneOffset: -8 * 60
-			},
-		});
-		$("#"+id).highcharts({
-			chart: {
-				type: 'spline',
-				zoomType: 'x',
-				height: 800,
-				width:1100
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+	});
+	$("#"+id).highcharts({
+		chart: {
+			type: 'spline',
+			zoomType: 'x',
+			height: 800,
+			width:1100
+		},
+		title: {
+			text: name,
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%b'
 			},
 			title: {
-				text: name,
+				text: 'Date'
 			},
-			xAxis: {
-				type: 'datetime',
-				dateTimeLabelFormats: { 
-					month: '%e. %b %Y',
-					year: '%b'
-				},
-				title: {
-					text: 'Date'
-				},
+		},
+		tooltip: {
+			split: true,
+			crosshairs: true,
+		},
+		plotOptions: {
+			spline: {
+				marker: {
+					enabled: true
+				}
 			},
-			tooltip: {
-				split: true,
-				crosshairs: true,
-			},
-			plotOptions: {
-				spline: {
-					marker: {
-						enabled: true
-					}
+			series: {
+				marker: {
+					radius: 3
 				},
-				series: {
-					marker: {
-						radius: 3
-					},
-					cursor: 'pointer',
-					point: {
-						events: {
-							click: function () {
-								if(this.series.name == "Tag"){
-									$("#tagModal").modal("show");
-									$("#comment-model").empty();
-									$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-								}else{
-									$("#annModal").modal("show");
-									$("#tag_value").hide();
-									$("#tag_series").hide();
-									$("#tag_version").hide();
-									$("#tag_crack").hide();
-									$('#tag_ids').tagsinput('removeAll');
-									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-									$("#tag_value").val(this.y)
-									$("#tag_crack").val(this.series.name)
-									$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-								}
+				cursor: 'pointer',
+				point: {
+					events: {
+						click: function () {
+							if(this.series.name == "Tag"){
+								$("#tagModal").modal("show");
+								$("#comment-model").empty();
+								$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+							}else{
+								$("#annModal").modal("show");
+								$("#tag_value").hide();
+								$("#tag_series").hide();
+								$("#tag_version").hide();
+								$("#tag_crack").hide();
+								$('#tag_ids').tagsinput('removeAll');
+								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+								$("#tag_value").val(this.y)
+								$("#tag_crack").val(this.series.name)
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
 							}
 						}
 					}
-				},
-			},
-			credits: {
-				enabled: false
-			},
-			series:data_series
-		});
-		var chart = $('#'+id).highcharts();
-		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-			var series = chart.series[(data_series.length-1)];
-			for (var i = 0; i < label_crack.length; i++) {
-				if (series.visible) {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: true,
-					});
-				}else {
-					(chart.series[((data_series.length-(i+1))-1)]).update({
-						visible: false,
-					});
 				}
+			},
+		},
+		credits: {
+			enabled: false
+		},
+		series:data_series
+	});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series = chart.series[(data_series.length-1)];
+		for (var i = 0; i < label_crack.length; i++) {
+			if (series.visible) {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: true,
+				});
+			}else {
+				(chart.series[((data_series.length-(i+1))-1)]).update({
+					visible: false,
+				});
 			}
-			
-		});
+		}
+
+	});
 }
 
 function submittedMeas(){
@@ -968,19 +1174,21 @@ function submittedMeas(){
 
 });
 
-var room = 1;
-function education_fields() {
+var meas_all = 1;
+function insert_meas() {
 
-	room++;
-	var objTo = document.getElementById('education_fields')
+	meas_all++;
+	var objTo = document.getElementById('insert_meas')
 	var divtest = document.createElement("div");
-	divtest.setAttribute("class", "form-group removeclass"+room);
-	var rdiv = 'removeclass'+room;
-	divtest.innerHTML = '<div class="col-sm-3 nopadding"><div class="form-group"> <input type="text" class="form-control" id="Schoolname" name="Schoolname[]" value="" placeholder="School name"></div></div><div class="col-sm-3 nopadding"><div class="form-group"> <input type="text" class="form-control" id="Major" name="Major[]" value="" placeholder="Major"></div></div><div class="col-sm-3 nopadding"><div class="form-group"> <input type="text" class="form-control" id="Degree" name="Degree[]" value="" placeholder="Degree"></div></div><div class="col-sm-3 nopadding"><div class="form-group"><div class="input-group"> <select class="form-control" id="educationDate" name="educationDate[]"><option value="">Date</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option> </select><div class="input-group-btn"> <button class="btn btn-danger" type="button" onclick="remove_education_fields('+ room +');"> <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div></div></div></div><div class="clear"></div>';
+	divtest.setAttribute("class", "form-group removeclass"+meas_all);
+	var rdiv = 'removeclass'+meas_all;
+	divtest.innerHTML = '<div class="col-sm-6 nopadding"><div class="form-group"> <input type="text" class="form-control entry_crack" id="entry_crack'+ meas_all +'" name="entry_crack" value="" placeholder="Crack ID"></div></div>'+
+	'<div class="col-sm-6 nopadding"><div class="form-group"><div class="input-group">'+
+	'<input type="text" class="form-control entry_meas" id="entry_meas'+ meas_all +'" name="entry_meas" value="" placeholder="Measurement"><div class="input-group-btn"> <button class="btn btn-danger" type="button" onclick="remove_meas_fields('+ meas_all +');"> <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div></div></div></div><div class="clear"></div>';
 
 	objTo.appendChild(divtest)
 }
-function remove_education_fields(rid) {
+function remove_meas_fields(rid) {
 	$('.removeclass'+rid).remove();
 }
 
@@ -999,3 +1207,17 @@ function removeDuplicates(num) {
 	return out;
 }
 
+function getRanges(array) {
+	var ranges = [], rstart, rend;
+	for (var i = 0; i < array.length; i++) {
+		rstart = array[i];
+		rend = rstart;
+		while (array[i + 1] - array[i] == 1) {
+
+			rend = array[i + 1];
+			i++;
+		}
+		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
+	}
+	return ranges;
+}
