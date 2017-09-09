@@ -618,7 +618,6 @@ $(document).ready(function() {
 							break;
 						}
 					} else {
-						console.log(msg.user.substring(0, msg.user - 8));
 						if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
 							msg.isyou = 0;
 							msg.user = contactInfo[i].fullname;
@@ -632,7 +631,6 @@ $(document).ready(function() {
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-
 			try {
 				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
@@ -1979,7 +1977,6 @@ function displayGroupTagsForThread () {
 			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
-	console.log(groupTags);
 	tempText = tempText + "]; [Offices: ";
 	var tempCountOffices = groupTags.offices.length;
 	for (i in groupTags.offices) {
@@ -2197,17 +2194,17 @@ function startChat(source="normal") {
 
 	contactname = $('.dropdown-input').val();
 	contactnum = contactname.split(';');
-	
+
 	if (source == "normal") {
 		for (var counter = 0; counter < contactnum.length; counter++) {
 			if (contactnum[counter].trim() != "") {
-				console.log(contactnum[counter]);
 				var raw = trimmedContactNum(contactnum[counter]);
 				for (var sub_counter = 0; sub_counter < raw.length; sub_counter++) {
-					console.log(raw[sub_counter]);
+
 					contactnumTrimmed.push(raw[sub_counter]);
+
 					var contactraw_inf = {
-						'fullname': contactname,
+						'fullname': contactnum[counter],
 						'numbers': raw[sub_counter]
 					}
 					contactInfo.push(contactraw_inf);
@@ -2228,7 +2225,7 @@ function startChat(source="normal") {
 		alert("Error: Invalid Contact Number here");
 		return;
 	}
-
+	console.log(contactInfo);
 	$('#user-container').addClass('hidden');
 	$('#main-container').removeClass('hidden');
 
@@ -2332,10 +2329,9 @@ $('#send-msg').on('click',function(){
 				messages = [];
 				$('#msg').val('');	
 			}
-		}
-		else {
-			var text = $('#msg').val();
+		} else {
 
+			var text = $('#msg').val();
 			var normalized = [];
 			for (i in contactnumTrimmed) {
 				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
@@ -2359,6 +2355,7 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
+
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
