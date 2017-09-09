@@ -9,3 +9,19 @@ $(document).ready(function(e){
         ]
     });
 });
+
+function insertGintags() {
+
+}
+
+function getGintags() {
+
+}
+
+function updateGintags() {
+
+}
+
+function deleteToNarraitves() {
+	
+}
