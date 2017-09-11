@@ -12,7 +12,7 @@ $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').add(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
