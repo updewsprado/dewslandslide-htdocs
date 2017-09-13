@@ -2611,7 +2611,11 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 			var catNum=[];
 			for(var a = 0; a < data[0].L2.length; a++){
 				allTime.push(data[0].L2[a].ts)
-				l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L2[a].ts ){
+						l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+					}
+				}
 			}
 			for(var a = ndata.length; a > 0 ; a--){
 				catNum.push(a)
@@ -2624,7 +2628,11 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L3[a].ts ){
+						l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+					}
+				}
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
