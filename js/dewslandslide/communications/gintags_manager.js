@@ -26,6 +26,7 @@ $(document).ready(function(e){
 		    			className: "success"
 
 		    		});
+		    		reloadGintagsTable();
 				} else {
 		    		$.notify("Error occured, duplicate entry.", {
 		    			position: "top center",
@@ -40,6 +41,26 @@ $(document).ready(function(e){
     		});
     	}
     });
+
+    $('#gintags-datatable tbody').on('click','tr:has(td) .delete',function(){
+    	var table = $('#template_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
+		tableId = data.id;
+		console.log(data);
+    });
+
+    $('#gintags-datatable tbody').on('click','.update',function(){
+		var table = $('#backbone_table').DataTable();
+		var data = table.row($(this).closest('tr')).data();
+		tableId = data.id;
+		console.log(data);
+		$('#btn-confirm').text('UPDATE');
+		$('#btn-reset').text('CANCEL');
+		$("#btn-confirm").attr('class', 'btn-success');
+		$("#btn-reset").attr('class', 'btn-danger');
+	});
+
+
 
 });
 
@@ -68,6 +89,24 @@ function deleteToNarraitves() {
 }
 
 function initGintagsTable() {
+    var gintags_table = $('#gintags-datatable').DataTable( {
+        "processing": true,
+        "serverSide": false,
+        "ajax": '../gintags_manager/getGintagTable',
+        columns: [
+        	{"data" : "id", title:"ID"},
+            {"data" : "tag_name", title:"TAG"},
+            {"data" : "description", title:"DESCRIPTION"},
+            {"data" : "narrative_input", title:"NARRATIVE INPUT"},
+            {"data" : "functions", title: "*"}
+        ]
+    });
+}
+
+function reloadGintagsTable() {
+	var gintags_table = $('#gintags-datatable').DataTable();
+	$('#gintags-datatable').DataTable().clear();
+	$('#gintags-datatable').DataTable().destroy();
     var gintags_table = $('#gintags-datatable').DataTable( {
         "processing": true,
         "serverSide": false,
