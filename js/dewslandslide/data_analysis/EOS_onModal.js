@@ -16,8 +16,8 @@ $(document).ready(function(e) {
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
-		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
-		var to = moment().add(1,'days').format('YYYY-MM-DD')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(30,'days').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		let dataSubmit = { 
 			site : (site).toLowerCase(), 
 			fdate : from,
@@ -985,6 +985,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 
 
 function surficialGraph(dataTableSubmit) {  
+	console.log(dataTableSubmit.tdate)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -1065,7 +1066,8 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 			}
 		},
 		xAxis: {
-
+			min:Date.parse(dataTableSubmit.fdate),
+			max:Date.parse(dataTableSubmit.tdate),
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e. %b %Y',
