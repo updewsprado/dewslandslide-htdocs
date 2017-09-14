@@ -2605,7 +2605,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 		var allTime = [] , dataset= [] , sliceData =[];
 		var fseries = [], fseries2 = [] ;
 		var l2 =[] , l3=[] , alldataNotSlice=[];
-		var date = date_template.slice(date_template.length-6,date_template.length);
+		var date = date_template.slice(date_template.length-7,date_template.length);
 
 		if(data[0].L2.length != 0){
 			var catNum=[];
