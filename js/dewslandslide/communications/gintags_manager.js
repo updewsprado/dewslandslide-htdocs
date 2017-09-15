@@ -1,6 +1,12 @@
 $(document).ready(function(e){
 
+	var initTableContent = [];
+	var temp = "";
+
 	getGintags(); // Initialize gintag autocomplete
+	$.get('../gintags_manager/getGintagTable', function( data ) {
+		initTableContent = JSON.parse(data);
+	});
     
 	initGintagsTable();
 
@@ -26,6 +32,13 @@ $(document).ready(function(e){
 		    			className: "success"
 
 		    		});
+
+		    		$.get('../gintags_manager/getGintagTable', function( data ) {
+						initTableContent = JSON.parse(data);
+					});
+
+					clearFields();
+
 		    		reloadGintagsTable();
 				} else {
 		    		$.notify("Error occured, duplicate entry.", {
@@ -50,23 +63,50 @@ $(document).ready(function(e){
     });
 
     $('#gintags-datatable tbody').on('click','.update',function(){
-		var table = $('#backbone_table').DataTable();
+		var table = $('#gintags-datatable').DataTable();
 		var data = table.row($(this).closest('tr')).data();
-		tableId = data.id;
-		console.log(data);
+
+		temp = data.tag_name;
+
+		$('#gintag-ipt').val(data.tag_name);
+		$('#gintag-description-ipt').val(data.description);
+		$('#narrative-ipt').val(data.narrative_input);
+
 		$('#btn-confirm').text('UPDATE');
 		$('#btn-reset').text('CANCEL');
-		$("#btn-confirm").attr('class', 'btn-success');
-		$("#btn-reset").attr('class', 'btn-danger');
+		$("#btn-confirm").attr('class', 'btn btn-success');
+		$("#btn-reset").attr('class', 'btn btn-danger');
 	});
 
+    $('#gintag-ipt').on('change',function(){
+    	if (temp == "") {
+	    	for (var counter = 0; counter < initTableContent.data.length; counter++) {
+	    		if (initTableContent.data[counter].tag_name.toLowerCase() == $(this).val().toLowerCase()) {
+		    		$.notify("Tag exists. Edit it using the 'PEN' icon", {
+		    			position: "top center",
+		    			className: "info",
+		    			autoHideDelay: 5000,
+		    		});
+		    		clearFields();
+		    		$('#gintag-ipt').focus();
+	    		}
+	    	}
+    	} else {
+			for (var counter = 0; counter < initTableContent.data.length; counter++) {
+	    		if (initTableContent.data[counter].tag_name.toLowerCase() == $(this).val().toLowerCase() && temp.toLowerCase() != $(this).val().toLowerCase()) {
+		    		$.notify("Duplicate tag.", {
+		    			position: "top center",
+		    			className: "error",
+		    			autoHideDelay: 5000,
+		    		});
+		    		$('#gintag-ipt').focus();
+	    		}
+	    	}
+    	}
+    });
 
 
 });
-
-function insertGintags() {
-
-}
 
 function getGintags() {
 	$.get( "../gintags_manager/getTagsForAutocomplete", function( data ) {
@@ -119,4 +159,10 @@ function reloadGintagsTable() {
             {"data" : "functions", title: "*"}
         ]
     });
+}
+
+function clearFields() {
+	$('#gintag-ipt').val('');
+	$('#narrative-ipt').val('');
+	$('#gintag-description-ipt').val('');
 }
