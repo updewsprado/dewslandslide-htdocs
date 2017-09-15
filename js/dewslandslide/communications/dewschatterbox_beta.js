@@ -418,6 +418,7 @@ $(document).ready(function() {
 	var groupTags = [];
 	var testName;
 	var testNumbers;
+	var displayMessage;
 	var multiContactsList = [];
 	var timerID = 0;
 	var ewirecipients;
@@ -658,44 +659,47 @@ $(document).ready(function() {
 	}
 
 	function updateQuickInbox(msg) {
-		if (msg.user == "You") {
-		}
-		else {
-			var targetInbox;
-			var quick_inbox_html;
-			if (msg.name == "unknown") {
-				try {
-					msg.isunknown = 1;
-					targetInbox = "#quick-inbox-unknown-display";
-					quick_inbox_unknown.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
-				} catch(err) {
+		if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
+			if (msg.user == "You") {
 				}
-			}
-			else {
-				try {
+				else {
+					var targetInbox;
+					var quick_inbox_html;
+					if (msg.name == "unknown") {
+						try {
+							msg.isunknown = 1;
+							targetInbox = "#quick-inbox-unknown-display";
+							quick_inbox_unknown.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+						} catch(err) {
+						}
+					}
+					else {
+						try {
+							msg.isunknown = 0;
+							targetInbox = "#quick-inbox-display";
+							quick_inbox_registered.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+						} catch(err) {
+						}
+					}
+					$(targetInbox).html(quick_inbox_html);
+					$(targetInbox).scrollTop(0);
+				}
+				
+			if (msg.onevent == 1) {
+				if (msg.user != "You"){
+					var targetInbox;
+					var quick_inbox_html;
 					msg.isunknown = 0;
-					targetInbox = "#quick-inbox-display";
-					quick_inbox_registered.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
-				} catch(err) {
+					targetInbox = "#quick-event-inbox-display";
+					quick_event_inbox.unshift(msg);
+					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
 				}
-			}
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
-		}
-		if (msg.onevent == 1) {
-			if (msg.user != "You"){
-				var targetInbox;
-				var quick_inbox_html;
-				msg.isunknown = 0;
-				targetInbox = "#quick-event-inbox-display";
-				quick_event_inbox.unshift(msg);
-				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
-			}
 
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
+				$(targetInbox).html(quick_inbox_html);
+				$(targetInbox).scrollTop(0);
+			}
 		}
 	}
 
@@ -1074,6 +1078,7 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
+				
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -1085,7 +1090,10 @@ $(document).ready(function() {
 				}
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
+				temp_msg_holder.timestamp = msg.timestamp
+
 				updateMessages(temp_msg_holder);
+
 				var current_timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 				if (tag != "") {
 					for (var i = 0; i < msg["data"].length; i++) {
@@ -2211,22 +2219,23 @@ $('#send-msg').on('click',function(){
 				});
 
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
-				var msg = {
+				
+				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'tag': emp_tag,
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
-				conn.send(JSON.stringify(msg));
+				displayMessage = temp_msg_holder;
+
+				conn.send(JSON.stringify(temp_msg_holder));
 
 				msgType = "smssendgroup";
 				testMsg = msg;
 				counters = 0;
 				messages = [];
-				updateMessages(msg);
 
 				$('#msg').val('');
 			} else {
@@ -2246,10 +2255,11 @@ $('#send-msg').on('click',function(){
 					'offices': tagOffices,
 					'sitenames': tagSitenames,
 					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
 					'ewi_tag': false
 				};
+
+				displayMessage = temp_msg_holder;
 
 				conn.send(JSON.stringify(temp_msg_holder));
 
@@ -2275,10 +2285,10 @@ $('#send-msg').on('click',function(){
 				'user': user,
 				'numbers': normalized,
 				'msg': text + footer,
-				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-			console.log(temp_msg_holder);
+
+			displayMessage = temp_msg_holder;
 			conn.send(JSON.stringify(temp_msg_holder));
 			$('#msg').val('');
 		}
@@ -2286,6 +2296,8 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
+
+
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2824,7 +2836,6 @@ $('#send-btn-ewi-amd').click(function(){
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 			'ewi_filter': true,
 			'ewi_tag': true
 		};
