@@ -431,6 +431,8 @@ $(document).ready(function() {
 	var quick_event_inbox = [];
 	var quick_inbox_unknown = [];
 	var quick_release = [];
+	var group_message_quick_access = [];
+	var group_contacts_quick_access = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -461,6 +463,7 @@ $(document).ready(function() {
 	var narrative_recipients = [];
 	var tag_indicator = "";
 	var dasboard_data_holder;
+	var contactInfo = [];
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -488,6 +491,7 @@ $(document).ready(function() {
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var group_message_template = Handlebars.compile($('#group-message-template').html());
 		var ewi_template = Handlebars.compile($('#ewi_template').html());
 
 	} catch (err) {
@@ -650,7 +654,6 @@ $(document).ready(function() {
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-
 			try {
 				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
@@ -732,6 +735,17 @@ $(document).ready(function() {
 			$('#quick-release-display').html(quick_release_html);
 			$('#quick-release-display').scrollTop(0);
 		} catch(err) {
+		}
+	}
+
+	function updateGroupMessageQuickAccess(msg) {
+		try {
+			group_message_quick_access.unshift(msg);
+			var group_message_html = group_message_template({'group_message': group_message_quick_access});
+			$('#group-message-display').html(group_message_html);
+			$('#group-message-display').scrollTop(0);
+		} catch(err) {
+			console.log(err.message);
 		}
 	}
 
@@ -991,6 +1005,48 @@ $(document).ready(function() {
 		}
 	}
 
+	function initLoadGroupMessageQA(siteMembers) {
+		group_contacts_quick_access = [];
+		group_message_quick_access = [];
+		if (siteMembers.data == null) {
+			return;
+		}
+
+		var members = siteMembers.data;
+		temp = siteMembers.data;
+		var msg;
+
+		$('#group-message-display').empty();
+		var arr_sites = [];
+		var arr_contacts = [];	
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.fullname,arr_contacts) == -1) {
+				arr_contacts.push(msg.fullname);
+			}
+		}
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.site,arr_sites) == -1) {
+				arr_sites.push(msg.site);
+				var contact_per_site = [];
+				for (var counter = 0; counter < arr_contacts.length; counter++) {
+					if (arr_contacts[counter].substring(0,3) == msg.site) {
+						var temp_contacts = {
+							'contacts': arr_contacts[counter]
+						}
+						contact_per_site.push(temp_contacts);
+					}
+				}
+				msg.data = contact_per_site;
+				updateGroupMessageQuickAccess(msg);
+			}
+		}
+
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -1014,6 +1070,7 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
+			$('#chatterbox-loading').modal('hide');
 			console.log("Connection established!");
 			enableCommands();
 
@@ -1081,6 +1138,8 @@ $(document).ready(function() {
 			} else if (msg.type == "latestAlerts"){
 				initLoadLatestAlerts(msg);
 				$('#chatterbox-loading').modal('hide');
+			} else if (msg.type == "groupMessageQuickAcces") {
+				initLoadGroupMessageQA(msg);
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -1473,34 +1532,40 @@ function waitForSocketConnection() {
 	}
 }
 function trimmedContactNum(inputContactNumber) {
-	var numbers = /^[0-9]+$/;  
+	var numbers = /^[0-9]+$/; 
+	var trimmed_collection = [];
 	var trimmed;
-	var targetNumber = inputContactNumber.replace(/[^0-9]/igm,'');
-	if(targetNumber.match(numbers)) {  
-		var size = targetNumber.length;
+	var raw = inputContactNumber.split('-');
+	if (raw.length == 1) {
+		var targetNumber = raw[0].split(',');
+	} else {
+		var targetNumber = raw[1].split(',');
+	}
+	for (var counter = 0; counter < targetNumber.length; counter++) {
+		if(targetNumber[counter].trim().match(numbers) && targetNumber[counter].trim() != "") {  
+			var size = targetNumber[counter].trim().length;
 
-		if (size == 12) {
-			trimmed = targetNumber.slice(2, size);
-		} 
-		else if (size == 11) {
-			trimmed = targetNumber.slice(1, size);
-		}
-		else if (size == 10) {
-			trimmed = targetNumber;
-		}
-		else {
-			console.log('Error: No such number in the Philippines');  
+			if (size == 12) {
+				trimmed = targetNumber[counter].trim().slice(2, size);
+			} else if (size == 11) {
+				trimmed = targetNumber[counter].trim().slice(1, size);
+			} else if (size == 10) {
+				trimmed = targetNumber[counter].trim();
+			} else {
+				console.log('Error: No such number in the Philippines');  
+				return -1;
+			}
+
+			trimmed_collection.push(trimmed);
+		} else {  
+			console.log('Please input numeric characters only');  
 			return -1;
 		}
+	}
 
-		inputContactNumber = "63" + trimmed;
-		return trimmed;
-	}  
-	else {  
-		console.log('Please input numeric characters only');  
-		return -1;
-	}  
+	return trimmed_collection;
 }
+
 function normalizedContactNum(targetNumber) {
 	var trimmed = trimmedContactNum(targetNumber);
 
@@ -1520,37 +1585,6 @@ function getNameSuggestions (nameQuery) {
 	};
 	conn.send(JSON.stringify(nameSuggestionRequest));
 };
-
-function parseContactInfo (multipleContactInfo) {
-	parseSingleContactInfo(multipleContactInfo);
-}
-
-function parseSingleContactInfo (singleContactInfo) {
-	var n = singleContactInfo.search(' - ');
-	var size = singleContactInfo.length;
-	testName = singleContactInfo.slice(0,n);
-	testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
-	var tempNum;
-	var searchIndex = 0;
-
-	while (searchIndex >= 0) {
-		searchIndex = testNumbers.search(",");
-		var parsedInfo = {};
-		parsedInfo.fullname = testName;
-
-		if (searchIndex < 0) {
-			parsedInfo.numbers = testNumbers;
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-		} 
-		else {
-			parsedInfo.numbers = testNumbers.slice(0,searchIndex);
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-			testNumbers = testNumbers.slice(searchIndex + 1);
-		}
-
-		multiContactsList.push(parsedInfo);
-	}
-}
 
 function getFollowingNameQuery (allNameQueries) {
 	var before = allNameQueries.match(/^.+;\s*|/)[0];
@@ -1573,8 +1607,6 @@ function displayContactNamesForThread (source="normal") {
 
 		var tempText = "", tempCountContacts = uniqueName.length;
 		for (i in uniqueName) {
-			console.log(uniqueName[i]);
-
 			if (i == tempCountContacts - 1)
 				tempText = tempText + uniqueName[i];
 			else
@@ -1592,10 +1624,30 @@ function displayContactNamesForThread (source="normal") {
 		}
 	}
 	$("#convo-header .panel-heading").text(tempText);
-	$("#convo-header .panel-body").text(contactInfo[0].numbers);
 	$("#contact-indicator").val(tempText);
 	document.title = tempText;
 }
+
+
+$(document).on("click",".qaccess-contacts",function(){
+	var convo_collection = [];
+	$('.qaccess-contacts:checked').each(function() {
+		convo_collection.push(this.value);
+	});
+
+	var get_convo = "";
+
+	for (var counter = 0; counter < convo_collection.length; counter++) {
+		if (counter == 0) {
+			get_convo = convo_collection[counter];
+		} else {
+			get_convo = get_convo+";"+convo_collection[counter];
+		}
+	}
+
+	$('.dropdown-input').val(get_convo);
+	$('#go-chat').trigger('click');
+});
 
 $('#btn-standard-search').click(function(){
 	if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
@@ -1798,6 +1850,7 @@ try {
 	Handlebars.registerHelper('escape', function(variable) {
 		return variable.replace(/(['"-])/g, '\\$1');
 	});
+
 } catch (err) {
 }
 
@@ -1956,7 +2009,6 @@ function displayGroupTagsForThread () {
 			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
-	console.log(groupTags);
 	tempText = tempText + "]; [Offices: ";
 	var tempCountOffices = groupTags.offices.length;
 	for (i in groupTags.offices) {
@@ -1972,6 +2024,15 @@ function displayGroupTagsForThread () {
 	tempText = tempText + "]";
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
+}
+
+function displayGroupMembersForQuickAccess(offices,sites) {
+	var data = {
+		'offices': offices,
+		'sites': sites,
+		'type': 'groumMembersForQuickAccess'
+	}
+	conn.send(JSON.stringify(data));
 }
 
 function displayDetailsForThread(siteabr){
@@ -2071,8 +2132,6 @@ try {
 		var size = allText.length;
 		var allNameQueries = allText.slice(0, size-2);
 		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		parseContactInfo(nameQuery);
 	}, false);
 } catch(err) {
 }
@@ -2133,6 +2192,7 @@ $(document).on("click","#quick-release-display li",function(){
 		'sitenames': tagSitenames
 	};
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
@@ -2158,36 +2218,46 @@ function quickInboxStartChat(fullContact=null) {
 
 function startChat(source="normal") {
 	convoFlagger = false;
+	contactnumTrimmed = [];
+	contactInfo = [];
 	counters = 0;
 
 	user = "You";
 
-	if (source == "normal") {
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
-		}
-		else {
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
+	contactname = $('.dropdown-input').val();
+	contactnum = contactname.split(';');
 
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+	if (source == "normal") {
+		for (var counter = 0; counter < contactnum.length; counter++) {
+			if (contactnum[counter].trim() != "") {
+				var raw = trimmedContactNum(contactnum[counter]);
+				for (var sub_counter = 0; sub_counter < raw.length; sub_counter++) {
+
+					contactnumTrimmed.push(raw[sub_counter]);
+
+					var contactraw_inf = {
+						'fullname': contactnum[counter],
+						'numbers': raw[sub_counter]
+					}
+					contactInfo.push(contactraw_inf);
+				}
+			}
 		}
-	}
-	else if (source == "quickInbox") {
+	} else if (source == "quickInbox") {
 		contactname = qiFullContact;
 		contactnum = contactname;
 		contactnumTrimmed = [trimmedContactNum(contactnum)];
 
 		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 	}
+
 	displayContactNamesForThread(source);
 
-	if (contactnumTrimmed <= 0) {
-		alert("Error: Invalid Contact Number");
+	if (contactnumTrimmed.length <= 0) {
+		alert("Error: Invalid Contact Number here");
 		return;
 	}
-
+	console.log(contactInfo);
 	$('#user-container').addClass('hidden');
 	$('#main-container').removeClass('hidden');
 
@@ -2204,6 +2274,8 @@ function startChat(source="normal") {
 	tempRequest = msgHistory;
 	conn.send(JSON.stringify(msgHistory));
 }
+
+
 $('#go-chat').click(function() {
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
@@ -2291,10 +2363,9 @@ $('#send-msg').on('click',function(){
 				messages = [];
 				$('#msg').val('');	
 			}
-		}
-		else {
-			var text = $('#msg').val();
+		} else {
 
+			var text = $('#msg').val();
 			var normalized = [];
 			for (i in contactnumTrimmed) {
 				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
@@ -2318,8 +2389,7 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
-
-
+  
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2357,7 +2427,9 @@ function loadGroupsCommunity(){
 		'offices': tagOffices,
 		'sitenames': tagSitenames
 	};
+
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');

@@ -253,7 +253,7 @@ div.awesomplete {
   padding: 3px 5px;
 }
 
-#quick-inbox-display,#quick-inbox-unknown-display,#quick-release-display,#quick-event-inbox-display {
+#quick-inbox-display,#quick-inbox-unknown-display,#quick-release-display,#quick-event-inbox-display,#group-message-display {
   height: 555px;
   overflow: hidden;
   overflow-y: scroll;
