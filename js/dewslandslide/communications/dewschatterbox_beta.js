@@ -1,7 +1,7 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(dashboard_data){
-	if (window.location.href == window.location.origin+"/communications/chatterbox_beta") {
+	if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
 		var internal_alert = "";
 		var backbone_message = "";
 		var recommended_response = "";
@@ -124,6 +124,28 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 	} else {
+
+		$('#send-btn-ewi-amd').prop('disabled',true);
+		$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
+
+		var current_client_time = moment().format('YYYY-MM-DD HH:mm:ss');
+		var remainder = moment(current_client_time).minute() % 30;
+		var client_release_time = moment(current_client_time).subtract(remainder,"m").format("YYYY-MM-DD HH:mm:00");
+
+		if (client_release_time == dashboard_data.event_start) {
+			$('#send-btn-ewi-amd').prop('disabled',false);
+			$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+		} else {
+
+			if (moment(current_client_time).hours() % 4 == 0) {
+				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+				$('#send-btn-ewi-amd').prop('disabled',false);
+			} else if (dashboard_data.event_start == dashboard_data.data_timestamp) {
+				$('#send-btn-ewi-amd').prop('disabled',false);
+				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+			}
+		}
+
 		var alert_site_name = "";
 		var alert_level = "";
 		// HOTFIX OF ND sites
@@ -420,6 +442,7 @@ $(document).ready(function() {
 	var groupTags = [];
 	var testName;
 	var testNumbers;
+	var displayMessage;
 	var multiContactsList = [];
 	var timerID = 0;
 	var ewirecipients;
@@ -661,44 +684,47 @@ $(document).ready(function() {
 	}
 
 	function updateQuickInbox(msg) {
-		if (msg.user == "You") {
-		}
-		else {
-			var targetInbox;
-			var quick_inbox_html;
-			if (msg.name == "unknown") {
-				try {
-					msg.isunknown = 1;
-					targetInbox = "#quick-inbox-unknown-display";
-					quick_inbox_unknown.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
-				} catch(err) {
+		if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
+			if (msg.user == "You") {
 				}
-			}
-			else {
-				try {
+				else {
+					var targetInbox;
+					var quick_inbox_html;
+					if (msg.name == "unknown") {
+						try {
+							msg.isunknown = 1;
+							targetInbox = "#quick-inbox-unknown-display";
+							quick_inbox_unknown.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+						} catch(err) {
+						}
+					}
+					else {
+						try {
+							msg.isunknown = 0;
+							targetInbox = "#quick-inbox-display";
+							quick_inbox_registered.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+						} catch(err) {
+						}
+					}
+					$(targetInbox).html(quick_inbox_html);
+					$(targetInbox).scrollTop(0);
+				}
+				
+			if (msg.onevent == 1) {
+				if (msg.user != "You"){
+					var targetInbox;
+					var quick_inbox_html;
 					msg.isunknown = 0;
-					targetInbox = "#quick-inbox-display";
-					quick_inbox_registered.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
-				} catch(err) {
+					targetInbox = "#quick-event-inbox-display";
+					quick_event_inbox.unshift(msg);
+					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
 				}
-			}
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
-		}
-		if (msg.onevent == 1) {
-			if (msg.user != "You"){
-				var targetInbox;
-				var quick_inbox_html;
-				msg.isunknown = 0;
-				targetInbox = "#quick-event-inbox-display";
-				quick_event_inbox.unshift(msg);
-				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
-			}
 
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
+				$(targetInbox).html(quick_inbox_html);
+				$(targetInbox).scrollTop(0);
+			}
 		}
 	}
 
@@ -1133,6 +1159,7 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
+				
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -1144,7 +1171,10 @@ $(document).ready(function() {
 				}
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
+				temp_msg_holder.timestamp = msg.timestamp
+
 				updateMessages(temp_msg_holder);
+
 				var current_timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 				if (tag != "") {
 					for (var i = 0; i < msg["data"].length; i++) {
@@ -1244,8 +1274,8 @@ $(document).ready(function() {
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-									console.log(data);
 									var response = JSON.parse(data);
+									var last_rounded_release = response.res[0].narrative.substring(5,13);
 									if (response.ack == "no_ack") {
 										var narrative_details = {
 											'event_id': event_details.event_id,
@@ -1255,7 +1285,7 @@ $(document).ready(function() {
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
 											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
-											'narrative_template': "No acknowledgement from the community for "+moment(last_rounded_release).format('hh:mm A')+" EWI Release"
+											'narrative_template': "No acknowledgement from all stakeholders for "+last_rounded_release+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 											console.log(data);
@@ -1455,7 +1485,9 @@ function getOngoingEvents(sites){
 							var lastReleaseData = {
 								'event_id': events[counter].event_id,
 								'current_release_time': rounded_release,
-								'last_release_time': last_rounded_release
+								'last_release_time': last_rounded_release,
+								'previous_release': previous_release,
+								'data_timestamp': event_details.data_timestamp
 							}
 
 							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
@@ -1465,7 +1497,7 @@ function getOngoingEvents(sites){
 										'event_id': events[counter].event_id,
 										'site_id': siteids[siteid_counter].id,
 										'ewi_sms_timestamp': rounded_release,
-										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+										'narrative_template': "No acknowledgement from all stakeholders for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 									}
 									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 										console.log(data);
@@ -2281,22 +2313,23 @@ $('#send-msg').on('click',function(){
 				});
 
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
-				var msg = {
+				
+				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'tag': emp_tag,
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
-				conn.send(JSON.stringify(msg));
+				displayMessage = temp_msg_holder;
+
+				conn.send(JSON.stringify(temp_msg_holder));
 
 				msgType = "smssendgroup";
 				testMsg = msg;
 				counters = 0;
 				messages = [];
-				updateMessages(msg);
 
 				$('#msg').val('');
 			} else {
@@ -2316,10 +2349,11 @@ $('#send-msg').on('click',function(){
 					'offices': tagOffices,
 					'sitenames': tagSitenames,
 					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
 					'ewi_tag': false
 				};
+
+				displayMessage = temp_msg_holder;
 
 				conn.send(JSON.stringify(temp_msg_holder));
 
@@ -2344,10 +2378,10 @@ $('#send-msg').on('click',function(){
 				'user': user,
 				'numbers': normalized,
 				'msg': text + footer,
-				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-			console.log(temp_msg_holder);
+
+			displayMessage = temp_msg_holder;
 			conn.send(JSON.stringify(temp_msg_holder));
 			$('#msg').val('');
 		}
@@ -2355,7 +2389,7 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
-
+  
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2896,7 +2930,6 @@ $('#send-btn-ewi-amd').click(function(){
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 			'ewi_filter': true,
 			'ewi_tag': true
 		};

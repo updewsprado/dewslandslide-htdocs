@@ -32,9 +32,36 @@ $(document).ready(function()
 
     reposition("#saveNarrativeModal");
 
-    $("#event_id").change(function () {
-        let event_id = $(this).val();
-        if( event_id != "")
+    $('#site-list').dropdown();
+    let sites = [], event_ids = [];
+    $( '#site-list.dropdown-menu a' ).on( 'click', function( event )
+    {
+        console.log("Clicked");
+        var $target = $( event.currentTarget ),
+        val = $target.attr( 'data-value' ),
+        event_id = $target.attr( 'data-event' ),
+        $inp = $target.find( 'input' ),
+        idx;
+
+        if ( ( idx = sites.indexOf( val ) ) > -1 ) 
+        {
+            sites.splice( idx, 1 ); event_ids.splice(idx, 1);
+            setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
+        } else {
+            sites.push( val ); event_ids.push( event_id );
+            setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
+        }
+
+        $( event.target ).blur();
+        var str = sites.toString();
+        String.prototype.replaceAll = function(search, replacement) {
+            var target = this;
+            return target.replace(new RegExp(search, 'g'), replacement);
+        };
+        str = str.replaceAll("," , ", ");
+        $("#sites").val(str);
+
+        if( event_ids.length > 0 )
         {
             if(hasEdit)
             {
@@ -43,7 +70,7 @@ $(document).ready(function()
                 $('#saveNarrativeModal').modal({ backdrop: 'static', keyboard: false });
                 $("#saveNarrativeModal").modal("show");
             }
-            else getNarratives(event_id);
+            else getNarratives(event_ids);
         }
         else 
         {
@@ -51,18 +78,41 @@ $(document).ready(function()
             narrativeTable.draw();
             hasEdit = false;
         }
+
+        return false;
     });
 
-    function getNarratives(event_id) 
+    $("#clear-sites").click( function (argument) {
+        if(hasEdit)
+        {
+            $("#save_message, #cancel").hide();
+            $("#change_message, #discard").show();
+            $('#saveNarrativeModal').modal({ backdrop: 'static', keyboard: false });
+            $("#saveNarrativeModal").modal("show");
+        }
+        else {
+            sites = []; event_ids = [];
+            $(".site-checkbox").prop("checked", false);
+            $("#sites").val("");
+            hasEdit = false;
+            narrativeTable.clear();
+            narratives = [];
+            narrativeTable.rows.add(narratives).draw();
+        }
+        
+    });
+
+    function getNarratives(event_ids) 
     {
-        $.get( "../../accomplishment/getNarratives/" + event_id, function (data) {
-                //callback(data);
-                original = data.slice(0);
-                narratives = data.slice(0);
+        $.get( "../../accomplishment/getNarratives/", {event_ids: event_ids})
+        .done( function (data) {
+                let arr = JSON.parse(data);
+                original = arr.slice(0);
+                narratives = arr.slice(0);
                 console.log(narratives);
                 narrativeTable.clear();
                 narrativeTable.rows.add(narratives).draw();
-        }, "json");
+        });
     }
 
     let index_global = null, narrative_id = null;
@@ -88,9 +138,19 @@ $(document).ready(function()
         return value.trim() != ""; 
     }, "Write a narrative before adding.");
 
+    jQuery.validator.addMethod("hasSiteChecked", function(value, element) {
+        if( $('.site-checkbox:checked').length > 0 ) {
+            return true;
+        } else false;
+         
+    }, "Please choose a site.");
+
     $("#narrativeForm").validate(
     {
         rules: {
+            sites: {
+                hasSiteChecked: true
+            },
             timestamp_date: {
                 required: true,
             },
@@ -158,14 +218,17 @@ $(document).ready(function()
         {
             let data = $( "#narrativeForm" ).serializeArray();
             let temp = {};
-            data.forEach(function (value) { 
-                if(value.name != "timestamp_time" && value.name != "timestamp_date") temp[value.name] = value.value == "" ? null : value.value; 
-            })
-           temp.timestamp = $("#timestamp_date").val() + " " + $("#timestamp_time").val();
-           temp.narrative = temp.narrative.trim();
+            temp.narrative = $("#narrative").val();
+            temp.narrative = temp.narrative.trim();
+            temp.timestamp = $("#timestamp_date").val() + " " + $("#timestamp_time").val();
 
-            console.log("ADDED", temp);
-            narratives.push(temp);
+            $(".site-checkbox:checked").each(function (i, obj) {
+                let x = jQuery.extend(true, {}, temp);
+                x.event_id = $(obj).parent().data("event");
+                x.name = $(obj).parent().data("value");
+                narratives.push(x);
+            });
+
             console.log("NEW", narratives);
             hasEdit = true;
             narrativeTable.clear();
@@ -181,6 +244,13 @@ $(document).ready(function()
             data: result,
             "columns": [
                 { 
+                    "data": "name",
+                    "render": function (data, type, full) {
+                        return data.toUpperCase();
+                    },
+                    className: "text-left"
+                },
+                { 
                     "data": "timestamp",
                     "render": function (data, type, full) {
                         return full.timestamp == null ? "N/A" : moment(full.timestamp).format("D MMMM YYYY HH:mm:ss");
@@ -193,11 +263,7 @@ $(document).ready(function()
                 },
                 {
                     data: "id",
-                    "render": function (data, type, full) {
-                        // if (typeof data == 'undefined')
-                        //     return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
-                        // else return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>';
-                        
+                    "render": function (data, type, full) {                        
                         let x = typeof data == 'undefined' ? -1 : data;
                         return '<i class="glyphicon glyphicon-edit" aria-hidden="true"></i>&emsp;<i id='+ x +' class="glyphicon glyphicon-trash" aria-hidden="true"></i>';
                     },
@@ -205,17 +271,19 @@ $(document).ready(function()
                 }
             ],
             "columnDefs": [
-                { "orderable": false, "targets": [1, 2] }
+                { "orderable": false, "targets": [2, 3] }
             ],
             "rowCallback": function( row, data, index ) 
             {
                 if( typeof data.id == "undefined" )
-                    $(row).css("background-color", "rgba(255, 32, 0, 0.5)" );
+                    $(row).css("background-color", "rgba(0, 255, 89, 0.5)" );
+                else if ( typeof data.isEdited !== "undefined" ) 
+                    $(row).css("background-color", "rgba(255, 255, 51, 0.5)" );
             },
             dom: 'Bfrtip',
             "buttons": [
                 {
-                    className: 'btn-sm btn-danger save',
+                    className: 'btn btn-danger save',
                     text: 'Save Narratives',
                     action: function ( e, dt, node, config ) 
                     {
@@ -226,7 +294,7 @@ $(document).ready(function()
                 }
             ],
             "processing": true,
-            "order" : [[0, "desc"]],
+            "order" : [[1, "desc"]],
             "filter": true,
             "info": false,
             "paginate": true        
@@ -409,8 +477,7 @@ $(document).ready(function()
     });
 
     $(".okay, #discard").click(function (argument) {
-        let event_id = $("#event_id").val();
-        getNarratives(event_id);
+        getNarratives(event_ids);
         hasEdit = false;
     });
 
