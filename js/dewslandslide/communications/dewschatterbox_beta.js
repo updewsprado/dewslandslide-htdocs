@@ -1044,6 +1044,7 @@ $(document).ready(function() {
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
+			$('#chatterbox-loading').modal('hide');
 			console.log("Connection established!");
 			enableCommands();
 
