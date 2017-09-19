@@ -12,14 +12,13 @@ $(document).ready(function(e){
 	initGintagsTable();
 
     $('#btn-confirm').on('click',function(){
-
 		if ($('#gintag-ipt').val().charAt(0) != "#") {
 			$('#gintag-ipt').val("#"+$('#gintag-ipt').val());
 		}
 
     	if ($('#btn-confirm').text() == "UPDATE") {
-    		if ($('#gintag-ipt').val().trim() != "" || $('#gintag-description-ipt').val().trim() != "" ||
-	    		$('#narrative-ipt').val().trim() != "" || $('#tag-id').val().trim() != "") {
+    		if ($('#gintag-ipt').val().trim() != "" && $('#gintag-description-ipt').val().trim() != "" &&
+	    		$('#narrative-ipt').val().trim() != "" && $('#tag-id').val().trim() != "") {
 
     			var data = {
 	    			'tag_id': $('#tag-id').val().trim(),
@@ -63,7 +62,7 @@ $(document).ready(function(e){
 	    		});
     		}
     	} else {
-	    	if ($('#gintag-ipt').val().trim() != "" || $('#gintag-description-ipt').val().trim() != "" ||
+	    	if ($('#gintag-ipt').val().trim() != "" && $('#gintag-description-ipt').val().trim() != "" &&
 	    		$('#narrative-ipt').val().trim() != "") {
 
 	    		var data = {
@@ -113,7 +112,34 @@ $(document).ready(function(e){
     	var table = $('#gintags-datatable').DataTable();
 		var data = table.row($(this).closest('tr')).data();
 		temp = data;
-		$(this).confirmation('show');
+		var delete_data = {
+			'id': data.id
+		}
+
+		$.post( "../gintags_manager/deleteGintagNarrative/", {gintags: delete_data})
+			.done(function(response) {
+				if (response == "true") {
+		    		$.get('../gintags_manager/getGintagTable', function( data ) {
+						initTableContent = JSON.parse(data);
+					});
+
+					$.notify("Tag successfully removed.", {
+		    			position: "top center",
+		    			className: "success"
+
+		    		});
+
+					clearFields();
+
+		    		reloadGintagsTable();
+				} else {
+					$.notify("Error occured, please contact SWAT John.", {
+		    			position: "top center",
+		    			className: "error"
+		    		});
+				}
+		});
+
     });
 
     $('#gintags-datatable tbody').on('click','.update',function(){
@@ -234,6 +260,6 @@ function clearFields() {
 	$('#tag-id').val();
 	$('#btn-confirm').text('Confirm');
 	$('#btn-reset').text('Reset');
-	$("#btn-confirm").attr('class', 'btn btn-info');
+	$("#btn-confirm").attr('class', 'btn btn-primary');
 	$("#btn-reset").attr('class', 'btn btn-warning');
 }
