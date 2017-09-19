@@ -25,7 +25,8 @@ $(document).ready(function(e){
 	    			'tag_id': $('#tag-id').val().trim(),
 	    			'tag': $('#gintag-ipt').val().trim(),
 	    			'tag_description': $('#gintag-description-ipt').val().trim(),
-	    			'narrative_input': $('#narrative-ipt').val().trim()
+	    			'narrative_input': $('#narrative-ipt').val().trim(),
+	    			'user': first_name
 	    		}
 
 	    		$.post( "../gintags_manager/updateGintagNarrative/", {gintags: data})
@@ -68,7 +69,8 @@ $(document).ready(function(e){
 	    		var data = {
 		    		'tag': $('#gintag-ipt').val().trim(),
 		    		'tag_description': $('#gintag-description-ipt').val().trim(),
-		    		'narrative_input': $('#narrative-ipt').val().trim()
+		    		'narrative_input': $('#narrative-ipt').val().trim(),
+		    		'user': first_name
 		    	}
 
 				$.post( "../gintags_manager/insertGintagNarratives/", {gintags: data})
@@ -108,10 +110,10 @@ $(document).ready(function(e){
 	});  
 
     $('#gintags-datatable tbody').on('click','tr:has(td) .delete',function(){
-    	var table = $('#template_table').DataTable();
+    	var table = $('#gintags-datatable').DataTable();
 		var data = table.row($(this).closest('tr')).data();
-		tableId = data.id;
-		console.log(data);
+		temp = data;
+		$(this).confirmation('show');
     });
 
     $('#gintags-datatable tbody').on('click','.update',function(){
