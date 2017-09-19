@@ -1591,7 +1591,6 @@ function displayContactNamesForThread (source="normal") {
 		}
 	}
 	$("#convo-header .panel-heading").text(tempText);
-	$("#convo-header .panel-body").text(contactInfo[0].numbers);
 	$("#contact-indicator").val(tempText);
 	document.title = tempText;
 }
@@ -2393,6 +2392,7 @@ function loadGroupsCommunity(){
 		'offices': tagOffices,
 		'sitenames': tagSitenames
 	};
+
 	displayGroupTagsForThread();
 	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
