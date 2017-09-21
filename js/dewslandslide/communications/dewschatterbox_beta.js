@@ -2224,10 +2224,11 @@ function startChat(source="normal") {
 
 	user = "You";
 
-	contactname = $('.dropdown-input').val();
-	contactnum = contactname.split(';');
-
 	if (source == "normal") {
+
+		contactname = $('.dropdown-input').val();
+		contactnum = contactname.split(';');
+
 		for (var counter = 0; counter < contactnum.length; counter++) {
 			if (contactnum[counter].trim() != "") {
 				var raw = trimmedContactNum(contactnum[counter]);
@@ -2246,7 +2247,7 @@ function startChat(source="normal") {
 	} else if (source == "quickInbox") {
 		contactname = qiFullContact;
 		contactnum = contactname;
-		contactnumTrimmed = [trimmedContactNum(contactnum)];
+		contactnumTrimmed = trimmedContactNum(contactnum);
 
 		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 	}
@@ -2257,7 +2258,7 @@ function startChat(source="normal") {
 		alert("Error: Invalid Contact Number here");
 		return;
 	}
-	console.log(contactInfo);
+
 	$('#user-container').addClass('hidden');
 	$('#main-container').removeClass('hidden');
 
