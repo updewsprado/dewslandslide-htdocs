@@ -22,7 +22,7 @@ function loadBulletin(id1, id2) {
         onEdit = false;
         $("#bulletin_modal").html(data);
         loc = $("#location").text().replace(/\s+/g,' ').trim();
-        alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,2);
+        alert = $("#alert_level_released").text().replace(/\s+/g,' ').trim().slice(0,7);
         datetime = $("#datetime").text();
         // let text = "<b>DEWS-L Bulletin for " + datetime + "<br/>" + alert + " - " + loc + "</b>";
         text = "DEWS-L Bulletin for " + datetime + "\n" + alert + " - " + loc;
