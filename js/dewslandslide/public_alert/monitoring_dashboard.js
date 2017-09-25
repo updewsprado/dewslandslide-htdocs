@@ -374,7 +374,7 @@ $(document).ready( function() {
 	        }
 
 	        if(entry.status == 'extended') {
-	        	$.post("../issues_and_reminders/archiveIssuesFromLoweredEvents", {event_id: entry.current_event_id})
+	        	$.post("../issues_and_reminders/archiveIssuesFromLoweredEvents", {event_id: temp.current_event_id})
 	        	.done(function (has_updated) {
                     if(has_updated == 'true') { doSend("getNormalAndLockedIssues"); }
                 });

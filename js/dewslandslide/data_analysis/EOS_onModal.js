@@ -12,7 +12,7 @@ $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').add(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
@@ -1320,18 +1320,23 @@ function displacementPosition(data_result,data_result_v,site) {
 	}     
 
 }
-function velocityPosition(data_result,id,date,site,ndata) {
+function velocityPosition(data_result,id,date_template,site,ndata) {
 	if(data_result != "error"){
 		var data = data_result;
 		var allTime = [] , dataset= [] , sliceData =[];
 		var fseries = [], fseries2 = [] ;
 		var l2 =[] , l3=[] , alldataNotSlice=[];
+		var date = date_template.slice(date_template.length-7,date_template.length);
 
 		if(data[0].L2.length != 0){
 			var catNum=[];
 			for(var a = 0; a < data[0].L2.length; a++){
 				allTime.push(data[0].L2[a].ts)
-				l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L2[a].ts ){
+						l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+					}
+				}
 			}
 			for(var a = ndata.length; a > 0 ; a--){
 				catNum.push(a)
@@ -1344,7 +1349,11 @@ function velocityPosition(data_result,id,date,site,ndata) {
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L3[a].ts ){
+						l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+					}
+				}
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -1408,6 +1417,8 @@ function velocityPosition(data_result,id,date,site,ndata) {
 			sorted_fseries.push(doSortDates(fseries[counter].data));
 
 		}
+
+
 
 		chartProcessbase("velocity1",fseries,"Velocity Alerts,downslope",site,catNum)
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts,across slope",site,catNum)   
