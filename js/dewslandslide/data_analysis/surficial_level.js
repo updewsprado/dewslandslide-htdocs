@@ -609,7 +609,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 						}
 						if(c_data != "" && m_data != ""){
 							$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-								console.log(result_edited)
+								// console.log(result_edited)
 								$("#graphS1").empty()
 								$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
 								crackIdProcess(site,from,to,"done")
@@ -629,7 +629,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 					$("#graphS1").empty()
 					var dataSubmit = {id:id_data}
 					$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-						console.log(result_edited)
+						// console.log(result_edited)
 						$("#groundModal").modal("hide")
 						$("#graphS1").empty()
 						$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
@@ -682,7 +682,6 @@ function AddMeasProcess(data,category,crack,meas){
 	$('#new_data_save').empty()
 	$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
 		'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
-	console.log(dataSubmit)
 	$.post("/surficial_page/AddGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result){
 		if( category != "new"){
 			$("#groundModal").modal("hide")
@@ -694,7 +693,6 @@ function AddMeasProcess(data,category,crack,meas){
 		
 	}).fail(
 	function(jqXHR, textStatus, errorThrown) {
-		console.log(textStatus)
 		if(textStatus == "error"){
 			$("#note_stat").html("Error insert")
 			$("#saveMsg").modal("show");
