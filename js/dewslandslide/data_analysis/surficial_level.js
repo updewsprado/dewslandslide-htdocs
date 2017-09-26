@@ -556,16 +556,17 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 		$(".dataInput").prop('disabled', true);
 		var cell_crack_name = $(this).parent().find('td')
 		var crack_id_cell = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
-		var table_cell_value = table.cell( this ).data().split('"')
-		var cell_data = table_cell_value[1].split('/')
-		var time_stamp = cell_data[4].split('_')
-		$("#crack_id_data").val(crack_id_cell);
-		$("#timestamp_data").val(time_stamp[0])
-		$("#meas").val(cell_data[2])
+		if(crack_id_cell != ""){
+			var table_cell_value = table.cell( this ).data().split('"')
+			var cell_data = table_cell_value[1].split('/')
+			var time_stamp = cell_data[4].split('_')
+			$("#crack_id_data").val(crack_id_cell);
+			$("#timestamp_data").val(time_stamp[0])
+			$("#meas").val(cell_data[2])
 
-		var m_data = cell_data[2];
-		var t_data = time_stamp[0];
-		if(Number.isInteger(m_data) != false){
+			var m_data = cell_data[2];
+			var t_data = time_stamp[0];
+
 			$("#groundModal").modal("show")
 			if(m_data != "nd"){
 				$("#buttons_div").empty();
