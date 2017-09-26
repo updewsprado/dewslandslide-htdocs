@@ -868,9 +868,9 @@ function removeSpecificArray(array, element) {
 function chartProcessBattery(id,data_series,name,color){
 	var site = ($('#sitegeneral').val()).toLowerCase();
 	var node = $('#node').val();
-	$.ajax({ 
-		dataType: "json",
-		url: "/api/AccelBatteryThreshold/"+site+"/"+node,success: function(result) {
+	// $.ajax({ 
+	// 	dataType: "json",
+	// 	url: "/api/AccelBatteryThreshold/"+site+"/"+node,success: function(result) {
 			Highcharts.setOptions({
 				global: {
 					timezoneOffset: -8 * 60
@@ -931,34 +931,34 @@ function chartProcessBattery(id,data_series,name,color){
 						}
 					}
 				},
-				yAxis:{
-					plotBands: [{
-						value:  parseFloat(result[0].vmin),
-						color: '#c2f9f3',
-						dashStyle: 'dash',
-						width: 2,
-						zIndex: 0,
-						label: {
-							text: "Min Threshold "+parseFloat(result[0].vmin),
-							style: {
-								color: '#ffffff'
-							}
-						}
-					},{
-						value: parseFloat(result[0].vmax),
-						color: '#c2f9f3',
-						dashStyle: 'dash',
-						width: 2,
-						zIndex: 0,
-						label: {
-							text: "Max Threshold "+ parseFloat(result[0].vmax),
-							style: {
-								color: '#ffffff'
-							}
-						}
-					}]
+				// yAxis:{
+				// 	plotBands: [{
+				// 		value:  parseFloat(result[0].vmin),
+				// 		color: '#c2f9f3',
+				// 		dashStyle: 'dash',
+				// 		width: 2,
+				// 		zIndex: 0,
+				// 		label: {
+				// 			text: "Min Threshold "+parseFloat(result[0].vmin),
+				// 			style: {
+				// 				color: '#ffffff'
+				// 			}
+				// 		}
+				// 	},{
+				// 		value: parseFloat(result[0].vmax),
+				// 		color: '#c2f9f3',
+				// 		dashStyle: 'dash',
+				// 		width: 2,
+				// 		zIndex: 0,
+				// 		label: {
+				// 			text: "Max Threshold "+ parseFloat(result[0].vmax),
+				// 			style: {
+				// 				color: '#ffffff'
+				// 			}
+				// 		}
+				// 	}]
 
-				},
+				// },
 				tooltip: {
 					shared: true,
 					crosshairs: true
@@ -1020,8 +1020,8 @@ function chartProcessBattery(id,data_series,name,color){
 				syncronizeCrossHairs(chart,id);
 
 			});
-		}
-	});
+		// }
+	// });
 
 }
 
