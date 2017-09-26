@@ -870,12 +870,14 @@ $(document).ready(function()
                 if( temp.public_alert_level == "A0")
                 {
                     temp.current_event_id = current_event.event_id;
-                    let base = moment(temp.timestamp_entry).add(30, "minutes");
-                    let extended_start = moment(current_event.validity).add(1, "day").hour(12);
-                    let extended_end = moment(extended_start).add(2, "day");
+                    temp.status = "extended";
 
-                    if( moment(base).isAfter(extended_start) && moment(base).isBefore(extended_end ) ) temp.status = "extended";
-                    else if ( moment(base).isAfter(extended_start) && moment(base).isSameOrAfter(extended_end ) ) temp.status = "finished";
+                    /*** Previous code for extended to finished ***/
+                    // let base = moment(temp.timestamp_entry).add(30, "minutes");
+                    // let extended_start = moment(current_event.validity).add(1, "day").hour(12);
+                    // let extended_end = moment(extended_start).add(2, "day");
+                    // if( moment(base).isAfter(extended_start) && moment(base).isBefore(extended_end ) ) temp.status = "extended";
+                    // else if ( moment(base).isAfter(extended_start) && moment(base).isSameOrAfter(extended_end ) ) temp.status = "finished";
                 }
                 // Alert heightened so status is "new" and change current event to "finished"
                 else
