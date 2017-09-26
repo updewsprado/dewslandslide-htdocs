@@ -105,10 +105,46 @@ $(document).ready( function() {
 		$("#site").val(sitesList[row.site]);
 		$("#comments").val("");
 
+		// Search candidate trigger if existing on latest and overdue
 		merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
 		let previous = null;
 
+		if(index > -1)
+		{
+			previous = merged_arr[index];
+			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
+			entry.previous_validity = previous.validity;
+
+			if( row.internal_alert == "A0" )
+			{
+				if( moment(previous.validity).isAfter( moment(row.timestamp).add(30, 'minutes') ) )
+					entry.status = "invalid";
+				else entry.status = "extended";
+			}
+			else entry.status = "on-going";
+			entry.event_id = previous.event_id;
+		}
+		else
+		{	
+
+			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
+			entry.trigger_list = showModalTriggers(row, null);
+
+			if( row.status == "extended" ) 
+			{
+				entry.status = "extended";
+				entry.event_id = ongoing.extended[index_ex].event_id;
+			} 
+			else {
+				// Search if candidate trigger exists on extended
+				if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
+				entry.status = "new";
+				$("#release").prop("disabled", false);
+			}
+		}
+
+		// Insert X on internal alert if Rx is not yet automatic on JSON
 		entry.rain_alert = row.rain_alert;
 		if( entry.rain_alert == "rx" )
 		{
@@ -120,40 +156,14 @@ $(document).ready( function() {
 			}
 		}
 
-		if(index > -1)
-		{
-			previous = merged_arr[index];
-			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
-			entry.previous_validity = previous.validity;
+		// Check data timestamp for regular release (x:30)
+		// Disable send button if not else enable button
+		let hour = moment(row.timestamp).hour();
+		let minute = moment(row.timestamp).minutes();
+		if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
+		else $("#release").prop("disabled", true);
 
-			// Put internal alert checker here if there's invalid trigger
-			if( row.internal_alert == "A0" )
-			{
-				if( moment(previous.validity).isAfter( moment(row.timestamp).add(30, 'minutes') ) )
-					entry.status = "invalid";
-				else entry.status = "extended";
-			}
-			else entry.status = "on-going";
-			entry.event_id = previous.event_id;
-
-			let hour = moment(row.timestamp).hour();
-			let minute = moment(row.timestamp).minutes();
-			if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
-			else $("#release").prop("disabled", true);
-		}
-		else
-		{
-			//console.log("NEW EVENT");
-			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
-			if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
-
-			entry.trigger_list = showModalTriggers(row, null);
-			entry.status = "new";
-
-			$("#release").prop("disabled", false);
-		}
-
-		tagInvalidTriggers( row );
+		showInvalidTriggersOnModal( row );
 
 		// Automatically check trigger_switch if invalid area is empty
 		$(".trigger_switch").each( function (count, item) {
@@ -506,7 +516,8 @@ function buildDashboardTables( data )
 	        	{ 
 	            	"data": "release_time",
 	            	"render": function (data, type, full) {
-	            		return full.release_time;
+	            		if( full.internal_alert_level == "A0" ) return "FINISHED";
+	            		else return full.release_time;
 	            	},
 	            	"name": "release_time"
 	        	},
@@ -635,7 +646,7 @@ function buildDashboardTables( data )
 	            	"data": "latest_trigger_timestamp",
 	            	"render": function (data, type, full) {
 	 					if( full.latest_trigger_timestamp == "end" ) return "No new triggers";
-	 					else if( full.latest_trigger_timestamp == "manual" ) return "---";
+	 					else if( data == "manual" || data == "extended" ) return "---";
 	            		else return moment(full.latest_trigger_timestamp).format("DD MMMM YYYY HH:mm");
 	            	},
 	            	"name": "latest_trigger_timestamp"
@@ -644,7 +655,7 @@ function buildDashboardTables( data )
 	            	"data": "trigger",
 	            	"render": function (data, type, full) {
 	            		if( full.trigger == "No new triggers" ) return full.trigger;
-	            		else if( full.trigger == "manual" ) return "---";
+	            		else if( full.trigger == "manual" || data == "extended" ) return "---";
 	            		return full.trigger.toUpperCase();
 	            	},
 	            	"name": "trigger",
@@ -654,6 +665,7 @@ function buildDashboardTables( data )
 	            	"render": function (data, type, full) {
 	            		if ( full.validity == "end" ) return "END OF VALIDITY"
 	            		else if ( full.validity == "manual" ) return "---";
+	            		else if ( data == "extended" ) return "EXTENDED RELEASE";
 	            		else return moment(full.validity).format("DD MMMM YYYY HH:mm");
 	            	},
 	            	"name": "validity"
@@ -775,7 +787,7 @@ function initialize_map(markers)
  * 
 ******************************************/
 
-function tagInvalidTriggers (row) {
+function showInvalidTriggersOnModal (row) {
 
 	$(".invalid_area").empty();
 	let invalid_list = row.invalid_list;
@@ -799,15 +811,21 @@ function tagInvalidTriggers (row) {
 
 function showModalTriggers(row, latest) 
 {
-	let list = row.retriggerTS;
-	let arr = [];
-	list.forEach(function (x) {
-		if( moment(x.timestamp).isAfter(latest) || latest == null )
-		{
-			arr.push(x);
-		}
-	});
+	let retrigger_list = typeof row.retriggerTS !== "undefined" ? row.retriggerTS : null;
+	let qualified_retriggers = [];
 
+	// Get triggers ONLY if they are not yet saved
+	// candidate trigger > latest trigger
+	if( retrigger_list != null ) {
+		retrigger_list.forEach(function (x) {
+			if( moment(x.timestamp).isAfter(latest) || latest == null )
+			{
+				qualified_retriggers.push(x);
+			}
+		});
+	}
+
+	// Disable/Hide all trigger fields on modal form
 	["r1","e1","l2","l3","L2","L3","d1","e1"].forEach(function (x) {
 		let y = lookup[x];
 		$("#" + y[0] + "_area").hide();
@@ -818,27 +836,30 @@ function showModalTriggers(row, latest)
 		else if( x == "e1" ) $("#magnitude, #latitude, #longitude").val("").prop("disabled", true);
 	});
 
-	let retriggers = [];
-	arr.forEach(function (x) {
-		let y = lookup[x.retrigger];
-		$("#" + y[0] + "_area").show();
-		$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
-		let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["info"] : row.tech_info[y[0] + "_tech"];
-		$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
+	let retrigger_letters_arr = [];
 
-		$(".trigger_switch[value=" + y[0] + "]").prop("disabled", false);
+	if( retrigger_list != null ) {
+		qualified_retriggers.forEach(function (x) {
+			let y = lookup[x.retrigger];
+			$("#" + y[0] + "_area").show();
+			$("#trigger_" + y[1]).val(x.timestamp).prop({readonly:true, disabled:false});
+			let info = y[2] == "E" ? row.tech_info[y[0] + "_tech"]["info"] : row.tech_info[y[0] + "_tech"];
+			$("#trigger_" + y[1] + "_info").val(info).prop("disabled", false);
 
-		if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
-		else if( y[2] == "E" ) {
-			let x = row.tech_info[y[1] + "_tech"];
-			$("#magnitude").val(x.magnitude).prop("disabled", false);
-			$("#longitude").val(x.longitude).prop("disabled", false);
-			$("#latitude").val(x.latitude).prop("disabled", false);
-		}
-		retriggers.push(y[2]);
-	});
+			$(".trigger_switch[value=" + y[0] + "]").prop("disabled", false);
 
-	return retriggers;
+			if( y[2] == "D" ) $(".od_group, #reason").prop("disabled", false);
+			else if( y[2] == "E" ) {
+				let x = row.tech_info[y[1] + "_tech"];
+				$("#magnitude").val(x.magnitude).prop("disabled", false);
+				$("#longitude").val(x.longitude).prop("disabled", false);
+				$("#latitude").val(x.latitude).prop("disabled", false);
+			}
+			retrigger_letters_arr.push(y[2]);
+		});
+	}
+
+	return retrigger_letters_arr;
 }
 
 function toggleTriggerOnRelease(trigger_type, alert, merged_index) {
