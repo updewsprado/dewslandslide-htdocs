@@ -246,7 +246,7 @@ function checkCandidateTriggers(cache, ongoing) {
 			//console.log(a);
 			
 			// Check if alert for site is A0 and not yet released
-			if( !moment(a.data_timestamp).isSame( x.timestamp ) )
+			if( !moment(a.data_timestamp).isSame( x.timestamp ) && a.internal_alert_level != "A0" )
 			{
 				x.status = "valid";
 				x.latest_trigger_timestamp = "end";
