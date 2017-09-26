@@ -31,6 +31,9 @@ $(document).ready(function(e) {
 			$("#graphS4").empty()
 			$("#alert_div").empty()
 			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+			$('#new_data_save').empty()
+			$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
+				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
 			$('.crack_id_form').show()
 			$("#popover_note").popover('show')
 			$("#crackgeneral").empty();
@@ -514,6 +517,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 			return this.id;
 		}).get();
 		var data =[]
+		var all_meas_from_val = []
 		for (var i = 0; i < allNewData_crack.length; i++) {
 			data.push({
 				timestamp: timestamp,
@@ -524,20 +528,27 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 				meas: $('#'+allNewData_meas[i]).val(),
 				weather: weather
 			})
+			all_meas_from_val.push($('#'+allNewData_meas[i]).val())
+			all_meas_from_val.push($('#'+allNewData_crack[i]).val())
 		}
-
-		$("#graphS1").empty()
-		$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
-		var timestamp = $('#newData_timestamp').val(moment().format('YYYY-MM-DD HH:00:00'));
-		var meas_type =$('#newData_type').val("");
-		var weather = $('#newData_weather').val(" ");
-		$('#insert_meas').empty();
-		$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
-			'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
-			'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
-			'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
-			'</span> </button></div></div></div>');
-		AddMeasProcess(data,'new')
+		if(meas_type != "" && weather != "" && all_meas_from_val.includes("") == false){
+			$("#graphS1").empty()
+			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+			var timestamp = $('#newData_timestamp').val(moment().format('YYYY-MM-DD HH:00:00'));
+			var meas_type =$('#newData_type').val("");
+			var weather = $('#newData_weather').val(" ");
+			$('#insert_meas').empty();
+			$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
+				'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
+				'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
+				'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
+				'</span> </button></div></div></div>');
+			AddMeasProcess(data,'new')
+		}else{
+			$("#note_stat").html("Error insert")
+			$("#saveMsg").modal("show");
+		}
+		
 		
 	});
 
@@ -550,7 +561,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 		var time_stamp = cell_data[4].split('_')
 		$("#crack_id_data").val(crack_id_cell);
 		$("#timestamp_data").val(time_stamp[0])
-		$("#meas").val(cell_data[1])
+		$("#meas").val(cell_data[2])
 
 		$("#groundModal").modal("show")
 		var m_data = cell_data[2];
@@ -596,6 +607,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 						meas:m_data}
 
 						$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+							console.log(result_edited)
 							$("#graphS1").empty()
 							$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
 							crackIdProcess(site,from,to,"done")
@@ -610,6 +622,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 				$("#graphS1").empty()
 				var dataSubmit = {id:id_data}
 				$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+					console.log(result_edited)
 					$("#groundModal").modal("hide")
 					$("#graphS1").empty()
 					$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
@@ -659,10 +672,10 @@ function AddMeasProcess(data,category,crack,meas){
 		if( category != "new"){
 			$("#groundModal").modal("hide")
 		}
-			$(".panel_alert").hide();
-			$("#note_stat").html("SAVE")
-			$("#saveMsg").modal("show");
-			crackIdProcess(site,from,to,"done")
+		$(".panel_alert").hide();
+		$("#note_stat").html("SAVE")
+		$("#saveMsg").modal("show");
+		crackIdProcess(site,from,to,"done")
 		
 	}).fail(
 	function(jqXHR, textStatus, errorThrown) {
