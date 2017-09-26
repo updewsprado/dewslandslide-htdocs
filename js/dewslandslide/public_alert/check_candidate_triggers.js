@@ -204,7 +204,7 @@ function checkCandidateTriggers(cache, ongoing) {
 			{
 				// Tag the site on merged_arr as cleared
 				// else if not, it is candidate for lowering already
-				merged_arr[i].checked = true;
+				merged_arr[i].forRelease = true;
 
 				if( moment(merged_arr[i].data_timestamp).isSame(alert.timestamp) )
 				{
@@ -215,7 +215,6 @@ function checkCandidateTriggers(cache, ongoing) {
 				{
 
 					// alert.status = "valid";
-
 					alert.latest_trigger_timestamp = "end";
 					alert.trigger = "No new triggers";
 				}
@@ -235,20 +234,49 @@ function checkCandidateTriggers(cache, ongoing) {
 
 	});
 
+	let no_alerts_map = no_alerts.map( x => x.site );
+
 	// Tag a site as candidate for lowering if it has alert
 	// on site but already A0 on json
 	merged_arr.forEach(function (a) {
-		if ( typeof a.checked == "undefined" )
+		if ( typeof a.forRelease == "undefined" )
 		{
-			let index = no_alerts.map( x => x.site ).indexOf(a.name);
+			let index = no_alerts_map.indexOf(a.name);
 			let x = no_alerts[index];
 			//console.log(a);
+			
+			// Check if alert for site is A0 and not yet released
+			if( !moment(a.data_timestamp).isSame( x.timestamp ) )
+			{
+				x.status = "valid";
+				x.latest_trigger_timestamp = "end";
+				x.trigger = "No new triggers";
+				x.validity = "end";
+				final.push(x);
+			}
+		}
+	});
 
-			x.status = "valid";
-			x.latest_trigger_timestamp = "end";
-			x.trigger = "No new triggers";
-			x.validity = "end";
-			final.push(x);
+	// Prepare releases for extended sites if it is 11:30 for data timestamp
+	let extended_sites = ongoing.extended;
+	extended_sites.forEach( function (site) 
+	{
+		let index = no_alerts_map.indexOf(site.name);
+		if( index > -1 ) 
+		{
+			let x = no_alerts[index];
+
+			// Check if alert for site is not yet released and not Day 0
+			if( !moment(site.data_timestamp).isSame( x.timestamp ) && site.day > 0 ) {
+				// Check if JSON entry data timestamp is 11:30 for release
+				if( moment(x.timestamp).hour() == "11" && moment(x.timestamp).minute() == "30"  ) {
+					x.status = "extended";
+					x.latest_trigger_timestamp = "extended";
+					x.trigger = "extended";
+					x.validity = "extended";
+					final.push(x);
+				}
+			}
 		}
 	});
 
