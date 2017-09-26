@@ -31,6 +31,9 @@ $(document).ready(function(e) {
 			$("#graphS4").empty()
 			$("#alert_div").empty()
 			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+			$('#new_data_save').empty()
+			$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
+				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
 			$('.crack_id_form').show()
 			$("#popover_note").popover('show')
 			$("#crackgeneral").empty();
@@ -422,7 +425,7 @@ $(document).ready(function(e) {
 						}
 					}
 
-					gndmeasTableStats(dataSubmit,totalSlice,columns_date)
+					// gndmeasTableStats(dataSubmit,totalSlice,columns_date)
 
 
 					organiz_divId.reverse()
@@ -452,7 +455,7 @@ $(document).ready(function(e) {
 
 					var color_alert_list=["#99ff99","#ffb366","#ff6666"]
 					var label_color = removeDuplicates(color_label);
-
+					gndmeasTableStats(dataSubmit,totalSlice,columns_date)
 
 					for(var n = 0 ; n < label_color.length ; n++){
 						if(label_color[n] == "#99ff99"){
@@ -514,6 +517,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 			return this.id;
 		}).get();
 		var data =[]
+		var all_meas_from_val = []
 		for (var i = 0; i < allNewData_crack.length; i++) {
 			data.push({
 				timestamp: timestamp,
@@ -524,20 +528,27 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 				meas: $('#'+allNewData_meas[i]).val(),
 				weather: weather
 			})
+			all_meas_from_val.push($('#'+allNewData_meas[i]).val())
+			all_meas_from_val.push($('#'+allNewData_crack[i]).val())
 		}
-
-		$("#graphS1").empty()
-		$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
-		var timestamp = $('#newData_timestamp').val(moment().format('YYYY-MM-DD HH:00:00'));
-		var meas_type =$('#newData_type').val("");
-		var weather = $('#newData_weather').val(" ");
-		$('#insert_meas').empty();
-		$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
-			'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
-			'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
-			'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
-			'</span> </button></div></div></div>');
-		AddMeasProcess(data,'new')
+		if(meas_type != "" && weather != "" && all_meas_from_val.includes("") == false){
+			$("#graphS1").empty()
+			$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+			var timestamp = $('#newData_timestamp').val(moment().format('YYYY-MM-DD HH:00:00'));
+			var meas_type =$('#newData_type').val("");
+			var weather = $('#newData_weather').val(" ");
+			$('#insert_meas').empty();
+			$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
+				'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
+				'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
+				'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
+				'</span> </button></div></div></div>');
+			AddMeasProcess(data,'new')
+		}else{
+			$("#note_stat").html("Error insert")
+			$("#saveMsg").modal("show");
+		}
+		
 		
 	});
 
@@ -545,84 +556,101 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 		$(".dataInput").prop('disabled', true);
 		var cell_crack_name = $(this).parent().find('td')
 		var crack_id_cell = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
-		var table_cell_value = table.cell( this ).data().split('"')
-		var cell_data = table_cell_value[1].split('/')
-		var time_stamp = cell_data[4].split('_')
-		$("#crack_id_data").val(crack_id_cell);
-		$("#timestamp_data").val(time_stamp[0])
-		$("#meas").val(cell_data[1])
+		if(crack_id_cell != ""){
+			var table_cell_value = table.cell( this ).data().split('"')
+			var cell_data = table_cell_value[1].split('/')
+			var time_stamp = cell_data[4].split('_')
+			$("#crack_id_data").val(crack_id_cell);
+			$("#timestamp_data").val(time_stamp[0])
+			$("#meas").val(cell_data[2])
 
-		$("#groundModal").modal("show")
-		var m_data = cell_data[2];
-		var t_data = time_stamp[0];
-		
-		if(m_data != "nd"){
-			$("#buttons_div").empty();
-			$("#buttons_div").append('<button id="edit_meas"  type="button"  class="btn btn-success btn-sm">'+
-				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> EDIT</button>'+
-				' <button id="delete_meas"  type="button"  class="btn btn-danger btn-sm">'+
-				'<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> DELETE</button>')
-			var c_data = crack_id_cell;
-		}else{
-			$("#buttons_div").empty();
-			$("#buttons_div").append('<button id="add_meas"  type="button"  class="btn btn-success ">'+
-				'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> ADD </button>')
-			var c_data = "none";
-			$(".dataInput").prop('disabled', false);
-			$("#meas").val(' ');
-		}
+			var m_data = cell_data[2];
+			var t_data = time_stamp[0];
 
-		var dataSubmit = {timestamp : t_data , crack_id : c_data , site:site}
-
-		$.post("/surficial_page/getAllGroundMeasID/", {dataSubmit:dataSubmit} ).done(function(data){
-			var result = JSON.parse(data)
-			var id_data = result[0].id;
-
-			$('#edit_meas').click(function(){
-				$(".dataInput").prop('disabled', false);
+			$("#groundModal").modal("show")
+			if(m_data != "nd"){
 				$("#buttons_div").empty();
-				$("#buttons_div").append('<button id="save_meas"  type="button"  class="btn btn-info btn-sm">'+
-					'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button>')
+				$("#buttons_div").append('<button id="edit_meas"  type="button"  class="btn btn-success btn-sm">'+
+					'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> EDIT</button>'+
+					' <button id="delete_meas"  type="button"  class="btn btn-danger btn-sm">'+
+					'<span class="glyphicon glyphicon-remove" aria-hidden="true"></span> DELETE</button>')
+				var c_data = crack_id_cell;
+			}else{
+				$("#buttons_div").empty();
+				$("#buttons_div").append('<button id="add_meas"  type="button"  class="btn btn-success ">'+
+					'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> ADD </button>')
+				var c_data = "none";
+				$(".dataInput").prop('disabled', false);
+				$("#meas").val(' ');
+			}
 
-				$('#save_meas').click(function(){
-					$("#groundModal").modal("hide")
-					var t_data = $("#timestamp_data").val();
-					var c_data = $("#crack_id_data").val();
-					var m_data = $("#meas").val();
-					var dataSubmit = {
-						timestamp : t_data , 
-						crack_id : c_data , 
-						site:site , id:id_data,
-						meas:m_data}
+			var dataSubmit = {timestamp : t_data , crack_id : c_data , site:site}
 
-						$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-							$("#graphS1").empty()
-							$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
-							crackIdProcess(site,from,to,"done")
-							
-						});
+			$.post("/surficial_page/getAllGroundMeasID/", {dataSubmit:dataSubmit} ).done(function(data){
+				var result = JSON.parse(data)
+				var id_data = result[0].id;
+
+				$('#edit_meas').click(function(){
+					$(".dataInput").prop('disabled', false);
+					$("#buttons_div").empty();
+					$("#buttons_div").append('<button id="save_meas"  type="button"  class="btn btn-info btn-sm">'+
+						'<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> SAVE</button>')
+
+					$('#save_meas').click(function(){
+						$("#groundModal").modal("hide")
+						var t_data = $("#timestamp_data").val();
+						var c_data = $("#crack_id_data").val();
+						var m_data = $("#meas").val();
+						var dataSubmit = {
+							timestamp : t_data , 
+							crack_id : c_data , 
+							site:site , id:id_data,
+							meas:m_data
+						}
+						if(c_data != "" && m_data != ""){
+							$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+								// console.log(result_edited)
+								$("#graphS1").empty()
+								$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+								crackIdProcess(site,from,to,"done")
+
+							});
+						}else{
+							$("#note_stat").html("Error insert")
+							$("#saveMsg").modal("show");
+						}
+
 
 					});
 
-			});
+				});
 
-			$('#delete_meas').click(function(){
-				$("#graphS1").empty()
-				var dataSubmit = {id:id_data}
-				$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-					$("#groundModal").modal("hide")
+				$('#delete_meas').click(function(){
 					$("#graphS1").empty()
-					$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
-					crackIdProcess(site,from,to,"done")
-					
+					var dataSubmit = {id:id_data}
+					$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
+						// console.log(result_edited)
+						$("#groundModal").modal("hide")
+						$("#graphS1").empty()
+						$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+						crackIdProcess(site,from,to,"done")
+
+
+					});
+				});
+				$('#add_meas').click(function(){
+					if(result[0] != "" && $("#crack_id_data").val() != "" && $("#meas").val() == ""){
+						AddMeasProcess(result[0],"old",$("#crack_id_data").val(),$("#meas").val())
+					}else{
+						$("#groundModal").modal("hide")
+						$("#note_stat").html("Error insert")
+						$("#saveMsg").modal("show");
+					}
 
 				});
-			});
-			$('#add_meas').click(function(){
-				AddMeasProcess(result[0],"old",$("#crack_id_data").val(),$("#meas").val())
-			});
 
-		});	
+			});	
+		}
 	});	
 }
 
@@ -654,19 +682,17 @@ function AddMeasProcess(data,category,crack,meas){
 	$('#new_data_save').empty()
 	$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
 		'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
-	console.log(dataSubmit)
 	$.post("/surficial_page/AddGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result){
 		if( category != "new"){
 			$("#groundModal").modal("hide")
 		}
-			$(".panel_alert").hide();
-			$("#note_stat").html("SAVE")
-			$("#saveMsg").modal("show");
-			crackIdProcess(site,from,to,"done")
+		$(".panel_alert").hide();
+		$("#note_stat").html("SAVE")
+		$("#saveMsg").modal("show");
+		crackIdProcess(site,from,to,"done")
 		
 	}).fail(
 	function(jqXHR, textStatus, errorThrown) {
-		console.log(textStatus)
 		if(textStatus == "error"){
 			$("#note_stat").html("Error insert")
 			$("#saveMsg").modal("show");
