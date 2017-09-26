@@ -147,13 +147,14 @@ $(document).ready(function(e) {
 			fdate : from,
 			tdate : to
 		}
-
 		$.post("/surficial_page/getDatafromGroundCrackName", {data : dataSubmit} ).done(function(data_result){
 			if(stat == "done"){
+				$("#note_stat").html("Save")
 				$("#saveMsg").modal("show");
 				setTimeout(function(){
 					$("#saveMsg").modal("hide");
 				},1000)
+
 			}
 			var result= JSON.parse(data_result)
 			var crack_name= [];
@@ -302,6 +303,7 @@ $(document).ready(function(e) {
 						no_Data_meas.push("<center><i>nd</i></center>")
 					}
 					organize_ground_data.push(no_Data_meas)
+
 				}
 
 				var slice_num_meas=[]
@@ -328,7 +330,7 @@ $(document).ready(function(e) {
 					differnce.push(allgather_ground_data[aa]+"-"+allgather_ground_data[aa-1]+"="+(allgather_ground_data[aa]-allgather_ground_data[aa-1]))
 					var now = moment(allts_data[aa]);
 					var end = moment(allts_data[aa-1]); 
-					if((d2 == "nd" || d1 == "nd") || (d2 == "nd" && d1 == "nd") ){
+					if((d2 == "nd" || d1 == "nd" ) || (d2 == "nd" && d1 == "nd") ){
 						var roundoff2 = "nd"
 					}else{
 						var duration = moment.duration(now.diff(end));
@@ -499,7 +501,6 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 	var from = dataTableSubmit.fdate;
 	var to = dataTableSubmit.tdate;
 	var table = $('#ground_table').DataTable();
-
 	$('#newData_meas').click(function(){
 		var timestamp = $('#newData_timestamp').val();
 		var meas_type =$('#newData_type').val().toUpperCase();
@@ -532,8 +533,8 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 		var weather = $('#newData_weather').val(" ");
 		$('#insert_meas').empty();
 		$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
-			'name="entry_crack" value="" placeholder="Crack ID"></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
-			'<div class="input-group"><input type="text" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement">'+
+			'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
+			'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
 			'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
 			'</span> </button></div></div></div>');
 		AddMeasProcess(data,'new')
@@ -542,7 +543,6 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 
 	$('#ground_table tbody').on( 'click', 'td', function () {
 		$(".dataInput").prop('disabled', true);
-		
 		var cell_crack_name = $(this).parent().find('td')
 		var crack_id_cell = cell_crack_name[0].innerHTML.split(">")[2].split(" ")[0]
 		var table_cell_value = table.cell( this ).data().split('"')
@@ -630,7 +630,6 @@ function AddMeasProcess(data,category,crack,meas){
 	var site = $("#sitegeneral").val();
 	var from = $('#reportrange span').html().slice(0,10);
 	var to = $('#reportrange span').html().slice(13,23);
-	$(".panel_alert").hide();
 	if(category != "new"){
 		var dataSubmit = [{
 			timestamp:data.timestamp,
@@ -644,18 +643,36 @@ function AddMeasProcess(data,category,crack,meas){
 	}else{
 		var dataSubmit = data
 	}
-	
+	$("#graphS1").empty()
+	$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
+	$('#insert_meas').empty();
+	$('#insert_meas').append(' <div class="col-sm-6"><div class="form-group"><input type="text" class="form-control entry_crack" id="entry_crack1" '+
+		'name="entry_crack" value="" placeholder="Crack ID" required></div></div><div class="col-sm-6 nopadding"><div class="form-group">'+
+		'<div class="input-group"><input type="number" class="form-control entry_meas" id="entry_meas1" name="entry_meas" value="" placeholder="Measurement" required>'+
+		'<div class="input-group-btn"><button class="btn btn-success" type="button"  onclick="insert_meas();"> <span class="glyphicon glyphicon-plus" aria-hidden="true">'+
+		'</span> </button></div></div></div>');
+	$('#new_data_save').empty()
+	$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
+		'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
+	console.log(dataSubmit)
 	$.post("/surficial_page/AddGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result){
 		if( category != "new"){
 			$("#groundModal").modal("hide")
 		}
-		$("#graphS1").empty()
-		$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
-		$('#new_data_save').empty()
-		$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
-			'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
-		crackIdProcess(site,from,to,"done")
+			$(".panel_alert").hide();
+			$("#note_stat").html("SAVE")
+			$("#saveMsg").modal("show");
+			crackIdProcess(site,from,to,"done")
 		
+	}).fail(
+	function(jqXHR, textStatus, errorThrown) {
+		console.log(textStatus)
+		if(textStatus == "error"){
+			$("#note_stat").html("Error insert")
+			$("#saveMsg").modal("show");
+			crackIdProcess(site,from,to,"error")
+		}
+
 	});
 }
 
@@ -1359,9 +1376,9 @@ function insert_meas() {
 	var divtest = document.createElement("div");
 	divtest.setAttribute("class", "form-group removeclass"+meas_all);
 	var rdiv = 'removeclass'+meas_all;
-	divtest.innerHTML = '<div class="col-sm-6 nopadding"><div class="form-group"> <input type="text" class="form-control entry_crack" id="entry_crack'+ meas_all +'" name="entry_crack" value="" placeholder="Crack ID"></div></div>'+
+	divtest.innerHTML = '<div class="col-sm-6 nopadding"><div class="form-group"> <input type="text" class="form-control entry_crack" id="entry_crack'+ meas_all +'" name="entry_crack" value="" placeholder="Crack ID" required></div></div>'+
 	'<div class="col-sm-6 nopadding"><div class="form-group"><div class="input-group">'+
-	'<input type="text" class="form-control entry_meas" id="entry_meas'+ meas_all +'" name="entry_meas" value="" placeholder="Measurement"><div class="input-group-btn"> <button class="btn btn-danger" type="button" onclick="remove_meas_fields('+ meas_all +');"> <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div></div></div></div><div class="clear"></div>';
+	'<input type="number" class="form-control entry_meas" id="entry_meas'+ meas_all +'" name="entry_meas" value="" placeholder="Measurement" required><div class="input-group-btn"> <button class="btn btn-danger" type="button" onclick="remove_meas_fields('+ meas_all +');"> <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> </button></div></div></div></div><div class="clear"></div>';
 
 	objTo.appendChild(divtest)
 }
