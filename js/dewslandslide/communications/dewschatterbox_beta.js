@@ -1332,7 +1332,8 @@ return tempConn;
 }
 
 function replaceKeyInputs(narrative) {
-	var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)'];
+	console.log(gintags_msg_details);
+	var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)','(sms_msg)','(sender)'];
 	for (var counter = 0; counter < key_list.length; counter++){
 		if (narrative.indexOf(key_list[counter]) != -1) {
 			var key_replacement = "";
@@ -1353,13 +1354,19 @@ function replaceKeyInputs(narrative) {
 					break;
 				case '(current_release_time)':
 					if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
-						narrative = narrative.replace(moment(gintags_msg_details[2]).format("hh:mm A"));
+						narrative = narrative.replace(key_list[counter],moment(gintags_msg_details[2]).format("hh:mm A"));
 					} else {
 						// chill
 					}
 					break;
 				case '(previous_release_time)':
 					console.log("Go hererere");
+					break;
+				case '(sms_msg)':
+					narrative = narrative.replace(key_list[counter],gintags_msg_details[4]);
+					break;
+				case '(sender)':
+					narrative = narrative.replace(key_list[counter],gintags_msg_details[1]);
 					break;
 			}
 		}
