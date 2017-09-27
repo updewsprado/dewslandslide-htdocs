@@ -1117,27 +1117,39 @@ $(document).ready(function() {
 							}
 						}
 
-						if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-							if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-								var narrative_template = "";
-
-								if (narrative_recipients.length > 0) {
-									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
-								} else {
-									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
+						$.post( "../gintags_manager/getGintagDetails/", {gintags: [tag]})
+						.done(function(response) {
+							var data = JSON.parse(response);
+							var narrative_template = data[0].narrative_input;
+							var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)'];
+							for (var counter = 0; counter < key_list.length; counter++){
+								if (narrative_template.indexOf(key_list[counter]) != -1) {
+									var key_replacement = "";
+									switch(key_list[counter]) {
+										case '(stakeholders)':
+											narrative_recipients.forEach(function(x) {
+												if (key_replacement == "") {
+													key_replacement = x.trim();
+												} else {
+													key_replacement = key_replacement+", "+x.trim();
+												}
+											});
+											narrative_template = narrative_template.replace('(stakeholders)',key_replacement);
+											break;
+										case '(current_release_time)':
+											var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+											if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
+											narrative_template = narrative_template.replace('(current_release_time)',x);
+											break;
+										case '(previous_release_time)':
+											console.log("Go here");
+											break;
+									}
 								}
-								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
-								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-								narrative_recipients = [];
-							} 
-						}
+							}
+							narrative_recipients = [];
 
-						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+							if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -1205,6 +1217,7 @@ $(document).ready(function() {
 								});
 							});
 						} 
+						});
 					});
 }
 } else {
