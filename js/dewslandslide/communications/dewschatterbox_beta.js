@@ -509,6 +509,19 @@ $(document).ready(function() {
 		return t;
 	}
 
+	$('.chat-message').scroll(function(){
+		if ($('.chat-message').scrollTop() == 0) {
+			console.log(msgType);
+			if (msgType == "smsload") {
+				getOldMessage();
+			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+				getOldMessageGroup();
+			} else {
+				console.log("Invalid Request/End of the Conversation");
+			}
+		}
+	});
+
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
 		$("#remaining_chars").text(remChars);
@@ -883,7 +896,7 @@ $(document).ready(function() {
 			var htmlStringMessage = $('#messages').html();
 			var messages_html = messages_template_both({'messages': messages});
 			$('#messages').html(messages_html+htmlStringMessage);
-			$('html, body').scrollTop(200);
+			$('.chat-message').scrollTop(200);
 		} else {
 			convoFlagger = true;
 			alert("End of the Conversation");
@@ -913,7 +926,6 @@ $(document).ready(function() {
 
 		$('#user').val('You');
 		messages = [];
-
 		conn.send(JSON.stringify(request));
 	}
 
@@ -1108,10 +1120,12 @@ $(document).ready(function() {
 				$('#ewi-recipient-update-modal').modal('toggle');
 				loadGroups();
 			} else if (msg.type == "oldMessage"){
+				console.log(msg);
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
+				console.log(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
 				$('#chatterbox-loading').modal('hide');
