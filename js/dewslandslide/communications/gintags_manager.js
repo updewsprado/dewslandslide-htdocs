@@ -28,6 +28,8 @@ $(document).ready(function(e){
 	    			'user': first_name
 	    		}
 
+	    		console.log(data);
+
 	    		$.post( "../gintags_manager/updateGintagNarrative/", {gintags: data})
 				.done(function(response) {
 
