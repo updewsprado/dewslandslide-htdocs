@@ -3551,6 +3551,8 @@ $("#confirm-narrative").on('click',function(){
 		"data": data,
 		"cmd": "insert"
 	};
+	console.log(gintag_details);
+
 	getGintagGroupContacts(data);
 
 	$('input[name="sitenames"]:checked').each(function() {
@@ -3686,7 +3688,16 @@ function insertGintagService(data){
 		tagSitenames = [];
 		var contactIdentifier = $('#contact-indicator').val().split(" ");
 		tagOffices.push(contactIdentifier[1]);
-		tagSitenames.push(contactIdentifier[0]);
+		if (contactIdentifier[0].indexOf('[') != -1 && contactIdentifier[0].indexOf(']')) {
+			var sites = contactIdentifier[0].split(',');
+			for (var counter = 0; counter < sites.length; counter++) {
+				sites[counter] = sites[counter].replace('[','');
+				sites[counter] = sites[counter].replace(']','');
+				tagSitenames.push(sites[counter]);
+			}
+		} else {
+			tagSitenames.push(contactIdentifier[0]);
+		}
 	}
 
 	$.post( "../gintags_manager/getGintagDetails/", {gintags: tags})
@@ -3701,6 +3712,7 @@ function insertGintagService(data){
 				"cmd": "insert"
 			};
 
+			console.log(gintag_details);
 		var non_narratives = [];
 		for (var counter = 0; counter < gintag_narratives.length; counter++) {
 			tags.splice($.inArray(gintag_narratives[counter].tag_name, tags),1);
