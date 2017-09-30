@@ -306,8 +306,13 @@ $(document).ready(function()
         else $(".od_group, #reason").prop("disabled", true);
         
         // Mark toExtendND true if X0 (ND-trigger) is checked
-        if( trigger_list.includes("s0") || trigger_list.includes("g0") ) toExtendND = true;
-        else toExtendND = false;
+        toExtendND = false;
+        for (let i = 0; i < trigger_list.length; i++) {
+            if( trigger_list[i].includes("0") ) {
+                toExtendND = true;
+                break;
+            }
+        };
 
         trigger_list.sort( function( a, b ) 
         {
@@ -511,9 +516,9 @@ $(document).ready(function()
                 case "R": check("rs"); enable("R0"); break;
                 case "E": check("es"); enable("E0"); break;
                 case "D": check("ds"); enable("D0"); break;
-                case "g0": check("g0", "nd");
+                case "g0": case "G0": check("g0", "nd");
                 case "G": case "g": check("gs"); enable("g0"); break;
-                case "s0": check("s0", "nd");
+                case "s0": case "S0": check("s0", "nd");
                 case "S": case "s": check("ss"); enable("s0"); break;
                 default: check(trigger_list[i]); break;
             }
