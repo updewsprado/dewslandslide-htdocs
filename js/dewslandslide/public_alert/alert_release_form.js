@@ -129,7 +129,8 @@ $(document).ready(function()
                     { x:"es", y:"eq_area", z:false },
                     { x:"ds", y:"od_area", z:false },
                     { x:"gs", y:"ground_area", z:false },
-                    { x:"ss", y:"sensor_area", z:false } ];
+                    { x:"ss", y:"sensor_area", z:false },
+                    { x:"ms", y:"manifestation_area", z:false } ];
 
     // For Public Alert Level Changes
     $("#public_alert_level").change(function () 
@@ -150,14 +151,14 @@ $(document).ready(function()
 		    $(".cbox_trigger_rx").prop("checked", false).prop("disabled", false);
                     toExtendND = false;
                     break;
-            case "A1": $(".cbox_trigger_switch[value='gs'], .cbox_trigger_switch[value='ss']").prop("checked", false).prop("disabled", true);
+            case "A1": $(".cbox_trigger_switch[value='gs'], .cbox_trigger_switch[value='ss'], .cbox_trigger_switch[value='ms']").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", false);
                     break;
-            case "A2": $(".cbox_trigger[value=G], .cbox_trigger[value=S]").prop("checked", false).prop("disabled", true);
+            case "A2": $(".cbox_trigger[value=G], .cbox_trigger[value=S], .cbox_trigger[value=M]").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
             case "A3": $(".cbox_trigger_switch").prop("disabled", false); 
-                $(".cbox_trigger[value='G'], .cbox_trigger[value='S']").prop("disabled", false);
+                $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value=M]").prop("disabled", false);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
         }
@@ -172,9 +173,6 @@ $(document).ready(function()
             }
             else $("#alert_invalid").slideUp();
         }
-
-        // Prevent entering of NO DATA trigger on NEW ON-GOING ENTRIES
-        // if( status != "on-going" && val != "A0" ) $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
 
         $(".cbox_trigger_switch").trigger("change");
         $(".cbox_trigger").trigger("change");
@@ -227,10 +225,10 @@ $(document).ready(function()
         for (let i = 0; i < arr.length; i++) 
         {
             let val = $(arr[i]).val();
-            if( $("#public_alert_level").val() == "A3" ) {
-                if( val == "g0" || val == "s0" )
-                    val = val.toUpperCase(); // Turn to uppercase triggers s0/g0 if A3
-            }
+            // if( $("#public_alert_level").val() == "A3" ) {
+            //     if( val == "g0" || val == "s0" )
+            //         val = val.toUpperCase(); // Turn to uppercase triggers s0/g0 if A3
+            // }
             trigger_list.push( val );
 
             // Remove duplicates on trigger_list
@@ -238,50 +236,64 @@ $(document).ready(function()
                 return index == self.indexOf(elem);
             });
 
-            function priority( a, b, i, c = 'q', d = 'q' ) 
+            function priority( a, b, i, c = 'q' ) 
             {
-                if( $(arr[i]).val() == a || $(arr[i]).val() == b || $(arr[i]).val() == c || $(arr[i]).val() == d )
+                if( $(arr[i]).val() == a || $(arr[i]).val() == b || $(arr[i]).val() == c )
                 {
-                    let x = trigger_list.indexOf(a), y = trigger_list.indexOf(b), z = trigger_list.indexOf(c), z1 = trigger_list.indexOf(d);
+                    let x = trigger_list.indexOf(a), y = trigger_list.indexOf(b), z = trigger_list.indexOf(c);
                     let remove = function (index) { trigger_list.splice( trigger_list.indexOf(index), 1) };
 
-                    if( z > -1 || z1 > -1 ) { if( y > -1 ) remove(b); if( x > -1 ) remove(a);  }
+                    if( z > -1 ) { 
+                        /// if uppercase version of trigger is available, make not x0 also uppercase
+                        if( x > -1 ) { trigger_list[z] = trigger_list[z].toUpperCase(); remove(a); }
+                        if( y > -1 ) remove(b);
+                    }
                     else if( x > -1 ) { if(y > -1) remove(b); }
                 }
             }
 
-            priority("S", "s", i, "s0", "S0");
-            priority("G", "g", i, "g0", "G0");
+            priority("S", "s", i, "s0");
+            priority("G", "g", i, "g0");
+            priority("M", "m", i, "m0");
             priority("R0", "R", i);
         };
 
         // Disable Cbox_Triggers and timestamp input if Cbox_Trigger_ND is checked
         if( this.value.indexOf("0") >= 0 )
         {
+            let trigger_letter = this.value[0];
             tech_info = null; double = false;
-            switch(this.value[0]) {
+            switch(trigger_letter) {
                 case "R": tech_info = "rain"; break;
                 case "g": tech_info = "ground"; double = true; break;
                 case "s": tech_info = "sensor"; double = true; break;
+                case "m": tech_info = "manifestation"; double = true; break;
             }
 
-            if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) {
-                $(".cbox_trigger[value=" + this.value[0] + "]").prop("checked", false).prop("disabled", true);
-                $(".cbox_trigger[value=" + this.value[0] + "]").parent().next().children("input").prop("disabled", true).val("");
+            let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
+            temp = ".cbox_trigger[value=" + trigger_letter + "], .cbox_trigger[value=" + copy_letter + "]";
+            if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) 
+            {
+                $(temp).prop("checked", false).prop("disabled", true);
+                $(temp).parent().next().children("input").prop("disabled", true).val("");
 
                 if (double) temp = "#trigger_" + tech_info + "_1_info, #trigger_" + tech_info + "_2_info";
                 else temp = "#trigger_" + tech_info + "_info";
 
                 $(temp).prop("disabled", true).val("");
             }
-            else $(".cbox_trigger[value=" + this.value[0] + "]").prop("disabled", false);
+            else $(temp).prop("disabled", false);
 
             // Enable/Disable Rainfall Intermediate Threshold option (rx)
             // if R0 is checked
-            if(this.value[0] == "R") {
+            if(trigger_letter == "R") {
                 if(this.checked) $(".cbox_trigger_rx").prop("checked", false).prop("disabled", true);
                 else $(".cbox_trigger_rx").prop("disabled", false);
             }
+
+            // Enable/Disable other Manifestation Details
+            // if M0 is checked
+            /*** CODE HERE ***/
         }
         
         // Disable Timestamp Input Validation Checkbox Fields
@@ -304,7 +316,18 @@ $(document).ready(function()
         // If Checkbox is D, enable magnitude, latitude and longitude
         if( $(".cbox_trigger[value=D]").is(":checked") ) $(".od_group, #reason").prop("disabled", false);
         else $(".od_group, #reason").prop("disabled", true);
-        
+
+        // If Checkbox is m or M, enable corresponding group and validator
+        if( $(".cbox_trigger[value=m]").is(":checked") || $(".cbox_trigger[value=M]").is(":checked") )
+        {
+            $(".manifestation_group").prop({disabled: false, checked: false});
+            $("#manifestation_remarks, #manifestation_validator").prop({disabled: false}).val("");
+        }
+        else {
+            $(".manifestation_group").prop({disabled: true, checked: false});
+            $("#manifestation_remarks, #manifestation_validator").prop({disabled: true}).val("");
+        }
+
         // Mark toExtendND true if X0 (ND-trigger) is checked
         toExtendND = false;
         for (let i = 0; i < trigger_list.length; i++) {
@@ -316,8 +339,9 @@ $(document).ready(function()
 
         trigger_list.sort( function( a, b ) 
         {
-            let arr = { "S":5, "s":5, "s0":5, "G":4, "g":4, "g0":4, "R":3, "R0":3, "E":2, "D":1 };
-            let x = arr[a], y = arr[b];
+            let priority_lookup = { "S":5, "G":4, "M":3, "R":2, "E":1, "D":0 };
+            let x = priority_lookup[ a[0].toUpperCase() ];
+            let y = priority_lookup[ b[0].toUpperCase() ];
             if( x>y ) return -1; else return 1;
         });
 
@@ -482,7 +506,6 @@ $(document).ready(function()
         }, "json")
     })
 
-
     function groupTriggersByType(event, triggers) 
     {
         //let trigger_list = event.internal_alert_level.slice(3);
@@ -495,7 +518,7 @@ $(document).ready(function()
         { 
             console.log(public_alert);
             x = x.replace('0', '').replace('rx', '').replace("x", '');
-            if(public_alert == "A3") x = x.toUpperCase();
+            // if(public_alert == "A3") x = x.toUpperCase();
             if(x != "") return x;
         }
         let trigger_copy = trigger_list.map(function (x) { return clearZero(x, public_alert); });
@@ -520,6 +543,8 @@ $(document).ready(function()
                 case "G": case "g": check("gs"); enable("g0"); break;
                 case "s0": case "S0": check("s0", "nd");
                 case "S": case "s": check("ss"); enable("s0"); break;
+                case "m0": case "M0": check("m0", "nd");
+                case "M": case "m": check("ms"); enable("m0"); break;
                 default: check(trigger_list[i]); break;
             }
 
@@ -531,6 +556,7 @@ $(document).ready(function()
             $(".cbox_trigger_nd").trigger("change");
             // END OF CHECKING CHECKBOXES
 
+            // Check for triggers with the corresponding trigger letter
             let x = triggers.filter(function (val) 
             {
                 // Check for filtered "rx"
@@ -543,9 +569,10 @@ $(document).ready(function()
                 if( moment(a.timestamp).isAfter(b.timestamp) ) return -1; else return 1;
             })
 
-            // Check for filtered "rx"
+            // Check for filtered "rx" and save grouped triggers on array then return
             if( typeof trigger_copy[i] != "undefined" ) arr.push(x);
         }
+        
         return arr;
     }
 
@@ -614,7 +641,7 @@ $(document).ready(function()
         {
             case "A1": msg = "At least one trigger (Rainfall, Earthquake, or On-Demand) required."; return ( a("rs") || a("es") || a("ds") ); break;
             case "A2": 
-            case "A3": msg = "At least Sensor or Ground Data trigger required."; return ( a("ss") || a("gs") ); break;
+            case "A3": msg = "At least Surficial, Subsurface, and/or Manifestation trigger required."; return ( a("ss") || a("gs") || a("ms") ); break;
             default: return true;
         }
     }, dynamicMsg);
@@ -630,13 +657,13 @@ $(document).ready(function()
         let triggers = $("#internal_alert_level").val().substr(3);
 
         msg = "New trigger timestamp required.";
-        if( $("#public_alert_level").val() == "A3" && (val == "G" || val == "g" || val == "S" || val == "s"))
+        if( $("#public_alert_level").val() == "A3" && (val == "G" || val == "g" || val == "S" || val == "s" || val == "M" || val == "m"))
         {
             let a = function (a) { return $(".cbox_trigger[value=" + a + "]" ).is(":checked") };
             msg = "L3 trigger timestamp required.";
             if( triggers.indexOf(val.toUpperCase()) > -1 || triggers.indexOf(val.toLowerCase()) > -1 ) return true;
-            else if(val == "G" || val == "S")  return a("G") || a("S");
-            else if(val == "g" && !a("G") && val == "s" && !a("S")) { msg = "At least L2 or L3 timestamp required."; return a("g") || a("s"); }
+            else if(val == "G" || val == "S" || val == "M")  return a("G") || a("S") || a("M");
+            else if(val == "g" && !a("G") && val == "s" && !a("S") && val == "m" && !a("M")) { msg = "At least L2 or L3 timestamp required."; return a("g") || a("s") || a("m"); }
             else return true;
         }
 
@@ -683,16 +710,20 @@ $(document).ready(function()
             {   
                 return true;
             } else if( $(".cbox_trigger_rx").is(":checked") ) return true;
-		else if( $(".cbox_trigger_nd[value=R0]").is(":checked") ) return true;
             else if( $("#public_alert_level").val() == "A1")
             {
-                if( $(".cbox_nd").is(":checked") || $(element).is(":checked") || $(".cbox_trigger").is(":checked"))
+                if( $(".cbox_trigger_nd[value=R0]").is(":checked") ) return true;
+                else if( $(".cbox_nd").is(":checked") || $(element).is(":checked") || $(".cbox_trigger").is(":checked"))
                     return true;
                 else { $("#nd_modal").modal('show'); return false; }
             }
             else if( $("#public_alert_level").val() == "A2" || $("#public_alert_level").val() == "A3" )
             {
-                if ($(".cbox_trigger_nd[value=g0]").is(":checked") || $(".cbox_trigger_nd[value=s0]").is(":checked") || $(".cbox_trigger").is(":checked")) return true;
+                ["g0", "s0", "R0", "m0"].forEach(function (nd) {
+                    if ($(".cbox_trigger_nd[value=" + nd + "]").is(":checked")) return true;
+                });
+
+                if ($(".cbox_trigger").is(":checked")) return true;
                 else { $("#nd_modal").modal('show'); return false; }
             }
             else {
@@ -760,6 +791,18 @@ $(document).ready(function()
                 }},
                 step: false
             },
+            manifestation_remarks: {
+                required: {
+                    depends: function () {
+                        return $(".cbox_trigger[value='m']").is(":checked") || $(".cbox_trigger[value='M']").is(":checked");
+                }}
+            },
+            manifestation_validator: {
+                required: {
+                    depends: function () {
+                        return $(".cbox_trigger[value='m']").is(":checked") || $(".cbox_trigger[value='M']").is(":checked");
+                }}
+            }
         },
         messages: {
             comments: "Provide a reason to invalidate this event. If the event is not invalid and is really an end of event EWI, release it on the indicated end of validity."

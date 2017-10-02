@@ -176,8 +176,7 @@ $(document).ready(function()
                         {
                             public_alert_level = x.internal_alert_level.slice(0,2);
                             alert_triggers = x.internal_alert_level.slice(3);
-                            if( public_alert_level == 'A2' ) alert_triggers.replace('g0', 'g').replace('s0', 's');
-                            else if ( public_alert_level == 'A3' ) alert_triggers.replace('g0', 'G').replace('s0', 'S');
+                            alert_triggers.replace(/0/g, '');
                         }
 
                         console.log("TRIG GROUP" , trigger_group);
@@ -196,7 +195,7 @@ $(document).ready(function()
                                     if(y!=-1) { 
                                         temp.push(trigger_group[y]);
                                     }
-                                    if(alert_triggers[z] == 'G' || alert_triggers[z] == 'S')
+                                    if(alert_triggers[z] == 'G' || alert_triggers[z] == 'S' || alert_triggers[z] == 'M')
                                     {
                                         y = trigger_group.map( x=>x.trigger_type ).indexOf(alert_triggers[z].toLowerCase());
                                         if(y!=-1) { 
@@ -243,7 +242,7 @@ $(document).ready(function()
 
                                 if( y != -1) most_recent_before.push(trigger_group_x[y]);
 
-                                if(alert_triggers[z] == 'G' || alert_triggers[z] == 'S')
+                                if(alert_triggers[z] == 'G' || alert_triggers[z] == 'S' || alert_triggers[z] == 'M')
                                 {
                                     let m = null;
                                     if(trigger_group != null)
@@ -280,25 +279,14 @@ $(document).ready(function()
                     let report = "";
                     let end = formData.end;
                     let start = moment(formData.start).add(1, 'hour').format("YYYY-MM-DD HH:mm:ss");
-                    let form = {
-                        start: start,
-                        end: end,
-                    };
-
+                    let form = { start: start, end: end };
                     let promises = [];
 
                     latest_releases.forEach(function (release, index) {
 
                         form.event_id = release.first_trigger.event_id;
-                        // promises.push( $.getJSON( "../../accomplishment/getNarrativesForShift", form)
-                        // .then(function (nar) {
-                        //     report = makeReport(formData, release, nar);
-                        //     return report;
-                        // }) );
+                        if( internal_alert_level == "A0" ) form.end = null else form.end = formData.end;
 
-                        // $("#reports_nav").append('<li class="' + isActive + '"><a data-toggle="tab" href="#report_field_' + release.site + '"><strong>' + release.site.toUpperCase() + '</strong></a></li>');
-                        // $("#reports_field").append('<div id="report_field_' + release.site + '" class="tab-pane fade' + isActive + '"></div>');
-                        
                         $("#reports_nav_sample").clone().attr("id", "report_nav_" + release.site).attr("style", "").appendTo("#reports_nav");
                         $("#reports_nav_sample").attr("style", "display:none;").removeClass("active");
                         $("#report_nav_" + release.site + " a").attr("href", "#report_field_" + release.site).html("<strong>" + release.site.toUpperCase() + "</strong>").removeClass("active");
@@ -449,9 +437,11 @@ $(document).ready(function()
             "R": ["accumulated rainfall value exceeding threshold level", "Rainfall"],
             "E": ["a detection of landslide-triggering earthquake", "Earthquake"],
             "g": ["significant surficial movement", "LEWC Ground Measurement"],
-            "s": ["significant underground movement", "Sensor"],
+            "s": ["significant underground movement", "Subsurface Data"],
             "G": ["critical surficial movement","LEWC Ground Measurement"],
-            "S": ["critical underground movement","Sensor"]
+            "S": ["critical underground movement","Subsurface Data"],
+            "m": ["significant movement observed as manifestation", "Manifestation"],
+            "M": ["critical movement observed as manifestation", "Manifestation"]
         }
 
         return raise[trigger][x];
