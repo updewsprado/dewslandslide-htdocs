@@ -1375,6 +1375,7 @@ function replaceKeyInputs(narrative) {
 }
 
 function getOngoingEvents(sites){
+	console.log(sites);
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
@@ -1398,69 +1399,12 @@ function getOngoingEvents(sites){
 								}
 								$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
 								.done(function(response) {
-									console.log(response);
 								});
 							}
 						}
 					}
 				}
 			}
-			// for (var counter = 0; counter < events.length; counter++) {
-			// 	for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-			// 		if (events[counter].site_id == siteids[siteid_counter].id) {
-						
-			// 			var narrative_details = {
-			// 				'event_id': events[counter].event_id,
-			// 				'site_id': siteids[siteid_counter].id,
-			// 				'ewi_sms_timestamp': gintags_msg_details[2],
-			// 				'narrative_template': narrative_template
-			// 			}
-			// 			$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-			// 			.done(function(response) {
-			// 				var start = moment().format('YYYY-MM-DD HH:mm:ss');
-			// 				var rounded_release;
-			// 				var last_rounded_release;
-
-			// 				if (moment(start).minute() < 30) {
-			// 					var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
-			// 				} else {
-			// 					var rounded_release = moment(start).add(1,'h').startOf('hour').format('YYYY-MM-DD HH:mm:ss');
-			// 				}
-
-			// 				var current_release_day = moment(start).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-
-			// 				if (moment(rounded_release).hour() % 4 == 0) {
-			// 					last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
-			// 				} else {
-			// 					last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
-			// 				}
-
-			// 				var lastReleaseData = {
-			// 					'event_id': events[counter].event_id,
-			// 					'current_release_time': rounded_release,
-			// 					'last_release_time': last_rounded_release,
-			// 					'previous_release': previous_release,
-			// 					'data_timestamp': event_details.data_timestamp
-			// 				}
-
-			// 				$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-			// 					var response = JSON.parse(data);
-			// 					if (response.ack == "no_ack") {
-			// 						var narrative_details = {
-			// 							'event_id': events[counter].event_id,
-			// 							'site_id': siteids[siteid_counter].id,
-			// 							'ewi_sms_timestamp': rounded_release,
-			// 							'narrative_template': "No acknowledgement from all stakeholders for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
-			// 						}
-			// 						$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
-			// 							console.log(data);
-			// 						});
-			// 					}
-			// 				});
-			// 			});
-			// 		}
-			// 	}
-			// }
 		});
 });
 }
@@ -3546,12 +3490,11 @@ $("#confirm-narrative").on('click',function(){
 
 	$('#gintags').val(temp_array);
 	var gintag_details = {
-		"office" : tagOffices,
-		"site": tagSitenames,
+		"office" : data.office,
+		"site": data.site,
 		"data": data,
 		"cmd": "insert"
 	};
-	console.log(gintag_details);
 
 	getGintagGroupContacts(data);
 
@@ -3566,8 +3509,13 @@ $("#confirm-narrative").on('click',function(){
 	});
 
 	if (tagSitenames.length == 0 ) {
-		var contactIdentifier = $('#contact-indicator').val().split(" ");
-		tagSitenames.push(contactIdentifier[0]);
+		$('input[name="candidate-sites-narrative"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+	}
+
+	if (tagOffices.length == 0) {
+		tagOffices = data.office;
 	}
 
 	gintags_msg_details.tags = data.tags;
@@ -3582,67 +3530,18 @@ $("#confirm-narrative").on('click',function(){
 			getOngoingEvents(tagSitenames[tag_counter]);
 		}
 	}
-	
-
-	// if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
-	// 	getGintagGroupContacts(data);
-	// 	for (var counter = 0; counter < tags.length; counter++) {
-	// 		if (tags[counter] == "#EwiMessage" || tags[counter] == "#GroundMeasReminder") {
-	// 			for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-	// 				if (tagSitenames[tag_counter] == "MES") {
-	// 					var mes_sites = ['MSL','MSU'];
-	// 					for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
-	// 						getOngoingEvents(mes_sites[msl_msu_counter]);
-	// 					}
-	// 				} else {
-	// 					getOngoingEvents(tagSitenames[tag_counter]);
-	// 				}
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-	// } else if (data.tags == "#EwiResponse" || data.tags == "#GroundMeas") {
-	// 	if (tags[1] != "") {
-	// 		for (var i = 0; i < tags.length;i++) {
-	// 			gintags_collection = [];
-	// 			gintags = {
-	// 				'tag_name': tags[i],
-	// 				'tag_description': "communications",
-	// 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-	// 				'tagger': tagger_user_id,
-	// 				'table_element_id': data.data[5],
-	// 				'table_used': data.data[6],
-	// 				'remarks': ""
-	// 			}
-	// 			gintags_collection.push(gintags);
-	// 			$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-	// 			.done(function(response) {
-	// 				$( "#messages li" ).eq(message_li_index).addClass("tagged");
-	// 			});
-	// 		}
-	// 		$.notify("GINTAG successfully tagged!","success");
-	// 	}
-	// 	for (var counter = 0; counter < tags.length;counter++) {
-	// 		if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeas") {
-	// 			for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-	// 				if (tagSitenames[tag_counter] == "MES") {
-	// 					var mes_sites = ['MSL','MSU'];
-	// 					for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
-	// 						getOngoingEvents(mes_sites[msl_msu_counter]);
-	// 					}
-	// 				} else {
-	// 					getOngoingEvents(tagSitenames[tag_counter]);
-	// 				}
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-	// } else {
-	// 	$.notify('Invalid Request, please try again.',"warning");
-	// }
 });
 
 function displayNarrativeConfirmation(gintag_details){
+	$('#site-select-narrative-container').hide();
+	$('#site-select-narrative').empty();
+	if (gintag_details.site.length > 1) {
+		$('#site-select-narrative-container').show();
+		for (var counter = 0; counter < gintag_details.site.length; counter++) {
+			$('#site-select-narrative').append("<li><div class='checkbox' style='margin: 10px;'><label><input type='checkbox' name='candidate-sites-narrative' value='"+gintag_details.site[counter]+"'>"+gintag_details.site[counter]+"</label></div></li>")
+		}
+	}
+
 	if (gintag_details.data[1] == "You") {
 		var summary = "";
 		var office = "Office(s): ";
@@ -3703,16 +3602,13 @@ function insertGintagService(data){
 	$.post( "../gintags_manager/getGintagDetails/", {gintags: tags})
 	.done(function(response) {
 		var gintag_narratives = JSON.parse(response);
-		console.log(gintag_narratives);
 
-			var gintag_details = {
-				"office" : tagOffices,
-				"site": tagSitenames,
-				"data": data,
-				"cmd": "insert"
-			};
-
-			console.log(gintag_details);
+		var gintag_details = {
+			"office" : tagOffices,
+			"site": tagSitenames,
+			"data": data,
+			"cmd": "insert"
+		};
 		var non_narratives = [];
 		for (var counter = 0; counter < gintag_narratives.length; counter++) {
 			tags.splice($.inArray(gintag_narratives[counter].tag_name, tags),1);
@@ -3720,8 +3616,9 @@ function insertGintagService(data){
 
 		// Insert to gintags all non narrative tags
 		$('#gintags').val(tags);
-		getGintagGroupContacts(gintag_details);
-
+		if (tags.length != 0) {
+			getGintagGroupContacts(gintag_details);	
+		}
 		if (gintag_narratives.length != 0) {
 			gintag_details.tags = gintag_narratives;
 			$("#gintag_details_container").val(JSON.stringify(gintag_details));
@@ -3729,115 +3626,6 @@ function insertGintagService(data){
 			console.log('Has tag for narratives');
 		}
 	});
-
-
-	// if (data[1] == "You") {
-	// 	var gintag_details = {
-	// 		"office" : tagOffices,
-	// 		"site": tagSitenames,
-	// 		"data": data,
-	// 		"cmd": "insert"
-	// 	};
-		// if ($.inArray("#EwiMessage",tags) != -1) {
-	// 		tag_indicator = "#EwiMessage";
-	// 	} else if ($.inArray('#GroundMeasReminder',tags) != -1) {
-	// 		tag_indicator = "#GroundMeasReminder";
-	// 	}
-
-	// 	if ($.inArray("#EwiMessage", tags) != -1 || $.inArray('#GroundMeasReminder',tags) != -1) {
-	// 		var tags = $('#gintags').val();
-	// 		tags = tags.split(',');
-	// 		tags.splice($.inArray(tag_indicator, tags),1);
-	// 		$('#gintags').val(tags);
-	// 		getGintagGroupContacts(gintag_details);
-	// 		gintag_details.tags = tag_indicator;
-	// 		$("#gintag_details_container").val(JSON.stringify(gintag_details));
-	// 		displayNarrativeConfirmation(gintag_details);
-	// 	} else {
-	// 		getGintagGroupContacts(gintag_details);
-	// 	}
-
-	// } else {
-	// 	if ($.inArray("#EwiResponse",tags) != -1 || $.inArray('#GroundMeas',tags) != -1) {
-	// 		var gintag_details = {
-	// 			"data": data,
-	// 			"cmd": "insert"
-	// 		};
-
-	// 		if ($.inArray("#EwiResponse",tags) != -1) {
-	// 			tag_indicator = "#EwiResponse"
-	// 		} else if ($.inArray('#GroundMeas',tags) != -1) {
-	// 			tag_indicator = "#GroundMeas";
-	// 		}
-	// 		var tags = $('#gintags').val();
-	// 		tags = tags.split(',');
-	// 		tags.splice($.inArray(tag_indicator, tags),1);
-	// 		$('#gintags').val(tags);
-	// 		gintag_details.tags = tag_indicator;
-	// 		if (tags[1] != "") {
-	// 			for (var i = 0; i < tags.length;i++) {
-	// 				gintags_collection = [];
-	// 				gintags = {
-	// 					'tag_name': tags[i],
-	// 					'tag_description': "communications",
-	// 					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-	// 					'tagger': tagger_user_id,
-	// 					'table_element_id': data[5],
-	// 					'table_used': data[6],
-	// 					'remarks': ""
-	// 				}
-	// 				gintags_collection.push(gintags);
-	// 				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-	// 				.done(function(response) {
-	// 					$( "#messages li" ).eq(message_li_index).addClass("tagged");
-	// 				});
-	// 			}
-	// 			$.notify("GINTAG successfully tagged!","success");
-	// 		}
-	// 		$("#gintag_details_container").val(JSON.stringify(gintag_details));
-	// 		displayNarrativeConfirmation(gintag_details);
-	// 	} else {
-	// 		for (var i = 0; i < tags.length;i++) {
-	// 			gintags_collection = [];
-	// 			gintags = {
-	// 				'tag_name': tags[i],
-	// 				'tag_description': "communications",
-	// 				'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-	// 				'tagger': tagger_user_id,
-	// 				'table_element_id': data[5],
-	// 				'table_used': data[6],
-	// 				'remarks': ""
-	// 			}
-	// 			gintags_collection.push(gintags);
-	// 			$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-	// 			.done(function(response) {
-	// 				$( "#messages li" ).eq(message_li_index).addClass("tagged");
-	// 			});
-	// 		}
-	// 		$.notify("GINTAG successfully tagged!","success");
-	// 	}
-	// }
-
-	// } else {
-	// 	for (var i = 0; i < tags.length;i++) {
-	// 		gintags_collection = [];
-	// 		gintags = {
-	// 			'tag_name': tags[i],
-	// 			'tag_description': "communications",
-	// 			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-	// 			'tagger': tagger_user_id,	
-	// 			'table_element_id': data[5],
-	// 			'table_used': data[6],
-	// 			'remarks': ""
-	// 		}
-	// 		gintags_collection.push(gintags);
-	// 		$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-	// 		.done(function(response) {
-	// 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
-	// 		});
-	// 	}
-	// 	$.notify("GINTAG successfully tagged!","success");
-	// }
 }
 
 function removeIndividualGintag(gintag_details){
@@ -3855,6 +3643,7 @@ function getGintagGroupContacts(gintag_details){
 		if (tags[0] != "") {
 			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 			.done(function(response) {
+				console.log(response);
 				var data = JSON.parse(response);
 				for (var i = 0; i < tags.length; i++) {
 					gintags_collection = [];
@@ -3898,7 +3687,7 @@ function getGintagGroupContacts(gintag_details){
 					'contact': number_collection,
 					'details': gintag_details
 				}
-				console.log(toBeRemoved);
+
 				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 				.done(function(response) {
 					$.notify("GINTAG successfully removed!","success");
