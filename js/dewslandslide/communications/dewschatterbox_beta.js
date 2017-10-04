@@ -1238,27 +1238,36 @@ $(document).ready(function() {
 							}
 						}
 
-						if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-							if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
-								var narrative_template = "";
-
-								if (narrative_recipients.length > 0) {
-									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
-								} else {
-									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
+						$.post( "../gintags_manager/getGintagDetails/", {gintags: [tag]})
+						.done(function(response) {
+							var data = JSON.parse(response);
+							var narrative_template = data[0].narrative_input;
+							var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)','(sms_msg)','(sender)'];
+							for (var counter = 0; counter < key_list.length; counter++){
+								if (narrative_template.indexOf(key_list[counter]) != -1) {
+									var key_replacement = "";
+									switch(key_list[counter]) {
+										case '(stakeholders)':
+											narrative_recipients.forEach(function(x) {
+												if (key_replacement == "") {
+													key_replacement = x.trim();
+												} else {
+													key_replacement = key_replacement+", "+x.trim();
+												}
+											});
+											narrative_template = narrative_template.replace('(stakeholders)',key_replacement);
+											break;
+										case '(current_release_time)':
+											var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
+											if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
+											narrative_template = narrative_template.replace('(current_release_time)',x);
+											break;
+									}
 								}
-								var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
-								if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
-								narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-								narrative_recipients = [];
-							} 
-						}
+							}
+							narrative_recipients = [];
 
-						if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
+							if (tag == "#EwiMessage" || tag == "#AlteredEWI") {
 							var narrative_details = {
 								'event_id': event_details.event_id,
 								'site_id': event_details.site_id,
@@ -1324,8 +1333,12 @@ $(document).ready(function() {
 										});
 									}
 								});
+								$('#loading').hide();
+								$('#result-ewi-message').text('Early Warning Information sent successfully!');
+								$('#success-ewi-modal').modal('toggle');
 							});
 						} 
+						});
 					});
 }
 } else {
@@ -1439,104 +1452,77 @@ tempConn.onclose = function(e) {
 return tempConn;
 }
 
+function replaceKeyInputs(narrative) {
+	console.log(gintags_msg_details);
+	var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)','(sms_msg)','(sender)'];
+	for (var counter = 0; counter < key_list.length; counter++){
+		if (narrative.indexOf(key_list[counter]) != -1) {
+			var key_replacement = "";
+			switch(key_list[counter]) {
+				case '(stakeholders)':
+					var tagOffices = [];
+					$('input[name="offices"]:checked').each(function() {
+						tagOffices.push(this.value);
+					});
+					tagOffices.forEach(function(x) {
+						if (key_replacement == "") {
+							key_replacement = x.trim();
+						} else {
+							key_replacement = key_replacement+", "+x.trim();
+						}
+					});
+					narrative = narrative.replace(key_list[counter],key_replacement);
+					break;
+				case '(current_release_time)':
+					if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
+						narrative = narrative.replace(key_list[counter],moment(gintags_msg_details[2]).format("hh:mm A"));
+					} else {
+						// chill
+					}
+					break;
+				case '(previous_release_time)':
+					console.log("Go hererere");
+					break;
+				case '(sms_msg)':
+					narrative = narrative.replace(key_list[counter],gintags_msg_details[4]);
+					break;
+				case '(sender)':
+					narrative = narrative.replace(key_list[counter],gintags_msg_details[1]);
+					break;
+			}
+		}
+	}
+	return narrative;
+}
+
 function getOngoingEvents(sites){
+	console.log(sites);
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 		.done(function(response) {
 			siteids = JSON.parse(response);
-			for (var counter = 0; counter < events.length; counter++) {
-				for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
-					if (events[counter].site_id == siteids[siteid_counter].id) {
-						var narrative_template = "";
-						if (gintags_msg_details.tags === "#EwiResponse" || gintags_msg_details.tags === "#GroundMeas") {
-							if (gintags_msg_details.tags === "#EwiResponse") {
-								narrative_template = "Early warning information acknowledged by "+gintags_msg_details[1]+" ("+gintags_msg_details[4]+")";
-							} else {
-								narrative_template = gintags_msg_details[1]+" sent surficial measurement <insert trend here>";
-							}
-						} else if (gintags_msg_details.tags === "#EwiMessage" || gintags_msg_details.tags === "#GroundMeasReminder"){
-							var tagOffices = [];
-							$('input[name="offices"]:checked').each(function() {
-								tagOffices.push(this.value);
-							});
+			if (events.length == 0) {
+				return -1;
+			} else {
+				for (var counter = 0; counter < events.length; counter++) {
+					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
+						if (events[counter].site_id == siteids[siteid_counter].id) {
 
-							if  (tagOffices.length == 0) {
-								tagOffices = [];
-								var contactIdentifier = $('#contact-indicator').val().split(" ");
-								tagOffices.push(contactIdentifier[1]);
-							}
-
-							if (narrative_recipients.length > 0 || tagOffices.length > 0) {
-								if (narrative_recipients.length > 0) {
-									narrative_recipients.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
-								} else {
-									tagOffices.forEach(function(x) {
-										narrative_template = narrative_template+", "+x.trim();
-									});
+							for (var tag_counter = 0; tag_counter < gintags_msg_details.tags.length; tag_counter++) {
+								var narrative_template = replaceKeyInputs(gintags_msg_details.tags[tag_counter].narrative_input);
+								console.log(narrative_template);
+								var narrative_details = {
+									'event_id': events[counter].event_id,
+									'site_id': siteids[siteid_counter].id,
+									'ewi_sms_timestamp': gintags_msg_details[2],
+									'narrative_template': narrative_template
 								}
-								if (gintags_msg_details.tags === "#EwiMessage") {
-									var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).format("hh:mm A").add(30,'m') : moment(data_timestamp).format("hh:mm A");
-									if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
-									narrative_template = "Sent "+x+" EWI SMS to "+narrative_template.substring(1);
-								} else {
-									narrative_template = "Sent Ground measurement reminder";
-								}
+								$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
+								.done(function(response) {
+								});
 							}
-						} else {
-							$.notify("Invalid request, please try again.","warning");
 						}
-						var narrative_details = {
-							'event_id': events[counter].event_id,
-							'site_id': siteids[siteid_counter].id,
-							'ewi_sms_timestamp': gintags_msg_details[2],
-							'narrative_template': narrative_template
-						}
-						$.post( "../narrativeAutomation/insert/", {narratives: narrative_details})
-						.done(function(response) {
-							var start = moment().format('YYYY-MM-DD HH:mm:ss');
-							var rounded_release;
-							var last_rounded_release;
-
-							if (moment(start).minute() < 30) {
-								var rounded_release = moment(start).startOf('hour').format('YYYY-MM-DD HH:mm:ss');
-							} else {
-								var rounded_release = moment(start).add(1,'h').startOf('hour').format('YYYY-MM-DD HH:mm:ss');
-							}
-
-							var current_release_day = moment(start).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-
-							if (moment(rounded_release).hour() % 4 == 0) {
-								last_rounded_release = moment(rounded_release).subtract(4,'h').format('YYYY-MM-DD HH:mm:ss');
-							} else {
-								last_rounded_release = moment(current_release_day).add(moment(rounded_release).hour()- moment(rounded_release).hour() % 4,'h').format('YYYY-MM-DD HH:mm:ss');
-							}
-
-							var lastReleaseData = {
-								'event_id': events[counter].event_id,
-								'current_release_time': rounded_release,
-								'last_release_time': last_rounded_release,
-								'previous_release': previous_release,
-								'data_timestamp': event_details.data_timestamp
-							}
-
-							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-								var response = JSON.parse(data);
-								if (response.ack == "no_ack") {
-									var narrative_details = {
-										'event_id': events[counter].event_id,
-										'site_id': siteids[siteid_counter].id,
-										'ewi_sms_timestamp': rounded_release,
-										'narrative_template': "No acknowledgement from all stakeholders for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
-									}
-									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
-										console.log(data);
-									});
-								}
-							});
-						});
 					}
 				}
 			}
@@ -3062,6 +3048,7 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#send-btn-ewi-amd').click(function(){
+	$('#loading').show();
 	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 	var default_recipients = $('#default-recipients').val().split(',');
 	var difference = [];
@@ -3146,8 +3133,6 @@ $('#send-btn-ewi-amd').click(function(){
 		}
 
 		$('#constructed-ewi-amd').val('');
-		$('#result-ewi-message').text('Early Warning Information sent successfully!');
-		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
 		$("#" + latest_release_id + "_sms").css("color", "red").attr("data-sent", 1);
 	} catch(err) {
@@ -3650,6 +3635,7 @@ $(document).on("click","#messages li",function(){
 	current_gintags = getGintagService(gintags_msg_details[5]);
 	$('#gintag-modal').modal('toggle');
 	$('.bootstrap-tagsinput').prop("disabled", true );
+	console.log('tagging may occur');
 });
 
 $('#gintags').on('beforeItemAdd', function(event) {
@@ -3779,80 +3765,67 @@ function removeGintagService(data,tags){
 
 $("#confirm-narrative").on('click',function(){
 	var data = JSON.parse($('#gintag_details_container').val());
-	$('#gintags').val(data.tags);
 	var tagSitenames = [];
-	var tags = $('#gintags').val();
-	tags = tags.split(',');
+	var temp_array = [];
+
+	for (var counter = 0; counter < data.tags.length;counter++) {
+		temp_array.push(data.tags[counter].tag_name);
+	}
+
+	$('#gintags').val(temp_array);
+	var gintag_details = {
+		"office" : data.office,
+		"site": data.site,
+		"data": data,
+		"cmd": "insert"
+	};
+
+	getGintagGroupContacts(data);
 
 	$('input[name="sitenames"]:checked').each(function() {
 		tagSitenames.push(this.value);
 	});
 
+	var tagOffices = [];
+
+	$('input[name="offices"]:checked').each(function() {
+		tagOffices.push(this.value);
+	});
+
 	if (tagSitenames.length == 0 ) {
-		var contactIdentifier = $('#contact-indicator').val().split(" ");
-		tagSitenames.push(contactIdentifier[0]);
+		$('input[name="candidate-sites-narrative"]:checked').each(function() {
+			tagSitenames.push(this.value);
+		});
+	}
+
+	if (tagOffices.length == 0) {
+		tagOffices = data.office;
 	}
 
 	gintags_msg_details.tags = data.tags;
-	if (data.tags == "#EwiMessage" || data.tags == "#GroundMeasReminder") {
-		getGintagGroupContacts(data);
-		for (var counter = 0; counter < tags.length; counter++) {
-			if (tags[counter] == "#EwiMessage" || tags[counter] == "#GroundMeasReminder") {
-				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					if (tagSitenames[tag_counter] == "MES") {
-						var mes_sites = ['MSL','MSU'];
-						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
-							getOngoingEvents(mes_sites[msl_msu_counter]);
-						}
-					} else {
-						getOngoingEvents(tagSitenames[tag_counter]);
-					}
-				}
-				break;
+
+	for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+		if (tagSitenames[tag_counter] == "MES") {
+			var mes_sites = ['MSL','MSU'];
+			for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
+				getOngoingEvents(mes_sites[msl_msu_counter]);
 			}
+		} else {
+			getOngoingEvents(tagSitenames[tag_counter]);
 		}
-	} else if (data.tags == "#EwiResponse" || data.tags == "#GroundMeas") {
-		if (tags[1] != "") {
-			for (var i = 0; i < tags.length;i++) {
-				gintags_collection = [];
-				gintags = {
-					'tag_name': tags[i],
-					'tag_description': "communications",
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-					'tagger': tagger_user_id,
-					'table_element_id': data.data[5],
-					'table_used': data.data[6],
-					'remarks': ""
-				}
-				gintags_collection.push(gintags);
-				$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-				.done(function(response) {
-					$( "#messages li" ).eq(message_li_index).addClass("tagged");
-				});
-			}
-			$.notify("GINTAG successfully tagged!","success");
-		}
-		for (var counter = 0; counter < tags.length;counter++) {
-			if (tags[counter] == "#EwiResponse" || tags[counter] == "#GroundMeas") {
-				for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-					if (tagSitenames[tag_counter] == "MES") {
-						var mes_sites = ['MSL','MSU'];
-						for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
-							getOngoingEvents(mes_sites[msl_msu_counter]);
-						}
-					} else {
-						getOngoingEvents(tagSitenames[tag_counter]);
-					}
-				}
-				break;
-			}
-		}
-	} else {
-		$.notify('Invalid Request, please try again.',"warning");
 	}
 });
 
 function displayNarrativeConfirmation(gintag_details){
+	$('#site-select-narrative-container').hide();
+	$('#site-select-narrative').empty();
+	if (gintag_details.site.length > 1) {
+		$('#site-select-narrative-container').show();
+		for (var counter = 0; counter < gintag_details.site.length; counter++) {
+			$('#site-select-narrative').append("<li><div class='checkbox' style='margin: 10px;'><label><input type='checkbox' name='candidate-sites-narrative' value='"+gintag_details.site[counter]+"'>"+gintag_details.site[counter]+"</label></div></li>")
+		}
+	}
+
 	if (gintag_details.data[1] == "You") {
 		var summary = "";
 		var office = "Office(s): ";
@@ -3860,20 +3833,17 @@ function displayNarrativeConfirmation(gintag_details){
 		for (var counter = 0; counter < gintag_details.office.length; counter++) {
 			office = office+gintag_details.office[counter]+" ";
 		}
-
 		for (var counter = 0; counter < gintag_details.site.length; counter++) {
 			site = site+gintag_details.site[counter]+" ";
 		}
 
 		summary = office+"\n"+site+"\n\n"+gintag_details.data[4];
-		console.log(gintag_details.data);
 		$('#save-narrative-content p').text("Saving an "+tag_indicator+" tagged message will be saved to narratives.");
 		$('#ewi-tagged-msg').val(summary);
 	} else {
 		var summary = "";
 		var sender = "Sender(s): "+gintag_details.data[1];
 		summary = sender+"\n\n"+gintag_details.data[4];
-		console.log(gintag_details.data);
 		$('#save-narrative-content p').text("Saving an "+tag_indicator+" tagged message will be saved to narratives.");
 		$('#ewi-tagged-msg').val(summary);
 	}
@@ -3901,116 +3871,45 @@ function insertGintagService(data){
 		tagSitenames = [];
 		var contactIdentifier = $('#contact-indicator').val().split(" ");
 		tagOffices.push(contactIdentifier[1]);
-		tagSitenames.push(contactIdentifier[0]);
-	}
-	// if (tagOffices.length != 0 && tagSitenames.length != 0) {
-		if (data[1] == "You") {
-			var gintag_details = {
-				"office" : tagOffices,
-				"site": tagSitenames,
-				"data": data,
-				"cmd": "insert"
-			};
-			if ($.inArray("#EwiMessage",tags) != -1) {
-				tag_indicator = "#EwiMessage";
-			} else if ($.inArray('#GroundMeasReminder',tags) != -1) {
-				tag_indicator = "#GroundMeasReminder";
+		if (contactIdentifier[0].indexOf('[') != -1 && contactIdentifier[0].indexOf(']')) {
+			var sites = contactIdentifier[0].split(',');
+			for (var counter = 0; counter < sites.length; counter++) {
+				sites[counter] = sites[counter].replace('[','');
+				sites[counter] = sites[counter].replace(']','');
+				tagSitenames.push(sites[counter]);
 			}
-
-			if ($.inArray("#EwiMessage", tags) != -1 || $.inArray('#GroundMeasReminder',tags) != -1) {
-				var tags = $('#gintags').val();
-				tags = tags.split(',');
-				tags.splice($.inArray(tag_indicator, tags),1);
-				$('#gintags').val(tags);
-				getGintagGroupContacts(gintag_details);
-				gintag_details.tags = tag_indicator;
-				$("#gintag_details_container").val(JSON.stringify(gintag_details));
-				displayNarrativeConfirmation(gintag_details);
-			} else {
-				getGintagGroupContacts(gintag_details);
-			}
-
 		} else {
-			if ($.inArray("#EwiResponse",tags) != -1 || $.inArray('#GroundMeas',tags) != -1) {
-				var gintag_details = {
-					"data": data,
-					"cmd": "insert"
-				};
+			tagSitenames.push(contactIdentifier[0]);
+		}
+	}
 
-				if ($.inArray("#EwiResponse",tags) != -1) {
-					tag_indicator = "#EwiResponse"
-				} else if ($.inArray('#GroundMeas',tags) != -1) {
-					tag_indicator = "#GroundMeas";
-				}
-				var tags = $('#gintags').val();
-				tags = tags.split(',');
-				tags.splice($.inArray(tag_indicator, tags),1);
-				$('#gintags').val(tags);
-				gintag_details.tags = tag_indicator;
-				if (tags[1] != "") {
-					for (var i = 0; i < tags.length;i++) {
-						gintags_collection = [];
-						gintags = {
-							'tag_name': tags[i],
-							'tag_description': "communications",
-							'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-							'tagger': tagger_user_id,
-							'table_element_id': data[5],
-							'table_used': data[6],
-							'remarks': ""
-						}
-						gintags_collection.push(gintags);
-						$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-						.done(function(response) {
-							$( "#messages li" ).eq(message_li_index).addClass("tagged");
-						});
-					}
-					$.notify("GINTAG successfully tagged!","success");
-				}
-				$("#gintag_details_container").val(JSON.stringify(gintag_details));
-				displayNarrativeConfirmation(gintag_details);
-			} else {
-				for (var i = 0; i < tags.length;i++) {
-					gintags_collection = [];
-					gintags = {
-						'tag_name': tags[i],
-						'tag_description': "communications",
-						'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-						'tagger': tagger_user_id,
-						'table_element_id': data[5],
-						'table_used': data[6],
-						'remarks': ""
-					}
-					gintags_collection.push(gintags);
-					$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-					.done(function(response) {
-						$( "#messages li" ).eq(message_li_index).addClass("tagged");
-					});
-				}
-				$.notify("GINTAG successfully tagged!","success");
-			}
+	$.post( "../gintags_manager/getGintagDetails/", {gintags: tags})
+	.done(function(response) {
+		var gintag_narratives = JSON.parse(response);
+
+		var gintag_details = {
+			"office" : tagOffices,
+			"site": tagSitenames,
+			"data": data,
+			"cmd": "insert"
+		};
+		var non_narratives = [];
+		for (var counter = 0; counter < gintag_narratives.length; counter++) {
+			tags.splice($.inArray(gintag_narratives[counter].tag_name, tags),1);
 		}
 
-	// } else {
-	// 	for (var i = 0; i < tags.length;i++) {
-	// 		gintags_collection = [];
-	// 		gintags = {
-	// 			'tag_name': tags[i],
-	// 			'tag_description': "communications",
-	// 			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
-	// 			'tagger': tagger_user_id,	
-	// 			'table_element_id': data[5],
-	// 			'table_used': data[6],
-	// 			'remarks': ""
-	// 		}
-	// 		gintags_collection.push(gintags);
-	// 		$.post( "../generalinformation/insertGinTags/", {gintags: gintags_collection})
-	// 		.done(function(response) {
-	// 			$( "#messages li" ).eq(message_li_index).addClass("tagged");
-	// 		});
-	// 	}
-	// 	$.notify("GINTAG successfully tagged!","success");
-	// }
+		// Insert to gintags all non narrative tags
+		$('#gintags').val(tags);
+		if (tags.length != 0) {
+			getGintagGroupContacts(gintag_details);	
+		}
+		if (gintag_narratives.length != 0) {
+			gintag_details.tags = gintag_narratives;
+			$("#gintag_details_container").val(JSON.stringify(gintag_details));
+			displayNarrativeConfirmation(gintag_details);
+			console.log('Has tag for narratives');
+		}
+	});
 }
 
 function removeIndividualGintag(gintag_details){
@@ -4028,6 +3927,7 @@ function getGintagGroupContacts(gintag_details){
 		if (tags[0] != "") {
 			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 			.done(function(response) {
+				console.log(response);
 				var data = JSON.parse(response);
 				for (var i = 0; i < tags.length; i++) {
 					gintags_collection = [];
@@ -4071,7 +3971,7 @@ function getGintagGroupContacts(gintag_details){
 					'contact': number_collection,
 					'details': gintag_details
 				}
-				console.log(toBeRemoved);
+
 				$.post( "../generalinformation/removeGintagsEntryViaChatterbox/", {gintags: toBeRemoved})
 				.done(function(response) {
 					$.notify("GINTAG successfully removed!","success");
