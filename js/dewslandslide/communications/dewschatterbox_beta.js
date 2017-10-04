@@ -1121,7 +1121,7 @@ $(document).ready(function() {
 						.done(function(response) {
 							var data = JSON.parse(response);
 							var narrative_template = data[0].narrative_input;
-							var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)'];
+							var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)','(sms_msg)','(sender)'];
 							for (var counter = 0; counter < key_list.length; counter++){
 								if (narrative_template.indexOf(key_list[counter]) != -1) {
 									var key_replacement = "";
@@ -1140,9 +1140,6 @@ $(document).ready(function() {
 											var x = moment(data_timestamp).hour() % 1 == 0  && moment(data_timestamp).minute() == 30 ?  moment(data_timestamp).add(30,'m').format("hh:mm A") : moment(data_timestamp).format("hh:mm A");
 											if(/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
 											narrative_template = narrative_template.replace('(current_release_time)',x);
-											break;
-										case '(previous_release_time)':
-											console.log("Go here");
 											break;
 									}
 								}
@@ -1215,6 +1212,9 @@ $(document).ready(function() {
 										});
 									}
 								});
+								$('#loading').hide();
+								$('#result-ewi-message').text('Early Warning Information sent successfully!');
+								$('#success-ewi-modal').modal('toggle');
 							});
 						} 
 						});
@@ -2762,6 +2762,7 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#send-btn-ewi-amd').click(function(){
+	$('#loading').show();
 	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 	var default_recipients = $('#default-recipients').val().split(',');
 	var difference = [];
@@ -2847,8 +2848,6 @@ $('#send-btn-ewi-amd').click(function(){
 		}
 
 		$('#constructed-ewi-amd').val('');
-		$('#result-ewi-message').text('Early Warning Information sent successfully!');
-		$('#success-ewi-modal').modal('toggle');
 		$('#ewi-asap-modal').modal('toggle');
 		$("#" + latest_release_id + "_sms").css("color", "red").attr("data-sent", 1);
 	} catch(err) {
