@@ -285,7 +285,7 @@ $(document).ready(function()
                     latest_releases.forEach(function (release, index) {
 
                         form.event_id = release.first_trigger.event_id;
-                        if( internal_alert_level == "A0" ) form.end = null else form.end = formData.end;
+                        if( internal_alert_level == "A0" ) form.end = null; else form.end = formData.end;
 
                         $("#reports_nav_sample").clone().attr("id", "report_nav_" + release.site).attr("style", "").appendTo("#reports_nav");
                         $("#reports_nav_sample").attr("style", "display:none;").removeClass("active");
