@@ -12,7 +12,7 @@ $(document).ready(function(e) {
 	dropdowlistAppendValue()
 	if(category == "rain"){
 		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').add(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
@@ -51,7 +51,7 @@ $(document).ready(function(e) {
 
 		surficialGraph(dataSubmit)
 	}else if(category == "subsurface"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var from = 'n'
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 		$("#subgeneral").val('column_sub')
@@ -95,6 +95,7 @@ function SelectdaysOption(id) {
 		$('.modal-backdrop').remove();
 		$('#loading').modal('toggle');
 		var selected_days = ($(this).find('option').eq(clickedIndex).val()).toLowerCase();
+		var to_time = values[9]
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).add(15,'m').format('YYYY-MM-DD HH:mm:ss')
 		var from;
 		if(selected_days == "7 days"){
@@ -115,7 +116,7 @@ function SelectdaysOption(id) {
 			from = moment(to).subtract(5,'year').format('YYYY-MM-DD HH:mm:ss')
 		}
 
-		var to_time = values[9]
+		
 		
 
 		if(category == "rain"){
@@ -163,6 +164,21 @@ function deleteNan(arr) {
 	return arr.filter(function(item){ 
 		return typeof item == "string" || (typeof item == "number" && item);
 	});
+}
+
+function getRanges(array) {
+	var ranges = [], rstart, rend;
+	for (var i = 0; i < array.length; i++) {
+		rstart = array[i];
+		rend = rstart;
+		while (array[i + 1] - array[i] == 1) {
+
+			rend = array[i + 1];
+			i++;
+		}
+		ranges.push(rstart == rend ? rstart+'' : rstart + '-' + rend);
+	}
+	return ranges;
 }
 
 function bouncer(arr) {
@@ -323,9 +339,9 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -339,32 +355,29 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)	
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: divname[i],fillOpacity: 0.4, zIndex:  (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -373,7 +386,11 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'senslope',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
@@ -390,15 +407,19 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'senslope',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
 						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
 					}
 				}
 			})
-		
-	}
+
+}
 }
 
 function getRainArq(site,dataSubmit,max_rain,id,distance) {
@@ -416,9 +437,9 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -432,32 +453,29 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
+						var nodata_nval=getRanges(nval)	
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
+							
 						}						
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 = [];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : divname[i],fillOpacity: 0.4, zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -466,7 +484,11 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'arq',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
@@ -483,7 +505,11 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'arq',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
@@ -491,7 +517,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 
 				}
 			})
-	}
+}
 }
 
 function getRainNoah(site,dataSubmit,max_rain,id,distance) {
@@ -510,9 +536,10 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
+					var colors= ["#0000FF","#FF0000","#0000"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						var colors= ["#0000FF","#FF0000","#0000"]
+						
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var time =  Date.parse(jsonRespo[i].ts);
@@ -526,32 +553,31 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							DataSeries24h.push(Data24h);
 							DataSeriesRain.push(Datarain);
 							if(jsonRespo[i].rval == null){
-								if(jsonRespo[i-1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-								}
-								if(jsonRespo[i+1].rval != null && jsonRespo[i].rval == null ){
-									nval.push(i);
-
-								}else{
-									nval.push(i);
-								}
+								nval.push(i);
 							}
 						}
-						for (var i = 0; i < nval.length-1; i=i+2) {
-							var n = nval[i];
-							var n2 = nval[i+1];
-							if(n2 < nval.length){
-								negative.push( {from: Date.parse(jsonRespo[n].ts), to: Date.parse(jsonRespo[n2].ts), color: 'rgba(68, 170, 213, .2)'})
-							}		
-						}
+						var nodata_nval=getRanges(nval)
+						
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
+						for (var i = 0; i < nodata_nval.length; i++) {
+							var num = (nodata_nval[i])
+							if(num.search('-') == -1){
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+							}else{
+								var new_num = num.split("-")
+								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
+							}
+							
+						}
+						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						var divname =["24hrs","72hrs" ,"15mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
 						var series_data2 =[];
+						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
@@ -560,7 +586,11 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'noah',
+							max_rain:max_rain,
+							distance:distance
 						}
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
@@ -577,14 +607,18 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							site : site, 
 							fdate : dataSubmit.fdate,
 							tdate : dataSubmit.tdate,
-							current_site : dataSubmit.site
+							current_site : dataSubmit.site,
+							id:id,
+							category:'noah',
+							max_rain:max_rain,
+							distance:distance
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
 						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 					}
 				}
 			})
-	}
+}
 }
 
 function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubmit,distance,max_value ){
@@ -764,16 +798,39 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var  list_dates =[];
-	for (var i = 1; i < duration.asDays(); i++) {
-		list_dates.push(site.slice(0,3)+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	}
-	let dataSubmit = { date:list_dates,table:site}
-	Highcharts.setOptions({
-		global: {
-			timezoneOffset: -8 * 60
-		}
-	});
+	// var  list_dates =[];
+	// for (var i = 1; i < duration.asDays(); i++) {
+	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
+	// }
+	// let dataSubmit = { date:list_dates,table:site}
+	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+	// 	var result = JSON.parse(data);
+	// 	var result_filtered = [];
+	// 	for (var i = 0; i < result.length; i++) {
+	// 		if(site == result[i].table_used){
+	// 			result_filtered.push(result[i])
+	// 		}
+	// 	}
+	// 	var label_crack = ["24hrs","72hrs","15mins"]
+	// 	var all_data_tag =[]
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		var collect =[]
+	// 		for (var i = 0; i < result_filtered.length; i++) {
+	// 			var remark_parse = ((result_filtered[i].remarks).split("/"))
+
+	// 			if(remark_parse[1] == label_crack[a] ){
+	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result_filtered[i].tag_name})
+	// 			}
+	// 		}
+
+	// 		all_data_tag.push(collect)
+
+	// 	}
+
+	// 	for (var a = 0; a < label_crack.length; a++) {
+	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
+	// 	}
+	// 	series_data.push({name:'Tag'})
 	var cumulative_time = ($('#cumulativeTime').text()).split(",")
 	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
@@ -784,6 +841,13 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
+	console.log(fdate,tdate)
+	var colors= ["#EBF5FB","#0000FF","#FF0000"]
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		}
+	});
 	$("#"+id+"2").highcharts({
 		chart: {
 			type: 'column',
@@ -804,7 +868,8 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			}
 		},
 		xAxis: {
-			max:Math.max.apply(null,bouncer(deleteNan(max_plot_time))),
+			min:Date.parse(fdate),
+			max:Date.parse(tdate),
 			plotBands: negative,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
@@ -814,6 +879,17 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			title: {
 				text: 'Date'
 			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = 0.5;
+						zoomEvent(id,zmRange,xMin,xMax,'rain')
+					}
+				}
+			}
 
 		},
 		yAxis: {
@@ -831,50 +907,71 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		},
 
 		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
+						}
+					}
+				}
+			},
 			series: {
 				marker: {
 					radius: 3
 				},
 				cursor: 'pointer',
-				point: {
-					events: {
-						click: function () {
-							if(this.series.name == "Tag"){
-								$("#tagModal").modal("show");
-								$("#comment-model").empty();
-								$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-							}else{
-								$("#annModal").modal("show");
-								$(".tag").hide();
-								$('#tag_ids').tagsinput('removeAll');
-								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-								$("#tag_value").val(this.y)
-								$("#tag_crack").val(this.series.name)
-								$("#tag_description").val('rain analysis')
-								$("#tag_tableused").val(site)
-								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-							}
-						}
+					// point: {
+					// 	events: {
+					// 		click: function () {
+					// 			if(this.series.name == "Tag"){
+					// 				$("#tagModal").modal("show");
+					// 				$("#comment-model").empty();
+					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
+					// 			}else{
+					// 				$("#annModal").modal("show");
+					// 				$(".tag").hide();
+					// 				$('#tag_ids').tagsinput('removeAll');
+					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+					// 				$("#tag_value").val(this.y)
+					// 				$("#tag_crack").val(this.series.name)
+					// 				$("#tag_description").val('rain analysis')
+					// 				$("#tag_tableused").val(site)
+					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+					// 			}
+					// 		}
+					// 	}
+					// }
+
+				},
+				area: {
+					marker: {
+						lineWidth: 3,
+						lineColor: null 
 					}
 				}
 
 			},
-			area: {
-				marker: {
-					lineWidth: 3,
-					lineColor: null 
-				}
-			}
+			legend: {
+				enabled: false
+			},
+			credits: {
+				enabled: false
+			},
+			series:series_data
+		},function(chart) { 
+			syncronizeCrossHairs(chart,id+"2",'rain');
 
-		},
-		legend: {
-			enabled: false
-		},
-		credits: {
-			enabled: false
-		},
-		series:series_data
-	});
+		});
 
 
 	setTimeout(function(){
@@ -1050,11 +1147,9 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 }
 
 function allSensorPosition(site,fdate,tdate) {
-	// console.log("/api/SensorAllAnalysisData/"+site+"/n/"+tdate)
-	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/n/"+tdate,
+	$.ajax({url: "/api/SensorAllAnalysisData/"+site+"/"+fdate+"/"+tdate,
 		dataType: "json",
 		success: function(result){
-			console.log(result)
 			var data = JSON.parse(result);
 			columnPosition(data[0].c,site)
 			displacementPosition(data[0].d,data[0].v,site)
@@ -1099,15 +1194,20 @@ function columnPosition(data_result,site) {
 				listId.push(AlllistId[i])
 			}
 		}
+		var all_col_data = []
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
 				if(listDate[i] == data[a].ts){
 					fdatadown.push({x:data[a].downslope,y:data[a].depth})
 					fdatalat.push({x:data[a].latslope,y:data[a].depth})
+					all_col_data.push(data[a].latslope)
+					all_col_data.push(data[a].downslope)
 				}
 			}
 		}
-
+		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_col_data))))
+		var max_value = (Math.max.apply(null, bouncer(removeDuplicates(all_col_data))))
+		console.log(min_value)
 		for(var a = 0; a < fdatadown.length; a++){
 			var num = fdatadown.length-(listId.length*a);
 			if(num >= 0 ){
@@ -1126,8 +1226,8 @@ function columnPosition(data_result,site) {
 			fseries2.push({name:listDate[a].slice(0,16),  data:fAlllat[a],color:inferno[color]})
 			
 		}
-		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(m)",site)
-		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(m)",site)
+		chartProcessInverted("colspangraph1",fseries,"Horizontal Displacement,downslope(m)",site,min_value,max_value)
+		chartProcessInverted("colspangraph2",fseries2,"Horizontal Displacement,across slope(m)",site,min_value,max_value)
 		$("#column_sub").switchClass("collapse","in");
 	}     
 }
@@ -1137,11 +1237,11 @@ function displacementPosition(data_result,data_result_v,site) {
 		var data = data_result;
 		var totalId =[] , listid = [0] ,allTime=[] ,allId=[] , totId = [];
 		var fixedId =[] , alldata=[], alldata1=[] , allIdData =[];
-		var disData1 = [] , disData2 = [];
+		var disData1 = [] 
 		var fseries = [], fseries2 = [];
 		var c1series =[], c2series =[];
 		var d1= [] , d2 =[] , n1=[], n2=[];
-
+		
 		for(var i = 0; i < data[0].disp.length; i++){
 			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
 				totalId.push(data[0].disp[i]);
@@ -1157,6 +1257,7 @@ function displacementPosition(data_result,data_result_v,site) {
 				}
 			}
 		}
+		
 		for(var i = 1; i < fixedId.length-1; i++){
 			if(fixedId[i].id != fixedId[i+1].id){
 				allIdData.push(i)
@@ -1168,46 +1269,47 @@ function displacementPosition(data_result,data_result_v,site) {
 				break;
 			}
 		}
-
-		for(var i = fixedId.length - 1; i >= 0 ; i--){
+		for(var i = fixedId.length-1; i >= 0 ; i--){
 			var num = fixedId.length-(totId.length*i);
 			if(num >= 0 ){
 				listid.push(num);
 			}
 		}
-
-		for(var a = 1; a < (listid.length-1); a++){
+		for(var a = 1; a < (listid.length); a++){
 			if(listid[a] != undefined){
-				disData1.push(fixedId.slice(listid[a],listid[a+1]));
-				disData2.push(fixedId.slice(listid[a],listid[a+1])); 
+				disData1.push(fixedId.slice(listid[a-1],listid[a+1]));
 			}
 		}
 		
+		var all_val = [];
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
-				d1.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base)*1000)})
-				d2.push({x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base)*1000)})
-
+				d1.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base))*1000})
+				d2.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].latslope-data[0].cml_base))*1000})
+				all_val.push(((disData1[a][i].downslope-data[0].cml_base))*1000)
+				all_val.push(((disData1[a][i].latslope-data[0].cml_base))*1000)
 			}
 		}
-
-		for(var i = 0; i < disData1.length; i++){
-			n1.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
-				label: {text: data[0].annotation[i].downslope_annotation,style: {color: '#1c1c1c'}}})
-			n2.push({from:((disData1[i][i].downslope-data[0].cml_base)*1000)-1 ,to:(((disData1[i][i].downslope-data[0].cml_base)*1000)),
-				label: {text: data[0].annotation[i].latslope_annotation,style: {color: '#1c1c1c'}}})
+		
+		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_val))))
+		var diff = (min_value/data[0].disp.length)
+		for(var i = 1; i < disData1.length; i++){
+			n1.push({from:((disData1[i][1].downslope-data[0].cml_base)*1000)+.15,to:((disData1[i][1].downslope-data[0].cml_base)*1000)-diff,
+				label: {text: i,style: {color: '#1c1c1c'}}})
+			n2.push({from:((disData1[i][1].latslope-data[0].cml_base)*1000)+.15,to:((disData1[i][1].downslope-data[0].cml_base)*1000)-diff,
+				label: {text: i,style: {color: '#1c1c1c'}}})
 		}
-
 		for(var a = 0; a < data[0].cumulative.length; a++){
 			c1series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].downslope-data[0].cml_base)*1000)})
 			c2series.push({x:Date.parse(data[0].cumulative[a].ts) ,y:((data[0].cumulative[a].latslope-data[0].cml_base)*1000)})
 		}
+		
 		fseries.push({name:'cumulative', data:c1series,type: 'area'});
-		fseries2.push({name:'cumulative', data:c1series,type: 'area'});
+		fseries2.push({name:'cumulative', data:c2series,type: 'area'});
 		for(var a = 1; a < disData1.length+1; a++){
 			var color = parseInt((255 / disData1.length)*(a))
-			fseries.push({name:(a), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
-			fseries2.push({name:(a), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries.push({name:(a-1), data:d1.slice(listid[a],listid[a+1]),color:inferno[color]})
+			fseries2.push({name:(a-1), data:d2.slice(listid[a],listid[a+1]),color:inferno[color]})
 		}
 		velocityPosition(data_result_v,totalId.length,disData1[0],site,n1); 
 		fseries.push({name:'unselect'})
@@ -1218,18 +1320,23 @@ function displacementPosition(data_result,data_result_v,site) {
 	}     
 
 }
-function velocityPosition(data_result,id,date,site,ndata) {
+function velocityPosition(data_result,id,date_template,site,ndata) {
 	if(data_result != "error"){
 		var data = data_result;
 		var allTime = [] , dataset= [] , sliceData =[];
 		var fseries = [], fseries2 = [] ;
 		var l2 =[] , l3=[] , alldataNotSlice=[];
+		var date = date_template.slice(date_template.length-7,date_template.length);
 
 		if(data[0].L2.length != 0){
 			var catNum=[];
 			for(var a = 0; a < data[0].L2.length; a++){
 				allTime.push(data[0].L2[a].ts)
-				l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L2[a].ts ){
+						l2.push([Date.parse(data[0].L2[a].ts) , (ndata.length)-(data[0].L2[a].id)])
+					}
+				}
 			}
 			for(var a = ndata.length; a > 0 ; a--){
 				catNum.push(a)
@@ -1242,7 +1349,11 @@ function velocityPosition(data_result,id,date,site,ndata) {
 			}
 			for(var a = 0; a < data[0].L3.length; a++){
 				allTime.push(data[0].L3[a].ts)
-				l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+				for (var i = 0; i < date.length; i++) {
+					if(date[i].ts == data[0].L3[a].ts ){
+						l3.push([Date.parse(data[0].L3[a].ts) , (ndata.length)-(data[0].L3[a].id)]);
+					}
+				}
 			}
 			var symbolD1 = 'url(http://en.xn--icne-wqa.com/images/icones/1/3/software-update-urgent-2.png)';
 			for(var a = 0; a < data[0].L3.length; a++){
@@ -1306,6 +1417,8 @@ function velocityPosition(data_result,id,date,site,ndata) {
 			sorted_fseries.push(doSortDates(fseries[counter].data));
 
 		}
+
+
 
 		chartProcessbase("velocity1",fseries,"Velocity Alerts,downslope",site,catNum)
 		chartProcessbase("velocity2",fseries2,"Velocity Alerts,across slope",site,catNum)   
@@ -1388,7 +1501,7 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 
 }
 
-function chartProcessInverted(id,data_series,name,site){
+function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1418,12 +1531,15 @@ function chartProcessInverted(id,data_series,name,site){
 			}
 		},
 		xAxis:{
+			min:minVal,
+			max:(maxVal + 0.02 ),
 			gridLineWidth: 1,
 			title: {
 				text: name
 			}
 		},
 		yAxis:{
+
 			title: {
 				text: 'Depth (m)'
 			}

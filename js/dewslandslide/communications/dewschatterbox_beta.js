@@ -1,7 +1,7 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor(dashboard_data){
-	if (window.location.href == window.location.origin+"/communications/chatterbox_beta") {
+	if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
 		var internal_alert = "";
 		var backbone_message = "";
 		var recommended_response = "";
@@ -124,6 +124,28 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 	} else {
+
+		$('#send-btn-ewi-amd').prop('disabled',true);
+		$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
+
+		var current_client_time = moment().format('YYYY-MM-DD HH:mm:ss');
+		var remainder = moment(current_client_time).minute() % 30;
+		var client_release_time = moment(current_client_time).subtract(remainder,"m").format("YYYY-MM-DD HH:mm:00");
+
+		if (client_release_time == dashboard_data.event_start) {
+			$('#send-btn-ewi-amd').prop('disabled',false);
+			$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+		} else {
+
+			if (moment(current_client_time).hours() % 4 == 0) {
+				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+				$('#send-btn-ewi-amd').prop('disabled',false);
+			} else if (dashboard_data.event_start == dashboard_data.data_timestamp) {
+				$('#send-btn-ewi-amd').prop('disabled',false);
+				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+			}
+		}
+
 		var alert_site_name = "";
 		var alert_level = "";
 		// HOTFIX OF ND sites
@@ -409,6 +431,8 @@ $(document).ready(function() {
 	var quick_event_inbox = [];
 	var quick_inbox_unknown = [];
 	var quick_release = [];
+	var group_message_quick_access = [];
+	var group_contacts_quick_access = [];
 	var temp, tempMsg, tempUser, tempRequest;
 	var msgType;
 	var WSS_CONNECTION_STATUS = -1;
@@ -418,6 +442,7 @@ $(document).ready(function() {
 	var groupTags = [];
 	var testName;
 	var testNumbers;
+	var displayMessage;
 	var multiContactsList = [];
 	var timerID = 0;
 	var ewirecipients;
@@ -439,6 +464,7 @@ $(document).ready(function() {
 	var tag_indicator = "";
 	var searched_cache = [];
 	var dasboard_data_holder;
+	var contactInfo = [];
 
 
 	if (window.location.host != "www.dewslandslide.com") {
@@ -467,6 +493,7 @@ $(document).ready(function() {
 		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var group_message_template = Handlebars.compile($('#group-message-template').html());
 		var ewi_template = Handlebars.compile($('#ewi_template').html());
 
 	} catch (err) {
@@ -483,6 +510,19 @@ $(document).ready(function() {
 
 		return t;
 	}
+
+	$('.chat-message').scroll(function(){
+		if ($('.chat-message').scrollTop() == 0) {
+			console.log(msgType);
+			if (msgType == "smsload") {
+				getOldMessage();
+			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+				getOldMessageGroup();
+			} else {
+				console.log("Invalid Request/End of the Conversation");
+			}
+		}
+	});
 
 	function updateRemainingCharacters() {
 		remChars = 800 - $("#msg").val().length - footer.length;
@@ -629,7 +669,6 @@ $(document).ready(function() {
 
 		if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
 			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")){
-
 			try {
 				if (messages[counters]['user'] == 'You') {
 					if (lastMessageTimeStampYou == "") {
@@ -660,44 +699,47 @@ $(document).ready(function() {
 	}
 
 	function updateQuickInbox(msg) {
-		if (msg.user == "You") {
-		}
-		else {
-			var targetInbox;
-			var quick_inbox_html;
-			if (msg.name == "unknown") {
-				try {
-					msg.isunknown = 1;
-					targetInbox = "#quick-inbox-unknown-display";
-					quick_inbox_unknown.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
-				} catch(err) {
+		if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
+			if (msg.user == "You") {
 				}
-			}
-			else {
-				try {
+				else {
+					var targetInbox;
+					var quick_inbox_html;
+					if (msg.name == "unknown") {
+						try {
+							msg.isunknown = 1;
+							targetInbox = "#quick-inbox-unknown-display";
+							quick_inbox_unknown.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_unknown});
+						} catch(err) {
+						}
+					}
+					else {
+						try {
+							msg.isunknown = 0;
+							targetInbox = "#quick-inbox-display";
+							quick_inbox_registered.unshift(msg);
+							quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+						} catch(err) {
+						}
+					}
+					$(targetInbox).html(quick_inbox_html);
+					$(targetInbox).scrollTop(0);
+				}
+				
+			if (msg.onevent == 1) {
+				if (msg.user != "You"){
+					var targetInbox;
+					var quick_inbox_html;
 					msg.isunknown = 0;
-					targetInbox = "#quick-inbox-display";
-					quick_inbox_registered.unshift(msg);
-					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
-				} catch(err) {
+					targetInbox = "#quick-event-inbox-display";
+					quick_event_inbox.unshift(msg);
+					quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
 				}
-			}
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
-		}
-		if (msg.onevent == 1) {
-			if (msg.user != "You"){
-				var targetInbox;
-				var quick_inbox_html;
-				msg.isunknown = 0;
-				targetInbox = "#quick-event-inbox-display";
-				quick_event_inbox.unshift(msg);
-				quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_event_inbox});
-			}
 
-			$(targetInbox).html(quick_inbox_html);
-			$(targetInbox).scrollTop(0);
+				$(targetInbox).html(quick_inbox_html);
+				$(targetInbox).scrollTop(0);
+			}
 		}
 	}
 
@@ -708,6 +750,17 @@ $(document).ready(function() {
 			$('#quick-release-display').html(quick_release_html);
 			$('#quick-release-display').scrollTop(0);
 		} catch(err) {
+		}
+	}
+
+	function updateGroupMessageQuickAccess(msg) {
+		try {
+			group_message_quick_access.unshift(msg);
+			var group_message_html = group_message_template({'group_message': group_message_quick_access});
+			$('#group-message-display').html(group_message_html);
+			$('#group-message-display').scrollTop(0);
+		} catch(err) {
+			console.log(err.message);
 		}
 	}
 
@@ -845,7 +898,7 @@ $(document).ready(function() {
 			var htmlStringMessage = $('#messages').html();
 			var messages_html = messages_template_both({'messages': messages});
 			$('#messages').html(messages_html+htmlStringMessage);
-			$('html, body').scrollTop(200);
+			$('.chat-message').scrollTop(200);
 		} else {
 			convoFlagger = true;
 			alert("End of the Conversation");
@@ -875,7 +928,6 @@ $(document).ready(function() {
 
 		$('#user').val('You');
 		messages = [];
-
 		conn.send(JSON.stringify(request));
 	}
 
@@ -967,6 +1019,48 @@ $(document).ready(function() {
 		}
 	}
 
+	function initLoadGroupMessageQA(siteMembers) {
+		group_contacts_quick_access = [];
+		group_message_quick_access = [];
+		if (siteMembers.data == null) {
+			return;
+		}
+
+		var members = siteMembers.data;
+		temp = siteMembers.data;
+		var msg;
+
+		$('#group-message-display').empty();
+		var arr_sites = [];
+		var arr_contacts = [];	
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.fullname,arr_contacts) == -1) {
+				arr_contacts.push(msg.fullname);
+			}
+		}
+
+		for (var i = members.length - 1; i >= 0; i--) {
+			msg = members[i];
+			if ($.inArray(msg.site,arr_sites) == -1) {
+				arr_sites.push(msg.site);
+				var contact_per_site = [];
+				for (var counter = 0; counter < arr_contacts.length; counter++) {
+					if (arr_contacts[counter].substring(0,3) == msg.site) {
+						var temp_contacts = {
+							'contacts': arr_contacts[counter]
+						}
+						contact_per_site.push(temp_contacts);
+					}
+				}
+				msg.data = contact_per_site;
+				updateGroupMessageQuickAccess(msg);
+			}
+		}
+
+	}
+
 	function loadOfficesAndSites(msg) {
 		var offices = msg.offices;
 		var sitenames = msg.sitenames;
@@ -1029,10 +1123,12 @@ $(document).ready(function() {
 				$('#ewi-recipient-update-modal').modal('toggle');
 				loadGroups();
 			} else if (msg.type == "oldMessage"){
+				console.log(msg);
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
+				console.log(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
 				$('#chatterbox-loading').modal('hide');
@@ -1074,6 +1170,8 @@ $(document).ready(function() {
 			} else if (msg.type == "latestAlerts"){
 				initLoadLatestAlerts(msg);
 				$('#chatterbox-loading').modal('hide');
+			} else if (msg.type == "groupMessageQuickAcces") {
+				initLoadGroupMessageQA(msg);
 			} else if (msg.type == "loadofficeandsites") {
 				officesAndSites = msg;
 				loadOfficesAndSites(officesAndSites);
@@ -1093,6 +1191,7 @@ $(document).ready(function() {
 
 				comboplete.list = suggestionsArray;
 			} else if (msg.type == "ewi_tagging") {
+				
 				gintags_collection = [];
 				var tag = "";
 				if ($('#edit-btn-ewi-amd').val() === "edit") {
@@ -1104,7 +1203,10 @@ $(document).ready(function() {
 				}
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
+				temp_msg_holder.timestamp = msg.timestamp
+
 				updateMessages(temp_msg_holder);
+
 				var current_timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 				if (tag != "") {
 					for (var i = 0; i < msg["data"].length; i++) {
@@ -1204,8 +1306,8 @@ $(document).ready(function() {
 								}
 
 								$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
-									console.log(data);
 									var response = JSON.parse(data);
+									var last_rounded_release = response.res[0].narrative.substring(5,13);
 									if (response.ack == "no_ack") {
 										var narrative_details = {
 											'event_id': event_details.event_id,
@@ -1215,7 +1317,7 @@ $(document).ready(function() {
 											'barangay': event_details.barangay,
 											'sition': event_details.sition,
 											'ewi_sms_timestamp': moment(data_timestamp).add(29,'m').format('YYYY-MM-DD HH:mm:ss'),
-											'narrative_template': "No acknowledgement from the community for "+moment(last_rounded_release).format('hh:mm A')+" EWI Release"
+											'narrative_template': "No acknowledgement from all stakeholders for "+last_rounded_release+" EWI Release"
 										}
 										$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 											console.log(data);
@@ -1415,7 +1517,9 @@ function getOngoingEvents(sites){
 							var lastReleaseData = {
 								'event_id': events[counter].event_id,
 								'current_release_time': rounded_release,
-								'last_release_time': last_rounded_release
+								'last_release_time': last_rounded_release,
+								'previous_release': previous_release,
+								'data_timestamp': event_details.data_timestamp
 							}
 
 							$.post("../narrativeautomation/checkack/",{last_release : lastReleaseData}).done(function(data){
@@ -1425,7 +1529,7 @@ function getOngoingEvents(sites){
 										'event_id': events[counter].event_id,
 										'site_id': siteids[siteid_counter].id,
 										'ewi_sms_timestamp': rounded_release,
-										'narrative_template': "No ACK for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
+										'narrative_template': "No acknowledgement from all stakeholders for "+moment(last_rounded_release).format('HH:mm A')+" EWI Release"
 									}
 									$.post("../narrativeAutomation/insert/", {narratives: narrative_details}).done(function(data){
 										console.log(data);
@@ -1460,34 +1564,40 @@ function waitForSocketConnection() {
 	}
 }
 function trimmedContactNum(inputContactNumber) {
-	var numbers = /^[0-9]+$/;  
+	var numbers = /^[0-9]+$/; 
+	var trimmed_collection = [];
 	var trimmed;
-	var targetNumber = inputContactNumber.replace(/[^0-9]/igm,'');
-	if(targetNumber.match(numbers)) {  
-		var size = targetNumber.length;
+	var raw = inputContactNumber.split('-');
+	if (raw.length == 1) {
+		var targetNumber = raw[0].split(',');
+	} else {
+		var targetNumber = raw[1].split(',');
+	}
+	for (var counter = 0; counter < targetNumber.length; counter++) {
+		if(targetNumber[counter].trim().match(numbers) && targetNumber[counter].trim() != "") {  
+			var size = targetNumber[counter].trim().length;
 
-		if (size == 12) {
-			trimmed = targetNumber.slice(2, size);
-		} 
-		else if (size == 11) {
-			trimmed = targetNumber.slice(1, size);
-		}
-		else if (size == 10) {
-			trimmed = targetNumber;
-		}
-		else {
-			console.log('Error: No such number in the Philippines');  
+			if (size == 12) {
+				trimmed = targetNumber[counter].trim().slice(2, size);
+			} else if (size == 11) {
+				trimmed = targetNumber[counter].trim().slice(1, size);
+			} else if (size == 10) {
+				trimmed = targetNumber[counter].trim();
+			} else {
+				console.log('Error: No such number in the Philippines');  
+				return -1;
+			}
+
+			trimmed_collection.push(trimmed);
+		} else {  
+			console.log('Please input numeric characters only');  
 			return -1;
 		}
+	}
 
-		inputContactNumber = "63" + trimmed;
-		return trimmed;
-	}  
-	else {  
-		console.log('Please input numeric characters only');  
-		return -1;
-	}  
+	return trimmed_collection;
 }
+
 function normalizedContactNum(targetNumber) {
 	var trimmed = trimmedContactNum(targetNumber);
 
@@ -1507,37 +1617,6 @@ function getNameSuggestions (nameQuery) {
 	};
 	conn.send(JSON.stringify(nameSuggestionRequest));
 };
-
-function parseContactInfo (multipleContactInfo) {
-	parseSingleContactInfo(multipleContactInfo);
-}
-
-function parseSingleContactInfo (singleContactInfo) {
-	var n = singleContactInfo.search(' - ');
-	var size = singleContactInfo.length;
-	testName = singleContactInfo.slice(0,n);
-	testNumbers = singleContactInfo.slice(n + 3,singleContactInfo.length);
-	var tempNum;
-	var searchIndex = 0;
-
-	while (searchIndex >= 0) {
-		searchIndex = testNumbers.search(",");
-		var parsedInfo = {};
-		parsedInfo.fullname = testName;
-
-		if (searchIndex < 0) {
-			parsedInfo.numbers = testNumbers;
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-		} 
-		else {
-			parsedInfo.numbers = testNumbers.slice(0,searchIndex);
-			contactnumTrimmed.push(trimmedContactNum(parsedInfo.numbers));
-			testNumbers = testNumbers.slice(searchIndex + 1);
-		}
-
-		multiContactsList.push(parsedInfo);
-	}
-}
 
 function getFollowingNameQuery (allNameQueries) {
 	var before = allNameQueries.match(/^.+;\s*|/)[0];
@@ -1560,8 +1639,6 @@ function displayContactNamesForThread (source="normal") {
 
 		var tempText = "", tempCountContacts = uniqueName.length;
 		for (i in uniqueName) {
-			console.log(uniqueName[i]);
-
 			if (i == tempCountContacts - 1)
 				tempText = tempText + uniqueName[i];
 			else
@@ -1579,10 +1656,30 @@ function displayContactNamesForThread (source="normal") {
 		}
 	}
 	$("#convo-header .panel-heading").text(tempText);
-	$("#convo-header .panel-body").text(contactInfo[0].numbers);
 	$("#contact-indicator").val(tempText);
 	document.title = tempText;
 }
+
+
+$(document).on("click",".qaccess-contacts",function(){
+	var convo_collection = [];
+	$('.qaccess-contacts:checked').each(function() {
+		convo_collection.push(this.value);
+	});
+
+	var get_convo = "";
+
+	for (var counter = 0; counter < convo_collection.length; counter++) {
+		if (counter == 0) {
+			get_convo = convo_collection[counter];
+		} else {
+			get_convo = get_convo+";"+convo_collection[counter];
+		}
+	}
+
+	$('.dropdown-input').val(get_convo);
+	$('#go-chat').trigger('click');
+});
 
 $('#btn-standard-search').click(function(){
 	if ($('#search-key').is(":visible") == true && $('#search-key').val() != "") {
@@ -1872,6 +1969,7 @@ try {
 	Handlebars.registerHelper('escape', function(variable) {
 		return variable.replace(/(['"-])/g, '\\$1');
 	});
+
 } catch (err) {
 }
 
@@ -2085,7 +2183,6 @@ function displayGroupTagsForThread () {
 			titleSites = titleSites + groupTags.sitenames[i] + ", ";
 		}
 	}
-	console.log(groupTags);
 	tempText = tempText + "]; [Offices: ";
 	var tempCountOffices = groupTags.offices.length;
 	for (i in groupTags.offices) {
@@ -2101,6 +2198,15 @@ function displayGroupTagsForThread () {
 	tempText = tempText + "]";
 	$("#convo-header .panel-heading").text(tempText);
 	document.title = tempText;
+}
+
+function displayGroupMembersForQuickAccess(offices,sites) {
+	var data = {
+		'offices': offices,
+		'sites': sites,
+		'type': 'groumMembersForQuickAccess'
+	}
+	conn.send(JSON.stringify(data));
 }
 
 function displayDetailsForThread(siteabr){
@@ -2200,8 +2306,6 @@ try {
 		var size = allText.length;
 		var allNameQueries = allText.slice(0, size-2);
 		var nameQuery = getFollowingNameQuery(allNameQueries);
-
-		parseContactInfo(nameQuery);
 	}, false);
 } catch(err) {
 }
@@ -2262,6 +2366,7 @@ $(document).on("click","#quick-release-display li",function(){
 		'sitenames': tagSitenames
 	};
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
@@ -2287,33 +2392,44 @@ function quickInboxStartChat(fullContact=null) {
 
 function startChat(source="normal") {
 	convoFlagger = false;
+	contactnumTrimmed = [];
+	contactInfo = [];
 	counters = 0;
 
 	user = "You";
 
 	if (source == "normal") {
-		if (contactSuggestions) {
-			contactInfo = multiContactsList;
-		}
-		else {
-			contactname = $('.dropdown-input').val();
-			contactnum = contactname;
-			contactnumTrimmed = [trimmedContactNum(contactnum)];
 
-			contactInfo = [{'fullname':contactname,'numbers':contactnum}];
+		contactname = $('.dropdown-input').val();
+		contactnum = contactname.split(';');
+
+		for (var counter = 0; counter < contactnum.length; counter++) {
+			if (contactnum[counter].trim() != "") {
+				var raw = trimmedContactNum(contactnum[counter]);
+				for (var sub_counter = 0; sub_counter < raw.length; sub_counter++) {
+
+					contactnumTrimmed.push(raw[sub_counter]);
+
+					var contactraw_inf = {
+						'fullname': contactnum[counter],
+						'numbers': raw[sub_counter]
+					}
+					contactInfo.push(contactraw_inf);
+				}
+			}
 		}
-	}
-	else if (source == "quickInbox") {
+	} else if (source == "quickInbox") {
 		contactname = qiFullContact;
 		contactnum = contactname;
-		contactnumTrimmed = [trimmedContactNum(contactnum)];
+		contactnumTrimmed = trimmedContactNum(contactnum);
 
 		contactInfo = [{'fullname':contactname,'numbers':contactnum}];
 	}
+
 	displayContactNamesForThread(source);
 
-	if (contactnumTrimmed <= 0) {
-		alert("Error: Invalid Contact Number");
+	if (contactnumTrimmed.length <= 0) {
+		alert("Error: Invalid Contact Number here");
 		return;
 	}
 
@@ -2333,6 +2449,8 @@ function startChat(source="normal") {
 	tempRequest = msgHistory;
 	conn.send(JSON.stringify(msgHistory));
 }
+
+
 $('#go-chat').click(function() {
 	lastMessageTimeStamp = "";
 	lastMessageTimeStampYou = "";
@@ -2370,22 +2488,23 @@ $('#send-msg').on('click',function(){
 				});
 
 				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
-				var msg = {
+				
+				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'tag': emp_tag,
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
-				conn.send(JSON.stringify(msg));
+				displayMessage = temp_msg_holder;
+
+				conn.send(JSON.stringify(temp_msg_holder));
 
 				msgType = "smssendgroup";
 				testMsg = msg;
 				counters = 0;
 				messages = [];
-				updateMessages(msg);
 
 				$('#msg').val('');
 			} else {
@@ -2405,10 +2524,11 @@ $('#send-msg').on('click',function(){
 					'offices': tagOffices,
 					'sitenames': tagSitenames,
 					'msg': text + footer,
-					'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
 					'ewi_tag': false
 				};
+
+				displayMessage = temp_msg_holder;
 
 				conn.send(JSON.stringify(temp_msg_holder));
 				
@@ -2419,8 +2539,8 @@ $('#send-msg').on('click',function(){
 				$('#msg').val('');	
 			}
 		} else {
+      
 			var text = $('#msg').val();
-
 			var normalized = [];
 			for (i in contactnumTrimmed) {
 				normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
@@ -2433,10 +2553,10 @@ $('#send-msg').on('click',function(){
 				'user': user,
 				'numbers': normalized,
 				'msg': text + footer,
-				'timestamp': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
-			console.log(temp_msg_holder);
+
+			displayMessage = temp_msg_holder;
 			conn.send(JSON.stringify(temp_msg_holder));
 			$('#msg').val('');
 		}
@@ -2444,6 +2564,7 @@ $('#send-msg').on('click',function(){
 		updateRemainingCharacters();
 	}
 });
+  
 function loadGroups(){
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
@@ -2481,7 +2602,9 @@ function loadGroupsCommunity(){
 		'offices': tagOffices,
 		'sitenames': tagSitenames
 	};
+
 	displayGroupTagsForThread();
+	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
 	$('#user').val('You');
 	$('#messages').html('');
@@ -2987,7 +3110,6 @@ $('#send-btn-ewi-amd').click(function(){
 			'offices': tagOffices,
 			'sitenames': tagSitenames,
 			'msg': text+footer,
-			'timestamp': moment().format('YYYY-MM-DD HH:mm:ss'),
 			'ewi_filter': true,
 			'ewi_tag': true
 		};
