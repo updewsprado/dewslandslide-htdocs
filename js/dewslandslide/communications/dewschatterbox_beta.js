@@ -1017,7 +1017,17 @@ $(document).ready(function() {
 					} else {
 						$(this).parent().css('color','green');
 					}
-				}
+				} else if ($(this).val().toLowerCase() == "mes") {
+					if ("msl" == alerts[i].name || "msu" == alerts[i].name) {
+						if (alerts[i].status == "on-going") {
+							$(this).parent().css('color','red');
+						} else if (alerts[i].status == "extended") {
+							$(this).parent().css('color','blue');
+						} else {
+							$(this).parent().css('color','green');
+						}
+					}
+				} 
 			});
 		}
 	}
@@ -3816,7 +3826,6 @@ $("#confirm-narrative").on('click',function(){
 	gintags_msg_details.tags = data.tags;
 
 	for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
-		debugger;
 		if (tagSitenames[tag_counter] == "MES") {
 			var mes_sites = ['MSL','MSU'];
 			for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
