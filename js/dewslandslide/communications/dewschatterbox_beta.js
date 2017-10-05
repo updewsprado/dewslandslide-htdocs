@@ -419,6 +419,7 @@ function sendViaAlertMonitor(dashboard_data){
 
 $(document).ready(function() {
 
+	var first_load = false;
 	var user, contactnum;
 	var contactnumTrimmed = [];
 	var contactInfo;
@@ -512,14 +513,15 @@ $(document).ready(function() {
 	}
 
 	$('.chat-message').scroll(function(){
-		if ($('.chat-message').scrollTop() == 0) {
-			console.log(msgType);
-			if (msgType == "smsload") {
-				getOldMessage();
-			} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
-				getOldMessageGroup();
-			} else {
-				console.log("Invalid Request/End of the Conversation");
+		if (first_load == false) {
+			if ($('.chat-message').scrollTop() == 0) {
+				if (msgType == "smsload") {
+					getOldMessage();
+				} else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+					getOldMessageGroup();
+				} else {
+					console.log("Invalid Request/End of the Conversation");
+				}
 			}
 		}
 	});
@@ -796,6 +798,7 @@ $(document).ready(function() {
 			}
 			counters = 0;
 		}
+		$('.chat-message').scrollTop($('#messages').height());
 	}
 
 	$('#confirm-ewi-recipients').click(function(){
@@ -1117,6 +1120,7 @@ $(document).ready(function() {
 			if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")){
 				$('#chatterbox-loading').modal('hide');
 				initLoadMessageHistory(msg);
+				first_load = false;
 			}  else if (msg.type == "hasNullEWIRecipient"){
 				initLoadMessageHistory(msg);
 			} else if (msg.type == "resumeLoading") {
@@ -1502,6 +1506,7 @@ function getOngoingEvents(sites){
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 		.done(function(response) {
 			siteids = JSON.parse(response);
+			console.log(siteids);
 			if (events.length == 0) {
 				return -1;
 			} else {
@@ -2299,6 +2304,7 @@ try {
 var qiFullContact = null;
 
 $(document).on("click","#quick-inbox-display li,#quick-event-inbox-display li",function(){
+	first_load = true;
 	$('#chatterbox-loading').modal('show');
 	$('input[name="offices"]').attr('checked', false);
 	$('input[name="sitenames"]').attr('checked', false);
@@ -2364,6 +2370,7 @@ $(document).on("click","#quick-release-display li",function(){
 
 function quickInboxStartChat(fullContact=null) {
 
+	$("#convo-header .panel-body").text('');
 	if (fullContact == null) {
 		console.log("Error: User or Name is null");
 		return;
@@ -3802,9 +3809,14 @@ $("#confirm-narrative").on('click',function(){
 		tagOffices = data.office;
 	}
 
+	if (tagSitenames.length == 0) {
+		tagSitenames = data.site;
+	}
+
 	gintags_msg_details.tags = data.tags;
 
 	for (var tag_counter = 0; tag_counter < tagSitenames.length;tag_counter++) {
+		debugger;
 		if (tagSitenames[tag_counter] == "MES") {
 			var mes_sites = ['MSL','MSU'];
 			for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
@@ -3927,7 +3939,6 @@ function getGintagGroupContacts(gintag_details){
 		if (tags[0] != "") {
 			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 			.done(function(response) {
-				console.log(response);
 				var data = JSON.parse(response);
 				for (var i = 0; i < tags.length; i++) {
 					gintags_collection = [];
