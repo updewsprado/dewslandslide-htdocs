@@ -1,0 +1,72 @@
+
+/****
+ *
+ *	Created by Kevin Dhale dela Cruz
+ *	CSS file for Individual Monitoring Event Page [public_alert/monitoring_events_individual.php]
+ *	[host]/public_alert/monitoring_events/[release_id]
+ *	
+****/
+
+#page-wrapper {
+    margin-top: 20px;
+    padding: 50px 10px 50px;
+    min-height: 100%;
+    position: relative;
+}
+
+#site-name {
+    font-size: 25px;
+    font-weight: 600;
+    color: #17526D;
+    border: solid #17526D;
+    border-radius: 6px;
+    margin-bottom: 40px;
+}
+
+.panel-primary > .panel-heading {
+	background-color: #17526D;
+	border: solid #17526D;
+}
+
+.panel-title > a {
+    display: block;
+    text-decoration: none;
+}
+
+.container-line {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    height: 3px;
+    background-color: #17526D;
+    position: relative;
+}
+
+.circle {
+    display: inline-block;
+    vertical-align: middle;
+    width: 15px;
+    height: 15px;
+    background-color: #17526D;;
+    border: solid 1px #17526D;
+    border-radius: 50%;
+    position: absolute;
+    top: -6px;
+}
+
+.left { left: 0; }
+.right { right: 0; }
+
+.year {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    padding: 0 5px;
+    background-color: white;
+    color: #17526D;
+    border: solid 3px #17526D;
+    border-radius: 6px;
+    position: absolute;
+    top: -13px;
+    left: calc(50% - 21px);
+}
+

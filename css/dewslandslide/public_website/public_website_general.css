@@ -1,0 +1,106 @@
+
+/****
+ *
+ *	Created by Kevin Dhale dela Cruz
+ *	CSS file for Individual Monitoring Event Page [public_alert/monitoring_events_individual.php]
+ *	[host]/public_alert/monitoring_events/[release_id]
+ *	
+****/
+
+@font-face {
+    font-family: 'Open Sans';
+    src:    url('/fonts/Open Sans/OpenSans-ExtraBold.ttf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+.footer .navbar{
+	min-height: 60px;
+	margin-bottom: 0;
+	border-radius: 0;
+	border: solid #17526D;
+	background-color: #17526D;
+    color: white;
+}
+
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    min-width: 1200px;
+}
+
+#header-row {
+    margin-top: 20px;
+}
+
+#project-name {
+    font-size: 65px;
+    color: #17526D;
+}
+
+#dynaslope-logo {
+    /*width: 83.47px;*/ /*73.65px;*/
+    /*height: 65.79px;*/ /*58.05px;*/
+    width: 73px;
+    height: 73px;
+    margin: 0 13px 0 0;
+    margin-top: 2px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+#dost-phivolcs-logo {
+    width: 75px;
+    height: 75px;
+    margin: 0 0 0 10px;
+    margin-top: 2px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.nav-general-text {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-block;
+    vertical-align: middle;
+    padding-top: 14px;
+}
+
+.nav-general-text > span {
+    display: block;
+}
+
+#navigation {
+    background-color: #F8991D;
+    text-align: center;
+    height: 90px;
+    border-radius: 0;
+    padding: 30px 0 0 0;
+}
+
+#navigation > ul {
+    white-space: nowrap;
+    list-style: none;
+}
+
+#navigation > ul > li {
+    display: inline-block;
+    position: relative;
+    margin: 0 50px 0;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+#navigation > ul > li > a {
+    text-decoration: none;
+    color: #17526D;
+}
+
+#navigation > ul > li > a:hover {
+    text-decoration: none;
+    color: white;
+}
