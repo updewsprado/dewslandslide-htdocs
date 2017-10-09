@@ -639,7 +639,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 					});
 				});
 				$('#add_meas').click(function(){
-					if(result[0] != "" && $("#crack_id_data").val() != "" && $("#meas").val() == ""){
+					if(result[0] != "" || $("#crack_id_data").val() != "" || $("#meas").val() == ""){
 						AddMeasProcess(result[0],"old",$("#crack_id_data").val(),$("#meas").val())
 					}else{
 						$("#groundModal").modal("hide")
@@ -682,7 +682,9 @@ function AddMeasProcess(data,category,crack,meas){
 	$('#new_data_save').empty()
 	$('#new_data_save').append(' <button id="newData_meas"  type="button"  class="btn btn-info ">'+
 		'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> SAVE</button>')
+
 	$.post("/surficial_page/AddGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result){
+		console.log(result)
 		if( category != "new"){
 			$("#groundModal").modal("hide")
 		}
