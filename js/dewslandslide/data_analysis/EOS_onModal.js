@@ -67,7 +67,11 @@ $(document).ready(function(e) {
 		allSensorPosition(site,from,to)
 		console.log(from,to)
 	}else if(category == "pdf"){
-		var svg = ['rain','surficial','subsurface_'+values[8]]
+		var svg = ['rain','surficial']
+		all_column = values[8].split('%20')
+		for (var i = 0; i < all_column.length; i++) {
+			svg.push('subsurface_'+all_column[i])
+		}
 		$.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: connection_id})
         .done(function (data) {
             if(data == "Finished") {
