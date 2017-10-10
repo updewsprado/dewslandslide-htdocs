@@ -66,6 +66,18 @@ $(document).ready(function(e) {
 		}
 		allSensorPosition(site,from,to)
 		console.log(from,to)
+	}else if(category == "pdf"){
+		var svg = ['rain','surficial','subsurface_'+values[8]]
+		$.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: connection_id})
+        .done(function (data) {
+            if(data == "Finished") {
+                $('#loading').modal("hide");
+                window.location.href = "/../../chart_export/viewPDF/Graph Attachment for " + site.toUpperCase() +".pdf";
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus);
+        });
 	}
 
 });
