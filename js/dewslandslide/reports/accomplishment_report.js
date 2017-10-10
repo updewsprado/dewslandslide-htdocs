@@ -9,6 +9,7 @@
 ****/
 
 let releases_per_event, shift_timestamps, validation_message;
+let upload_files = [];
 let basis_to_raise = {
     "D": ["a monitoring request of the LGU/LEWC", "On-Demand"],
     "R": ["accumulated rainfall value exceeding threshold level", "Rainfall"],
@@ -234,13 +235,14 @@ function initializeFormValidator()
 *************************************************/
 function initializeMailRecipients()
 {
+    $("#mail_recipients_row .bootstrap-tagsinput").css("width", "100%");
     if( location.hostname == "www.dewslandslide.com" )
     {
         let emails = ["rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com"];
         emails.forEach(function(x) { $('#recipients').tagsinput('add', x); });
     } else {
         if($('#recipients_span').html().length == 0) {
-            $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
+            $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & ASD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>")
         }   
     }
 }
@@ -558,8 +560,14 @@ function buildEndOfShiftReportSiteTabs(data, index)
     });
 
     $("#graph_checkbox_sample").clone().attr("id", "graph_checkbox_" + site_code).attr("hidden", false).appendTo("#report_field_" + site_code + " .graphs-div");
-    $("#graph_checkbox_" + site_code + " .rainfall_checkbox").attr("value", "rain_" + site_code);
-    $("#graph_checkbox_" + site_code + " .surficial_checkbox").attr("value", "surficial_" + site_code);
+    let div = "#graph_checkbox_" + site_code;
+    $(div + " .rainfall_checkbox").attr("value", "rain_" + site_code);
+    $(div + " .surficial_checkbox").attr("value", "surficial_" + site_code);
+    $(div + " .file").attr("value", site_code);
+    $(div + " .files-selected").attr("id", "files-selected-" + site_code).attr("data-site", site_code);
+    $(div + " .files-selected").tagsinput();
+    $(div + " .bootstrap-tagsinput").css({"min-height": "34px", width: "100%"});
+    $(div + " .bootstrap-tagsinput > input").prop("readonly", true);
 
     if( index == 0 ) { 
         $("#report_nav_" + site_code).addClass("active"); 
@@ -749,14 +757,24 @@ function initializeFileUploading()
 
     $(document).on('change', '.file', function() {
         let files = $(this)[0].files;
+        let site = $(this).attr("value");
+        if( !upload_files.hasOwnProperty(site) ) upload_files[site] = [];
 
         let filenames = "";
-        for (let i = 0; i < files.length; i++) {
-            if( i == 0 ) filenames = files[i].name;
-            else filenames += ", " + files[i].name;
+        for (let i = 0; i < files.length; i++) 
+        {
+            if(upload_files[site].map( x => x.name ).indexOf(files[i].name) == -1) 
+            {
+                upload_files[site].push(files[i]);
+                $("#files-selected-" + site).tagsinput("add", files[i].name);
+            }
         }
+    });
 
-        $(this).parent().find('.form-control').val(filenames);
+    $(document).on('itemRemoved', '.files-selected', function(x) {
+        let item = x.item, site = x.target.dataset.site;
+        let index = upload_files[site].map( x => x.name ).indexOf(x.item);
+        upload_files[site].splice(index, 1);
     });
 }
 
@@ -778,7 +796,7 @@ function sendReport(site, event_id)
     let final_report = "", analysis_report = "";
     let recipients = $("#recipients").tagsinput('items');
     let form_data = new FormData();
-    let file_data = $(".file"), file;
+    let file_data = upload_files[site], file;
     let form = { 
         'event_id': event_id, 
         'site': site,
@@ -795,9 +813,8 @@ function sendReport(site, event_id)
     });
     form.body = final_report;
 
-    for( let i = 0; i < file_data[0].files.length; i++) {
-        file = file_data[0].files[i];
-        form_data.append('file[]', file);
+    for( let i = 0; i < file_data.length; i++) {
+        form_data.append('file[]', file_data[i]);
     }
 
     for( let key in form ) {
