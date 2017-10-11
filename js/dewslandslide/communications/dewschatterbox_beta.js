@@ -2077,6 +2077,7 @@ function startChat(source="normal") {
 
 	if (source == "normal") {
 		contactname = $('#contact-suggestion').val();
+		// mobile_number = $('#contact-suggestion').val().substring($('#contact-suggestion').val().indexOf(':'), $('#contact-suggestion').val().length);
 	} else if (source == "quickInbox") {
 
 	}
@@ -2086,9 +2087,11 @@ function startChat(source="normal") {
 	$('#user-container').addClass('hidden');
 	$('#main-container').removeClass('hidden');
 
+
 	var msgHistory = {
 		'type': 'loadSmsPerContact',
 		'fullname': contactname,
+		// 'mobile_number':mobile_number,
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
 
