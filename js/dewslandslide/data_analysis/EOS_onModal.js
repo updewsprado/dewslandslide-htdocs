@@ -66,6 +66,22 @@ $(document).ready(function(e) {
 		}
 		allSensorPosition(site,from,to)
 		console.log(from,to)
+	}else if(category == "pdf"){
+		var svg = ['rain','surficial']
+		all_column = values[8].split('%20')
+		for (var i = 0; i < all_column.length; i++) {
+			svg.push('subsurface_'+all_column[i])
+		}
+		$.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: connection_id})
+        .done(function (data) {
+            if(data == "Finished") {
+                $('#loading').modal("hide");
+                window.location.href = "/../../chart_export/viewPDF/Graph Attachment for "+from_time+"_"+to_time+"_"+site.toUpperCase() +".pdf";
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log(textStatus);
+        });
 	}
 
 });
