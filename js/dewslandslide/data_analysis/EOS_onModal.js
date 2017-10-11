@@ -76,7 +76,7 @@ $(document).ready(function(e) {
         .done(function (data) {
             if(data == "Finished") {
                 $('#loading').modal("hide");
-                window.location.href = "/../../chart_export/viewPDF/Graph Attachment for " + site.toUpperCase() +".pdf";
+                window.location.href = "/../../chart_export/viewPDF/Graph Attachment for "+from_time+"_"+to_time+"_"+site.toUpperCase() +".pdf";
             }
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
