@@ -339,9 +339,9 @@ $(document).ready(function()
 
         trigger_list.sort( function( a, b ) 
         {
-            let priority_lookup = { "S":5, "G":4, "M":3, "R":2, "E":1, "D":0 };
-            let x = priority_lookup[ a[0].toUpperCase() ];
-            let y = priority_lookup[ b[0].toUpperCase() ];
+            let priority_lookup = { "S":5, "s":5, "G":4, "g":4, "M":3, "m":3, "R":2, "E":1, "D":0 };
+            let x = priority_lookup[ a[0] ];
+            let y = priority_lookup[ b[0] ];
             if( x>y ) return -1; else return 1;
         });
 
