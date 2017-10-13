@@ -154,11 +154,11 @@ $(document).ready(function()
             case "A1": $(".cbox_trigger_switch[value='gs'], .cbox_trigger_switch[value='ss'], .cbox_trigger_switch[value='ms']").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", false);
                     break;
-            case "A2": $(".cbox_trigger[value=G], .cbox_trigger[value=S], .cbox_trigger[value=M]").prop("checked", false).prop("disabled", true);
+            case "A2": $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value='M']").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
             case "A3": $(".cbox_trigger_switch").prop("disabled", false); 
-                $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value=M]").prop("disabled", false);
+                $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value='M']").prop("disabled", false);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
         }
