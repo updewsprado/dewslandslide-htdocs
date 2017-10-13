@@ -270,8 +270,9 @@ $(document).ready(function()
                 case "m": tech_info = "manifestation"; double = true; break;
             }
 
-            let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
-            temp = ".cbox_trigger[value=" + trigger_letter + "], .cbox_trigger[value=" + copy_letter + "]";
+            //let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
+            //temp = ".cbox_trigger[value=" + trigger_letter + "], .cbox_trigger[value=" + copy_letter + "]";
+	    temp = ".cbox_trigger[value=" + trigger_letter + "]";
             if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) 
             {
                 $(temp).prop("checked", false).prop("disabled", true);
