@@ -796,7 +796,8 @@ function sendReport(site, event_id)
     let final_report = "", analysis_report = "";
     let recipients = $("#recipients").tagsinput('items');
     let form_data = new FormData();
-    let file_data = upload_files[site], file;
+    let file_data = typeof upload_files[site] !== 'undefined' ? upload_files[site] : []; 
+    let file;
     let form = { 
         'event_id': event_id, 
         'site': site,

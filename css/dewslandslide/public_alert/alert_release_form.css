@@ -164,22 +164,22 @@ input[type="number"] {
     font-size: 16px;
 }
 
-#nd {
+.below_input {
     padding: 0 0;
 }
 
-#nd label {
+.below_input label {
     text-align: center;
     padding-left: 0;
     margin-top: -12px;
 }
 
-label[data-toggle='tooltip'] { color: rgba(0,0,255,0.8); }
-
-#nd input {
+.below_input input {
     top: 27px;
     right: 40%;
 }
+
+label[data-toggle='tooltip'] { color: rgba(0,0,255,0.8); }
 
 div.tooltip { width: 200px; }
 
