@@ -57,7 +57,7 @@ $(document).ready(function()
         let base = $(base_id).clone()
             .data("value", m_features_num)
             .prop("id", group_id.slice(1) + m_features_num)
-            .prepend('<hr/><button type="button" class="close">×</button>');
+            .prepend('<hr/><button type="button" class="close"><span class="glyphicon glyphicon-trash"></span></button>');
 
         $(field).append(base);
         initializeTimestamps();
@@ -155,6 +155,7 @@ function initializeTooltips()
     $('#nd label').tooltip();
     $('.cbox_trigger_nd[value=R0]').parent("label").tooltip();
     $('.cbox_trigger_rx').parent("label").tooltip();
+    $('.trigger_info[name=trigger_manifestation_info]').siblings("label").tooltip();
 }
 
 /*******************************************
@@ -287,8 +288,9 @@ function onPublicAlertLevelChange()
             case "": $(trigger_switch).prop("checked", false).prop("disabled", true);
                     $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                     break;
-            case "A0": $(trigger_switch).prop("checked", false).prop("disabled", true);
-                    $(".cbox_trigger_switch[value='ms']").prop({checked: false, disabled: false});
+            case "A0": $(trigger_switch).not("[value=ms]").prop("checked", false).prop("disabled", true);
+                    $(".cbox_trigger_switch[value='ms']").prop({disabled: false});
+                    $(".cbox_trigger[value=M], .cbox_trigger[value=m]").prop("disabled", true);
                     $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", false);
                     $(".cbox_trigger_nd").prop("checked", false).prop("disabled", true);
                     $(".cbox_trigger_rx").prop("checked", false).prop("disabled", true);
@@ -299,6 +301,7 @@ function onPublicAlertLevelChange()
                     $(".cbox_trigger[value=M], .cbox_trigger[value=m]").prop("disabled", true);
                     break;
             case "A2": $(".cbox_trigger[value=G], .cbox_trigger[value=S], .cbox_trigger[value=M]").prop("checked", false).prop("disabled", true);
+                    $(".cbox_trigger[value=m]").prop("disabled", false);
                     $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                     break;
             case "A3": $(trigger_switch).prop("disabled", false); 
@@ -425,11 +428,13 @@ function onOperationalTriggersAndNoDataClick()
         // If Checkbox is m or M, enable corresponding group and validator
         if( $(".cbox_trigger[value=m]").is(":checked") || $(".cbox_trigger[value=M]").is(":checked") )
         {
+            $("#features_div").slideDown();
             $("#manifestation_validator, #manifestation_area .trigger_info").prop({disabled: false});
             $("#features_field input:not([type='checkbox']), #features_field select, #features_field textarea").prop("disabled", false);
             $("#features_field input[type='checkbox']").prop("disabled", false);
         }
         else {
+            $("#features_div").slideUp();
             if( !$("#nt_feature_cbox").is(":checked") ) $("#manifestation_validator").prop({disabled: true});
             $("#manifestation_area .trigger_info").prop({disabled: true});
             $("#features_field input:not([type='checkbox']), #features_field select, #features_field textarea").prop("disabled", true);
@@ -969,13 +974,13 @@ function initializeFormValidator()
             feature_type: { required: manifestation_required },
             feature_name: { required: manifestation_required },
             observance_timestamp: { required: manifestation_required },
-            reporter: { required: manifestation_required },
+            feature_reporter: { required: manifestation_required },
             feature_narrative: { required: manifestation_required },
             feature_remarks: { required: manifestation_required },
             nt_feature_type: { required: true },
             nt_feature_name: { required: true },
             nt_observance_timestamp: { required: true },
-            nt_reporter: { required: true },
+            nt_feature_reporter: { required: true },
             nt_feature_narrative: { required: true },
             nt_feature_remarks: { required: true }
         },
@@ -1005,6 +1010,8 @@ function initializeFormValidator()
                 if(element.parent().is(".datetime") || element.parent().is(".datetime")) element.next("span").css("right", "15px");
                 if(element.is("select") || element.is("textarea")) element.next("span").css({"top": "25px", "right": "25px"});
                 if(element.attr("id") == "reason") element.next("span").css({"top": "0", "right": "0"});
+                if(element.hasClass("reporter")) element.next("span").css({"top": "25px", "right": "5px"});
+                if(element.hasClass("feature_name")) element.next("span").css({"top": "0", "right": "34px"});
                 if(element.is("input[type=number]")) element.next("span").css({"top": "24px", "right": "0px"});
             }
         },

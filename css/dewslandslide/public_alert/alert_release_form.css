@@ -218,3 +218,9 @@ div.tooltip { width: 200px; }
 }
 
 .alert-warning a { margin-top: 8px; }
+
+.radio_checkbox_group label {
+    padding: 5px 0 0 23px;
+}
+
+.radio_checkbox_group input { margin-top: 11px; }

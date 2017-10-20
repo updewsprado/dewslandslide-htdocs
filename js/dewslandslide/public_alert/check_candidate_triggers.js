@@ -173,11 +173,11 @@ function checkCandidateTriggers(cache, ongoing) {
 			for (let i = 0; i < retriggers.length; i++) {
 				if( max == null || moment(max.timestamp).isSameOrAfter(retriggers[i].timestamp) )
 				{
-					if ( typeof retriggers[i].invalid != "undefined" ) {
-						if ( alert.status == "valid" || alert.status == "partial" ) {
-							break;
-						}
-					}
+					// if ( typeof retriggers[i].invalid != "undefined" ) {
+					// 	if ( alert.status == "valid" || alert.status == "partial" ) {
+					// 		break;
+					// 	}
+					// }
 
 					max = retriggers[i];
 
