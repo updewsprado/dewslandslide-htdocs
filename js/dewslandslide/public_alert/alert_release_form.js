@@ -154,11 +154,11 @@ $(document).ready(function()
             case "A1": $(".cbox_trigger_switch[value='gs'], .cbox_trigger_switch[value='ss'], .cbox_trigger_switch[value='ms']").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", false);
                     break;
-            case "A2": $(".cbox_trigger[value=G], .cbox_trigger[value=S], .cbox_trigger[value=M]").prop("checked", false).prop("disabled", true);
+            case "A2": $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value='M']").prop("checked", false).prop("disabled", true);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
             case "A3": $(".cbox_trigger_switch").prop("disabled", false); 
-                $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value=M]").prop("disabled", false);
+                $(".cbox_trigger[value='G'], .cbox_trigger[value='S'], .cbox_trigger[value='M']").prop("disabled", false);
                 $(".cbox_nd[value=ND]").prop("checked", false).prop("disabled", true);
                 break;
         }
@@ -270,8 +270,9 @@ $(document).ready(function()
                 case "m": tech_info = "manifestation"; double = true; break;
             }
 
-            let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
-            temp = ".cbox_trigger[value=" + trigger_letter + "], .cbox_trigger[value=" + copy_letter + "]";
+            //let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
+            //temp = ".cbox_trigger[value=" + trigger_letter + "], .cbox_trigger[value=" + copy_letter + "]";
+	    temp = ".cbox_trigger[value=" + trigger_letter + "]";
             if( $(".cbox_trigger_nd[value=" + this.value + "]").is(":checked") ) 
             {
                 $(temp).prop("checked", false).prop("disabled", true);
@@ -339,9 +340,9 @@ $(document).ready(function()
 
         trigger_list.sort( function( a, b ) 
         {
-            let priority_lookup = { "S":5, "G":4, "M":3, "R":2, "E":1, "D":0 };
-            let x = priority_lookup[ a[0].toUpperCase() ];
-            let y = priority_lookup[ b[0].toUpperCase() ];
+            let priority_lookup = { "S":5, "s":5, "G":4, "g":4, "M":3, "m":3, "R":2, "E":1, "D":0 };
+            let x = priority_lookup[ a[0] ];
+            let y = priority_lookup[ b[0] ];
             if( x>y ) return -1; else return 1;
         });
 
