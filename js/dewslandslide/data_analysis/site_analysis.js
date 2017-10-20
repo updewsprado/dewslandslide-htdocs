@@ -1304,48 +1304,48 @@ function surficialMeasurement(dataSubmit) {
 			}
 		});
 		var result= JSON.parse(data_result);
-			var columns_date =[]; // <-- header timestamp
-			var columns_date_tooltip =[]; // <-- header tooltip data
+		var columns_date =[]; 
+		var columns_date_tooltip =[]; 
 
-			columns_date.push({title:'Crack ID'});
-			for (i = dataSubmit.last.length; i > 0; i--) { // <-- header date process
-				if(dataSubmit.all_data_last[i-1].meas_type == "ROUTINE"){
-					var color ="color:#4066e2"
-				}else if(dataSubmit.all_data_last[i-1].meas_type == "EVENT"){
-					var color ="color:#38bee6"
-				}else{
-					var color ="color:#30eab1"
-				}	
+		columns_date.push({title:'Crack ID'});
+		for (i = dataSubmit.last.length; i > 0; i--) { 
+			if(dataSubmit.all_data_last[i-1].meas_type == "ROUTINE"){
+				var color ="color:#4066e2"
+			}else if(dataSubmit.all_data_last[i-1].meas_type == "EVENT"){
+				var color ="color:#38bee6"
+			}else{
+				var color ="color:#30eab1"
+			}	
 
-				columns_date.push({title:'<center><span id="show-option"  style='+color+' aria-hidden="true" title="'+dataSubmit.all_data_last[i-1].weather+"/"
-					+dataSubmit.all_data_last[i-1].meas_type+'">'+moment(dataSubmit.last[i-1]).format('D MMM YYYY HH:mm')+'</span></center>'});
-			}
-			var dataTable_process_1 = []
-			var dataTable_process_1result =[]
-			var dataTable_process_1result_time =[]
-			for (a = 0; a < dataSubmit.crack_name.length; a++) {
-				for (b = 0; b < result.length; b++) {
-					if(dataSubmit.crack_name[a] == result[b].crack_id){
-						dataTable_process_1.push(result[b].crack_id)
-						dataTable_process_1result_time.push(result[b].timestamp)
-						dataTable_process_1result.push(result[b])
-					}
+			columns_date.push({title:'<center><span id="show-option"  style='+color+' aria-hidden="true" title="'+dataSubmit.all_data_last[i-1].weather+"/"
+				+dataSubmit.all_data_last[i-1].meas_type+'">'+moment(dataSubmit.last[i-1]).format('D MMM YYYY HH:mm')+'</span></center>'});
+		}
+		var dataTable_process_1 = []
+		var dataTable_process_1result =[]
+		var dataTable_process_1result_time =[]
+		for (a = 0; a < dataSubmit.crack_name.length; a++) {
+			for (b = 0; b < result.length; b++) {
+				if(dataSubmit.crack_name[a] == result[b].crack_id){
+					dataTable_process_1.push(result[b].crack_id)
+					dataTable_process_1result_time.push(result[b].timestamp)
+					dataTable_process_1result.push(result[b])
 				}
 			}
+		}
 
-			var dataTable_timestamp_1=[]
-			for (aa = 0; aa < dataSubmit.crack_name.length; aa++) {
-				for (bb = 0; bb < dataSubmit.last.length; bb++) {
-					dataTable_timestamp_1.push([dataSubmit.last[bb],dataSubmit.crack_name[aa]])
-				}
+		var dataTable_timestamp_1=[]
+		for (aa = 0; aa < dataSubmit.crack_name.length; aa++) {
+			for (bb = 0; bb < dataSubmit.last.length; bb++) {
+				dataTable_timestamp_1.push([dataSubmit.last[bb],dataSubmit.crack_name[aa]])
 			}
-			
-			var dataTable_timestamp_2 = []
-			for (cc = dataSubmit.crack_name.length; cc > 0; cc--) {
-				dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
-			}		
-			surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
-		});
+		}
+
+		var dataTable_timestamp_2 = []
+		for (cc = dataSubmit.crack_name.length; cc > 0; cc--) {
+			dataTable_timestamp_2.push( dataTable_timestamp_1.length-(cc*dataSubmit.last.length))
+		}		
+		surficialDataTable(dataSubmit,dataTable_timestamp_2,columns_date)
+	});
 }
 
 function surficialDataTable(dataSubmit,totalSlice,columns_date) {  
@@ -1383,6 +1383,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 				}
 				organize_ground_data.push(no_Data_meas)
 			}
+
 			var slice_num_meas=[]
 
 			for(var e = 0; e < allgather_ground_data.length; e++){
@@ -1396,7 +1397,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 			var differnce =[];
 			var ts_difference =[];
 			var total_alert_per_ts=[];
-			var hey=[];
+			var tooltip_data=[];
 			var color_alert = [];
 			var id_null_data= [];
 			var id_null_ts= [];
@@ -1416,7 +1417,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 					var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
 				}
 				total_alert_per_ts.push(roundoff2)
-				hey.push(roundoff2+"/"+d2+"/"+d1+"/"+aa+"/"+allts_data[aa]+"-"+allts_data[aa-1])
+				tooltip_data.push(roundoff2+"/"+d2+"/"+d1+"/"+aa+"/"+allts_data[aa]+"_"+allts_data[aa-1])
 				if(d1 == "nd"){
 					id_null_data.push(aa)
 					id_null_ts.push(allts_data[aa])
@@ -1425,6 +1426,7 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 
 			var ground_data_insert =[]
 			var ts_null_data = []
+
 			for(var ab = 0; ab < result.length; ab++){
 				ground_data_insert.push(result[ab].crack_id)
 				ts_null_data.push(result[ab].crack_id)
@@ -1434,125 +1436,145 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 				}
 			}
 			total_alert_per_ts.reverse()
+			tooltip_data.reverse()
+			var convert = getRanges(id_null_data.map(parseFloat).reverse())
+
+			for (var i = 0; i < convert.length; i++) {
+				if(convert[i].search('-') == -1){
+					var num_id = parseFloat(convert[i])
+					if( $.isNumeric(ground_data_insert[num_id+1]) == true && $.isNumeric(ground_data_insert[num_id-1]) == true && num_id+1 <= ground_data_insert.length-1){
+						var d1 = ground_data_insert[num_id-1]
+						var d2 = ground_data_insert[num_id+1]
+						var diff = (d2-d1)
+						var now = moment(ts_null_data[num_id-1].ts);
+						var end = moment(ts_null_data[num_id+1].ts); 
+						var duration = moment.duration(now.diff(end));
+						var hours = duration.asHours();
+						var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
+						total_alert_per_ts[num_id] = roundoff2;
+						tooltip_data[num_id]= roundoff2+"/"+d2+"/"+d1+"/"+(num_id+1)+"/"+ts_null_data[num_id+1].ts+"_"+ts_null_data[num_id-1].ts
+								// console.log(roundoff2+"/"+d2+"/"+d1+"/"+(num_id+1)+"/"+ts_null_data[num_id+1].ts+"_"+ts_null_data[num_id-1].ts)
+							}
+
+						}else{
+							var new_num = convert[i].split("-").map(parseFloat);
+							// console.log(new_num[0]-1,new_num[0]-1,parseFloat(ground_data_insert[new_num[0]-1]),parseFloat(ground_data_insert[new_num[0]-1]))
+							if(parseFloat(ground_data_insert[new_num[1]+1]) != NaN && parseFloat(ground_data_insert[new_num[0]-1]) != NaN && new_num[1]+1 <= ground_data_insert.length-1){
+								var d1 = ground_data_insert[new_num[0]-1]
+								var d2 = ground_data_insert[new_num[1]+1]
+								var diff = (d2-d1)
+								var now = moment(ts_null_data[new_num[0]-1].ts);
+								var end = moment(ts_null_data[new_num[1]+1].ts); 
+								var duration = moment.duration(now.diff(end));
+								var hours = duration.asHours();
+								var roundoff2 =Math.abs(Math.round((diff/hours)*1000)/1000);
+								total_alert_per_ts[new_num[1]] = roundoff2;
+								tooltip_data[new_num[1]] = roundoff2+"/"+d2+"/"+d1+"/"+(new_num[1])+"/"+ts_null_data[new_num[1]+1].ts+"_"+ts_null_data[new_num[0]-1].ts
+								// console.log(roundoff2+"/"+d2+"/"+d1+"/"+(new_num[1]+1)+"/"+ts_null_data[new_num[1]+1].ts+"_"+ts_null_data[new_num[0]-1].ts)
+							}
+						}
+					}
+
+					for(var ac = 0; ac < ground_data_insert.length; ac++){
+						ground_data_all.push('<center><b title="'+tooltip_data[ac-1]+'">'+ ground_data_insert[ac]+' </b></center>')
+					}
+					var ground_differnce = differnce;
+
+					slice_num_meas.push(allgather_ground_data.length)
+					for(var g = 0; g < slice_num_meas.length; g++){
+						organize_ground_data.push(ground_data_all.slice(slice_num_meas[g],slice_num_meas[g+1]))
+					}
+					organize_ground_data.pop();
 
 
-			for(var aaa = 0 ; aaa < id_null_data.length ; aaa++){
-				for(var bb = id_null_data[aaa]; bb > (id_null_data[aaa]-5); bb--){
-					if(ground_data_insert[bb] != "nd"){
-						var gd2 = ground_data_insert[bb]
-						var ts2 = moment(ts_null_data[bb].ts)
-						var num_array = bb;
-						(total_alert_per_ts[id_null_data[aaa]] = 
-							Math.abs(Math.round((gd2-ground_data_insert[id_null_data[aaa]+1])/(moment(ts_null_data[bb].ts)-moment(ts_null_data[id_null_data[aaa]+1].ts)))))
-						break;
-					}	
-				}
-			}
-			hey.reverse()
-			for(var ac = 0; ac < ground_data_insert.length; ac++){
-				ground_data_all.push('<center><b title="'+hey[ac-1]+'">'+ ground_data_insert[ac]+' </b></center>')
-			}
-			var ground_differnce = differnce;
-
-			slice_num_meas.push(allgather_ground_data.length)
-			for(var g = 0; g < slice_num_meas.length; g++){
-				organize_ground_data.push(ground_data_all.slice(slice_num_meas[g],slice_num_meas[g+1]))
-			}
-			organize_ground_data.pop();
+					MeasTable(dataSubmit,organize_ground_data,columns_date)
 
 
-			$('#ground_table').DataTable({
-				data: organize_ground_data,
-				columns: columns_date,
-				"processing": true ,
-				"paging":   false,
-				"searching": false, 
-				"createdRow": function ( row, data, index ) {
-					for(var a = dataSubmit.last.length; a > 1 ; a--){
-						$('td', row).eq(a).attr('id', 'td-' + index +'-'+ a );
-						$('tr', row).eq(a).attr('class', 'td-class-'+ a );
-						$('td', row).eq(a).attr('data-container', 'body');
-						$('td', row).eq(a).attr('data-toggle', 'tooltip');
-						$('td', row).eq(a).attr('data-original-title', '');
-						$('td', row).eq(a).attr('bgcolor', '');
+					var td_number_id =[]
+					var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
+					for(var h = tableId_withData; h < total_crackID; h++){
+						td_number_id.push(h)
+					}
+					var organiz_divId = []
+					for(var i = 0 ; i < td_number_id.length ; i++){
+						for(var j = 0  ; j < dataSubmit.last.length+1 ; j++){
+							organiz_divId.push("td-"+td_number_id[i]+"-"+(j))
+						}
+					}
 
+
+					organiz_divId.reverse()
+					total_alert_per_ts.reverse()
+					var color_alert =[]
+					for(var k = 0 ; k < total_alert_per_ts.length ; k++){
+						if(total_alert_per_ts[k] >= 1.8 ){
+							color_alert.push("#ff6666")
+						}else if(total_alert_per_ts[k] >= 0.250 && total_alert_per_ts[k]<= 1.79 ){
+							color_alert.push("#ffb366")
+						}else if(total_alert_per_ts[k] <= 0.249 && total_alert_per_ts[k] >= 0  ){
+							color_alert.push('#99ff99')
+						}else if(total_alert_per_ts[k] == "nd"){
+							color_alert.push('#fff')
+						}else{
+							color_alert.push('#fff')
+
+						}
+					}
+					for(var l = 0 ; l < organiz_divId.length ; l++){	
+						$('#'+organiz_divId[l]).attr('bgcolor',color_alert[l])
+					}
+					var color_label =[]
+					for(var m = 0 ; m < slice_num_meas.length-1 ; m++){
+						color_label.push(color_alert[(slice_num_meas[m])])
+					}
+
+					var color_alert_list=["#99ff99","#ffb366","#ff6666"]
+					var label_color = removeDuplicates(color_label);
+
+
+					for(var n = 0 ; n < label_color.length ; n++){
+						if(label_color[n] == "#99ff99"){
+							$("#A0").show();
+							$("#A0").empty();
+							$("#A0").append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>');
+						}else if(label_color[n] == "#ffb366"){
+							$("#A0").empty();
+							$("#A0").hide();
+							$("#A1").show();
+							$("#A1").empty();
+							$("#A1").append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>');
+						}else if(label_color[n] == "#ff6666"){
+							$("#A0").empty();
+							$("#A0").hide();
+							$("#A1").empty();
+							$("#A1").hide();
+							$("#A2").show();
+						}
 					}
 				}
-			});
-			var td_number_id =[]
-			var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
-			for(var h = tableId_withData; h < total_crackID; h++){
-				td_number_id.push(h)
-			}
-			var organiz_divId = []
-			for(var i = 0 ; i < td_number_id.length ; i++){
-				for(var j = 0  ; j < dataSubmit.last.length+1 ; j++){
-					organiz_divId.push("td-"+td_number_id[i]+"-"+(j))
-				}
-			}
-			organiz_divId.reverse()
-			hey.reverse()
-			total_alert_per_ts.reverse()
-			var color_alert =[]
-			for(var k = 0 ; k < total_alert_per_ts.length ; k++){
-				if(total_alert_per_ts[k] >= 1.8 ){
-					color_alert.push("#ff6666")
-				}else if(total_alert_per_ts[k] >= 0.250 && total_alert_per_ts[k]<= 1.79 ){
-					color_alert.push("#ffb366")
-				}else if(total_alert_per_ts[k] <= 0.249 && total_alert_per_ts[k] >= 0  ){
-					color_alert.push('#99ff99')
-				}else if(total_alert_per_ts[k] == "nd"){
-					color_alert.push('#fff')
-				}else{
-					color_alert.push('#fff')
-
-				}
-			}
-			for(var l = 0 ; l < organiz_divId.length ; l++){	
-				$('#'+organiz_divId[l]).attr('bgcolor',color_alert[l])
-			}
-			var color_label =[]
-			for(var m = 0 ; m < slice_num_meas.length-1 ; m++){
-				color_label.push(color_alert[(slice_num_meas[m])])
-			}
-
-			var color_alert_list=["#99ff99","#ffb366","#ff6666"]
-			var label_color = removeDuplicates(color_label);
-			var panel_alert_colors =['panel-success','panel-danger','panel-warning']
-
-			for(var n = 0 ; n < label_color.length ; n++){
-				if(label_color[n] == "#99ff99"){
-					$('.'+panel_alert_colors[0]).show()
-					$('.'+panel_alert_colors[0]).empty()
-					$('.'+panel_alert_colors[0]).append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>')
-					$('.'+panel_alert_colors[1]).empty()
-					$('.'+panel_alert_colors[1]).hide()
-					$('.'+panel_alert_colors[2]).empty()
-					$('.'+panel_alert_colors[2]).hide()
-				}else if(label_color[n] == "#ffb366"){
-					$('.'+panel_alert_colors[0]).empty()
-					$('.'+panel_alert_colors[0]).hide()
-					$('.'+panel_alert_colors[2]).show()
-					$('.'+panel_alert_colors[2]).empty()
-					$('.'+panel_alert_colors[2]).append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>')
-					$('.'+panel_alert_colors[1]).empty()
-					$('.'+panel_alert_colors[1]).hide()
-				}else if(label_color[n] == "#ff6666"){
-					$('.'+panel_alert_colors[0]).empty()
-					$('.'+panel_alert_colors[0]).hide()
-					$('.'+panel_alert_colors[2]).empty()
-					$('.'+panel_alert_colors[2]).hide()
-					$('.'+panel_alert_colors[1]).show()
-					$('.'+panel_alert_colors[1]).empty()
-					$('.'+panel_alert_colors[1]).append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>Critical ground movement observed in the last 48 hours; landslide may be imminent</strong></div>')
-
-				}
-			}
-
-		}
-
-	});	
+			});	
 }
+function MeasTable(dataSubmit,organize_ground_data,columns_date) {
+	$('#ground_table').DataTable({
+		data: organize_ground_data,
+		columns: columns_date,
+		"processing": true ,
+		"paging":   false,
+		"searching": false, 
+		"createdRow": function ( row, data, index ) {
+			for(var a = dataSubmit.last.length; a > 1 ; a--){
+				$('td', row).eq(a).attr('id', 'td-' + index +'-'+ a );
+				$('tr', row).eq(a).attr('class', 'td-class-'+ a );
+				$('td', row).eq(a).attr('data-container', 'body');
+				$('td', row).eq(a).attr('data-toggle', 'tooltip');
+				$('td', row).eq(a).attr('data-original-title', '');
+				$('td', row).eq(a).attr('bgcolor', '');
+
+			}
+		}
+	});
+}
+
 function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
@@ -1590,7 +1612,7 @@ function surficialGraph(dataTableSubmit) {
 				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,""),dashStyle: 'shortdash'})
 			}
 			$('#ground_graph').empty();
-			chartProcessSurficial('ground_graph',series_data,'Superimposed Surficial Graph',dataTableSubmit,result)
+			chartProcessSurficial('ground_graph',series_data,'"Superimposed" Surficial Graph',dataTableSubmit,result)
 			$("#tag_series").val(JSON.stringify(series_data))
 		}
 	});	
@@ -1613,41 +1635,41 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 		var dataSubmit = {table:'gndmeas',from_id:'0',to_id:'0',site:site}
 	}
 	// console.log(dataSubmit)
-	// $.post("/node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-	// 	$('#'+id).empty();
-	// 	var result_unfiltered = JSON.parse(data)
+	$.post("/node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
+		$('#'+id).empty();
+		var result_unfiltered = JSON.parse(data)
 
-	// 	var all_cracks = [];
+		var all_cracks = [];
 
-	// 	for (var i = 0; i < result_unfiltered.length; i++) {
-	// 		all_cracks.push(result_unfiltered[i].crack_id)
-	// 	}
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			all_cracks.push(result_unfiltered[i].crack_id)
+		}
 
-	// 	var all_collected_tags =[]
-	// 	var filtered_crack_id = removeDuplicates(all_cracks);
+		var all_collected_tags =[]
+		var filtered_crack_id = removeDuplicates(all_cracks);
 
-	// 	for (var i = 0; i < filtered_crack_id.length; i++) {
-	// 		var list = []
-	// 		for (var a = 0; a < result_unfiltered.length; a++) {
-	// 			if( filtered_crack_id[i] == result_unfiltered[a].crack_id){
-	// 				list.push({x:Date.parse(result_unfiltered[a].timestamp),text:"",value:result_unfiltered[a].remarks,title:result_unfiltered[a].tag_name,
-	// 					id:result_unfiltered[a].gintags_id,ref_id:result_unfiltered[a].tag_id_fk,table_id:result_unfiltered[a].id})
-	// 			}
-	// 		}
-	// 		all_collected_tags.push(list)
-	// 	}
+		for (var i = 0; i < filtered_crack_id.length; i++) {
+			var list = []
+			for (var a = 0; a < result_unfiltered.length; a++) {
+				if( filtered_crack_id[i] == result_unfiltered[a].crack_id){
+					list.push({x:Date.parse(result_unfiltered[a].timestamp),text:"",value:result_unfiltered[a].remarks,title:result_unfiltered[a].tag_name,
+						id:result_unfiltered[a].gintags_id,ref_id:result_unfiltered[a].tag_id_fk,table_id:result_unfiltered[a].id})
+				}
+			}
+			all_collected_tags.push(list)
+		}
 
-	// 	for (var a = 0; a < filtered_crack_id.length; a++) {
-	// 		data_series.push({name:'Tag',type:'flags',data:all_collected_tags[a],onSeries:filtered_crack_id[a],width:100,showInLegend: false,visible:true})
-	// 	}
-	// 	var result = [];
-	// 	for (var i = 0; i < result_unfiltered.length; i++) {
-	// 		if (result_unfiltered[i].tag_description == "ground analysis") {
-	// 			result.push(result_unfiltered[i])
-	// 		}
-	// 	}
+		for (var a = 0; a < filtered_crack_id.length; a++) {
+			data_series.push({name:'Tag',type:'flags',data:all_collected_tags[a],onSeries:filtered_crack_id[a],width:100,showInLegend: false,visible:true})
+		}
+		var result = [];
+		for (var i = 0; i < result_unfiltered.length; i++) {
+			if (result_unfiltered[i].tag_description == "ground analysis") {
+				result.push(result_unfiltered[i])
+			}
+		}
 		
-	// 	data_series.push({name:'Tag'})
+		data_series.push({name:'Tag'})
 
 		Highcharts.setOptions({
 			global: {
@@ -1701,34 +1723,34 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 						radius: 3
 					},
 					cursor: 'pointer',
-					// point: {
-					// 	events: {
-					// 		click: function () {
-					// 			$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-					// 			$('#tag_ids').tagsinput('removeAll');
-					// 			$("#tag_value").val(this.id)
-					// 			$("#tag_crack").val(this.series.name)
-					// 			$("#tag_description").val('ground analysis')
-					// 			$("#tag_tableused").val('gndmeas')
-					// 			$("#tag_id").val(this.ref_id)
-					// 			$('#tag_table_id').val(this.table_id)
-					// 			$('#tag_hash').val(this.title)
-					// 			$('#tag_comments').val(this.value)
-					// 			$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-					// 			if(this.series.name == "Tag"){
-					// 				$("#tagModal").modal("show");
-					// 				$("#comment-model").empty();
-					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value+'<br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag">'
-					// 					+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>&nbsp;<button type="button" class="btn btn-info edit_tag" id="edit_tag">'
-					// 					+'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit</button>')
-					// 			}else{
-					// 				$("#annModal").modal("show");
+					point: {
+						events: {
+							click: function () {
+								$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+								$('#tag_ids').tagsinput('removeAll');
+								$("#tag_value").val(this.id)
+								$("#tag_crack").val(this.series.name)
+								$("#tag_description").val('ground analysis')
+								$("#tag_tableused").val('gndmeas')
+								$("#tag_id").val(this.ref_id)
+								$('#tag_table_id').val(this.table_id)
+								$('#tag_hash').val(this.title)
+								$('#tag_comments').val(this.value)
+								$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
+								if(this.series.name == "Tag"){
+									$("#tagModal").modal("show");
+									$("#comment-model").empty();
+									$("#comment-model").append('<small>REMARKS: </small>'+this.value+'<br><br><button type="button" class="btn btn-danger delete_tag " id="delete_tag">'
+										+'<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> Delete</button>&nbsp;<button type="button" class="btn btn-info edit_tag" id="edit_tag">'
+										+'<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span> Edit</button>')
+								}else{
+									$("#annModal").modal("show");
 									
-					// 			}
-					// 			submittedMeas(dataTableSubmit,allDataResult,'surficial');
-					// 		}
-					// 	}
-					// }
+								}
+								submittedMeas(dataTableSubmit,allDataResult,'surficial');
+							}
+						}
+					}
 				},
 			},
 			credits: {
@@ -1737,22 +1759,22 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit,allDataResult
 			series:data_series
 		});
 		var chart = $('#'+id).highcharts();
-		// $( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-		// 	var series = chart.series[(data_series.length-1)];
-		// 	for (var i = 0; i < all_cracks.length; i++) {
-		// 		if (series.visible) {
-		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
-		// 				visible: true,
-		// 			});
-		// 		}else {
-		// 			(chart.series[((data_series.length-(i+1))-1)]).update({
-		// 				visible: false,
-		// 			});
-		// 		}
-		// 	}
-		// });
+		$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+			var series = chart.series[(data_series.length-1)];
+			for (var i = 0; i < all_cracks.length; i++) {
+				if (series.visible) {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: true,
+					});
+				}else {
+					(chart.series[((data_series.length-(i+1))-1)]).update({
+						visible: false,
+					});
+				}
+			}
+		});
 
-	// });
+	});
 
 }
 
@@ -1889,8 +1911,8 @@ function saveUpdateTag(dataSubmit,dataTableSubmit,allDataResult,category) {
 	var host = window.location.host;
 	$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 	.done(function(data) { 
-			modalTemplate(dataTableSubmit,allDataResult,category)
-		})
+		modalTemplate(dataTableSubmit,allDataResult,category)
+	})
 }
 
 
@@ -2450,7 +2472,7 @@ function allSensorPosition(site,fdate,tdate) {
 }
 function columnPosition(data_result,site) {
 	if(data_result!= "error"){
-var data = data_result;
+		var data = data_result;
 		var AlllistId = [] ,  AlllistDate = [];
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
@@ -2520,8 +2542,9 @@ function displacementPosition(data_result,data_result_v,site) {
 		var fseries = [], fseries2 = [];
 		var c1series =[], c2series =[];
 		var d1= [] , d2 =[] , n1=[], n2=[];
+		var ann1data =[] ,ann2data=[] ;
 
-				for(var i = 0; i < data[0].disp.length; i++){
+		for(var i = 0; i < data[0].disp.length; i++){
 			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
 				totalId.push(data[0].disp[i]);
 			}else{
@@ -2568,6 +2591,10 @@ function displacementPosition(data_result,data_result_v,site) {
 				all_val.push(((disData1[a][i].downslope-data[0].cml_base))*1000)
 				all_val.push(((disData1[a][i].latslope-data[0].cml_base))*1000)
 			}
+			if(a <= data_result[0].annotation.length-1){
+				ann1data.push({value: ((disData1[a+1][0].latslope-data[0].cml_base))*1000 - (data[0].cml_base*2),width: 0,label: {text: data_result[0].annotation[a].downslope_annotation,style: {color: 'gray'}}})
+				ann2data.push({value: ((disData1[a+1][0].latslope-data[0].cml_base))*1000 - (data[0].cml_base*2),width: 0,label: {text: data_result[0].annotation[a].latslope_annotation,style: {color: 'gray'}}})
+			}
 		}
 		
 		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_val))))
@@ -2593,8 +2620,8 @@ function displacementPosition(data_result,data_result_v,site) {
 		velocityPosition(data_result_v,totalId.length,disData1[0],site,n1); 
 		fseries.push({name:'unselect'})
 		fseries2.push({name:'unselect'})
-		chartProcessDis("dis1",fseries,"Displacement, downslope",site,n1)
-		chartProcessDis("dis2",fseries2,"Displacement , across slope",site,n2)
+		chartProcessDis("dis1",fseries,"Displacement, downslope",site,ann1data)
+		chartProcessDis("dis2",fseries2,"Displacement , across slope",site,ann2data)
 
 	}     
 
@@ -2663,6 +2690,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 					sliceData.push(num);
 				}
 			}
+			inferno.reverse()
 			for(var a = 0; a < sliceData.length; a++){
 				var color = parseInt((255 / sliceData.length)*(a+1))
 				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
@@ -2683,7 +2711,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 					sliceData.push(num);
 				}
 			}
-
+			inferno.reverse()
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
@@ -2720,7 +2748,7 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 			text: name,
 		},
 		subtitle: {
-			text: 'Source: ' + (site).toUpperCase()
+			text: '<b>Source: </b> ' + (site).toUpperCase() +'<br><br><b>Note: </b> + - consistently increasing/decreasing trend'
 		},
 		xAxis: {
 			type: 'datetime',
@@ -2791,7 +2819,7 @@ function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 			text: 'Column Position',
 		},
 		subtitle: {
-			text: 'Source: '+(site).toUpperCase()
+			text: '<b>Source: </b> '+(site).toUpperCase()
 		},
 		plotOptions: {
 			line: {
@@ -2858,7 +2886,7 @@ function chartProcessbase(id,data_series,name,site,catNum){
 			text: name
 		},
 		subtitle: {
-			text: 'Source: ' + (site).toUpperCase()
+			text: '<b>Source: </b> ' + (site).toUpperCase()
 		},
 		tooltip: {
 			// split: true,
@@ -2875,7 +2903,7 @@ function chartProcessbase(id,data_series,name,site,catNum){
 				year: '%b'
 			},
 			title: {
-				text: 'Date'
+				text: 'Time'
 			}
 		},
 		legend: {
