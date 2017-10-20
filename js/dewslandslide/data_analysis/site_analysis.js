@@ -1486,7 +1486,9 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 					}
 					organize_ground_data.pop();
 
+
 					MeasTable(dataSubmit,organize_ground_data,columns_date)
+
 
 					var td_number_id =[]
 					var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
