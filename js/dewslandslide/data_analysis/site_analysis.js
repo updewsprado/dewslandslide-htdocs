@@ -1486,7 +1486,9 @@ function surficialDataTable(dataSubmit,totalSlice,columns_date) {
 					}
 					organize_ground_data.pop();
 
+
 					MeasTable(dataSubmit,organize_ground_data,columns_date)
+
 
 					var td_number_id =[]
 					var tableId_withData = Math.abs(crackID_withData.length-total_crackID)
@@ -2540,6 +2542,7 @@ function displacementPosition(data_result,data_result_v,site) {
 		var fseries = [], fseries2 = [];
 		var c1series =[], c2series =[];
 		var d1= [] , d2 =[] , n1=[], n2=[];
+		var ann1data =[] ,ann2data=[] ;
 
 		for(var i = 0; i < data[0].disp.length; i++){
 			if(data[0].disp[i].ts == data[0].disp[i+1].ts ){
@@ -2588,6 +2591,10 @@ function displacementPosition(data_result,data_result_v,site) {
 				all_val.push(((disData1[a][i].downslope-data[0].cml_base))*1000)
 				all_val.push(((disData1[a][i].latslope-data[0].cml_base))*1000)
 			}
+			if(a <= data_result[0].annotation.length-1){
+				ann1data.push({value: ((disData1[a+1][0].latslope-data[0].cml_base))*1000 - (data[0].cml_base*2),width: 0,label: {text: data_result[0].annotation[a].downslope_annotation,style: {color: 'gray'}}})
+				ann2data.push({value: ((disData1[a+1][0].latslope-data[0].cml_base))*1000 - (data[0].cml_base*2),width: 0,label: {text: data_result[0].annotation[a].latslope_annotation,style: {color: 'gray'}}})
+			}
 		}
 		
 		var min_value = (Math.min.apply(null, bouncer(removeDuplicates(all_val))))
@@ -2613,8 +2620,8 @@ function displacementPosition(data_result,data_result_v,site) {
 		velocityPosition(data_result_v,totalId.length,disData1[0],site,n1); 
 		fseries.push({name:'unselect'})
 		fseries2.push({name:'unselect'})
-		chartProcessDis("dis1",fseries,"Displacement, downslope",site,n1)
-		chartProcessDis("dis2",fseries2,"Displacement , across slope",site,n2)
+		chartProcessDis("dis1",fseries,"Displacement, downslope",site,ann1data)
+		chartProcessDis("dis2",fseries2,"Displacement , across slope",site,ann2data)
 
 	}     
 
@@ -2683,6 +2690,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 					sliceData.push(num);
 				}
 			}
+			inferno.reverse()
 			for(var a = 0; a < sliceData.length; a++){
 				var color = parseInt((255 / sliceData.length)*(a+1))
 				fseries.push({name:ndata.length-a, data:dataset.slice(sliceData[a],sliceData[a+1]),color :inferno[color]})
@@ -2703,7 +2711,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 					sliceData.push(num);
 				}
 			}
-
+			inferno.reverse()
 			for(var a = 0; a < sliceData.length-1; a++){
 				catNum.push((sliceData.length-2)-(a+1)+2)
 				var color = parseInt((255 / sliceData.length)*(a+1))
@@ -2740,7 +2748,7 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 			text: name,
 		},
 		subtitle: {
-			text: 'Source: ' + (site).toUpperCase()
+			text: '<b>Source: </b> ' + (site).toUpperCase() +'<br><br><b>Note: </b> + - consistently increasing/decreasing trend'
 		},
 		xAxis: {
 			type: 'datetime',
@@ -2811,7 +2819,7 @@ function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 			text: 'Column Position',
 		},
 		subtitle: {
-			text: 'Source: '+(site).toUpperCase()
+			text: '<b>Source: </b> '+(site).toUpperCase()
 		},
 		plotOptions: {
 			line: {
@@ -2878,7 +2886,7 @@ function chartProcessbase(id,data_series,name,site,catNum){
 			text: name
 		},
 		subtitle: {
-			text: 'Source: ' + (site).toUpperCase()
+			text: '<b>Source: </b> ' + (site).toUpperCase()
 		},
 		tooltip: {
 			// split: true,
@@ -2895,7 +2903,7 @@ function chartProcessbase(id,data_series,name,site,catNum){
 				year: '%b'
 			},
 			title: {
-				text: 'Date'
+				text: 'Time'
 			}
 		},
 		legend: {
