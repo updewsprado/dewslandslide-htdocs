@@ -11,8 +11,8 @@ $(document).ready(function(e) {
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').add(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(10,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').subtract(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
@@ -260,20 +260,20 @@ function dropdowDayValue(id,fromDate,toDate) {
 	var date1 = moment(fromDate);
 	var date2 = moment(toDate);
 	var diff = date2.diff(date1,'days');
-
+	console.log(diff)
 	if(diff == 8 || diff == 7){
 		$('#'+id+'_days').val('7 days')
-	}else if(diff == 11 || diff == 10){
+	}else if(diff == 9 || diff == 10){
 		$('#'+id+'_days').val('10 days')
-	}else if(diff == 15 || diff == 14){
+	}else if(diff == 13 || diff == 14){
 		$('#'+id+'_days').val('2 weeks')
-	}else if(diff == 31 || diff == 30){
+	}else if(diff == 29 || diff == 30){
 		$('#'+id+'_days').val('1 months')
-	}else if(diff == 91 || diff == 90){
+	}else if(diff == 89 || diff == 90){
 		$('#'+id+'_days').val('3 months')
-	}else if(diff == 121 || diff == 120){
+	}else if(diff == 119 || diff == 120){
 		$('#rainfall_days').val('6 months')
-	}else if(diff == 366 || diff == 367){
+	}else if(diff == 365 || diff == 367){
 		$('#'+id+'_days').val('1 year')
 	}else  {
 		$('#'+id+'_days').val('Customize')
@@ -408,7 +408,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							}
 							
 						}
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -506,7 +506,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							}
 							
 						}						
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -608,7 +608,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}
 						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -847,7 +847,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	// 			result_filtered.push(result[i])
 	// 		}
 	// 	}
-	// 	var label_crack = ["24hrs","72hrs","15mins"]
+	// 	var label_crack = ["24hrs","72hrs","30mins"]
 	// 	var all_data_tag =[]
 	// 	for (var a = 0; a < label_crack.length; a++) {
 	// 		var collect =[]
