@@ -62,13 +62,13 @@ $(document).ready(function(e) {
 					var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
 					var duration = moment.duration(date2.diff(date1));
 					console.log(duration._data.days)
-					if(duration._data.days > 0){
+					if(duration._data.days >= 0){
 						var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
 					}else{
 						var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 					}
 					var from = 'n'
-					
+					console.log(from,to)
 					$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
 					$("#subgeneral").val('column_sub')
 					$(".selectpicker").selectpicker('refresh')
@@ -81,7 +81,6 @@ $(document).ready(function(e) {
 							'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 					}
 					allSensorPosition(site,from,to)
-					// console.log(from,to)
 				}
 			});
 		
