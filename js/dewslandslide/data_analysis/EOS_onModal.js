@@ -11,12 +11,12 @@ $(document).ready(function(e) {
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').add(30,'minutes').format('YYYY-MM-DD HH:mm:ss')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(10,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
-		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
+		var from = moment().subtract(7,'days').format('YYYY-MM-DD')
 		var to = moment().add(1,'days').format('YYYY-MM-DD')
 		let dataSubmit = { 
 			site : (site).toLowerCase(), 
@@ -62,10 +62,12 @@ $(document).ready(function(e) {
 					var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
 					var duration = moment.duration(date2.diff(date1));
 					console.log(duration._data.days)
-					if(duration._data.days >= 0){
+					if(duration._data.days > 0){
 						var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
+						console.log('past data' , to)
 					}else{
 						var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+						console.log('present data' , to)
 					}
 					var from = 'n'
 					console.log(from,to)
@@ -258,20 +260,20 @@ function dropdowDayValue(id,fromDate,toDate) {
 	var date1 = moment(fromDate);
 	var date2 = moment(toDate);
 	var diff = date2.diff(date1,'days');
-
+	console.log(diff)
 	if(diff == 8 || diff == 7){
 		$('#'+id+'_days').val('7 days')
-	}else if(diff == 11 || diff == 10){
+	}else if(diff == 9 || diff == 10){
 		$('#'+id+'_days').val('10 days')
-	}else if(diff == 15 || diff == 14){
+	}else if(diff == 13 || diff == 14){
 		$('#'+id+'_days').val('2 weeks')
-	}else if(diff == 31 || diff == 30){
+	}else if(diff == 29 || diff == 30){
 		$('#'+id+'_days').val('1 months')
-	}else if(diff == 91 || diff == 90){
+	}else if(diff == 89 || diff == 90){
 		$('#'+id+'_days').val('3 months')
-	}else if(diff == 121 || diff == 120){
+	}else if(diff == 119 || diff == 120){
 		$('#rainfall_days').val('6 months')
-	}else if(diff == 366 || diff == 367){
+	}else if(diff == 365 || diff == 367){
 		$('#'+id+'_days').val('1 year')
 	}else  {
 		$('#'+id+'_days').val('Customize')
@@ -406,7 +408,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							}
 							
 						}
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -504,7 +506,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							}
 							
 						}						
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -606,7 +608,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						}
 						
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
-						var divname =["24hrs","72hrs" ,"15mins"];
+						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
 						var series_data = [];
@@ -845,7 +847,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	// 			result_filtered.push(result[i])
 	// 		}
 	// 	}
-	// 	var label_crack = ["24hrs","72hrs","15mins"]
+	// 	var label_crack = ["24hrs","72hrs","30mins"]
 	// 	var all_data_tag =[]
 	// 	for (var a = 0; a < label_crack.length; a++) {
 	// 		var collect =[]
@@ -1022,43 +1024,71 @@ function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
-			var result = JSON.parse(data_result)
-			var crackname_process = []
-			for (var a = 0; a < result.length; a++) {
-				crackname_process.push(result[a].crack_id)
+			var result_unfiltered = JSON.parse(data_result)
+			console.log(result_unfiltered.length)
+			if(result_unfiltered.length >= 1  ){
+				surficialFiltered(result_unfiltered,dataTableSubmit)
+			}else{
+				surficialChecker(dataTableSubmit)
+				console.log('find the latest data')
 			}
-			var slice =[0];
-			var data1 =[];
-			var data =[];
-			var opts = $('#crackgeneral')[0].options;
-
-			var crack_name = removeDuplicates(crackname_process);
-
-			for (var a = 0; a < crack_name.length; a++) {
-				var all = []
-				for (var i = 0; i < result.length; i++) {
-					if(crack_name[a] == result[i].crack_id){
-						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
-					}
-				}
-			}
-			for(var a = 0; a < data1.length; a++){
-				if(data1[a]!= data1[a+1]){
-					slice.push(a+1)
-				}
-			}
-			var series_data=[]
-
-
-			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,""),dashStyle: 'shortdash'})
-			}
-			$('#ground_graph').empty();
-			chartProcessSurficial('ground_graph',series_data,'Surficial Graph',dataTableSubmit)
-			$("#tag_series").val(JSON.stringify(series_data))
 		}
 	});	
+}
+
+function surficialChecker(dataTableSubmit){
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/latestGroundData/"+dataTableSubmit.site,  success: function(data_result) {
+			let data = { 
+				site : dataTableSubmit.site, 
+				fdate : data_result[2].timestamp,
+				tdate : data_result[0].timestamp
+			}
+			surficialGraph(data)
+			dropdowDayValue('surperimpose',data_result[2].timestamp,data_result[0].timestamp)
+			$('#surperimpose_days').selectpicker('refresh');
+			console.log(data)
+			
+		}
+	});
+}
+function surficialFiltered(result,dataTableSubmit){
+	var crackname_process = []
+	for (var a = 0; a < result.length; a++) {
+		crackname_process.push(result[a].crack_id)
+	}
+	var slice =[0];
+	var data1 =[];
+	var data =[];
+	var opts = $('#crackgeneral')[0].options;
+
+	var crack_name = removeDuplicates(crackname_process);
+
+	for (var a = 0; a < crack_name.length; a++) {
+		var all = []
+		for (var i = 0; i < result.length; i++) {
+			if(crack_name[a] == result[i].crack_id){
+				data1.push(crack_name[a]);
+				data.push([Date.parse(result[i].ts) , result[i].meas] );
+			}
+		}
+	}
+	for(var a = 0; a < data1.length; a++){
+		if(data1[a]!= data1[a+1]){
+			slice.push(a+1)
+		}
+	}
+	var series_data=[]
+
+
+	for(var a = 0; a < crack_name.length; a++){
+		series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,""),dashStyle: 'shortdash'})
+	}
+	$('#ground_graph').empty();
+	chartProcessSurficial('ground_graph',series_data,'Surficial Graph',dataTableSubmit)
+	$("#tag_series").val(JSON.stringify(series_data))
+
 }
 function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 	var site = $('#sitegeneral').val();
@@ -1316,7 +1346,6 @@ function displacementPosition(data_result,data_result_v,site) {
 		}
 		
 		var all_val = [];
-		console.log(disData1)
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
 				d1.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base))*1000})
