@@ -2662,6 +2662,7 @@ function loadGroupsEmployee(){
 
 $('#go-load-groups').click(function() {
 	$('#chatterbox-loading').modal('show');
+	first_load = true;
 	groupTags = [];
 	tempTimestampYou = "";
 	tempTimestampGroup = "";
