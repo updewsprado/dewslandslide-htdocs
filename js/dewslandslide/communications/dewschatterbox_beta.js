@@ -123,6 +123,7 @@ function sendViaAlertMonitor(dashboard_data){
 		final_template = final_template.replace("(current_date)",moment(dashboard_data.data_timestamp).format('LL'));
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
+
 	} else {
 
 		$('#send-btn-ewi-amd').prop('disabled',true);
@@ -236,14 +237,32 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#event_details').val(JSON.stringify(dashboard_data));
 		var alertLevel = dashboard_data.internal_alert_level.split('-')[0];
 		var alertTrigger = dashboard_data.internal_alert_level.split('-')[1];
+
 		$.ajax({
 			type: "POST",
 			url: "../communications/getkeyinputviatriggertype",
 			async: true,
-			data: {trigger_type:alertTrigger},
+			data: {trigger_type:alertTrigger,level: alertLevel},
 			success: function(data) {
 				if (data != null) {
 					var techInfo = JSON.parse(data);
+					if (dashboard_data.status == "on-going" && alertLevel.includes("3") == true) {
+						var alertStat =  "Event-Level3";
+					} else if (dashboard_data.status == "on-going") {
+						var alertStat = "Event";
+					} else {
+						var alertStat = dashboard_data.status;
+					}
+
+					if (Array.isArray(techInfo.key_input) == false) {
+						techInfo = techInfo[0];
+					} else {
+						for (var counter = 0; counter < techInfo.key_input[0].length; counter++) {
+							if (alertStat == techInfo.key_input[0][counter].alert_status) {
+								techInfo = techInfo.key_input[0][counter];
+							}
+						}
+					}
 				}
 				$.ajax({
 					type: "POST",
@@ -261,6 +280,7 @@ function sendViaAlertMonitor(dashboard_data){
 							async: true,
 							data: {recommended_response: alertLevel},
 							success: function(data) {
+
 								var recommendedResponse = JSON.parse(data);
 								var template = "";
 								var level;
@@ -324,6 +344,7 @@ function sendViaAlertMonitor(dashboard_data){
 								}
 
 								template = template.replace("(site_location)",formatSbmp);
+
 								if (techInfo.key_input.substring(0,4) == " at ") {
 									techInfo.key_input = techInfo.key_input.substring(4);
 								}
@@ -2641,6 +2662,7 @@ function loadGroupsEmployee(){
 
 $('#go-load-groups').click(function() {
 	$('#chatterbox-loading').modal('show');
+	first_load = true;
 	groupTags = [];
 	tempTimestampYou = "";
 	tempTimestampGroup = "";
