@@ -16,7 +16,7 @@ $(document).ready(function(e) {
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
 	}else  if(category == "surficial"){
-		var from = moment().subtract(30,'days').format('YYYY-MM-DD')
+		var from = moment().subtract(7,'days').format('YYYY-MM-DD')
 		var to = moment().add(1,'days').format('YYYY-MM-DD')
 		let dataSubmit = { 
 			site : (site).toLowerCase(), 
@@ -1024,43 +1024,71 @@ function surficialGraph(dataTableSubmit) {
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
-			var result = JSON.parse(data_result)
-			var crackname_process = []
-			for (var a = 0; a < result.length; a++) {
-				crackname_process.push(result[a].crack_id)
+			var result_unfiltered = JSON.parse(data_result)
+			console.log(result_unfiltered.length)
+			if(result_unfiltered.length >= 1  ){
+				surficialFiltered(result_unfiltered,dataTableSubmit)
+			}else{
+				surficialChecker(dataTableSubmit)
+				console.log('find the latest data')
 			}
-			var slice =[0];
-			var data1 =[];
-			var data =[];
-			var opts = $('#crackgeneral')[0].options;
-
-			var crack_name = removeDuplicates(crackname_process);
-
-			for (var a = 0; a < crack_name.length; a++) {
-				var all = []
-				for (var i = 0; i < result.length; i++) {
-					if(crack_name[a] == result[i].crack_id){
-						data1.push(crack_name[a]);
-						data.push([Date.parse(result[i].ts) , result[i].meas] );
-					}
-				}
-			}
-			for(var a = 0; a < data1.length; a++){
-				if(data1[a]!= data1[a+1]){
-					slice.push(a+1)
-				}
-			}
-			var series_data=[]
-
-
-			for(var a = 0; a < crack_name.length; a++){
-				series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,""),dashStyle: 'shortdash'})
-			}
-			$('#ground_graph').empty();
-			chartProcessSurficial('ground_graph',series_data,'Surficial Graph',dataTableSubmit)
-			$("#tag_series").val(JSON.stringify(series_data))
 		}
 	});	
+}
+
+function surficialChecker(dataTableSubmit){
+	$.ajax({ 
+		dataType: "json",
+		url: "/api/latestGroundData/"+dataTableSubmit.site,  success: function(data_result) {
+			let data = { 
+				site : dataTableSubmit.site, 
+				fdate : data_result[2].timestamp,
+				tdate : data_result[0].timestamp
+			}
+			surficialGraph(data)
+			dropdowDayValue('surperimpose',data_result[2].timestamp,data_result[0].timestamp)
+			$('#surperimpose_days').selectpicker('refresh');
+			console.log(data)
+			
+		}
+	});
+}
+function surficialFiltered(result,dataTableSubmit){
+	var crackname_process = []
+	for (var a = 0; a < result.length; a++) {
+		crackname_process.push(result[a].crack_id)
+	}
+	var slice =[0];
+	var data1 =[];
+	var data =[];
+	var opts = $('#crackgeneral')[0].options;
+
+	var crack_name = removeDuplicates(crackname_process);
+
+	for (var a = 0; a < crack_name.length; a++) {
+		var all = []
+		for (var i = 0; i < result.length; i++) {
+			if(crack_name[a] == result[i].crack_id){
+				data1.push(crack_name[a]);
+				data.push([Date.parse(result[i].ts) , result[i].meas] );
+			}
+		}
+	}
+	for(var a = 0; a < data1.length; a++){
+		if(data1[a]!= data1[a+1]){
+			slice.push(a+1)
+		}
+	}
+	var series_data=[]
+
+
+	for(var a = 0; a < crack_name.length; a++){
+		series_data.push({name:crack_name[a],data:data.slice(slice[a],slice[a+1]),id:(crack_name[a]).replace(/ /g,""),dashStyle: 'shortdash'})
+	}
+	$('#ground_graph').empty();
+	chartProcessSurficial('ground_graph',series_data,'Surficial Graph',dataTableSubmit)
+	$("#tag_series").val(JSON.stringify(series_data))
+
 }
 function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 	var site = $('#sitegeneral').val();
@@ -1318,7 +1346,6 @@ function displacementPosition(data_result,data_result_v,site) {
 		}
 		
 		var all_val = [];
-		console.log(disData1)
 		for(var a = 0; a < disData1.length; a++){
 			for(var i = 0; i < disData1[0].length; i++){
 				d1.push({id:disData1[a][i].id,x:Date.parse(disData1[a][i].ts) ,y:((disData1[a][i].downslope-data[0].cml_base))*1000})
