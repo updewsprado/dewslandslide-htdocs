@@ -488,10 +488,59 @@ $(document).ready(function() {
 	var dasboard_data_holder;
 	var contactInfo = [];
 
-
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
 	}
+
+	if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
+		var recent_contacts_collection = [];
+		var recent_sites_collection = [];
+		var recent_searched_collection = [];
+
+		getRecentActivity();
+	}
+
+	$('.rv_contacts div.recent_contacts').on('click',function() {
+		$('.recent_activities').hide();
+		var data = recent_contacts_collection[$(this).index()];
+		$('.dropdown-input').val(data.name[0].fullname);
+		$('#go-chat').trigger('click');
+	});
+
+	$('.rv_sites div.recent_sites').on('click',function() {
+		$('.recent_activities').hide();
+		$('input[name="sitenames"]').prop('checked',false);
+		$('input[name="offices"]').prop('checked',false);
+
+		var data = recent_sites_collection[$(this).index()];
+		for (var counter = 0; counter < data.offices.length; counter++) {
+			$('input[name="offices"]:unchecked').each(function() {
+				if (data.offices[counter] == $(this).val()) {
+					$(this).prop('checked',true);
+				}
+			});
+		}
+
+		for (var counter = 0; counter < data.sitenames.length; counter++) {
+			$('input[name="sitenames"]:unchecked').each(function() {
+				if (data.sitenames[counter] == $(this).val()) {
+					$(this).prop('checked',true);
+				}
+			});
+		}
+
+		$('#go-load-groups').trigger('click');
+	});
+
+	$('.rv_searched div.recent_searched').on('click',function() {
+		$('.recent_activities').hide();
+		conn.send(JSON.stringify(recent_searched_collection[$(this).index()]));
+	});
+
+	$('.rv_message div').on('click',function() {
+		$('.recent_activities').hide();
+		console.log($(this).index());
+	});
 
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
@@ -2388,6 +2437,8 @@ $(document).on("click","#quick-release-display li",function(){
 		'offices': tagOffices,
 		'sitenames': tagSitenames
 	};
+
+	addSitesActivity(groupTags);
 	displayGroupTagsForThread();
 	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
 
@@ -2420,6 +2471,7 @@ function startChat(source="normal") {
 	contactInfo = [];
 	counters = 0;
 
+	$('.recent_activities').hide();
 	user = "You";
 
 	if (source == "normal") {
@@ -2463,8 +2515,11 @@ function startChat(source="normal") {
 	var msgHistory = {
 		'type': 'smsloadrequest',
 		'number': contactnumTrimmed,
+		'name':contactInfo,
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
+
+	addContactsActivity(msgHistory);
 
 	$('#user').val('You');
 	$('#messages').html('');
@@ -2590,6 +2645,7 @@ $('#send-msg').on('click',function(){
 });
   
 function loadGroups(){
+	$('.recent_activities').hide();
 	if (quickGroupSelectionFlag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
@@ -2626,6 +2682,8 @@ function loadGroupsCommunity(){
 		'offices': tagOffices,
 		'sitenames': tagSitenames
 	};
+
+	addSitesActivity(groupTags);
 
 	displayGroupTagsForThread();
 	displayGroupMembersForQuickAccess(tagOffices,tagSitenames);
@@ -3266,6 +3324,113 @@ function getLatestAlert() {
 	conn.send(JSON.stringify(msg));
 }
 
+function getRecentActivity() {
+
+	var division = 1;
+
+	if (localStorage.getItem("rv_searched") != null) {
+		console.log(localStorage['rv_searched']);
+		recent_searched_collection = JSON.parse(localStorage['rv_searched']);
+	}
+
+	if (localStorage.getItem("rv_sites") != null) {
+		recent_sites_collection = JSON.parse(localStorage['rv_sites']);
+	}
+
+	if (localStorage.getItem("rv_contacts") != null) {
+		recent_contacts_collection = JSON.parse(localStorage['rv_contacts']);
+	}
+
+	if (recent_contacts_collection.length != 0) {
+		division = 12 / recent_contacts_collection.length;
+		for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
+			$(".rv_contacts").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_contacts'><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>"+recent_contacts_collection[counter].name[0].fullname+"</strong></div></a></div>");
+		}
+	} else {
+			$(".rv_contacts").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+	}
+
+	if (recent_sites_collection.length != 0) {
+		division = 12 / recent_sites_collection.length;
+		var rv_quick_sites = "";
+		var rv_quick_offices = "";
+		for (var counter = 0; counter < recent_sites_collection.length; counter++) {
+			for(var sub_counter = 0; sub_counter < recent_sites_collection[counter].offices.length;sub_counter++) {
+				if (sub_counter == 0) {
+					rv_quick_offices = recent_sites_collection[counter].offices[sub_counter];
+				} else {
+					rv_quick_offices = rv_quick_offices+", "+recent_sites_collection[counter].offices[sub_counter];
+				}
+			}
+
+			for(var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length;sub_counter++) {
+				if (sub_counter == 0) {
+					rv_quick_sites = recent_sites_collection[counter].sitenames[sub_counter];
+				} else {
+					rv_quick_sites = rv_quick_sites+", "+recent_sites_collection[counter].sitenames[sub_counter];
+				}
+			}
+
+			$(".rv_sites").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_sites'><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: "+rv_quick_sites+"</strong></div><div class='last-message text-muted'>Offices: "+rv_quick_offices+"</div></a></div>");
+		}
+	} else {
+		$(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+	}
+
+	if (recent_searched_collection.length != 0) {
+		division = 12 / recent_searched_collection.length;
+		for (var counter = 0; counter < recent_searched_collection.length; counter++) {
+			$(".rv_message").append("<div class='col-md-"+parseInt(division)+" col-sm-"+division+" col-xs-"+parseInt(division)+"recent_searched'>hello world</div>");
+		}
+	} else {
+		$(".rv_message").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+	}
+
+
+
+	$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+
+}
+
+function addSearchedActivity(searched) {
+	$('.recent_activities').hide();
+
+	if (recent_searched_collection.length == 6){
+		recent_searched_collection.shift();
+	}
+	recent_searched_collection.push(searched);
+	localStorage['rv_searched'] = JSON.stringify(recent_searched_collection);		
+}
+
+function addSitesActivity(sites) {
+	$('.recent_activities').hide();
+
+	for (var counter = 0; counter < recent_sites_collection.length;counter++) {
+		if (recent_sites_collection[counter].sitenames[0] == sites.sitenames[0]) {
+			return 1;
+		}
+	}
+
+	if (recent_sites_collection.length == 6){
+		recent_sites_collection.shift();
+	}
+	recent_sites_collection.push(sites);
+	localStorage['rv_sites'] = JSON.stringify(recent_sites_collection);
+}
+
+function addContactsActivity(contacts) {
+	for (var counter = 0; counter < recent_contacts_collection.length;counter++) {
+		if (recent_contacts_collection[counter].number[0] == contacts.number[0]) {
+			return 1;
+		}
+	}
+
+	if (recent_contacts_collection.length == 6){
+		recent_contacts_collection.shift();
+	}
+	recent_contacts_collection.push(contacts);
+	localStorage['rv_contacts'] = JSON.stringify(recent_contacts_collection);	
+}
 
 $('a[href="#emp-group"]').on('click',function(){
 	employeeTags = [];
