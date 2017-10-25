@@ -11,7 +11,7 @@ $(document).ready(function(e) {
 	$(".box").hide();
 	dropdowlistAppendValue()
 	if(category == "rain"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(10,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
 		RainFallProcess(site,from,to)
 		console.log(site,from,to)
@@ -380,19 +380,26 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						var jsonRespo =JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
-							var time =  Date.parse(jsonRespo[i].ts);
-							all_ts.push(time)
-							all_cummulative.push(parseFloat(jsonRespo[i].rval))
-							max_array_data.push(parseFloat(jsonRespo[i].hrs72))
-							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-							Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-							Datarain.push(time, parseFloat(jsonRespo[i].rval));
-							DataSeries72h.push(Data72h);
-							DataSeries24h.push(Data24h);
-							DataSeriesRain.push(Datarain);
-							if(jsonRespo[i].rval == null){
-								nval.push(i);
+							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
+							var date2 = moment(jsonRespo[i].ts);
+							var duration =date2.diff(date1,'hours');
+							console.log(duration)
+							if( duration >= 0){
+								var time =  Date.parse(jsonRespo[i].ts);
+								all_ts.push(time)
+								all_cummulative.push(parseFloat(jsonRespo[i].rval))
+								max_array_data.push(parseFloat(jsonRespo[i].hrs72))
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
+								if(jsonRespo[i].rval == null){
+									nval.push(i);
+								}
 							}
+							
 						}
 						var nodata_nval=getRanges(nval)	
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
@@ -478,18 +485,24 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						var jsonRespo =JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
-							var time =  Date.parse(jsonRespo[i].ts);
-							all_ts.push(time)
-							all_cummulative.push(parseFloat(jsonRespo[i].rval))
-							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
-							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-							Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-							Datarain.push(time, parseFloat(jsonRespo[i].rval));
-							DataSeries72h.push(Data72h);
-							DataSeries24h.push(Data24h);
-							DataSeriesRain.push(Datarain);
-							if(jsonRespo[i].rval == null){
-								nval.push(i);
+							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
+							var date2 = moment(jsonRespo[i].ts);
+							var duration = date2.diff(date1,'hours');
+							console.log(duration)
+							if( duration >= 0){
+								var time =  Date.parse(jsonRespo[i].ts);
+								all_ts.push(time)
+								all_cummulative.push(parseFloat(jsonRespo[i].rval))
+								max_array_data.push(parseFloat(jsonRespo[i].hrs72));
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
+								if(jsonRespo[i].rval == null){
+									nval.push(i);
+								}
 							}
 						}
 						var nodata_nval=getRanges(nval)	
@@ -578,18 +591,24 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
-							var time =  Date.parse(jsonRespo[i].ts);
-							all_ts.push(time)
-							all_cummulative.push(parseFloat(jsonRespo[i].rval))
-							max_array_data.push(parseFloat(jsonRespo[i].hrs72));
-							Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
-							Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
-							Datarain.push(time, parseFloat(jsonRespo[i].rval));
-							DataSeries72h.push(Data72h);
-							DataSeries24h.push(Data24h);
-							DataSeriesRain.push(Datarain);
-							if(jsonRespo[i].rval == null){
-								nval.push(i);
+							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
+							var date2 = moment(jsonRespo[i].ts);
+							var duration = date2.diff(date1,'hours');
+							console.log(duration)
+							if( duration >= 0){
+								var time =  Date.parse(jsonRespo[i].ts);
+								all_ts.push(time)
+								all_cummulative.push(parseFloat(jsonRespo[i].rval))
+								max_array_data.push(parseFloat(jsonRespo[i].hrs72));
+								Data72h.push(time, parseFloat(jsonRespo[i].hrs72));
+								Data24h.push(time, parseFloat(jsonRespo[i].hrs24));
+								Datarain.push(time, parseFloat(jsonRespo[i].rval));
+								DataSeries72h.push(Data72h);
+								DataSeries24h.push(Data24h);
+								DataSeriesRain.push(Datarain);
+								if(jsonRespo[i].rval == null){
+									nval.push(i);
+								}
 							}
 						}
 						var nodata_nval=getRanges(nval)
@@ -1042,11 +1061,11 @@ function surficialChecker(dataTableSubmit){
 		url: "/api/latestGroundData/"+dataTableSubmit.site,  success: function(data_result) {
 			let data = { 
 				site : dataTableSubmit.site, 
-				fdate : data_result[2].timestamp,
+				fdate : data_result[data_result.length-1].timestamp,
 				tdate : data_result[0].timestamp
 			}
 			surficialGraph(data)
-			dropdowDayValue('surperimpose',data_result[2].timestamp,data_result[0].timestamp)
+			dropdowDayValue('surperimpose',data_result[data_result.length-1].timestamp,data_result[0].timestamp)
 			$('#surperimpose_days').selectpicker('refresh');
 			console.log(data)
 			
