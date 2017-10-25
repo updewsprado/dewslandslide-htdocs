@@ -315,6 +315,11 @@ textarea {
     padding-left: 15px;
 }
 
+.recent_activities {
+  text-align: center;
+  opacity: 0.8;
+}
+
 @media screen and (max-width: 480px) {
     #send-char-remain {
         display: -webkit-inline-box;
