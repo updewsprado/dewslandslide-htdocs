@@ -1042,11 +1042,11 @@ function surficialChecker(dataTableSubmit){
 		url: "/api/latestGroundData/"+dataTableSubmit.site,  success: function(data_result) {
 			let data = { 
 				site : dataTableSubmit.site, 
-				fdate : data_result[2].timestamp,
+				fdate : data_result[data_result.length-1].timestamp,
 				tdate : data_result[0].timestamp
 			}
 			surficialGraph(data)
-			dropdowDayValue('surperimpose',data_result[2].timestamp,data_result[0].timestamp)
+			dropdowDayValue('surperimpose',data_result[data_result.length-1].timestamp,data_result[0].timestamp)
 			$('#surperimpose_days').selectpicker('refresh');
 			console.log(data)
 			
