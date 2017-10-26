@@ -306,16 +306,19 @@ function sendViaAlertMonitor(dashboard_data){
 										template = backboneMessage[counter].template;
 										switch(dashboard_data.day) {
 											case 0:
-											template = template.replace('(nth-day-extended)','tatlong');
+												template = template.replace('(nth-day-extended)','unang');
 											break;
 											case 1:
-											template = template.replace('(nth-day-extended)','unang');
+												template = template.replace('(nth-day-extended)','pangalawang');
 											break;
 											case 2:
-											template = template.replace('(nth-day-extended)','pangalawang');
+												template = template.replace('(nth-day-extended)','ikatlong');
 											break;
 											case 3:
-											template = template.replace('(nth-day-extended)','Ikatlong');
+												template = template.replace('(nth-day-extended)','huling');
+											break;
+											default:
+											template = template.replace('(nth-day-extended)','tatlong');
 											break;
 										}
 									}
