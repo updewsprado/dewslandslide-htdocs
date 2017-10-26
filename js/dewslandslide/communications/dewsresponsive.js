@@ -16,5 +16,6 @@ $(document).ready(function() {
 		$('#quick-release-display').css({"height": division_height-262});
 		$('#group-message-display').css({"height": division_height-272});
 		$('.chat-message').css({"height": division_height-308});
+		$('.activity-body').css({"height": division_height-70});
 	}
 });

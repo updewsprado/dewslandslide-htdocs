@@ -495,8 +495,6 @@ $(document).ready(function() {
 	if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
 		var recent_contacts_collection = [];
 		var recent_sites_collection = [];
-		var recent_searched_collection = [];
-
 		getRecentActivity();
 	}
 
@@ -535,11 +533,6 @@ $(document).ready(function() {
 	$('.rv_searched div.recent_searched').on('click',function() {
 		$('.recent_activities').hide();
 		conn.send(JSON.stringify(recent_searched_collection[$(this).index()]));
-	});
-
-	$('.rv_message div').on('click',function() {
-		$('.recent_activities').hide();
-		console.log($(this).index());
 	});
 
 	$.get( "../generalinformation/initialize", function( data ) {
@@ -3370,35 +3363,14 @@ function getRecentActivity() {
 				}
 			}
 
-			$(".rv_sites").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_sites'><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: "+rv_quick_sites+"</strong></div><div class='last-message text-muted'>Offices: "+rv_quick_offices+"</div></a></div>");
+			$(".rv_sites").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_sites'><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: "+rv_quick_sites+"</strong><div class='last-message text-muted'>Offices: "+rv_quick_offices+"</div></div></a></div>");
 		}
 	} else {
 		$(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
 	}
 
-	if (recent_searched_collection.length != 0) {
-		division = 12 / recent_searched_collection.length;
-		for (var counter = 0; counter < recent_searched_collection.length; counter++) {
-			$(".rv_message").append("<div class='col-md-"+parseInt(division)+" col-sm-"+division+" col-xs-"+parseInt(division)+"recent_searched'>hello world</div>");
-		}
-	} else {
-		$(".rv_message").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-	}
+	$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
 
-
-
-	$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-
-}
-
-function addSearchedActivity(searched) {
-	$('.recent_activities').hide();
-
-	if (recent_searched_collection.length == 6){
-		recent_searched_collection.shift();
-	}
-	recent_searched_collection.push(searched);
-	localStorage['rv_searched'] = JSON.stringify(recent_searched_collection);		
 }
 
 function addSitesActivity(sites) {
