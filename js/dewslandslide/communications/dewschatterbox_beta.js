@@ -306,16 +306,16 @@ function sendViaAlertMonitor(dashboard_data){
 										template = backboneMessage[counter].template;
 										switch(dashboard_data.day) {
 											case 0:
-												template = template.replace('(nth-day-extended)','unang');
+												template = template.replace('(nth-day-extended)','unang araw ng 3-day extended');
 											break;
 											case 1:
-												template = template.replace('(nth-day-extended)','pangalawang');
+												template = template.replace('(nth-day-extended)','ikalawang araw ng 3-day extended');
 											break;
 											case 2:
-												template = template.replace('(nth-day-extended)','ikatlong');
+												template = template.replace('(nth-day-extended)','ikatlong araw ng 3-day extended');
 											break;
 											case 3:
-												template = template.replace('(nth-day-extended)','huling');
+												template = template.replace('(nth-day-extended)','susunod na routine');
 											break;
 											default:
 											template = template.replace('(nth-day-extended)','tatlong');
