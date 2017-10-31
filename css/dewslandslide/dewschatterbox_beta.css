@@ -324,6 +324,14 @@ textarea {
   overflow: auto;
 }
 
+.routine-site-selection label {
+  margin: 5px;
+}
+
+.routine-msg-container {
+  padding: 15px;
+}
+
 @media screen and (max-width: 480px) {
     #send-char-remain {
         display: -webkit-inline-box;
