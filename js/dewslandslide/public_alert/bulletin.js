@@ -265,7 +265,8 @@ function edit(onEdit) {
 
         $(".editable").each(function () {
             editableOrigValue.push([$(this).prop('id'), $(this).text()]);
-            $(this).replaceWith("<input class='editable' id='" + $(this).prop('id') + "' value='" + $(this).text() + "'>");
+            let isLonger = $(this).hasClass("longer_input") ? "col-sm-12" : "";
+            $(this).replaceWith("<input class='editable " + isLonger + "' id='" + $(this).prop('id') + "' value='" + $(this).text() + "'>");
         });
 
         let url = $(location).attr("href");
@@ -286,7 +287,8 @@ function edit(onEdit) {
         $(".edit-event-page").popover('destroy');
         editableOrigValue = [];
         $(".editable").each(function () {
-            $(this).replaceWith("<span class='editable' id='" + $(this).prop('id') + "'>" + $(this).val() + "</span>"  );
+            let isLonger = $(this).hasClass("col-sm-12") ? "longer_input" : "";
+            $(this).replaceWith("<span class='editable " + isLonger + "' id='" + $(this).prop('id') + "'>" + $(this).val() + "</span>"  );
         });
     }
 }

@@ -59,8 +59,10 @@ page.open( args[1], function(status) {
 				document.getElementById("bulletin_number").innerText = edits[0];
 				document.getElementById("alert_description").innerText = edits[1];
 				document.getElementById("validity").innerText = edits[2];
-				document.getElementById("next_reporting").innerText = edits[3];
-				document.getElementById("next_bulletin").innerText = edits[4];
+				document.getElementById("recommended_response").innerText = edits[3];
+				document.getElementById("next_reporting").innerText = edits[4];
+				document.getElementById("recommended_response_2").innerText = edits[5];
+				document.getElementById("next_bulletin").innerText = edits[6];
 			}, line);
 		};
 
