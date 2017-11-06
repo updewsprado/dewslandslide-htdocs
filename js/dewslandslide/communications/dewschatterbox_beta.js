@@ -503,8 +503,12 @@ $(document).ready(function() {
 	$('#routine-actual-option').on('click',function() {
 		$('#routine-reminder-option').removeClass('active');
 		$('#routine-msg').val('');
-		$('#routine-msg').val('');
-		$(this).addClass('active')
+		$(this).addClass('active');
+
+		// $.get( "../generalinformation/initialize", function( data ) {
+		// 	console.log(JSON.parse(data));
+		// });
+		
 	});
 
 	$('#routine-reminder-option').on('click',function() {
