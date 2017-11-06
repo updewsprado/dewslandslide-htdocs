@@ -318,7 +318,7 @@ function sendViaAlertMonitor(dashboard_data){
 												template = template.replace('(nth-day-extended)','susunod na routine');
 											break;
 											default:
-											template = template.replace('(nth-day-extended)','tatlong');
+											template = template.replace('(nth-day-extended)','tatlong araw na routine');
 											break;
 										}
 									}
@@ -429,16 +429,16 @@ function sendViaAlertMonitor(dashboard_data){
 								}
 								$('#msg').val(template);
 								$('#site-abbr').val(dashboard_data["name"]);
-								$('#extended_status').val(dashboard_data["status"]+","+dashboard_data["day"]);
+								$('#extended_status').val(dashboard_data.status+","+dashboard_data.day);
 								$('#constructed-ewi-amd').val(template);
 								$('#ewi-asap-modal').modal('toggle');
 							}
 						});
-}
-});
-}
-});
-}
+					}
+				});
+			}
+		});
+	}
 }
 
 $(document).ready(function() {
@@ -3167,7 +3167,7 @@ $('#send-btn-ewi-amd').click(function(){
 	try {
 		var extended_indicator = $('#extended_status').val().split(",");
 		if (extended_indicator[0] == "extended") {
-			if (extended_indicator[1] == 0) {
+			if (extended_indicator[1] == "undefined") { // Day 0
 				var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 			} else {
 				var tagOffices = ['LLMC','BLGU','MLGU','REG8'];
