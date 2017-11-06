@@ -442,7 +442,6 @@ function sendViaAlertMonitor(dashboard_data){
 }
 
 $(document).ready(function() {
-
 	var first_load = false;
 	var user, contactnum;
 	var contactnumTrimmed = [];
@@ -490,6 +489,8 @@ $(document).ready(function() {
 	var searched_cache = [];
 	var dasboard_data_holder;
 	var contactInfo = [];
+	var routine_reminder_msg;
+	var actual_routine;
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -498,19 +499,98 @@ $(document).ready(function() {
 	if (window.location.href == window.location.origin+"/communications/chatterbox_beta" || window.location.href == window.location.origin+"/communications/chatterbox_beta#") {
 		var recent_contacts_collection = [];
 		var recent_sites_collection = [];
-		var recent_searched_collection = [];
-
 		getRecentActivity();
 	}
 
-	$('.rv_contacts div.recent_contacts').on('click',function() {
+	try {
+		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
+		var remChars = 800 - $("#msg").val().length - footer.length;
+
+		$("#remaining_chars").text(remChars);
+		$("#msg").attr("maxlength", remChars);
+
+		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
+		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var group_message_template = Handlebars.compile($('#group-message-template').html());
+		var ewi_template = Handlebars.compile($('#ewi_template').html());
+
+	} catch (err) {
+		console.log(err);
+		console.log("Chatterbox : monitoring dashboard mode");
+	}
+
+	$('#routine-actual-option').on('click',function() {
+		$('#routine-reminder-option').removeClass('active');
+		$('#routine-msg').val('');
+		$(this).addClass('active');
+
+		$.get( "../communications/getRoutine", function( data ) {
+			var routine_template = JSON.parse(data);
+			$('#routine-msg').val(routine_template[0].template);
+		});
+		
+	});
+
+	$('#routine-reminder-option').on('click',function() {
+		$('#routine-actual-option').removeClass('active');
+		$('#routine-msg').val('');
+		$('#routine-msg').val(routine_reminder_msg);
+		$(this).addClass('active');
+	});
+
+	$('.rv_contacts a').on('click',function() {
 		$('.recent_activities').hide();
 		var data = recent_contacts_collection[$(this).index()];
 		$('.dropdown-input').val(data.name[0].fullname);
 		$('#go-chat').trigger('click');
 	});
 
-	$('.rv_sites div.recent_sites').on('click',function() {
+	$('#send-routine-msg').on('click',function(){
+		$('#chatterbox-loading').modal('show');
+		var offices = [];
+		if ($('.btn.btn-primary.active').val() == "Reminder Message") {
+			offices = ['LLMC'];
+		} else {
+			offices = ['LLMC','MLGU','BLGU'];
+		}
+		var sites_on_routine = [];
+		var routine_msg = $('#routine-msg').val();
+		var temp_msg = routine_msg;
+		$('input[name="offices-routine"]:checked').each(function() {
+			sites_on_routine.push(this.value);
+			$.post("../chatterbox_beta/getSiteDetailsOnRoutine/", {site_code: this.value}).done(function(data){
+				var routine = JSON.parse(data);
+				var ewiLocation = routine[0].sitio+", "+routine[0].barangay+", "+routine[0].municipality+", "+routine[0].province;
+				var formatSbmp = ewiLocation.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
+
+				routine_msg = routine_msg.replace("(site_location)",formatSbmp);
+				routine_msg = routine_msg.replace("(current_date)",moment().format("MMMM D, YYYY"));
+
+				var data = {
+					'type': 'smssendgroup',
+					'user': 'You',
+					'offices': offices,
+					'sitenames': [routine[0].name.toUpperCase()],
+					'msg': routine_msg+footer,
+					'ewi_filter': true,
+					'ewi_tag': false
+				}
+				conn.send(JSON.stringify(data));
+				routine_msg = temp_msg;
+
+			});
+		});
+		setTimeout(function(){
+			$('#chatterbox-loading').modal('hide');
+		},20000)
+	});
+
+	$('.rv_sites a').on('click',function() {
 		$('.recent_activities').hide();
 		$('input[name="sitenames"]').prop('checked',false);
 		$('input[name="offices"]').prop('checked',false);
@@ -540,11 +620,6 @@ $(document).ready(function() {
 		conn.send(JSON.stringify(recent_searched_collection[$(this).index()]));
 	});
 
-	$('.rv_message div').on('click',function() {
-		$('.recent_activities').hide();
-		console.log($(this).index());
-	});
-
 	$.get( "../generalinformation/initialize", function( data ) {
 	});
 
@@ -555,25 +630,6 @@ $(document).ready(function() {
 			event.cancel = true;
 		}
 	});
-
-	try {
-		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
-		var remChars = 800 - $("#msg").val().length - footer.length;
-
-		$("#remaining_chars").text(remChars);
-		$("#msg").attr("maxlength", remChars);
-
-		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
-		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
-		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
-		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
-		var group_message_template = Handlebars.compile($('#group-message-template').html());
-		var ewi_template = Handlebars.compile($('#ewi_template').html());
-
-	} catch (err) {
-		console.log(err);
-		console.log("Chatterbox : monitoring dashboard mode");
-	}
 
 	function setTargetTime(hour, minute) {
 		var t = new Date();
@@ -767,7 +823,6 @@ $(document).ready(function() {
 					$('.chat-message').scrollTop($('#messages').height());
 				}
 			} catch(err){
-				console.log(err);
 				console.log("Not a Scroll/Search related feature");
 			}
 		}
@@ -3374,36 +3429,87 @@ function getRecentActivity() {
 				}
 			}
 
-			$(".rv_sites").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_sites'><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: "+rv_quick_sites+"</strong></div><div class='last-message text-muted'>Offices: "+rv_quick_offices+"</div></a></div>");
+			$(".rv_sites").append("<div class='col-md-"+parseInt(division)+" col-sm-"+parseInt(division)+" col-xs-"+parseInt(division)+" recent_sites'><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: "+rv_quick_sites+"</strong><div class='last-message text-muted'>Offices: "+rv_quick_offices+"</div></div></a></div>");
 		}
 	} else {
 		$(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
 	}
 
-	if (recent_searched_collection.length != 0) {
-		division = 12 / recent_searched_collection.length;
-		for (var counter = 0; counter < recent_searched_collection.length; counter++) {
-			$(".rv_message").append("<div class='col-md-"+parseInt(division)+" col-sm-"+division+" col-xs-"+parseInt(division)+"recent_searched'>hello world</div>");
+
+	$.get( "../chatterbox/getRoutine", function( data ) {
+		var sites_for_routine = JSON.parse(data);
+		var day = moment().format('dddd');
+		var month = moment().month();
+
+		var wet = [[1,2,6,7,8,9,10,11,12], [5,6,7,8,9,10]];
+	    var dry = [[3,4,5], [1,2,3,4,11,12]];
+	    var routine_sites = [];
+
+		switch(day) {
+			case 'Friday':
+				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
+				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
+				for (var counter = 0; counter < sites_for_routine.length; counter++) {
+					if (wet[sites_for_routine[counter].season - 1].includes(month)) {
+						routine_sites.push(sites_for_routine[counter].site);
+					}
+				}
+
+				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
+				for (var counter = 0; counter < routine_sites.length;counter++) {
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
+				}
+
+				$(".routine_section").prepend("<div class='routine-msg-container'></div>");
+				$(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+				$('#routine-msg').val(routine_reminder_msg);
+			break;
+			case 'Tuesday':
+				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
+				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
+				for (var counter = 0; counter < sites_for_routine.length; counter++) {
+					if (wet[sites_for_routine[counter].season - 1].includes(month)) {
+						routine_sites.push(sites_for_routine[counter].site);
+					}
+				}
+
+				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
+				for (var counter = 0; counter < routine_sites.length;counter++) {
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
+				}
+
+				$(".routine_section").append("<div class='routine-msg-container'></div>");
+				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+				$('#routine-msg').val(routine_reminder_msg);
+			break;
+			case 'Wednesday':
+				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
+				routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
+				for (var counter = 0; counter < sites_for_routine.length; counter++) {
+					if (dry[sites_for_routine[counter].season - 1].includes(month)) {
+						routine_sites.push(sites_for_routine[counter].site);
+					}
+				}
+
+				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
+				for (var counter = 0; counter < routine_sites.length;counter++) {
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
+				}
+
+				$(".routine_section").append("<div class='routine-msg-container'></div>");
+				$(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+				$('#routine-msg').val(routine_reminder_msg);
+			break;
+			default:
+				$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
+			break;
 		}
-	} else {
-		$(".rv_message").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-	}
-
-
-
-	$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-
+	});
 }
 
-function addSearchedActivity(searched) {
-	$('.recent_activities').hide();
-
-	if (recent_searched_collection.length == 6){
-		recent_searched_collection.shift();
-	}
-	recent_searched_collection.push(searched);
-	localStorage['rv_searched'] = JSON.stringify(recent_searched_collection);		
-}
 
 function addSitesActivity(sites) {
 	$('.recent_activities').hide();
