@@ -420,7 +420,7 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
-									template = template.replace("(gndmeas_date_submission)","bukas "+moment().add(1,'d').format("MMMM D, YYYY"));
+									template = template.replace("(gndmeas_date_submission)","bukas");
 
 									template = template.replace("(next_ewi_time)","12:00 MN");
 									template = template.replace("(next_ewi_date)","bukas ng");
