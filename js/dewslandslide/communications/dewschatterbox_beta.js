@@ -431,11 +431,22 @@ function sendViaAlertMonitor(dashboard_data){
 								$('#ewi-asap-modal').modal('toggle');
 							}
 						});
+					}
+				});
+			}
+		});
+	}
 }
-});
-}
-});
-}
+
+function sendRoutine() {
+	var sites_on_routine = [];
+	var routine_msg = $('#routine-msg').val();
+	$('input[name="offices-routine"]:checked').each(function() {
+		sites_on_routine.push(this.value);
+	});
+
+	console.log(sites_on_routine);
+	console.log(routine_msg);
 }
 
 $(document).ready(function() {
@@ -505,9 +516,10 @@ $(document).ready(function() {
 		$('#routine-msg').val('');
 		$(this).addClass('active');
 
-		// $.get( "../generalinformation/initialize", function( data ) {
-		// 	console.log(JSON.parse(data));
-		// });
+		$.get( "../communications/getRoutine", function( data ) {
+			var routine_template = JSON.parse(data);
+			$('#routine-msg').val(routine_template[0].template);
+		});
 		
 	});
 
@@ -3411,13 +3423,13 @@ function getRecentActivity() {
 
 				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
 				for (var counter = 0; counter < routine_sites.length;counter++) {
-					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked>"+routine_sites[counter].toUpperCase()+"</label>");
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
 				}
 
 				$(".routine_section").append("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-msg'>Send</button></div>");
+				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			case 'Tuesday':
 				$('.routine-options-container').css('display','flex');
@@ -3430,13 +3442,13 @@ function getRecentActivity() {
 
 				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
 				for (var counter = 0; counter < routine_sites.length;counter++) {
-					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked>"+routine_sites[counter].toUpperCase()+"</label>");
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
 				}
 
 				$(".routine_section").append("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-msg'>Send</button></div>");
+				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			case 'Wednesday':
 				$('.routine-options-container').css('display','flex');
@@ -3449,13 +3461,13 @@ function getRecentActivity() {
 
 				$(".routine_section").prepend("<div class='routine-site-selection'></div>");
 				for (var counter = 0; counter < routine_sites.length;counter++) {
-					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked>"+routine_sites[counter].toUpperCase()+"</label>");
+					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
 				}
 
 				$(".routine_section").append("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-msg'>Send</button></div>");
+				$(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			default:
 				$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
@@ -3463,7 +3475,6 @@ function getRecentActivity() {
 		}
 	});
 }
-
 
 
 function addSitesActivity(sites) {
