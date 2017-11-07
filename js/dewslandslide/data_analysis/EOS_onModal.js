@@ -57,17 +57,17 @@ $(document).ready(function(e) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
-					console.log(data[0].timestamp)
+
 					var date1 = moment(data[0].timestamp);
 					var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
 					var duration = moment.duration(date2.diff(date1));
-					console.log(duration._data.days)
+
 					if(duration._data.days > 0){
 						var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
-						console.log('past data' , to)
+
 					}else{
 						var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-						console.log('present data' , to)
+
 					}
 					var from = 'n'
 					console.log(from,to)
@@ -260,7 +260,7 @@ function dropdowDayValue(id,fromDate,toDate) {
 	var date1 = moment(fromDate);
 	var date2 = moment(toDate);
 	var diff = date2.diff(date1,'days');
-	console.log(diff)
+
 	if(diff == 8 || diff == 7){
 		$('#'+id+'_days').val('7 days')
 	}else if(diff == 9 || diff == 10){
@@ -383,7 +383,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
 							var date2 = moment(jsonRespo[i].ts);
 							var duration =date2.diff(date1,'hours');
-							console.log(duration)
+
 							if( duration >= 0){
 								var time =  Date.parse(jsonRespo[i].ts);
 								all_ts.push(time)
@@ -427,7 +427,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						series_data2.push({ name: divname[2],step: true, data: all_raindata[2],id : divname[2],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[2]})
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -448,7 +448,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					}else{
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -488,7 +488,6 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
 							var date2 = moment(jsonRespo[i].ts);
 							var duration = date2.diff(date1,'hours');
-							console.log(duration)
 							if( duration >= 0){
 								var time =  Date.parse(jsonRespo[i].ts);
 								all_ts.push(time)
@@ -506,6 +505,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							}
 						}
 						var nodata_nval=getRanges(nval)	
+						
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
@@ -518,7 +518,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
 							
-						}						
+						}				
 						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
@@ -531,7 +531,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						series_data2.push({ name: divname[2],step: true, data: all_raindata[2],id : divname[2],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[2],})
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -546,13 +546,13 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
 								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
-								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
+								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value);
 							}
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -561,7 +561,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
 					}
 
 				}
@@ -594,7 +594,6 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
 							var date2 = moment(jsonRespo[i].ts);
 							var duration = date2.diff(date1,'hours');
-							console.log(duration)
 							if( duration >= 0){
 								var time =  Date.parse(jsonRespo[i].ts);
 								all_ts.push(time)
@@ -636,10 +635,12 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						for (i = 0; i < divname.length-1; i++) {
 							series_data.push({ name: divname[i],step: true, data: all_raindata[i] , id: divname[i], fillOpacity: 0.4 , zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
+
+						
 						series_data2.push({ name: divname[2],step: true, data: all_raindata[2] , id: divname[2], fillOpacity: 0.4 , zIndex: 1, lineWidth: 1, color: colors[2]})
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -653,14 +654,14 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
 							}else{
 								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
-								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
+								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value);
 							}
 							
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
 							site : site, 
-							fdate : dataSubmit.fdate,
+							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
 							tdate : dataSubmit.tdate,
 							current_site : dataSubmit.site,
 							id:id,
@@ -669,7 +670,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
 					}
 				}
 			})
@@ -704,7 +705,6 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 			var maxValue = undefined
 		}
 	}
-	
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
@@ -847,45 +847,12 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 
 
 
-function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance ){
+function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance){
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	// var  list_dates =[];
-	// for (var i = 1; i < duration.asDays(); i++) {
-	// 	list_dates.push($("#sitegeneral").val().toUpperCase()+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-	// }
-	// let dataSubmit = { date:list_dates,table:site}
-	// $.post("../node_level_page/getAllgintagsNodeTagIDTry/", {data : dataSubmit} ).done(function(data){
-	// 	var result = JSON.parse(data);
-	// 	var result_filtered = [];
-	// 	for (var i = 0; i < result.length; i++) {
-	// 		if(site == result[i].table_used){
-	// 			result_filtered.push(result[i])
-	// 		}
-	// 	}
-	// 	var label_crack = ["24hrs","72hrs","30mins"]
-	// 	var all_data_tag =[]
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		var collect =[]
-	// 		for (var i = 0; i < result_filtered.length; i++) {
-	// 			var remark_parse = ((result_filtered[i].remarks).split("/"))
-
-	// 			if(remark_parse[1] == label_crack[a] ){
-	// 				collect.push({x:parseFloat(remark_parse[3]),text:'',value:remark_parse[4],title:result_filtered[i].tag_name})
-	// 			}
-	// 		}
-
-	// 		all_data_tag.push(collect)
-
-	// 	}
-
-	// 	for (var a = 0; a < label_crack.length; a++) {
-	// 		series_data.push({name:'Tag',type:'flags',data:all_data_tag[a],onSeries:label_crack[a],width: 100,showInLegend:false,visible:true})
-	// 	}
-	// 	series_data.push({name:'Tag'})
 	var cumulative_time = ($('#cumulativeTime').text()).split(",")
 	var max_plot_time = [];
 	var cumulative_max = ($('#cumulativeMax').text()).split(",")
@@ -896,7 +863,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			max_plot_time.push(cumulative_time[i-1])
 		}
 	}
-	console.log(fdate,tdate)
+
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
 	Highcharts.setOptions({
 		global: {
@@ -923,7 +890,6 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 			}
 		},
 		xAxis: {
-			min:Date.parse(fdate),
 			max:Date.parse(tdate),
 			plotBands: negative,
 			type: 'datetime',
@@ -985,28 +951,6 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 					radius: 3
 				},
 				cursor: 'pointer',
-					// point: {
-					// 	events: {
-					// 		click: function () {
-					// 			if(this.series.name == "Tag"){
-					// 				$("#tagModal").modal("show");
-					// 				$("#comment-model").empty();
-					// 				$("#comment-model").append('<small>REMARKS: </small>'+this.value)
-					// 			}else{
-					// 				$("#annModal").modal("show");
-					// 				$(".tag").hide();
-					// 				$('#tag_ids').tagsinput('removeAll');
-					// 				$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-					// 				$("#tag_value").val(this.y)
-					// 				$("#tag_crack").val(this.series.name)
-					// 				$("#tag_description").val('rain analysis')
-					// 				$("#tag_tableused").val(site)
-					// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss'));
-					// 			}
-					// 		}
-					// 	}
-					// }
-
 				},
 				area: {
 					marker: {
@@ -1044,12 +988,10 @@ function surficialGraph(dataTableSubmit) {
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
 			var result_unfiltered = JSON.parse(data_result)
-			console.log(result_unfiltered.length)
 			if(result_unfiltered.length >= 1  ){
 				surficialFiltered(result_unfiltered,dataTableSubmit)
 			}else{
 				surficialChecker(dataTableSubmit)
-				console.log('find the latest data')
 			}
 		}
 	});	
@@ -1067,7 +1009,6 @@ function surficialChecker(dataTableSubmit){
 			surficialGraph(data)
 			dropdowDayValue('surperimpose',data_result[data_result.length-1].timestamp,data_result[0].timestamp)
 			$('#surperimpose_days').selectpicker('refresh');
-			console.log(data)
 			
 		}
 	});
