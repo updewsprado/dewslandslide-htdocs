@@ -499,6 +499,25 @@ $(document).ready(function() {
 		getRecentActivity();
 	}
 
+	try {
+		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
+		var remChars = 800 - $("#msg").val().length - footer.length;
+
+		$("#remaining_chars").text(remChars);
+		$("#msg").attr("maxlength", remChars);
+
+		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
+		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
+		var group_message_template = Handlebars.compile($('#group-message-template').html());
+		var ewi_template = Handlebars.compile($('#ewi_template').html());
+
+	} catch (err) {
+		console.log(err);
+		console.log("Chatterbox : monitoring dashboard mode");
+	}
+
 	$('#routine-actual-option').on('click',function() {
 		$('#routine-reminder-option').removeClass('active');
 		$('#routine-msg').val('');
@@ -526,15 +545,46 @@ $(document).ready(function() {
 	});
 
 	$('#send-routine-msg').on('click',function(){
+		$('#chatterbox-loading').modal('show');
+		var offices = [];
+		if ($('.btn.btn-primary.active').val() == "Reminder Message") {
+			offices = ['LLMC'];
+		} else {
+			offices = ['LLMC','MLGU','BLGU'];
+		}
 		var sites_on_routine = [];
 		var routine_msg = $('#routine-msg').val();
+		var temp_msg = routine_msg;
 		$('input[name="offices-routine"]:checked').each(function() {
 			sites_on_routine.push(this.value);
-				$.post("../chatterbox_beta/getSiteDetailsOnRoutine/", {site_code: this.value}).done(function(data){
-					console.log(data);
-				});
+			$.post("../chatterbox_beta/getSiteDetailsOnRoutine/", {site_code: this.value}).done(function(data){
+				var routine = JSON.parse(data);
+				var ewiLocation = routine[0].sitio+", "+routine[0].barangay+", "+routine[0].municipality+", "+routine[0].province;
+				var formatSbmp = ewiLocation.replace("null","");
+				if (formatSbmp.charAt(0) == ",") {
+					formatSbmp = formatSbmp.substr(1);
+				}
 
+				routine_msg = routine_msg.replace("(site_location)",formatSbmp);
+				routine_msg = routine_msg.replace("(current_date)",moment().format("MMMM D, YYYY"));
+
+				var data = {
+					'type': 'smssendgroup',
+					'user': 'You',
+					'offices': offices,
+					'sitenames': [routine[0].name.toUpperCase()],
+					'msg': routine_msg+footer,
+					'ewi_filter': true,
+					'ewi_tag': false
+				}
+				conn.send(JSON.stringify(data));
+				routine_msg = temp_msg;
+
+			});
 		});
+		setTimeout(function(){
+			$('#chatterbox-loading').modal('hide');
+		},20000)
 	});
 
 	$('.rv_sites a').on('click',function() {
@@ -577,25 +627,6 @@ $(document).ready(function() {
 			event.cancel = true;
 		}
 	});
-
-	try {
-		var footer = "\n\n-" + first_name + " from PHIVOLCS-DYNASLOPE";
-		var remChars = 800 - $("#msg").val().length - footer.length;
-
-		$("#remaining_chars").text(remChars);
-		$("#msg").attr("maxlength", remChars);
-
-		var messages_template_both = Handlebars.compile($('#messages-template-both').html());
-		var selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
-		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
-		var quick_release_template = Handlebars.compile($('#quick-release-template').html());
-		var group_message_template = Handlebars.compile($('#group-message-template').html());
-		var ewi_template = Handlebars.compile($('#ewi_template').html());
-
-	} catch (err) {
-		console.log(err);
-		console.log("Chatterbox : monitoring dashboard mode");
-	}
 
 	function setTargetTime(hour, minute) {
 		var t = new Date();
@@ -789,7 +820,6 @@ $(document).ready(function() {
 					$('.chat-message').scrollTop($('#messages').height());
 				}
 			} catch(err){
-				console.log(err);
 				console.log("Not a Scroll/Search related feature");
 			}
 		}
@@ -3414,6 +3444,7 @@ function getRecentActivity() {
 		switch(day) {
 			case 'Friday':
 				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
 				for (var counter = 0; counter < sites_for_routine.length; counter++) {
 					if (wet[sites_for_routine[counter].season - 1].includes(month)) {
@@ -3429,10 +3460,10 @@ function getRecentActivity() {
 				$(".routine_section").prepend("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				// $(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			case 'Tuesday':
 				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
 				for (var counter = 0; counter < sites_for_routine.length; counter++) {
 					if (wet[sites_for_routine[counter].season - 1].includes(month)) {
@@ -3448,10 +3479,10 @@ function getRecentActivity() {
 				$(".routine_section").append("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				// $(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			case 'Wednesday':
 				$('.routine-options-container').css('display','flex');
+				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
 				for (var counter = 0; counter < sites_for_routine.length; counter++) {
 					if (dry[sites_for_routine[counter].season - 1].includes(month)) {
@@ -3467,7 +3498,6 @@ function getRecentActivity() {
 				$(".routine_section").append("<div class='routine-msg-container'></div>");
 				$(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
-				// $(".routine_section").append("<div class='col-md-12 right-content'><button type='button' class='btn btn-primary' id='send-routine-msg' onclick='sendRoutine()'>Send</button></div>");
 			break;
 			default:
 				$(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
