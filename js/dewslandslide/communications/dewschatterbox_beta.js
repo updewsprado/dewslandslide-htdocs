@@ -1797,18 +1797,25 @@ $(document).on("click",".qaccess-contacts",function(){
 		convo_collection.push(this.value);
 	});
 
-	var get_convo = "";
+	if  (convo_collection.length == 0) {
+		$('.qaccess-contacts:checked').each(function() {
+			$(this).prop('checked',true);
+		});
+		$('.qaccess-contacts').trigger('click');
+	} else {
+		var get_convo = "";
 
-	for (var counter = 0; counter < convo_collection.length; counter++) {
-		if (counter == 0) {
-			get_convo = convo_collection[counter];
-		} else {
-			get_convo = get_convo+";"+convo_collection[counter];
+		for (var counter = 0; counter < convo_collection.length; counter++) {
+			if (counter == 0) {
+				get_convo = convo_collection[counter];
+			} else {
+				get_convo = get_convo+";"+convo_collection[counter];
+			}
 		}
-	}
 
-	$('.dropdown-input').val(get_convo);
-	$('#go-chat').trigger('click');
+		$('.dropdown-input').val(get_convo);
+		$('#go-chat').trigger('click');
+	}
 });
 
 $('#btn-standard-search').click(function(){
@@ -1992,6 +1999,7 @@ $(document).on("click","#search-global-result li",function(){
 	var data = ($(this).closest('li')).find("input[id='msg_details']").val().split('<split>');
 	$('#chatterbox-loading').modal('show');
 	loadSearchKey(data[0],data[1],data[2],data[3],data[4],data[5]);
+	$('.recent_activities').hide();
 })
 
 function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null,sms_id = ""){
@@ -4139,6 +4147,10 @@ $("#confirm-narrative").on('click',function(){
 		}
 	}
 });
+
+function checkPersonForMultipleSite() {
+
+}
 
 function displayNarrativeConfirmation(gintag_details){
 	$('#site-select-narrative-container').hide();
