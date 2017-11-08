@@ -522,7 +522,7 @@ $(document).ready(function() {
 		$('#routine-reminder-option').removeClass('active');
 		$('#routine-msg').val('');
 		$(this).addClass('active');
-
+		$('#def-recipients').text('Default recipients: LLMC, BLGU, MLGU');
 		$.get( "../communications/getRoutine", function( data ) {
 			var routine_template = JSON.parse(data);
 			$('#routine-msg').val(routine_template[0].template);
@@ -532,6 +532,7 @@ $(document).ready(function() {
 
 	$('#routine-reminder-option').on('click',function() {
 		$('#routine-actual-option').removeClass('active');
+		$('#def-recipients').text('Default recipients: LLMC');
 		$('#routine-msg').val('');
 		$('#routine-msg').val(routine_reminder_msg);
 		$(this).addClass('active');
@@ -3434,8 +3435,10 @@ function getRecentActivity() {
 
 	$.get( "../chatterbox/getRoutine", function( data ) {
 		var sites_for_routine = JSON.parse(data);
+		console.log(sites_for_routine);
 		var day = moment().format('dddd');
 		var month = moment().month();
+		month = month+1;
 
 		var wet = [[1,2,6,7,8,9,10,11,12], [5,6,7,8,9,10]];
 	    var dry = [[3,4,5], [1,2,3,4,11,12]];
@@ -3457,8 +3460,8 @@ function getRecentActivity() {
 					$(".routine-site-selection").append("<label><input name='offices-routine' type='checkbox' value='"+routine_sites[counter]+"' checked> "+routine_sites[counter].toUpperCase()+"</label>");
 				}
 
-				$(".routine_section").prepend("<div class='routine-msg-container'></div>");
-				$(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+				$(".routine_section").append("<div class='routine-msg-container'></div>");
+				$(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
 				$('#routine-msg').val(routine_reminder_msg);
 			break;
 			case 'Tuesday':
@@ -3485,6 +3488,7 @@ function getRecentActivity() {
 				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
 				for (var counter = 0; counter < sites_for_routine.length; counter++) {
+					console.log(dry[sites_for_routine[counter].season - 1]);
 					if (dry[sites_for_routine[counter].season - 1].includes(month)) {
 						routine_sites.push(sites_for_routine[counter].site);
 					}
