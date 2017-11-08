@@ -3450,6 +3450,7 @@ function getRecentActivity() {
 
 		switch(day) {
 			case 'Friday':
+				$('#def-recipients').css('display','inline-block');
 				$('.routine-options-container').css('display','flex');
 				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
@@ -3469,6 +3470,7 @@ function getRecentActivity() {
 				$('#routine-msg').val(routine_reminder_msg);
 			break;
 			case 'Tuesday':
+				$('#def-recipients').css('display','inline-block');
 				$('.routine-options-container').css('display','flex');
 				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
@@ -3488,6 +3490,7 @@ function getRecentActivity() {
 				$('#routine-msg').val(routine_reminder_msg);
 			break;
 			case 'Wednesday':
+				$('#def-recipients').css('display','inline-block');
 				$('.routine-options-container').css('display','flex');
 				$('#send-routine-msg').css('display','inline');
 				routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
