@@ -1347,8 +1347,8 @@ $(document).ready(function() {
 				}
 
 				temp_msg_holder.sms_id = msg["data"][parseInt(msg["data"].length - 1)];
-				temp_msg_holder.timestamp = msg.timestamp
-
+				temp_msg_holder.timestamp = msg.timestamp;
+				temp_msg_holder.table_used = "smsoutbox";
 				updateMessages(temp_msg_holder);
 
 				var current_timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
@@ -4286,6 +4286,8 @@ function getGintagGroupContacts(gintag_details){
 		var tags = $('#gintags').val();
 		tags = tags.split(',');
 		if (tags[0] != "") {
+			console.log('GO HERE');
+			console.log(gintag_details);
 			$.post( "../communications/chatterbox/gintagcontacts/", {gintags: JSON.stringify(gintag_details)})
 			.done(function(response) {
 				var data = JSON.parse(response);
