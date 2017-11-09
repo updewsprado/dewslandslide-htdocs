@@ -108,7 +108,7 @@ $(document).ready( function() {
 		// Search candidate trigger if existing on latest and overdue
 		merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
-		let previous = null;
+		let previous = null, enableReleaseButton = false;
 
 		if(index > -1)
 		{
@@ -130,6 +130,7 @@ $(document).ready( function() {
 
 			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
 			entry.trigger_list = showModalTriggers(row, null);
+			enableReleaseButton = true;
 
 			if( row.status == "extended" ) 
 			{
@@ -140,9 +141,15 @@ $(document).ready( function() {
 				// Search if candidate trigger exists on extended
 				if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 				entry.status = "new";
-				$("#release").prop("disabled", false);
 			}
 		}
+		
+		// Check data timestamp for regular release (x:30)
+		// Disable send button if not else enable button
+		let hour = moment(row.timestamp).hour();
+		let minute = moment(row.timestamp).minutes();
+		if( hour % 4 == 3 && minute == 30 || enableReleaseButton ) $("#release").prop("disabled", false);
+		else $("#release").prop("disabled", true);
 
 		// Insert X on internal alert if Rx is not yet automatic on JSON
 		entry.rain_alert = row.rain_alert;
@@ -155,13 +162,6 @@ $(document).ready( function() {
 				$("#internal_alert_level").val(internal);
 			}
 		}
-
-		// Check data timestamp for regular release (x:30)
-		// Disable send button if not else enable button
-		let hour = moment(row.timestamp).hour();
-		let minute = moment(row.timestamp).minutes();
-		if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
-		else $("#release").prop("disabled", true);
 
 		showInvalidTriggersOnModal( row );
 

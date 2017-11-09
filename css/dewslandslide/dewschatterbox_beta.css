@@ -315,8 +315,45 @@ textarea {
     padding-left: 15px;
 }
 
+.recent_activities {
+  text-align: center;
+  opacity: 0.8;
+}
+
+.activity-body {
+  overflow: auto;
+}
+
+.routine-site-selection label {
+  margin: 5px;
+}
+
+.routine-msg-container {
+  padding: 15px;
+}
+
 @media screen and (max-width: 480px) {
     #send-char-remain {
         display: -webkit-inline-box;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .recent_sites img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .recent_sites .friend-name {
+      font-size: 10px;
+    }
+
+    .recent_contacts img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .recent_contacts .friend-name {
+      font-size: 10px;
     }
 }
