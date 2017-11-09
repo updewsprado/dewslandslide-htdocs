@@ -370,7 +370,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 				{
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[],nlines=[];
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
@@ -408,7 +408,8 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						for (var i = 0; i < nodata_nval.length; i++) {
 							var num = (nodata_nval[i])
 							if(num.search('-') == -1){
-								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+								nlines.push({color: 'rgba(68, 170, 213, .2)',width: 2,value: Date.parse(jsonRespo[parseFloat(num)].ts)})
+								// negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
 							}else{
 								var new_num = num.split("-")
 								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
@@ -438,9 +439,9 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance,nlines);
 							}else{
-								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain2(undefined,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance,nlines);
 								chartProcessRain(undefined,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
 							}
 							
@@ -457,7 +458,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						chartProcessRain(series_data,id,'Senslope',site,max_rain,dataTableSubmit,distance,max_value);
-						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance);
+						chartProcessRain2(series_data2,id,'Senslope',site,max_rain,negative,dataTableSubmit,distance,nlines);
 					}
 				}
 			})
@@ -475,7 +476,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 				{
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[],nlines=[];
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
@@ -505,20 +506,20 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							}
 						}
 						var nodata_nval=getRanges(nval)	
-						
 						$('#cumulativeTime').append(","+Math.max.apply(null,bouncer(deleteNan(all_ts))))
 						$('#cumulativeMax').append(","+Math.max.apply(null,bouncer(deleteNan(all_cummulative))))
 						var max_value = (Math.max.apply(null, bouncer(max_array_data)))
 						for (var i = 0; i < nodata_nval.length; i++) {
 							var num = (nodata_nval[i])
 							if(num.search('-') == -1){
-								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+								nlines.push({color: 'rgba(68, 170, 213, .2)',width: 2,value: Date.parse(jsonRespo[parseFloat(num)].ts)})
+								// negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
 							}else{
 								var new_num = num.split("-")
 								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
 							}
 							
-						}				
+						}
 						var divname =["24hrs","72hrs" ,"30mins"];
 						var all_raindata =[DataSeries24h,DataSeries72h,DataSeriesRain];
 						var color =["red","blue","green"];
@@ -526,9 +527,9 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 						var series_data2 = [];
 						negative.push({from: parseFloat(all_raindata[0][all_raindata[0].length-1]),to:Date.parse(dataSubmit.tdate),color:'rgba(68, 170, 213, .2)'})
 						for (i = 0; i < divname.length-1; i++) {
-							series_data.push({ name: divname[i],step: true, data: all_raindata[i],id : divname[i],fillOpacity: 0.4, zIndex: (divname.length-1)-i, lineWidth: 1, color: colors[i]})
+							series_data.push({ name: divname[i],step: true, data: all_raindata[i] ,id: divname[i],fillOpacity: 0.4, zIndex:  (divname.length-1)-i, lineWidth: 1, color: colors[i]})
 						}
-						series_data2.push({ name: divname[2],step: true, data: all_raindata[2],id : divname[2],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[2],})
+						series_data2.push({ name: divname[2],step: true, data: all_raindata[2],id : divname[2],fillOpacity: 0.4, zIndex: 1, lineWidth: 1, color: colors[2]})
 						let dataTableSubmit = { 
 							site : site, 
 							fdate : moment(dataSubmit.fdate).subtract(9,'days'),
@@ -540,14 +541,14 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						setTimeout(function(){
-							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-							
+							chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value);
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance );
+								chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance,nlines);
 							}else{
-								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain2(undefined,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance,nlines);
 								chartProcessRain(undefined,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value);
 							}
+							
 						}, 1000);
 					}else{
 						let dataTableSubmit = { 
@@ -560,8 +561,8 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 							max_rain:max_rain,
 							distance:distance
 						}
-						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance);
+						chartProcessRain(series_data,id,'ARQ',site,max_rain,dataTableSubmit,distance,max_value);
+						chartProcessRain2(series_data2,id,'ARQ',site,max_rain,negative,dataTableSubmit,distance,nlines);
 					}
 
 				}
@@ -580,7 +581,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 				{
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
-					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[];
+					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[], nlines=[];
 					var max = max_rain;
 					var max_array_data = [];
 					var all_cummulative=[];
@@ -617,7 +618,8 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						for (var i = 0; i < nodata_nval.length; i++) {
 							var num = (nodata_nval[i])
 							if(num.search('-') == -1){
-								negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
+								nlines.push({color: 'rgba(68, 170, 213, .2)',width: 2,value: Date.parse(jsonRespo[parseFloat(num)].ts)})
+								// negative.push( {from: Date.parse(jsonRespo[parseFloat(num)].ts), to: Date.parse(jsonRespo[parseFloat(num)].ts), color: 'rgba(68, 170, 213, .2)'})
 							}else{
 								var new_num = num.split("-")
 								negative.push( {from: Date.parse(jsonRespo[parseFloat(new_num[0])].ts), to: Date.parse(jsonRespo[parseFloat(new_num[1])].ts), color: 'rgba(68, 170, 213, .2)'})
@@ -651,9 +653,9 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 						setTimeout(function(){
 							chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
 							if(all_raindata[2].length != 0){
-								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance );
+								chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance,nlines );
 							}else{
-								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
+								chartProcessRain2(undefined,id,'Noah',site,max_rain,negative,dataTableSubmit,distance,nlines);
 								chartProcessRain(undefined,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value);
 							}
 							
@@ -670,7 +672,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 							distance:distance
 						}
 						chartProcessRain(series_data,id,'Noah',site,max_rain,dataTableSubmit,distance,max_value );
-						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance);
+						chartProcessRain2(series_data2,id,'Noah',site,max_rain,negative,dataTableSubmit,distance,nlines);
 					}
 				}
 			})
@@ -847,7 +849,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 
 
 
-function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance){
+function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,dataTableSubmit,distance,nlines){
 	var fdate = dataTableSubmit.fdate;
 	var tdate = dataTableSubmit.tdate;
 	var date1 = moment(fdate);
@@ -892,6 +894,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		xAxis: {
 			max:Date.parse(tdate),
 			plotBands: negative,
+			plotLines: nlines,
 			type: 'datetime',
 			dateTimeLabelFormats: { 
 				month: '%e %b %Y',
