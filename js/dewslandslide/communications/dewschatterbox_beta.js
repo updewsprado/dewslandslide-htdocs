@@ -491,6 +491,7 @@ $(document).ready(function() {
 	var contactInfo = [];
 	var routine_reminder_msg;
 	var actual_routine;
+	var temp_multiple_sites = "";
 
 	if (window.location.host != "www.dewslandslide.com") {
 		$.notify('This is a test site: https://'+window.location.host,{autoHideDelay: 100000000});
@@ -1595,8 +1596,7 @@ tempConn.onclose = function(e) {
 return tempConn;
 }
 
-function replaceKeyInputs(narrative) {
-	console.log(gintags_msg_details);
+function replaceKeyInputs(narrative,gintag_details) {
 	var key_list = ['(stakeholders)','(current_release_time)','(previous_release_time)','(sms_msg)','(sender)'];
 	for (var counter = 0; counter < key_list.length; counter++){
 		if (narrative.indexOf(key_list[counter]) != -1) {
@@ -1607,13 +1607,24 @@ function replaceKeyInputs(narrative) {
 					$('input[name="offices"]:checked').each(function() {
 						tagOffices.push(this.value);
 					});
-					tagOffices.forEach(function(x) {
-						if (key_replacement == "") {
-							key_replacement = x.trim();
-						} else {
-							key_replacement = key_replacement+", "+x.trim();
-						}
-					});
+					if (tagOffices.length == 0) {
+						gintag_details.office.forEach(function(x) {
+							if (key_replacement == "") {
+								key_replacement = x.trim();
+							} else {
+								key_replacement = key_replacement+", "+x.trim();
+							}
+						})
+					} else {
+						tagOffices.forEach(function(x) {
+							if (key_replacement == "") {
+								key_replacement = x.trim();
+							} else {
+								key_replacement = key_replacement+", "+x.trim();
+							}
+						});
+					}
+
 					narrative = narrative.replace(key_list[counter],key_replacement);
 					break;
 				case '(current_release_time)':
@@ -1638,24 +1649,20 @@ function replaceKeyInputs(narrative) {
 	return narrative;
 }
 
-function getOngoingEvents(sites){
-	console.log(sites);
+function getOngoingEvents(sites,gintag_details = null){
 	$.get( "../chatterbox/getOnGoingEventsForGintags", function( data ) {
 		var events = JSON.parse(data);
 		$.post( "../chatterbox/getSiteForNarrative/", {site_details: JSON.stringify(sites)})
 		.done(function(response) {
 			siteids = JSON.parse(response);
-			console.log(siteids);
 			if (events.length == 0) {
 				return -1;
 			} else {
 				for (var counter = 0; counter < events.length; counter++) {
 					for (var siteid_counter = 0; siteid_counter < siteids.length; siteid_counter++) {
 						if (events[counter].site_id == siteids[siteid_counter].id) {
-
 							for (var tag_counter = 0; tag_counter < gintags_msg_details.tags.length; tag_counter++) {
-								var narrative_template = replaceKeyInputs(gintags_msg_details.tags[tag_counter].narrative_input);
-								console.log(narrative_template);
+								var narrative_template = replaceKeyInputs(gintags_msg_details.tags[tag_counter].narrative_input,gintag_details);
 								var narrative_details = {
 									'event_id': events[counter].event_id,
 									'site_id': siteids[siteid_counter].id,
@@ -2586,6 +2593,8 @@ function startChat(source="normal") {
 		'timestamp': moment().format('YYYY-MM-DD HH:mm:ss')
 	};
 
+	temp_multiple_sites = contactnumTrimmed;
+
 	addContactsActivity(msgHistory);
 
 	$('#user').val('You');
@@ -3447,7 +3456,6 @@ function getRecentActivity() {
 
 	$.get( "../chatterbox/getRoutine", function( data ) {
 		var sites_for_routine = JSON.parse(data);
-		console.log(sites_for_routine);
 		var day = moment().format('dddd');
 		var month = moment().month();
 		month = month+1;
@@ -4140,28 +4148,44 @@ $("#confirm-narrative").on('click',function(){
 		if (tagSitenames[tag_counter] == "MES") {
 			var mes_sites = ['MSL','MSU'];
 			for (var msl_msu_counter = 0; msl_msu_counter < 2; msl_msu_counter++) {
-				getOngoingEvents(mes_sites[msl_msu_counter]);
+				getOngoingEvents(mes_sites[msl_msu_counter],gintag_details);
 			}
 		} else {
-			getOngoingEvents(tagSitenames[tag_counter]);
+			getOngoingEvents(tagSitenames[tag_counter],gintag_details);
 		}
 	}
 });
 
-function checkPersonForMultipleSite() {
+function checkPersonForMultipleSite(gintag_details) {
+	var site_collection = [];
+	$.post( "../gintags_manager/multipleSite/", {numbers: temp_multiple_sites})
+	.done(function(response) {
+		try {
+			var data = JSON.parse(response);
+			for (var counter = 0; counter < data.length; counter++) {
+				for (var sub_counter = 0; sub_counter < data[counter].length; sub_counter++) {
+					if ($.inArray(data[counter][sub_counter].sitename,site_collection != -1)) {
+						site_collection.push(data[counter][sub_counter].sitename);
+					}
+				}
+			}
+			$('#site-select-narrative-container').hide();
+			$('#site-select-narrative').empty();
+			if (site_collection.length > 1) {
+				$('#site-select-narrative-container').show();
+				for (var counter = 0; counter < site_collection.length; counter++) {
+					$('#site-select-narrative').append("<li><div class='checkbox' style='margin: 10px;'><label><input type='checkbox' name='candidate-sites-narrative' value='"+site_collection[counter]+"'>"+site_collection[counter]+"</label></div></li>")
+				}
+			}
+		} catch(err) {
+			console.log('Group message mode');
+		}
+	});
 
 }
 
 function displayNarrativeConfirmation(gintag_details){
-	$('#site-select-narrative-container').hide();
-	$('#site-select-narrative').empty();
-	if (gintag_details.site.length > 1) {
-		$('#site-select-narrative-container').show();
-		for (var counter = 0; counter < gintag_details.site.length; counter++) {
-			$('#site-select-narrative').append("<li><div class='checkbox' style='margin: 10px;'><label><input type='checkbox' name='candidate-sites-narrative' value='"+gintag_details.site[counter]+"'>"+gintag_details.site[counter]+"</label></div></li>")
-		}
-	}
-
+	checkPersonForMultipleSite(gintag_details);
 	if (gintag_details.data[1] == "You") {
 		var summary = "";
 		var office = "Office(s): ";
@@ -4229,6 +4253,7 @@ function insertGintagService(data){
 			"data": data,
 			"cmd": "insert"
 		};
+
 		var non_narratives = [];
 		for (var counter = 0; counter < gintag_narratives.length; counter++) {
 			tags.splice($.inArray(gintag_narratives[counter].tag_name, tags),1);
