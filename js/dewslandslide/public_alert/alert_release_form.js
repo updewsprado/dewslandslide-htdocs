@@ -388,6 +388,17 @@ function onOperationalTriggersAndNoDataClick()
         trigger_list = [];
         trigger_list = trigger_list.concat(saved_triggers);
 
+        // Disable trigger divs on ND check
+        if( this.value.indexOf("0") >= 0 ) disableDivsOnNoDataClick(this);
+        else {
+            let occurence = trigger_list.map( function(x) { return x.toUpperCase() == this.value } );
+            // if cbox trigger is checked, uncheck and disable corresponding ND
+            if( $(".cbox_trigger[value=" + this.value + "]").is(":checked") ) 
+                $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:true, checked:false});
+            // if trigger already occurred or release, make ND button available
+            else if ( occurence.length > 1 ) $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:false});
+        }
+
         for (let i = 0; i < arr.length; i++) 
         {
             let trigger = arr[i].value;
@@ -403,8 +414,6 @@ function onOperationalTriggersAndNoDataClick()
             prioritizeSameLetteredTriggers(trigger, trigger_list, "M", "m", i, "m0");
             prioritizeSameLetteredTriggers(trigger, trigger_list, "R0", "R", i);
         };
-
-        if( this.value.indexOf("0") >= 0 ) disableDivsOnNoDataClick(this);
         
         // Disable Timestamp Input Validation Checkbox Fields
         let a = $(this).closest("span").next("div").children("input");
@@ -521,8 +530,10 @@ function disableDivsOnNoDataClick(trigger)
         case "m": tech_info = "manifestation"; double = true; break;
     }
 
+    trigger_letter = public_alert == "A3" ? trigger_letter.toUpperCase() : trigger_letter;
+
     let triggers_div = ".cbox_trigger[value=" + trigger_letter + "]";
-    if( public_alert == "A3" ) {
+    if( public_alert == "A3" && trigger_letter.toUpperCase() !== "M" ) {
         let copy_letter = trigger_letter == trigger_letter.toUpperCase() ? trigger_letter.toLowerCase() : trigger_letter.toUpperCase();
         triggers_div += ", .cbox_trigger[value=" + copy_letter + "]";
     }
