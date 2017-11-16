@@ -1490,6 +1490,10 @@ $(document).ready(function() {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
 		console.log("ACK GSM TEST");
+		console.log($("#chat-user").text());
+		console.log($("#messages li:last #timestamp-written").text());
+		console.log('TIMESTMAP INDICATOR: '+gsmTimestampIndicator);
+		
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 		}
