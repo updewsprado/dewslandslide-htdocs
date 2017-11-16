@@ -545,6 +545,7 @@ $(document).ready(function() {
 	$('.rv_contacts a').on('click',function() {
 		$('.recent_activities').hide();
 		var data = recent_contacts_collection[$(this).index()];
+		console.log($(this).html());
 		$('.dropdown-input').val(data.name[0].fullname);
 		$('#go-chat').trigger('click');
 	});
@@ -1488,6 +1489,7 @@ $(document).ready(function() {
 } else {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
+		console.log("ACK GSM TEST");
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 		}
