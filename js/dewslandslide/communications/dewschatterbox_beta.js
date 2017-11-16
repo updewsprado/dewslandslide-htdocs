@@ -1495,6 +1495,7 @@ $(document).ready(function() {
 		console.log('TIMESTMAP INDICATOR: '+gsmTimestampIndicator);
 		console.log(msg);
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
+			console.log('GO HERE');
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 		}
 	} else if (msg.type == "ackrpi"){
