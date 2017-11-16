@@ -1493,7 +1493,7 @@ $(document).ready(function() {
 		console.log($("#chat-user").text());
 		console.log($("#messages li:last #timestamp-written").text());
 		console.log('TIMESTMAP INDICATOR: '+gsmTimestampIndicator);
-		
+		console.log(msg);
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 		}
