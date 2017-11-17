@@ -46,8 +46,12 @@
 	margin-top: 5px;
 }
 
-#timestamp-sent {
+.sent-status-success {
   color: blue;
+}
+
+.sent-status-fail {
+  color: red;
 }
 
 textarea {
