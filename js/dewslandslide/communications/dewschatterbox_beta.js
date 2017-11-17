@@ -1489,13 +1489,7 @@ $(document).ready(function() {
 } else {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
-		console.log("ACK GSM TEST");
-		console.log($("#chat-user").text());
-		console.log($("#messages li:last #timestamp-written").text());
-		console.log('TIMESTMAP INDICATOR: '+gsmTimestampIndicator);
-		console.log(msg);
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
-			console.log('GO HERE');
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 		}
 	} else if (msg.type == "ackrpi"){
@@ -2649,8 +2643,8 @@ $('#send-msg').on('click',function(){
 					emp_tag.push(this.value);
 				});
 
-				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
-				
+				gsmTimestampIndicator = $('#server-time').text();
+				console.log(gsmTimestampIndicator);
 				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
@@ -2709,7 +2703,8 @@ $('#send-msg').on('click',function(){
 			}
 
 			user = "You";
-			gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
+			gsmTimestampIndicator = $('#server-time').text();
+			console.log(gsmTimestampIndicator);
 			temp_msg_holder = {
 				'type': 'smssend',
 				'user': user,
@@ -3299,7 +3294,8 @@ $('#send-btn-ewi-amd').click(function(){
 
 			for (var counter = 0; counter < added_contacts.length;counter++) {
 				user = "You";
-				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
+				gsmTimestampIndicator = $('#server-time').text();
+				console.log(gsmTimestampIndicator);
 				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
@@ -3462,7 +3458,6 @@ function getRecentActivity() {
 
 
 	$.get( "../chatterbox/getRoutine", function( data ) {
-		console.log(data);
 		var sites_for_routine = JSON.parse(data);
 		var day = moment().format('dddd');
 		var month = moment().month();
