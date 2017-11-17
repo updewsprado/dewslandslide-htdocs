@@ -3462,6 +3462,7 @@ function getRecentActivity() {
 
 
 	$.get( "../chatterbox/getRoutine", function( data ) {
+		console.log(data);
 		var sites_for_routine = JSON.parse(data);
 		var day = moment().format('dddd');
 		var month = moment().month();
