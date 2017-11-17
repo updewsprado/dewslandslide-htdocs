@@ -2650,6 +2650,7 @@ $('#send-msg').on('click',function(){
 					'user': user,
 					'tag': emp_tag,
 					'msg': text + footer,
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
@@ -2681,6 +2682,7 @@ $('#send-msg').on('click',function(){
 					'sitenames': tagSitenames,
 					'msg': text + footer,
 					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
@@ -2710,6 +2712,7 @@ $('#send-msg').on('click',function(){
 				'user': user,
 				'numbers': normalized,
 				'msg': text + footer,
+				'timestamp_written': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
 
@@ -3301,7 +3304,7 @@ $('#send-btn-ewi-amd').click(function(){
 					'user': user,
 					'numbers': added_contacts[counter],
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator,
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag':true
 				};
 				conn.send(JSON.stringify(temp_msg_holder));
