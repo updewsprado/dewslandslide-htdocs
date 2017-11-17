@@ -629,7 +629,7 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 					$("#graphS1").empty()
 					var dataSubmit = {id:id_data}
 					$.post("/surficial_page/DeleteGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-						// console.log(result_edited)
+						console.log(result_edited)
 						$("#groundModal").modal("hide")
 						$("#graphS1").empty()
 						$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
