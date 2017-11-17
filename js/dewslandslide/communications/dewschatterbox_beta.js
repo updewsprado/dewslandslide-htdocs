@@ -1491,6 +1491,11 @@ $(document).ready(function() {
 	if (msg.type == "ackgsm") {
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+			if (msg.status == "SENT") {
+				$("#messages li:last #timestamp-sent").addClass('sent-status-success');
+			} else {
+				$("#messages li:last #timestamp-sent").addClass('sent-status-fail');
+			}
 		}
 	} else if (msg.type == "ackrpi"){
 		console.log("Status: "+msg.type);
