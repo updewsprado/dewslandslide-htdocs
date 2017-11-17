@@ -545,7 +545,7 @@ $(document).ready(function() {
 	$('.rv_contacts a').on('click',function() {
 		$('.recent_activities').hide();
 		var data = recent_contacts_collection[$(this).index()];
-		console.log($(this).html());
+		console.log(data);
 		$('.dropdown-input').val(data.name[0].fullname);
 		$('#go-chat').trigger('click');
 	});
@@ -675,6 +675,11 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
+		if (msg.status == "SUCCESS" || msg.status == "SENT") {
+			msg.status = 1;
+		} else {
+			msg.status = 0;
+		}
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -2103,8 +2108,8 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 }
 
 try {
-	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5,options) {
-		if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5) {
+	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5, v6, options) {
+		if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5|| v1 == v6) {
 			return options.fn(this)
 		} else {
 			return options.inverse(this);	
