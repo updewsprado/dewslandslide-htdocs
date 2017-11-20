@@ -1,12 +1,12 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
 
 $(document).ready(function(e) {
-	
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
+
 	$.get("../api/AllSiteDetails").done(function(data){
 		var all_sites_details = JSON.parse(data);
 		var map_pins=[]
