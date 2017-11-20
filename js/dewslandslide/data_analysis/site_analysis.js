@@ -1,23 +1,24 @@
-$(document).ajaxStart(function () {
 
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-	});
-	$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
-	$("body").popover({ selector: '[data-toggle=popover]' });  
-
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-		
-	});
-
-});
 
 $(document).ready(function(e) {
+	$(document).ajaxStart(function () {
+
+		$('#loading').modal('toggle');
+		$(".bootstrap-select").click(function () {
+			$(this).addClass("open");
+		});
+		$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
+		$("body").popover({ selector: '[data-toggle=popover]' });  
+
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+		$(".bootstrap-select").click(function () {
+			$(this).addClass("open");
+			
+		});
+
+	});
 	$('.tag').hide()
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
