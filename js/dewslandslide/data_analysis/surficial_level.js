@@ -1,11 +1,12 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
 
 $(document).ready(function(e) {
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
+
 	$('.tag').hide()
 	$('[data-toggle="popover"]').popover();   
 	$('.crack_id_form').hide()

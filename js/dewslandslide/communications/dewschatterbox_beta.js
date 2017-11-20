@@ -545,7 +545,7 @@ $(document).ready(function() {
 	$('.rv_contacts a').on('click',function() {
 		$('.recent_activities').hide();
 		var data = recent_contacts_collection[$(this).index()];
-		console.log($(this).html());
+		console.log(data);
 		$('.dropdown-input').val(data.name[0].fullname);
 		$('#go-chat').trigger('click');
 	});
@@ -675,6 +675,11 @@ $(document).ready(function() {
 	}
 
 	function updateMessages(msg) {
+		if (msg.status == "SUCCESS" || msg.status == "SENT") {
+			msg.status = 1;
+		} else {
+			msg.status = 0;
+		}
 		$('#search-key').hide();
 
 		if (msg.user == "You") {
@@ -1489,14 +1494,13 @@ $(document).ready(function() {
 } else {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
-		console.log("ACK GSM TEST");
-		console.log($("#chat-user").text());
-		console.log($("#messages li:last #timestamp-written").text());
-		console.log('TIMESTMAP INDICATOR: '+gsmTimestampIndicator);
-		console.log(msg);
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
-			console.log('GO HERE');
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
+			if (msg.status == "SENT") {
+				$("#messages li:last #timestamp-sent").addClass('sent-status-success');
+			} else {
+				$("#messages li:last #timestamp-sent").addClass('sent-status-fail');
+			}
 		}
 	} else if (msg.type == "ackrpi"){
 		console.log("Status: "+msg.type);
@@ -2104,8 +2108,8 @@ function loadSearchKey(type,user,timestamp,user_number = null,sms_message = null
 }
 
 try {
-	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5,options) {
-		if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5) {
+	Handlebars.registerHelper('ifCond', function(v1, v2, v3, v4, v5, v6, options) {
+		if(v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5|| v1 == v6) {
 			return options.fn(this)
 		} else {
 			return options.inverse(this);	
@@ -2649,13 +2653,14 @@ $('#send-msg').on('click',function(){
 					emp_tag.push(this.value);
 				});
 
-				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss');
-				
+				gsmTimestampIndicator = $('#server-time').text();
+				console.log(gsmTimestampIndicator);
 				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'tag': emp_tag,
 					'msg': text + footer,
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
@@ -2687,6 +2692,7 @@ $('#send-msg').on('click',function(){
 					'sitenames': tagSitenames,
 					'msg': text + footer,
 					'ewi_filter': $('input[name="opt-ewi-recipients"]:checked').val(),
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag': false
 				};
 
@@ -2709,12 +2715,14 @@ $('#send-msg').on('click',function(){
 			}
 
 			user = "You";
-			gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
+			gsmTimestampIndicator = $('#server-time').text();
+			console.log(gsmTimestampIndicator);
 			temp_msg_holder = {
 				'type': 'smssend',
 				'user': user,
 				'numbers': normalized,
 				'msg': text + footer,
+				'timestamp_written': gsmTimestampIndicator,
 				'ewi_tag':false
 			};
 
@@ -3299,13 +3307,14 @@ $('#send-btn-ewi-amd').click(function(){
 
 			for (var counter = 0; counter < added_contacts.length;counter++) {
 				user = "You";
-				gsmTimestampIndicator = moment().format('YYYY-MM-DD HH:mm:ss')
+				gsmTimestampIndicator = $('#server-time').text();
+				console.log(gsmTimestampIndicator);
 				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
 					'numbers': added_contacts[counter],
 					'msg': text + footer,
-					'timestamp': gsmTimestampIndicator,
+					'timestamp_written': gsmTimestampIndicator,
 					'ewi_tag':true
 				};
 				conn.send(JSON.stringify(temp_msg_holder));

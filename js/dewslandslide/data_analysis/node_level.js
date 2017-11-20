@@ -1,13 +1,11 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
-
 
 $(document).ready(function(e) {
-
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
 	var values = window.location.href.split("/")
 	var current_site = values[5]
 	var currrent_node = values[6]
@@ -871,66 +869,66 @@ function chartProcessBattery(id,data_series,name,color){
 	// $.ajax({ 
 	// 	dataType: "json",
 	// 	url: "/api/AccelBatteryThreshold/"+site+"/"+node,success: function(result) {
-			Highcharts.setOptions({
-				global: {
-					timezoneOffset: -8 * 60
-				},
-				colors: color,
-			});
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+			colors: color,
+		});
 
-			$("#"+id).highcharts({
-				chart: {
-					type: 'line',
-					zoomType: 'x',
-					height: 300,
-					backgroundColor: {
-						linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-						stops: [
-						[0, '#2a2a2b'],
-						[1, '#3e3e40']
-						]
-					},
+		$("#"+id).highcharts({
+			chart: {
+				type: 'line',
+				zoomType: 'x',
+				height: 300,
+				backgroundColor: {
+					linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+					stops: [
+					[0, '#2a2a2b'],
+					[1, '#3e3e40']
+					]
+				},
+			},
+			title: {
+				text: name.toUpperCase(),
+				style: {
+					color: '#E0E0E3',
+					fontSize: '20px'
+				}
+			},
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%Y'
 				},
 				title: {
-					text: name.toUpperCase(),
-					style: {
-						color: '#E0E0E3',
-						fontSize: '20px'
-					}
+					text: 'Date'
 				},
-				xAxis: {
-					type: 'datetime',
-					dateTimeLabelFormats: { 
-						month: '%e. %b %Y',
-						year: '%Y'
-					},
-					title: {
-						text: 'Date'
-					},
-					labels: {
-						style:{
-							color: 'white'
-						}
+				labels: {
+					style:{
+						color: 'white'
+					}
 
-					},
-					title: {
-						text: 'Date',
-						style:{
-							color: 'white'
-						}
-					},
-					events:{
-						afterSetExtremes:function(){
-							if (!this.chart.options.chart.isZoomed)
-							{                                         
-								var xMin = this.chart.xAxis[0].min;
-								var xMax = this.chart.xAxis[0].max;
-								var zmRange = computeTickInterval(xMin, xMax);
-								zoomEvent(id,zmRange,xMin,xMax)
-							}
-						}
+				},
+				title: {
+					text: 'Date',
+					style:{
+						color: 'white'
 					}
 				},
+				events:{
+					afterSetExtremes:function(){
+						if (!this.chart.options.chart.isZoomed)
+						{                                         
+							var xMin = this.chart.xAxis[0].min;
+							var xMax = this.chart.xAxis[0].max;
+							var zmRange = computeTickInterval(xMin, xMax);
+							zoomEvent(id,zmRange,xMin,xMax)
+						}
+					}
+				}
+			},
 				// yAxis:{
 				// 	plotBands: [{
 				// 		value:  parseFloat(result[0].vmin),
