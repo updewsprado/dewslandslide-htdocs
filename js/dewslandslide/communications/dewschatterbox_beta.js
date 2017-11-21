@@ -53,20 +53,20 @@ function sendViaAlertMonitor(dashboard_data){
 
 		var final_template = backbone_message[0].template;
 
-		var d = new Date();
-		var current_meridiem = d.getHours();
+		// var d = new Date();
+		// var current_meridiem = d.getHours();
 
-		if (current_meridiem >= 13 && current_meridiem <= 18) {
-			final_template = final_template.replace("(greetings)","hapon");
-		} else if (current_meridiem >= 18 && current_meridiem <=23) {
-			final_template = final_template.replace("(greetings)","gabi");
-		} else if (current_meridiem >= 0 && current_meridiem <= 3) {
-			final_template = final_template.replace("(greetings)","gabi");
-		} else if (current_meridiem >= 4 && current_meridiem <= 11) {
-			final_template = final_template.replace("(greetings)","umaga");
-		} else {
-			final_template = final_template.replace("(greetings)","tanghali");
-		}
+		// if (current_meridiem >= 13 && current_meridiem <= 18) {
+		// 	final_template = final_template.replace("(greetings)","hapon");
+		// } else if (current_meridiem >= 18 && current_meridiem <=23) {
+		// 	final_template = final_template.replace("(greetings)","gabi");
+		// } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+		// 	final_template = final_template.replace("(greetings)","gabi");
+		// } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+		// 	final_template = final_template.replace("(greetings)","umaga");
+		// } else {
+		// 	final_template = final_template.replace("(greetings)","tanghali");
+		// }
 
 		final_template = final_template.replace("(alert_level)",dashboard_data.alert_level);
 		var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
@@ -120,7 +120,8 @@ function sendViaAlertMonitor(dashboard_data){
 			alert("Error Occured: Please contact Administrator");
 		}
 
-		final_template = final_template.replace("(current_date)",moment(dashboard_data.data_timestamp).format('LL'));
+		var temp_date = 
+		final_template = final_template.replace("(current_date_time)",moment(dashboard_data.data_timestamp).format('hhA')+' '+moment(dashboard_data.data_timestamp).format('MMMM DD, YYYY'));
 		$('#msg').val(final_template);
 		$('#site-abbr').val(dashboard_data["name"]);
 
@@ -324,20 +325,20 @@ function sendViaAlertMonitor(dashboard_data){
 									}
 								}
 
-								var d = new Date();
-								var current_meridiem = d.getHours();
+								// var d = new Date();
+								// var current_meridiem = d.getHours();
 
-								if (current_meridiem >= 13 && current_meridiem <= 18) {
-									template = template.replace("(greetings)","hapon");
-								} else if (current_meridiem >= 18 && current_meridiem <=23) {
-									template = template.replace("(greetings)","gabi");
-								} else if (current_meridiem >= 0 && current_meridiem <= 3) {
-									template = template.replace("(greetings)","gabi");
-								} else if (current_meridiem >= 4 && current_meridiem <= 11) {
-									template = template.replace("(greetings)","umaga");
-								} else {
-									template = template.replace("(greetings)","tanghali");
-								}
+								// if (current_meridiem >= 13 && current_meridiem <= 18) {
+								// 	template = template.replace("(greetings)","hapon");
+								// } else if (current_meridiem >= 18 && current_meridiem <=23) {
+								// 	template = template.replace("(greetings)","gabi");
+								// } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+								// 	template = template.replace("(greetings)","gabi");
+								// } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+								// 	template = template.replace("(greetings)","umaga");
+								// } else {
+								// 	template = template.replace("(greetings)","tanghali");
+								// }
 
 								template = template.replace("(alert_level)",alert_level);
 								var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
@@ -364,28 +365,40 @@ function sendViaAlertMonitor(dashboard_data){
 								latest_release_id = dashboard_data.latest_release_id;
 
 								if (onset_time != release_time) {
-									var meridiem = moment(dashboard_data.data_timestamp).add(30,'m').format("hh:mm A");
-									if (meridiem == "12:00 AM") {
+
+									if (moment(dashboard_data.data_timestamp).add(30,'m').minutes() % 100 == 0) {
+										meridiem = moment(dashboard_data.data_timestamp).add(30,'m').format("hA");
+									} else {
+										meridiem = moment(dashboard_data.data_timestamp).add(30,'m').format("h:mmA");
+									}
+
+									if (moment(dashboard_data.data_timestamp).add(30,'m').hours() == 12 && moment(dashboard_data.data_timestamp).add(30,'m').localeData().meridiem(moment(dashboard_data.data_timestamp).add(30,'m')) == 'AM') {
 										meridiem = meridiem.replace("AM","MN");
-									} else if (meridiem == "12:00 PM") {
+									} else if (moment(dashboard_data.data_timestamp).add(30,'m').hours() == 12 && moment(dashboard_data.data_timestamp).add(30,'m').localeData().meridiem(moment(dashboard_data.data_timestamp).add(30,'m')) == 'PM') {
 										meridiem = meridiem.replace("PM","NN");
 									}
 
-									var current_time = moment().format('LL');
-									template = template.replace("(current_date_time)",current_time+" "+meridiem);
-									template = template.replace("(current_date)",moment().format("MMMM D, YYYY"));
+									var current_time = moment().format('MMMM DD, YYYY');
+									template = template.replace("(current_date_time)",meridiem+" "+current_time);
+
 								} else {
-									var meridiem = moment(dashboard_data.event_start).format("hh:mm A");
-									if (meridiem.slice(-8) == "12:00 AM") {
+									var meridiem;
+
+									if (moment(dashboard_data.event_start).minutes() % 100 == 0) {
+										meridiem = moment(dashboard_data.event_start).format("hA");
+									} else {
+										meridiem = moment(dashboard_data.event_start).format("h:mmA");
+									}
+
+									if (moment(dashboard_data.event_start).hours() == 12 && moment(dashboard_data.event_start).localeData().meridiem(moment(dashboard_data.event_start)) == 'AM') {
 										meridiem = meridiem.replace("AM","MN");
 									}
-									else if (meridiem.slice(-8) == "12:00 PM") {
+									else if (moment(dashboard_data.event_start).hours() == 12 && moment(dashboard_data.event_start).localeData().meridiem(moment(dashboard_data.event_start)) == 'PM') {
 										meridiem = meridiem.replace("PM","NN");
 									}
 
-									var current_time = moment().format('LL');
-									template = template.replace("(current_date_time)",current_time+" "+meridiem);
-									template = template.replace("(current_date)",moment().format("MMMM D, YYYY"));
+									var current_time = moment().format('MMMM DD, YYYY');
+									template = template.replace("(current_date_time)",meridiem+" "+current_time);
 								}
 
 								if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 00:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf()) {
