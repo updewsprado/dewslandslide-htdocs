@@ -53,21 +53,6 @@ function sendViaAlertMonitor(dashboard_data){
 
 		var final_template = backbone_message[0].template;
 
-		// var d = new Date();
-		// var current_meridiem = d.getHours();
-
-		// if (current_meridiem >= 13 && current_meridiem <= 18) {
-		// 	final_template = final_template.replace("(greetings)","hapon");
-		// } else if (current_meridiem >= 18 && current_meridiem <=23) {
-		// 	final_template = final_template.replace("(greetings)","gabi");
-		// } else if (current_meridiem >= 0 && current_meridiem <= 3) {
-		// 	final_template = final_template.replace("(greetings)","gabi");
-		// } else if (current_meridiem >= 4 && current_meridiem <= 11) {
-		// 	final_template = final_template.replace("(greetings)","umaga");
-		// } else {
-		// 	final_template = final_template.replace("(greetings)","tanghali");
-		// }
-
 		final_template = final_template.replace("(alert_level)",dashboard_data.alert_level);
 		var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
 		var formatSbmp = ewiLocation.replace("null","");
@@ -324,21 +309,6 @@ function sendViaAlertMonitor(dashboard_data){
 										}
 									}
 								}
-
-								// var d = new Date();
-								// var current_meridiem = d.getHours();
-
-								// if (current_meridiem >= 13 && current_meridiem <= 18) {
-								// 	template = template.replace("(greetings)","hapon");
-								// } else if (current_meridiem >= 18 && current_meridiem <=23) {
-								// 	template = template.replace("(greetings)","gabi");
-								// } else if (current_meridiem >= 0 && current_meridiem <= 3) {
-								// 	template = template.replace("(greetings)","gabi");
-								// } else if (current_meridiem >= 4 && current_meridiem <= 11) {
-								// 	template = template.replace("(greetings)","umaga");
-								// } else {
-								// 	template = template.replace("(greetings)","tanghali");
-								// }
 
 								template = template.replace("(alert_level)",alert_level);
 								var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
