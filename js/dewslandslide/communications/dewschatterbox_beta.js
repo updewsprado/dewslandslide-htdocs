@@ -375,37 +375,37 @@ function sendViaAlertMonitor(dashboard_data){
 									template = template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
-									template = template.replace("(next_ewi_time)","04:00 AM");
+									template = template.replace("(next_ewi_time)","4AM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 04:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-07:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
-									template = template.replace("(next_ewi_time)","08:00 AM");
+									template = template.replace("(next_ewi_time)","8AM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 08:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-11:30 AM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
-									template = template.replace("(next_ewi_time)","12:00 NN");
+									template = template.replace("(next_ewi_time)","12NN");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 12:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-3:30 PM");
 									template = template.replace("(gndmeas_date_submission)","mamaya");
 
-									template = template.replace("(next_ewi_time)","04:00 PM");
+									template = template.replace("(next_ewi_time)","4PM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 16:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
 									template = template.replace("(gndmeas_date_submission)","bukas");
 
-									template = template.replace("(next_ewi_time)","08:00 PM");
+									template = template.replace("(next_ewi_time)","8PM");
 									template = template.replace("(next_ewi_date)","mamayang");
 								} else if (moment(currentTime).valueOf() >= moment(moment().locale('en').format("YYYY-MM-DD")+" 20:00").valueOf() && moment(currentTime).valueOf() < moment(moment().locale('en').add(24, "hours").format("YYYY-MM-DD")+" 00:00").valueOf()) {
 									template = template.replace("(gndmeas_time_submission)","bago mag-7:30 AM");
 									template = template.replace("(gndmeas_date_submission)","bukas");
 
-									template = template.replace("(next_ewi_time)","12:00 MN");
+									template = template.replace("(next_ewi_time)","12MN");
 									template = template.replace("(next_ewi_date)","bukas ng");
 								} else {
 									alert("Error Occured: Please contact Administrator");
