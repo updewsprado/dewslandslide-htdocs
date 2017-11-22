@@ -458,25 +458,30 @@ $(document).ready(function(e) {
 					var label_color = removeDuplicates(color_label);
 					gndmeasTableStats(dataSubmit,totalSlice,columns_date)
 
+					var list_color_number= []
 					for(var n = 0 ; n < label_color.length ; n++){
 						if(label_color[n] == "#99ff99"){
-							$("#A0").show();
-							$("#A0").empty();
-							$("#A0").append('<div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div>');
+							list_color_number.push(1)
 						}else if(label_color[n] == "#ffb366"){
-							$("#A0").empty();
-							$("#A0").hide();
-							$("#A1").show();
-							$("#A1").empty();
-							$("#A1").append('<div class="panel-heading text-center"><strong><b> ALERT!! </b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div>');
+							list_color_number.push(2)
 						}else if(label_color[n] == "#ff6666"){
-							$("#A0").empty();
-							$("#A0").hide();
-							$("#A1").empty();
-							$("#A1").hide();
-							$("#A2").show();
+							list_color_number.push(3)
 						}
 					}
+
+					switch (Math.max.apply(Math,list_color_number)) {
+						case 1:
+						$('#alert_note').html('<div id="A0" class="panel panel-success panel_alert"><div class="panel-heading text-center"><strong>NO SIGNIFICANT GROUND MOVEMENT</strong></div></div>');
+						break;
+						case 2:
+						$('#alert_note').html(' <div id="A1" class="panel panel-warning panel_alert"><div class="panel-heading text-center"><strong><b> ALERT!!'+
+							'</b>SIGNIFICANT GROUND MOVEMENT OBSERVE IN THE LAST 24 HOURS</strong></div></div>');
+						break;
+						case 3:
+						$('#alert_note').html(' <div id="A2" class="panel panel-danger panel_alert"><div class="panel-heading text-center"><strong><b> ALERT!! '+
+							'</b>CRITICAL GROUND MOVEMENT OBSERVED IN THE LAST 48 HOURS</strong></div>');
+						break;
+					} 
 				}
 			});	
 }
@@ -610,7 +615,6 @@ function gndmeasTableStats(dataTableSubmit,totalSlice,columns_date){
 						}
 						if(c_data != "" && m_data != ""){
 							$.post("/surficial_page/EditGroundMeas/", {dataSubmit:dataSubmit} ).done(function(result_edited){
-								// console.log(result_edited)
 								$("#graphS1").empty()
 								$("#graphS1").append('<table id="ground_table" class="display table" cellspacing="0" width="100%"></table>');
 								crackIdProcess(site,from,to,"done")
