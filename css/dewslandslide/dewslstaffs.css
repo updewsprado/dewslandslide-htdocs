@@ -10,7 +10,22 @@
 .staff-profile img{
 	max-width: 150px;
 	max-height: 150px;
+	width: 150px;
+	height: 150px;
 	margin: auto;
 	border: 1px solid black;
 	/*border-r*/
+}
+
+.staff-name {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.staff-attainment {
+	font-size: 10px;
+}
+
+.staff-position {
+	font-size: 13px;
 }
