@@ -7,7 +7,6 @@ function loadAllStaff() {
 
 		$.get( "../staff/get_all_staff", function( data ) {
 			var staff_data = JSON.parse(data);
-			console.log(staff_data);
 			var panel_counter = 0;
 			var temp = "";
 			var temp_array = [];
@@ -15,19 +14,20 @@ function loadAllStaff() {
 			var flag = 0;
 
 			for (var counter = 0; counter < staff_data.length; counter++) {
+				console.log(staff_data[counter]);
+				debugger;
 				if (temp == "") {
 					temp = staff_data[counter].team_name;
 					if (temp == staff_data[counter].team_name) {
 						temp_array.push(staff_data[counter]);
 					}
-				} 
-				else if (counter == staff_data.length-1) {
-					teams.push(temp_array);
-					temp = staff_data[counter].team_name;
-					temp_array = [];
+				} else if (counter == staff_data.length-1) {
 					if (temp == staff_data[counter].team_name) {
 						temp_array.push(staff_data[counter]);
 					}
+					teams.push(temp_array);
+					temp = staff_data[counter].team_name;
+					temp_array = [];
 				} else {
 					if (temp == staff_data[counter].team_name) {
 						temp_array.push(staff_data[counter]);
