@@ -203,6 +203,7 @@ function sendViaAlertMonitor(dashboard_data){
 							temp = temp+"|"+x;
 							number = temp;
 						});
+
 						if (dashboard_data.status == "extended") {
 							if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV" && contacts[counter].office != "REG8") {
 								var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
@@ -235,9 +236,16 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#edit-btn-ewi-amd').text("Edit");
 		$('#edit-btn-ewi-amd').val("edit");
 		$('#event_details').val(JSON.stringify(dashboard_data));
+
+		//HOTFIX FOR EXTENDED A1 ALERT
+		if (dashboard_data.status == "extended") {
+			if (dashboard_data.internal_alert_level.indexOf("A1")  >= -1 || dashboard_data.internal_alert_level == "ND") {
+				dashboard_data.internal_alert_level = "A0";
+			}
+		}
+
 		var alertLevel = dashboard_data.internal_alert_level.split('-')[0];
 		var alertTrigger = dashboard_data.internal_alert_level.split('-')[1];
-
 		$.ajax({
 			type: "POST",
 			url: "../communications/getkeyinputviatriggertype",
