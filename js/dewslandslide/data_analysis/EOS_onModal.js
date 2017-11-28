@@ -82,7 +82,16 @@ $(document).ready(function(e) {
 						$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
 							'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
 					}
-					allSensorPosition(site,from,to)
+
+					$.ajax({
+					url:"/api/SpecificSiteNum/"+site.slice(0,3),
+					dataType: "json",error: function(xhr, textStatus, errorThrown){
+						console.log(errorThrown)},
+						success: function(data)
+						{
+							allSensorPosition(site,from,data["0"].data_timestamp)
+						}
+					})
 				}
 			});
 		
