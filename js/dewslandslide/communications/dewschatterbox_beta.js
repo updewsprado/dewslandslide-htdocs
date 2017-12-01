@@ -310,8 +310,8 @@ function sendViaAlertMonitor(dashboard_data){
 									}
 								}
 
-								template = template.replace("(alert_level)",alert_level);
-								var ewiLocation = dashboard_data["sitio"]+", "+dashboard_data["barangay"]+", "+dashboard_data["municipality"]+", "+dashboard_data["province"];
+								template = template.replace("(alert_level)",alert_level.toUpperCase());
+								var ewiLocation = $.trim(dashboard_data["sitio"])+", "+$.trim(dashboard_data["barangay"])+", "+$.trim(dashboard_data["municipality"])+", "+$.trim(dashboard_data["province"]);
 								var formatSbmp = ewiLocation.replace("null","");
 								if (formatSbmp.charAt(0) == ",") {
 									formatSbmp = formatSbmp.substr(1);
