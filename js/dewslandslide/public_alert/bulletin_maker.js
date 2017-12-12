@@ -46,6 +46,7 @@ phantom.onError = function(msg, trace) {
 page.open( args[1], function(status) {
 
 	var line = args[1];
+	var editList = args[2];
 
 	if (status === 'success') {
 
@@ -53,9 +54,10 @@ page.open( args[1], function(status) {
 
 		var substring = "edit";
 		if( line.indexOf(substring) !== -1 ) {
-			page.evaluate(function (line) {
-				var params = line.split("/");
-				var edits = decodeURIComponent(params[7]).split("|");
+			page.evaluate(function (editList) {
+				// var params = edits.split("/");
+				var edits = decodeURIComponent(editList).split("\\");
+				// var edits = editList.split("\\");
 				document.getElementById("bulletin_number").innerText = edits[0];
 				document.getElementById("alert_description").innerText = edits[1];
 				document.getElementById("validity").innerText = edits[2];
@@ -63,7 +65,7 @@ page.open( args[1], function(status) {
 				document.getElementById("next_reporting").innerText = edits[4];
 				document.getElementById("recommended_response_2").innerText = edits[5];
 				document.getElementById("next_bulletin").innerText = edits[6];
-			}, line);
+			}, editList);
 		};
 
 		window.setTimeout(function () {

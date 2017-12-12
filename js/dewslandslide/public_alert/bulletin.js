@@ -127,14 +127,15 @@ function renderPDF(id)
     $('#bulletinLoadingModal .progress-bar').text('Rendering Bulletin PDF...');
     reposition('#bulletinLoadingModal');
     $('#bulletinLoadingModal').modal({ backdrop: 'static', show: 'true'});
-    let address = '/../../bulletin/run_script/' + id + '/' + isEdited + "/" + edits.join("|");
+    let address = '/../../bulletin/run_script/' + id + '/' + isEdited; // + "/" + edits.join("|");
 
     edit(false);
 
     return $.ajax ({
         url: address,
         type: "GET",
-        cache: false
+        cache: false,
+        data: {edits: edits.join("\\")}
     })
     .done( function (response) {
         if(response == "Success.")
