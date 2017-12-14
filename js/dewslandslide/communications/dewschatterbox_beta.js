@@ -1157,7 +1157,7 @@ $(document).ready(function() {
 			msg = alerts[i];
 			updateLatestPublicRelease(msg);
 			$('input[name="sitenames"]:unchecked').each(function() {
-				if ($(this).val().toLowerCase() == alerts[i].name) {
+				if ($(this).val().toLowerCase() == alerts[i].name.toLowerCase()) {
 					if (alerts[i].status == "on-going") {
 						$(this).parent().css('color','red');
 					} else if (alerts[i].status == "extended") {
