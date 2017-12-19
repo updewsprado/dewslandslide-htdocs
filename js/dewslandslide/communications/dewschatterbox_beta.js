@@ -955,13 +955,13 @@ $(document).ready(function() {
 			recipientsUpdate.push(JSON.parse(this.value));
 		});
 
-		request = {'type': "updateEwiRecipients",
-		'data': recipientsUpdate
-	}
+			request = {'type': "updateEwiRecipients",
+			'data': recipientsUpdate
+		}
 
-	console.log(recipientsUpdate);
-	conn.send(JSON.stringify(request));
-});
+		console.log(recipientsUpdate);
+		conn.send(JSON.stringify(request));
+	});
 
 	function updateOldMessages(oldMessages){
 
@@ -1285,12 +1285,10 @@ $(document).ready(function() {
 				$('#ewi-recipient-update-modal').modal('toggle');
 				loadGroups();
 			} else if (msg.type == "oldMessage"){
-				console.log(msg);
 				loadOldMessages(msg);
 				msgType = "smsload"
 			} else if (msg.type == "oldMessageGroup"){
 				loadOldMessages(msg);
-				console.log(msg);
 				msgType = "smsloadrequestgroup";
 			} else if (msg.type == "searchMessage"){
 				$('#chatterbox-loading').modal('hide');
@@ -3140,25 +3138,58 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#confirm-ewi').click(function(){
-	if ($('#ewi-date-picker input').val() == "" || $('#sites').val() == "") {
-		alert('Invalid input, All fields must be filled');
+	var samar_sites = ['jor','pob','bar','ime','lip','hin','lte','par','lay'];
+	if ($('#rainfall-sites').val() !== "#") {
+		$('#chatterbox-loading').modal('show');
+		var rain_info_template = "";
+		if ($('#rainfall-cummulative').val() == "1d") {
+			rain_info_template = "1 day cumulative rainfall as of "+$('#rfi-date-picker input').val()+": ";
+		} else {
+			rain_info_template = "3 day cumulative rainfall as of "+$('#rfi-date-picker input').val()+": ";
+		}
+		$.ajax({url: "/api/rainfallScanner", dataType: "json",success: function(result){
+	    	$('#chatterbox-loading').modal('hide');
+	    	var data = JSON.parse(result);
+	    	for (var counter = 0 ; counter < samar_sites.length; counter++) {
+	    		for (var sub_counter = 0; sub_counter < data.length; sub_counter++) {
+	    			if (data[sub_counter].site == samar_sites[counter]) {    					
+	    				$.post( "../chatterbox/getsitbangprovmun", {sites: samar_sites[counter]})
+						.done(function(response) {
+							console.log(JSON.parse(response));
+							if ($('#rainfall-cummulative').val() == "1d") {
+	    					rainfall_percent = parseInt((data[sub_counter]['1D cml'] / data[sub_counter]['half of 2yr max'])*100);
+		    				} else {
+		    					rainfall_percent = parseInt((data[sub_counter]['3D cml'] / data[sub_counter]['2yr max'])*100);
+		    				}
+		    				rain_info_template = rain_info_template+" "+data[sub_counter].site+" = "+rainfall_percent+"%,\n";
+						});
+	    			}
+	    		}
+	    	}
+	    	$('#msg').val(rain_info_template);
+	    }});		
+	
 	} else {
-		$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
-		.done(function(response) {
-			var location = JSON.parse(response);
-			var toTemplate = {
-				'name': $('#sites').val(),
-				'internal_alert' : $('#internal-alert').val() == "------------" ? "N/A" : $('#internal-alert').val(),
-				'alert_level' : $('#alert-lvl').val() == "------------" ? "N/A" : $('#alert-lvl').val(),
-				'alert_status' : $('#alert_status').val() == "------------" ? "N/A" : $('#alert_status').val(),
-				'sitio':location[0].sitio == null ? "" : location[0].sitio,
-				'barangay':location[0].barangay == null ? "" :location[0].barangay,
-				'municipality':location[0].municipality == null ? "" : location[0].municipality,
-				'province':location[0].province == null ? "" :location[0].province,
-				'data_timestamp': $('#ewi-date-picker input').val()
-			}
-			sendViaAlertMonitor(toTemplate)
-		});
+		if ($('#ewi-date-picker input').val() == "" || $('#sites').val() == "") {
+			alert('Invalid input, All fields must be filled');
+		} else {
+			$.post( "../chatterbox/getsitbangprovmun", {sites: $('#sites').val()})
+			.done(function(response) {
+				var location = JSON.parse(response);
+				var toTemplate = {
+					'name': $('#sites').val(),
+					'internal_alert' : $('#internal-alert').val() == "------------" ? "N/A" : $('#internal-alert').val(),
+					'alert_level' : $('#alert-lvl').val() == "------------" ? "N/A" : $('#alert-lvl').val(),
+					'alert_status' : $('#alert_status').val() == "------------" ? "N/A" : $('#alert_status').val(),
+					'sitio':location[0].sitio == null ? "" : location[0].sitio,
+					'barangay':location[0].barangay == null ? "" :location[0].barangay,
+					'municipality':location[0].municipality == null ? "" : location[0].municipality,
+					'province':location[0].province == null ? "" :location[0].province,
+					'data_timestamp': $('#ewi-date-picker input').val()
+				}
+				sendViaAlertMonitor(toTemplate)
+			});
+		}
 	}
 });
 
@@ -3217,6 +3248,11 @@ function setEWILocation(consEWI){
 $('#ewi-date-picker').datetimepicker({
 	locale: 'en',
 	format: 'YYYY-MM-DD HH:mm:ss'
+});
+
+$('#rfi-date-picker').datetimepicker({
+	locale: 'en',
+	format: 'hh:mmA MMMM DD, YYYY'
 });
 
 $('#search-to-date-picker,#search-from-date-picker').datetimepicker({
