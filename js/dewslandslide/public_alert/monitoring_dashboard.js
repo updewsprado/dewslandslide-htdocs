@@ -116,7 +116,7 @@ $(document).ready( function() {
 			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
 			entry.previous_validity = previous.validity;
 
-			if( row.internal_alert == "A0" )
+			if( row.internal_alert == "A0" || row.internal_alert == "ND" )
 			{
 				if( moment(previous.validity).isAfter( moment(row.timestamp).add(30, 'minutes') ) )
 					entry.status = "invalid";
@@ -516,7 +516,7 @@ function buildDashboardTables( data )
 	        	{ 
 	            	"data": "release_time",
 	            	"render": function (data, type, full) {
-	            		if( full.internal_alert_level == "A0" ) return "FINISHED";
+	            		if( full.internal_alert_level == "A0" || full.internal_alert_level == "ND" ) return "FINISHED";
 	            		else return full.release_time;
 	            	},
 	            	"name": "release_time"
@@ -530,7 +530,10 @@ function buildDashboardTables( data )
 	    	"order" : [[4, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": false,
+	    	"info": true,
+	    	"infoCallback": function( settings, start, end, max, total, pre ) {
+	    		$("#" + table + "-panel .row-count").text("Row count: " + end);
+			},
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
@@ -539,10 +542,12 @@ function buildDashboardTables( data )
 		    },
 		    "rowCallback": function( row, data, index ) 
 		    {
-                switch(data.internal_alert_level.slice(0,2))
+		    	let temp = data.internal_alert_level.slice(0,2);
+		    	temp = ( temp == "ND" && data.internal_alert_level.length > 2 ) ? 'A1' : 'A0';
+                switch(temp)
                 {
                 	case 'A2': $(row).addClass("alert_2"); break;
-                	case 'A1': case 'ND': $(row).addClass("alert_1"); break;
+                	case 'A1': $(row).addClass("alert_1"); break;
                     case 'A3': $(row).addClass("alert_3"); break;
                 }
 		  	}
@@ -596,7 +601,10 @@ function buildDashboardTables( data )
 	    	"order" : [[3, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": false,
+	    	"info": true,
+	    	"infoCallback": function( settings, start, end, max, total, pre ) {
+	    		$("#extended-panel .row-count").text("Row count: " + end);
+			},
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
@@ -680,7 +688,10 @@ function buildDashboardTables( data )
 	    	"order" : [[3, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": false,
+	    	"info": true,
+	    	"infoCallback": function( settings, start, end, max, total, pre ) {
+	    		$("#candidate-panel .row-count").text("Row count: " + end);
+			},
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
