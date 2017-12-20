@@ -95,7 +95,7 @@ $(document).ready(function()
         $(field_id + " .feature_name").val("");
 
         $(name_list + " li:not([data-value='new'])").remove();
-        if( feature_type != "" ) {
+        if( feature_type != ""  && feature_type != "none" ) {
             let site_id = $("#site").val();
             $.get("/../../pubrelease/getFeatureNames/" + site_id + "/" + feature_type, function (data) {
                 $(name_list).siblings("button").prop("disabled", false);
@@ -109,7 +109,12 @@ $(document).ready(function()
                     $(name_list).prepend(a);
                 });
             }, "json");
-        } else $(name_list).siblings("button").prop("disabled", true);
+            $(field_id + " .feature_narrative, " + field_id + " .feature_remarks, " + field_id + " .reporter").prop("disabled", false);
+        } else {
+            $(name_list).siblings("button").prop("disabled", true);
+            $(field_id + " .feature_narrative, " + field_id + " .feature_remarks, " + field_id + " .reporter").prop("disabled", true);
+            if( feature_type == "none" ) $(field_id + " .reporter").prop("disabled", false);
+        }
     });
 
     $(document).on("click", ".feature_name_list li", function () {
@@ -547,7 +552,10 @@ function disableDivsOnNoDataClick(trigger)
         else tech_info_div = "#trigger_" + tech_info + "_info";
         $(tech_info_div).prop("disabled", true).val("");
     }
-    else $(triggers_div).prop("disabled", false);
+    else {
+        if( public_alert == "A1" && trigger_letter == "m" ) $(triggers_div).prop("disabled", true);
+        else $(triggers_div).prop("disabled", false);
+    }
 
     // Enable/Disable Rainfall Intermediate Threshold option (rx)
     // if R0 is checked
@@ -680,6 +688,15 @@ function onSiteChange()
                             }
 
                             $(lookup[arr[0].trigger_type.toUpperCase()] + " span:nth-child(2)").text(desc);
+
+                            // EDIT THING ON HEIGHTENED FEATURES MANIFESTATION
+                            // if(arr[0].trigger_type == 'M' || arr[0].trigger_type == 'm') {
+                            //     let heightened_features = arr[0].heightened_m_features;
+                            //     heightened_features.forEach(function (feat) 
+                            //     {
+                            //         feat.f     
+                            //     });
+                            // }
                         });
 
                     }, "json");
@@ -886,17 +903,17 @@ function initializeFormValidator()
         return $(element).val() !== '';
     }, "New trigger timestamp required.");
 
-   $.validator.addClassRules({
+    $.validator.addClassRules({
         trigger_time: {
             "hasTriggerTime": true
         }
     });
 
-   jQuery.validator.addMethod("hasTriggerInfo", function(value, element, param) {
+    jQuery.validator.addMethod("hasTriggerInfo", function(value, element, param) {
         return $(element).val() !== '';
     }, "Basic technical information of the trigger required.");
 
-   $.validator.addClassRules({
+    $.validator.addClassRules({
         trigger_info: {
             "hasTriggerInfo": true
         }
@@ -953,9 +970,27 @@ function initializeFormValidator()
     };
 
     jQuery.validator.addMethod("isNTCboxChecked", function(value, element) {
-        if( $(".cbox_trigger[value='m']").is(":checked") || $(".cbox_trigger[value='M']").is(":checked") || $("#nt_feature_cbox").is(":checked") ) return $(element).val() !== "";
+        if( $(".cbox_trigger[value='m']").is(":checked") || $(".cbox_trigger[value='M']").is(":checked") ) return $(element).val() !== "";
         else return true;
     }, "This field is required.");
+
+    jQuery.validator.addMethod("featureTypeTest", function(value, element, param) {
+        let field_id = "#" + $(element).parents(".feature_group").prop("id");
+        if($(field_id + " .feature_type").val() == 'none') return true;
+        else return value !== "";
+    }, "This field is required.");
+
+    $.validator.addClassRules({
+        feature_name: {
+            "featureTypeTest": true
+        },
+        feature_narrative: {
+            "featureTypeTest": true
+        },
+        feature_remarks: {
+            "featureTypeTest": true
+        }
+    });
 
     publicReleaseForm = $("#publicReleaseForm").validate(
     {
@@ -989,11 +1024,11 @@ function initializeFormValidator()
             feature_narrative: { required: manifestation_required },
             feature_remarks: { required: manifestation_required },
             nt_feature_type: { required: true },
-            nt_feature_name: { required: true },
+            // nt_feature_name: { featureTypeTest: true },
             nt_observance_timestamp: { required: true },
             nt_feature_reporter: { required: true },
-            nt_feature_narrative: { required: true },
-            nt_feature_remarks: { required: true }
+            // nt_feature_narrative: { required: true },
+            // nt_feature_remarks: { required: true }
         },
         messages: {
             comments: "Provide a reason to invalidate this event. If the event is not invalid and is really an end of event EWI, release it on the indicated end of validity."
