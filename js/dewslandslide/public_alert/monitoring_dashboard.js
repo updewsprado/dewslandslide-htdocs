@@ -543,7 +543,7 @@ function buildDashboardTables( data )
 		    "rowCallback": function( row, data, index ) 
 		    {
 		    	let temp = data.internal_alert_level.slice(0,2);
-		    	temp = ( temp == "ND" && data.internal_alert_level.length > 2 ) ? 'A1' : 'A0';
+		    	if ( temp == "ND" ) { temp = (data.internal_alert_level.length > 2) ? 'A1' : 'A0'; }
                 switch(temp)
                 {
                 	case 'A2': $(row).addClass("alert_2"); break;
