@@ -19,6 +19,7 @@ $(document).ready(function(e) {
   $( "#container").show()
   $.ajax({url: "/api/rainfallScanner", dataType: "json",
     success: function(result){
+      console.log(JSON.parse(result))
       if(result.length != 0){
        var data = JSON.parse(result)
        document.getElementById("rain_header").innerHTML =
