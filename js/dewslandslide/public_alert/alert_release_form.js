@@ -8,7 +8,7 @@
 ****/
 
 let status = 'new', active = [], routine_finish = [], validity_global = null;
-let publicReleaseForm = null, isEndOfValidity = false;
+let publicReleaseForm = null, isEndOfValidity = false, heightened_features_table = null;
 
 let m_features_num = 1;
 
@@ -129,10 +129,23 @@ $(document).ready(function()
             $("#nt_features_div").slideDown();
             if( $("#manifestation_validator").prop("disabled") == true ) $("#manifestation_validator").prop({disabled: false}).val("");
             $("#nt_features_field input:not([type='checkbox']), #nt_features_field select, #nt_features_field textarea").prop("disabled", false);
+            
+            if( $(".cbox_trigger_nd[value=m0]").is(":checked") ) $(".cbox_trigger_nd[value=m0]").trigger("click");
+            $(".cbox_trigger_nd[value=m0]").prop({disabled:true});
         }
         else { 
             $("#nt_features_div").slideUp();
             if( $(".cbox_trigger[value=m]:checked, .cbox_trigger[value=M]:checked").length == 0 ) $("#manifestation_validator").prop({disabled: true}).val(""); 
+
+            let trigger_list = [];
+            trigger_list = trigger_list.concat(saved_triggers);
+            let occurence = trigger_list.map( function(x) { return x == "M" || x == "m" } );
+
+            if ( occurence.indexOf(true) > -1 ) {
+                if( $(".cbox_trigger[value=m]:checked, .cbox_trigger[value=M]:checked").length == 0 ) {
+                    $(".cbox_trigger_nd[value=m0]").prop({disabled:false});
+                }
+            }
         }
     });
 });
@@ -396,12 +409,17 @@ function onOperationalTriggersAndNoDataClick()
         // Disable trigger divs on ND check
         if( this.value.indexOf("0") >= 0 ) disableDivsOnNoDataClick(this);
         else {
-            let occurence = trigger_list.map( function(x) { return x.toUpperCase() == this.value } );
+            let occurence = trigger_list.map( function(x) { return x == this }, this.value );
             // if cbox trigger is checked, uncheck and disable corresponding ND
             if( $(".cbox_trigger[value=" + this.value + "]").is(":checked") ) 
                 $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:true, checked:false});
-            // if trigger already occurred or release, make ND button available
-            else if ( occurence.length > 1 ) $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:false});
+            // if trigger already occurred or released, make ND button available
+            else if ( occurence.indexOf(true) > -1 ) {
+                // Except if non-triggering features is checked; make ND unavailable
+                if( $("#nt_feature_cbox").is(":checked") && this.value.toLowerCase() == "m" ) 
+                    $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:true})
+                else $(".cbox_trigger_nd[value=" + this.value.toLowerCase() + "0]").prop({disabled:false})
+            };
         }
 
         for (let i = 0; i < arr.length; i++) 
@@ -610,6 +628,8 @@ function onSiteChange()
         $('#operational_area .form-group').removeClass('has-feedback').removeClass('has-error').removeClass('has-success');
         $('#operational_area .glyphicon.form-control-feedback').remove();
 
+        $("#heightened-features-div").hide();
+
         $.get( "../pubrelease/getLastSiteEvent/" + val, 
         function( event ) 
         {
@@ -690,13 +710,10 @@ function onSiteChange()
                             $(lookup[arr[0].trigger_type.toUpperCase()] + " span:nth-child(2)").text(desc);
 
                             // EDIT THING ON HEIGHTENED FEATURES MANIFESTATION
-                            // if(arr[0].trigger_type == 'M' || arr[0].trigger_type == 'm') {
-                            //     let heightened_features = arr[0].heightened_m_features;
-                            //     heightened_features.forEach(function (feat) 
-                            //     {
-                            //         feat.f     
-                            //     });
-                            // }
+                            if(arr[0].trigger_type == 'M' || arr[0].trigger_type == 'm') {
+                                let heightened_features = arr[0].heightened_m_features;
+                                showHeightenedManifestationFeatures(heightened_features);
+                            }
                         });
 
                     }, "json");
@@ -786,6 +803,78 @@ function groupTriggersByType(event, triggers)
     }
     
     return arr;
+}
+
+function showHeightenedManifestationFeatures(heightened_features) {
+    $("#heightened-features-div").show();
+    if( heightened_features_table == null ) heightened_features_table = initializeHeightenedFeaturesTable(heightened_features);
+    else reloadTable(heightened_features_table, heightened_features);
+}
+
+function initializeHeightenedFeaturesTable (heightened_features) {
+    return $('#heightened-features-table').DataTable({
+        columnDefs : [
+            { className: "text-right", "targets": [1, 4] },
+            { className: "text-left", "targets": [2, 3] },
+            { className: "text-center", "targets": [0] },
+            {
+                'sortable' : false,
+                'targets' : [ 2, 3 ]
+            },
+        ],
+        "data": heightened_features,
+        "columns": [
+            { 
+                "data": "manifestation_id", 
+                "render": function (data, type, full, meta) {
+                    return "<a style='color:blue' href='/../monitoring/events/" + full.event_id + "/" + full.release_id + "' target='_blank'>" + data + "</a>";
+                }
+            },
+            {
+                "data": "ts_observance",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "-";
+                    else return moment(data).format("D MMMM YYYY, h:mm A");
+                }
+            },
+            { 
+                "data": "feature_type",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "-";
+                    else return data[0].toUpperCase() + data.slice(1);
+                }
+            },
+            {
+                "data": "feature_name",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "-";
+                    else return data;
+                }
+            },
+            {
+                "data": "op_trigger",
+                "render": function (data, type, full, meta) {
+                    if( data == null ) return "-";
+                    else return data;
+                }
+            }
+        ],
+        "paginate": false,
+        "info": false,
+        "searching": false,
+        "order": [[1, "desc"]],
+        "rowCallback": function (row, data, index) {
+            if( data.op_trigger > 0 ) {
+                $(row).css("background-color", "rgba(255,0,0,0.5)");
+            }
+        }
+    });
+}
+
+function reloadTable(table, data) {
+    table.clear();
+    table.rows.add(data);
+    table.draw();
 }
 
 /*******************************************
