@@ -3138,7 +3138,7 @@ $('#btn-ewi').on('click',function(){
 });
 
 $('#confirm-ewi').click(function(){
-	var samar_sites = ['jor','bar','ime','lip','hin','lte','par','lay'];
+	var samar_sites = ['jor','bar','ime','lpa','hin','lte','par','lay'];
 	if ($('#rainfall-sites').val() !== "#") {
 		$('#chatterbox-loading').modal('show');
 		var rain_info_template = "";
