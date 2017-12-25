@@ -3167,7 +3167,7 @@ $('#confirm-ewi').click(function(){
 				.done(function(response) {
 					var data = JSON.parse(response);
 					console.log(data);
-					var sbmp = data[0].sitio + ", " +  data[0].barangay + ", " + data[0].municipality + ", " + data[0].province;
+					var sbmp = data[0].sitio + ", " +  data[0].barangay + ", " + data[0].municipality;
 					var formatSbmp = sbmp.replace("null","");
 					if (formatSbmp.charAt(0) == ",") {
 						formatSbmp = formatSbmp.substr(1);
