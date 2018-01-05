@@ -204,7 +204,7 @@ function sendViaAlertMonitor(dashboard_data){
 							number = temp;
 						});
 
-						if (dashboard_data.status == "extended") {
+						if (dashboard_data.status == "extended" && dashboard_data.day != null) {
 							if (contacts[counter].office != "PLGU" && contacts[counter].office != "GDAPD-PHIV" && contacts[counter].office != "REG8") {
 								var detailed = contacts[counter].office+" : "+contacts[counter].lastname+" "+contacts[counter].firstname+" "+number;
 								default_recipients.push(detailed);
