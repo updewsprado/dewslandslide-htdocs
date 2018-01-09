@@ -530,10 +530,7 @@ function buildDashboardTables( data )
 	    	"order" : [[4, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": true,
-	    	"infoCallback": function( settings, start, end, max, total, pre ) {
-	    		$("#" + table + "-panel .row-count").text("Row count: " + end);
-			},
+	    	"info": false,
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
@@ -550,6 +547,18 @@ function buildDashboardTables( data )
                 	case 'A1': $(row).addClass("alert_1"); break;
                     case 'A3': $(row).addClass("alert_3"); break;
                 }
+		  	},
+		  	"initComplete": function () 
+		  	{
+		  		let row_count = 0;
+		  		this.api().rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+		  			let data = this.data();
+		  			if(data.internal_alert_level != "A0" && data.internal_alert_level != "ND" ) {
+		  				row_count++;
+		  			}
+				});
+
+		  		$("#" + table + "-panel .row-count").text("Row count: " + row_count);
 		  	}
 	    });
 	};
