@@ -56,7 +56,7 @@ page.open( args[1], function(status) {
 		if( line.indexOf(substring) !== -1 ) {
 			page.evaluate(function (editList) {
 				// var params = edits.split("/");
-				var edits = decodeURIComponent(editList).split("<x>");
+				var edits = decodeURIComponent(editList).split("**");
 				// var edits = editList.split("\\");
 				document.getElementById("bulletin_number").innerText = edits[0];
 				document.getElementById("alert_description").innerText = edits[1];
