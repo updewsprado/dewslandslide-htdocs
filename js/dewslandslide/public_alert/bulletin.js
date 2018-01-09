@@ -135,7 +135,7 @@ function renderPDF(id)
         url: address,
         type: "GET",
         cache: false,
-        data: {edits: edits.join("\\")}
+        data: {edits: edits.join("<x>")}
     })
     .done( function (response) {
         if(response == "Success.")
