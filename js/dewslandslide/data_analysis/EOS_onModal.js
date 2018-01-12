@@ -1,5 +1,7 @@
 
 $(document).ready(function(e) {
+	$('#tester_id_time').append(performance.now())
+
 	$('.modal-backdrop').remove();
 	$('#loading').modal('toggle');
 	var values = window.location.href.split("/")
@@ -8,110 +10,223 @@ $(document).ready(function(e) {
 	var to_time = values[9]
 	var from_time = values[8]
 	var connection_id = values[5]
+	var tester_date = values[10]
 	$(".box").hide();
 	dropdowlistAppendValue()
-	if(category == "rain"){
-		var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-		RainFallProcess(site,from,to)
-		console.log(site,from,to)
-	}else  if(category == "surficial"){
-		var from = moment().subtract(7,'days').format('YYYY-MM-DD')
-		var to = moment().add(1,'days').format('YYYY-MM-DD')
-		let dataSubmit = { 
-			site : (site).toLowerCase(), 
-			fdate : from,
-			tdate : to
-		}
+	if(tester_date == undefined){
+		if(category == "rain"){
+			var from = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(13,'days').subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+			var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+			RainFallProcess(site,from,to)
+			console.log(site,from,to)
 
-		$.ajax({
-			url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
-			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log(errorThrown)},
-				success: function(data)
-				{
-					$('.selectpicker').selectpicker();
-					$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
-					$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
-						'</select></b></h4><br><div id="ground_graph"><div>')
-					daysOption('surperimpose')
-					SelectdaysOption('surperimpose')
-					dropdowDayValue('surperimpose',from,to)
-					$('#surperimpose_days').selectpicker('refresh');
-					$('#crackgeneral').append('<option value="">Select Crack</option>')
-					$('#crackgeneral').selectpicker('hide')
-					var result= data
-					var crack_name= [];
-					for (i = 0; i <  result.length; i++) {
-						dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
-						crack_name.push(result[i].crack_id)
-					}
-				}
-			});
 
-		surficialGraph(dataSubmit)
-	}else if(category == "subsurface"){
-		$.ajax({
-			url:"/api/latestSensorData/"+site,
-			dataType: "json",error: function(xhr, textStatus, errorThrown){
-				console.log(errorThrown)},
-				success: function(data)
-				{
-
-					var date1 = moment(data[0].timestamp);
-					var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
-					var duration = moment.duration(date2.diff(date1));
-
-					if(duration._data.days > 0){
-						var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
-
-					}else{
-						var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
-
-					}
-					var from = 'n'
-					console.log(from,to)
-					$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
-					$("#subgeneral").val('column_sub')
-					$(".selectpicker").selectpicker('refresh')
-					var title = ["Column","Displacement","Velocity"]
-					var id_title =["column","dis","velocity"]
-					var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
-					for(var a = 0; a < title.length; a++){
-						$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
-						$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
-							'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
-					}
-
-					$.ajax({
-					url:"/api/SpecificSiteNum/"+site.slice(0,3),
-					dataType: "json",error: function(xhr, textStatus, errorThrown){
-						console.log(errorThrown)},
-						success: function(data)
-						{
-							allSensorPosition(site,from,data["0"].data_timestamp)
-						}
-					})
-				}
-			});
-		
-	}else if(category == "pdf"){
-		var svg = ['rain','surficial']
-		all_column = values[8].split('%20')
-		for (var i = 0; i < all_column.length; i++) {
-			svg.push('subsurface_'+all_column[i])
-		}
-		$.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: connection_id})
-		.done(function (data) {
-			if(data == "Finished") {
-				$('#loading').modal("hide");
-				window.location.href = "/../../chart_export/viewPDF/Graph Attachment for "+from_time+"_"+to_time+"_"+site.toUpperCase() +".pdf";
+			
+		}else  if(category == "surficial"){
+			var from = moment().subtract(7,'days').format('YYYY-MM-DD')
+			var to = moment().add(1,'days').format('YYYY-MM-DD')
+			let dataSubmit = { 
+				site : (site).toLowerCase(), 
+				fdate : from,
+				tdate : to
 			}
-		})
-		.fail(function (jqXHR, textStatus, errorThrown) {
-			console.log(textStatus);
-		});
+
+			$.ajax({
+				url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+						$('.selectpicker').selectpicker();
+						$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+						$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+							'</select></b></h4><br><div id="ground_graph"><div>')
+						daysOption('surperimpose')
+						SelectdaysOption('surperimpose')
+						dropdowDayValue('surperimpose',from,to)
+						$('#surperimpose_days').selectpicker('refresh');
+						$('#crackgeneral').append('<option value="">Select Crack</option>')
+						$('#crackgeneral').selectpicker('hide')
+						var result= data
+						var crack_name= [];
+						for (i = 0; i <  result.length; i++) {
+							dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
+							crack_name.push(result[i].crack_id)
+						}
+					}
+				});
+
+			surficialGraph(dataSubmit)
+		}else if(category == "subsurface"){
+			$.ajax({
+				url:"/api/latestSensorData/"+site,
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+
+						var date1 = moment(data[0].timestamp);
+						var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
+						var duration = moment.duration(date2.diff(date1));
+
+						if(duration._data.days > 0){
+							var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
+
+						}else{
+							var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+
+						}
+						var from = 'n'
+						console.log(from,to)
+						$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
+						$("#subgeneral").val('column_sub')
+						$(".selectpicker").selectpicker('refresh')
+						var title = ["Column","Displacement","Velocity"]
+						var id_title =["column","dis","velocity"]
+						var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+						for(var a = 0; a < title.length; a++){
+							$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
+							$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
+								'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
+						}
+
+						$.ajax({
+							url:"/api/SpecificSiteNum/"+site.slice(0,3),
+							dataType: "json",error: function(xhr, textStatus, errorThrown){
+								console.log(errorThrown)},
+								success: function(data)
+								{
+									allSensorPosition(site,from,data["0"].data_timestamp)
+								}
+							})
+					}
+				});
+			
+		}else if(category == "pdf"){
+			var svg = ['rain','surficial']
+			all_column = values[8].split('%20')
+			for (var i = 0; i < all_column.length; i++) {
+				svg.push('subsurface_'+all_column[i])
+			}
+			$.post("/../../chart_export/renderCharts", {site: site, svg: svg, connection_id: connection_id})
+			.done(function (data) {
+				if(data == "Finished") {
+					$('#loading').modal("hide");
+					window.location.href = "/../../chart_export/viewPDF/Graph Attachment for "+from_time+"_"+to_time+"_"+site.toUpperCase() +".pdf";
+				}
+			})
+			.fail(function (jqXHR, textStatus, errorThrown) {
+				console.log(textStatus);
+			});
+		}
+	}else if(tester_date == 'test'){
+		if(category == "rain"){
+			var from = moment(from_time.slice(0,10)+" " +from_time.slice(13,23)).format('YYYY-MM-DD HH:mm:ss')
+			var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+			RainFallProcess(site,from,to)
+			console.log(site,from,to)
+
+			setTimeout(function(){
+				var array_data = $('#tester_id').html().split("/")
+				var all_data = []
+				for (var i = 0; i < array_data.length; i++) {
+					if( array_data[i].length != 0){
+						all_data.push(array_data[i].split(","))
+					}	
+				}
+				console.log($('#tester_id').html())
+				$.post("/api/time_execution",{ data : all_data } )
+				.done(function (result) {
+					console.log(result)	
+
+				})
+			}, 30000);
+			
+		}else  if(category == "surficial"){
+			var from = moment().subtract(7,'days').format('YYYY-MM-DD')
+			var to = moment().add(1,'days').format('YYYY-MM-DD')
+			let dataSubmit = { 
+				site : (site).toLowerCase(), 
+				fdate : from,
+				tdate : to
+			}
+
+			$.ajax({
+				url:"/surficial_page/getDatafromGroundCrackNameUrl/"+site,
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+						$('.selectpicker').selectpicker();
+						$('.graphGenerator').append('<select class="selectpicker"  id="crackgeneral" data-live-search="true"></select>');
+						$(".graphGenerator").append('<h4><span class="glyphicon "></span><b>Superimposed Surficial Graph <select class="selectpicker pull-right" id="surperimpose_days">'+
+							'</select></b></h4><br><div id="ground_graph"><div>')
+						daysOption('surperimpose')
+						SelectdaysOption('surperimpose')
+						dropdowDayValue('surperimpose',from,to)
+						$('#surperimpose_days').selectpicker('refresh');
+						$('#crackgeneral').append('<option value="">Select Crack</option>')
+						$('#crackgeneral').selectpicker('hide')
+						var result= data
+						var crack_name= [];
+						for (i = 0; i <  result.length; i++) {
+							dropdowlistAppendValue(result[i].crack_id, ((result[i].crack_id).toUpperCase()),'#crackgeneral');
+							crack_name.push(result[i].crack_id)
+						}
+					}
+				});
+
+			surficialGraph(dataSubmit)
+		}else if(category == "subsurface"){
+			$.ajax({
+				url:"/api/latestSensorData/"+site,
+				dataType: "json",error: function(xhr, textStatus, errorThrown){
+					console.log(errorThrown)},
+					success: function(data)
+					{
+
+						var date1 = moment(data[0].timestamp);
+						var date2 = moment(to_time.slice(0,10)+" " +to_time.slice(13,23));
+						var duration = moment.duration(date2.diff(date1));
+
+						if(duration._data.days > 0){
+							var to = moment(data[0].timestamp).format('YYYY-MM-DD HH:mm:ss')
+
+						}else{
+							var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).subtract(1,'hour').format('YYYY-MM-DD HH:mm:ss')
+
+						}
+						var from = 'n'
+						console.log(from,to)
+						$(".graphGenerator").append('<div class="col-md-12 subsurface_analysis_div" id="subsurface_analysis_div"></div>')
+						$("#subgeneral").val('column_sub')
+						$(".selectpicker").selectpicker('refresh')
+						var title = ["Column","Displacement","Velocity"]
+						var id_title =["column","dis","velocity"]
+						var id_div=[["colspangraph1","colspangraph2"],["dis1","dis2"],["velocity1","velocity2"]]
+						for(var a = 0; a < title.length; a++){
+							$("#subsurface-breadcrumb").append('<li class="breadcrumb-item" ><b class="breadcrumb-item" data-toggle="collapse" data-target="#'+id_title[a]+'_sub">'+title[a]+' Position</b></li>')
+							$("#subsurface_analysis_div").append('<div class="col-md-12 sub"><div id="'+id_title[a]+'_sub" class="collapse in">'+
+								'<div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][0]+'"><br></div></div><div class="col-md-6" style="padding-left: 0px;padding-right: 0px;"><div id="'+id_div[a][1]+'"></div></div></div>')
+						}
+
+						$.ajax({
+							url:"/api/SpecificSiteNum/"+site.slice(0,3),
+							dataType: "json",error: function(xhr, textStatus, errorThrown){
+								console.log(errorThrown)},
+								success: function(data)
+								{
+									allSensorPosition(site,from,data["0"].data_timestamp)
+								}
+							})
+					}
+				});
+			
+
+		}
+
 	}
+
 
 });
 
@@ -370,6 +485,7 @@ function getDistanceRainSite(site,dataSubmit,max_rain,id,distance) {
 	}
 }
 function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
+	console.log("/api/RainSenslope/"+site+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate)
 	if(site != null){
 		$.ajax({
 			url:"/api/RainSenslope/"+site+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate,
@@ -377,6 +493,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
+					
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[],nlines=[];
@@ -387,6 +504,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
+						console.log(jsonRespo.length)
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
@@ -483,6 +601,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 				console.log(errorThrown)},
 				success: function(data)
 				{
+
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[],nlines=[];
@@ -493,6 +612,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo =JSON.parse(data);
+						console.log(jsonRespo.length)
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
@@ -580,14 +700,17 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 }
 
 function getRainNoah(site,dataSubmit,max_rain,id,distance) {
+
 	if(site != null){
 		var rain_noah_number = site.slice(10,20)
+		console.log("/api/RainNoah/"+rain_noah_number+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate)
 		$.ajax({
 			url:"/api/RainNoah/"+rain_noah_number+"/"+dataSubmit.fdate+"/"+dataSubmit.tdate,
 			dataType: "json",error: function(xhr, textStatus, errorThrown){
 				console.log(errorThrown)},
 				success: function(data)
 				{
+					
 					$("#rain-breadcrumb").append('<li class="breadcrumb-item"><a class="breadcrumb-item" data-toggle="collapse in" data-target="#'+id+'"><button type="button">'+site.toUpperCase()+'</button></a></li>')
 					dropdowlistAppendValue(id,site.toUpperCase(),'#rainfallgeneral');
 					var DataSeries24h=[] , DataSeriesRain=[] , DataSeries72h=[] , negative=[] , nval=[], nlines=[];
@@ -598,7 +721,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
-						
+						console.log(jsonRespo.length)
 						for (i = 0; i < jsonRespo.length; i++) {
 							var Data24h=[] ,Datarain=[] ,Data72h=[];
 							var date1 = moment(dataSubmit.tdate).subtract(10,'days').subtract(1,'hour');
@@ -718,6 +841,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 	}
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -852,7 +976,12 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		syncronizeCrossHairs(chart,id);
 
 	});
-
+	var t1 = performance.now();
+	if (series_data != undefined){
+		$('#tester_id').append('/'+dataTableSubmit.current_site+',cum,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
+	}
+	
+	
 
 }
 
@@ -876,6 +1005,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	}
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -963,27 +1093,31 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 					radius: 3
 				},
 				cursor: 'pointer',
-				},
-				area: {
-					marker: {
-						lineWidth: 3,
-						lineColor: null 
-					}
+			},
+			area: {
+				marker: {
+					lineWidth: 3,
+					lineColor: null 
 				}
+			}
 
-			},
-			legend: {
-				enabled: false
-			},
-			credits: {
-				enabled: false
-			},
-			series:series_data
-		},function(chart) { 
-			syncronizeCrossHairs(chart,id+"2",'rain');
+		},
+		legend: {
+			enabled: false
+		},
+		credits: {
+			enabled: false
+		},
+		series:series_data
+	},function(chart) { 
+		syncronizeCrossHairs(chart,id+"2",'rain');
 
-		});
-
+	});
+	var t1 = performance.now();
+	if(series_data != undefined){
+		$('#tester_id').append('/'+dataTableSubmit.current_site+',day,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
+	}
+	
 
 	setTimeout(function(){
 		svgChart('rain') 
@@ -1715,6 +1849,8 @@ function svgChart(idBox) {
 		$(".highcharts-root").removeAttr("xmlns");
 		$(".highcharts-root").removeAttr("version");
 
+		
+
 		var idsSub = $('.collapse').map(function() {
 			return this.id;
 		}).get();
@@ -1815,8 +1951,23 @@ function svgChart(idBox) {
 		console.log('done')	
 		$('#loading').modal('hide');
 		$('.modal-backdrop').remove();
+
+		var values = window.location.href.split("/")
+		var to_time = values[9]
+		var from_time = values[8]
+		var t0  = $('#tester_id_time').html();
+		var t1 = performance.now();
+		var total = [site,(t1 - t0).toFixed(4),from_time,to_time];
+		$.post("/api/time_execution_all",{ data : total } )
+		.done(function (result) {
+			console.log(result)	
+
+		});
+		
 	})
 
+	
+	
 
 }
 
