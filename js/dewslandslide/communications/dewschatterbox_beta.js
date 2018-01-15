@@ -126,26 +126,26 @@ function sendViaAlertMonitor(dashboard_data){
 
 	} else {
 
-		$('#send-btn-ewi-amd').prop('disabled',true);
-		$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
+		// $('#send-btn-ewi-amd').prop('disabled',true);
+		// $("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
 
 		var current_client_time = moment().format('YYYY-MM-DD HH:mm:ss');
 		var remainder = moment(current_client_time).minute() % 30;
 		var client_release_time = moment(current_client_time).subtract(remainder,"m").format("YYYY-MM-DD HH:mm:00");
 
-		if (client_release_time == dashboard_data.event_start) {
-			$('#send-btn-ewi-amd').prop('disabled',false);
-			$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
-		} else {
+		// if (client_release_time == dashboard_data.event_start) {
+		// 	$('#send-btn-ewi-amd').prop('disabled',false);
+		// 	$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+		// } else {
 
-			if (moment(current_client_time).hours() % 4 == 0) {
-				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
-				$('#send-btn-ewi-amd').prop('disabled',false);
-			} else if (dashboard_data.event_start == dashboard_data.data_timestamp) {
-				$('#send-btn-ewi-amd').prop('disabled',false);
-				$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
-			}
-		}
+		// 	if (moment(current_client_time).hours() % 4 == 0) {
+		// 		$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+		// 		$('#send-btn-ewi-amd').prop('disabled',false);
+		// 	} else if (dashboard_data.event_start == dashboard_data.data_timestamp) {
+		// 		$('#send-btn-ewi-amd').prop('disabled',false);
+		// 		$("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock disabled.");
+		// 	}
+		// }
 
 		var alert_site_name = "";
 		var alert_level = "";
@@ -3299,6 +3299,7 @@ $('#send-btn-ewi-amd').click(function(){
 	var current_recipients = $('#ewi-recipients-dashboard').tagsinput('items');
 	var default_recipients = $('#default-recipients').val().split(',');
 	var difference = [];
+	var tagOffices = [];
 
 	$.grep(current_recipients, function(el) {
 		if ($.inArray(el, default_recipients) == -1) difference.push(el);
@@ -3312,17 +3313,15 @@ $('#send-btn-ewi-amd').click(function(){
 	}
 
 	try {
-		var extended_indicator = $('#extended_status').val().split(",");
-		if (extended_indicator[0] == "extended") {
-			if (extended_indicator[1] == "undefined") { // Day 0
-				var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
-			} else {
-				var tagOffices = ['LLMC','BLGU','MLGU','REG8'];
+		
+		for (var counter = 0; counter < current_recipients.length; counter++) {
+			var raw_office = current_recipients[counter].split(':');
+			if ($.inArray(raw_office[0].trim(),tagOffices) == -1) {
+				tagOffices.push(raw_office[0].trim());
 			}
-		} else {
-			var tagOffices = ['LLMC','BLGU','MLGU','PLGU','REG8'];
 		}
-	
+		
+		console.log(tagOffices);
 		$('input[name="offices"]').prop('checked', false);
 		$('input[name="sitenames"]').prop('checked', false);
 
