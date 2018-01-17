@@ -20,8 +20,6 @@ $(document).ready(function(e) {
 			RainFallProcess(site,from,to)
 			console.log(site,from,to)
 
-
-			
 		}else  if(category == "surficial"){
 			var from = moment().subtract(7,'days').format('YYYY-MM-DD')
 			var to = moment().add(1,'days').format('YYYY-MM-DD')
@@ -126,25 +124,25 @@ $(document).ready(function(e) {
 			RainFallProcess(site,from,to)
 			console.log(site,from,to)
 
-			setTimeout(function(){
-				var array_data = $('#tester_id').html().split("/")
-				var all_data = []
-				for (var i = 0; i < array_data.length; i++) {
-					if( array_data[i].length != 0){
-						all_data.push(array_data[i].split(","))
-					}	
-				}
-				console.log($('#tester_id').html())
-				$.post("/api/time_execution",{ data : all_data } )
-				.done(function (result) {
-					console.log(result)	
+			// setTimeout(function(){
+			// 	var array_data = $('#tester_id').html().split("/")
+			// 	var all_data = []
+			// 	for (var i = 0; i < array_data.length; i++) {
+			// 		if( array_data[i].length != 0){
+			// 			all_data.push(array_data[i].split(","))
+			// 		}	
+			// 	}
+			// 	console.log($('#tester_id').html())
+			// 	$.post("/api/time_execution",{ data : all_data } )
+			// 	.done(function (result) {
+			// 		console.log(result)	
 
-				})
-			}, 30000);
+			// 	})
+			// }, 30000);
 			
 		}else  if(category == "surficial"){
-			var from = moment().subtract(7,'days').format('YYYY-MM-DD')
-			var to = moment().add(1,'days').format('YYYY-MM-DD')
+			var from =moment(from_time.slice(0,10)+" " +from_time.slice(13,23)).format('YYYY-MM-DD HH:mm:ss')
+			var to = moment(to_time.slice(0,10)+" " +to_time.slice(13,23)).format('YYYY-MM-DD HH:mm:ss')
 			let dataSubmit = { 
 				site : (site).toLowerCase(), 
 				fdate : from,
@@ -177,6 +175,7 @@ $(document).ready(function(e) {
 				});
 
 			surficialGraph(dataSubmit)
+
 		}else if(category == "subsurface"){
 			$.ajax({
 				url:"/api/latestSensorData/"+site,
@@ -841,7 +840,7 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 	}
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
-	var t0 = performance.now()
+	// var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -976,10 +975,10 @@ function chartProcessRain(series_data ,id , data_source ,site ,max,dataTableSubm
 		syncronizeCrossHairs(chart,id);
 
 	});
-	var t1 = performance.now();
-	if (series_data != undefined){
-		$('#tester_id').append('/'+dataTableSubmit.current_site+',cum,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
-	}
+	// var t1 = performance.now();
+	// if (series_data != undefined){
+	// 	$('#tester_id').append('/'+dataTableSubmit.current_site+',cum,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
+	// }
 	
 	
 
@@ -1005,7 +1004,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 	}
 
 	var colors= ["#EBF5FB","#0000FF","#FF0000"]
-	var t0 = performance.now()
+	// var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1113,10 +1112,10 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 		syncronizeCrossHairs(chart,id+"2",'rain');
 
 	});
-	var t1 = performance.now();
-	if(series_data != undefined){
-		$('#tester_id').append('/'+dataTableSubmit.current_site+',day,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
-	}
+	// var t1 = performance.now();
+	// if(series_data != undefined){
+	// 	$('#tester_id').append('/'+dataTableSubmit.current_site+',day,'+distance+','+(t1 - t0).toFixed(4)+','+series_data[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
+	// }
 	
 
 	setTimeout(function(){
@@ -1130,6 +1129,7 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 
 
 function surficialGraph(dataTableSubmit) {  
+	console.log("/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate)
 	$.ajax({ 
 		dataType: "json",
 		url: "/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate,  success: function(data_result) {
@@ -1208,7 +1208,7 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 		list_dates.push(site+((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
 	}
 	let dataSubmit = { date:list_dates,table:'gndmeas'}
-
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1309,6 +1309,8 @@ function chartProcessSurficial(id,data_series,name,dataTableSubmit){
 	$( ".highcharts-contextbutton" ).attr( "visibility", "hidden" );
 	$( "#pdfsvg" ).empty();
 
+	var t1 = performance.now();
+	$('#tester_id').append('/'+dataTableSubmit.site+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+','+date1.format('YYYY-MM-DD')+','+date2.format('YYYY-MM-DD')+'/')
 	setTimeout(function(){
 		svgChart('surficial') 
 	}, 1000);
@@ -1963,6 +1965,20 @@ function svgChart(idBox) {
 			console.log(result)	
 
 		});
+
+		var array_data = $('#tester_id').html().split("/")
+		var all_data = []
+		for (var i = 0; i < array_data.length; i++) {
+			if( array_data[i].length != 0){
+				all_data.push(array_data[i].split(","))
+			}	
+		}
+		console.log($('#tester_id').html())
+		$.post("/api/time_execution",{ data : all_data } )
+		.done(function (result) {
+			console.log(result)	
+
+		})
 		
 	})
 
