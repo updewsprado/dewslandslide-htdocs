@@ -1756,7 +1756,7 @@ function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 		series:data_series
 	});
 	var t1 = performance.now();
-	$('#tester_id').append('/'+site+',col '+name+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+'/')
+	$('#tester_id').append('/'+site+',col '+name.slice(29,35)+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+'/')
 }
 
 function chartProcessbase(id,data_series,name,site,catNum){
