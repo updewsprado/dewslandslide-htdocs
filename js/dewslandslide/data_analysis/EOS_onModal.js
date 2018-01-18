@@ -1617,6 +1617,7 @@ function velocityPosition(data_result,id,date_template,site,ndata) {
 	}  
 }
 function chartProcessDis(id,data_series,name,site,nPlot){
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1690,10 +1691,15 @@ function chartProcessDis(id,data_series,name,site,nPlot){
 			}
 		}
 	});
+	
+	var t1 = performance.now();
+	$('#tester_id').append('/'+site+',dis '+name+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+'/')
+	
 
 }
 
 function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1749,10 +1755,12 @@ function chartProcessInverted(id,data_series,name,site,minVal,maxVal){
 		},
 		series:data_series
 	});
-
+	var t1 = performance.now();
+	$('#tester_id').append('/'+site+',col '+name+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+'/')
 }
 
 function chartProcessbase(id,data_series,name,site,catNum){
+	var t0 = performance.now()
 	Highcharts.setOptions({
 		global: {
 			timezoneOffset: -8 * 60
@@ -1821,7 +1829,8 @@ function chartProcessbase(id,data_series,name,site,catNum){
 		},
 		series:data_series
 	});
-	
+	var t1 = performance.now();
+	$('#tester_id').append('/'+site+',vel '+name+','+(t1 - t0).toFixed(4)+','+data_series[0].data.length+'/')
 	setTimeout(function(){
 		svgChart('subsurface') 
 	}, 3000);
