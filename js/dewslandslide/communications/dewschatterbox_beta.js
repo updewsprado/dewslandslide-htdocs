@@ -1516,8 +1516,10 @@ $(document).ready(function() {
 	} else if (msg.type == "ackrpi"){
 		$("#messages li:last #timestamp-sent").removeClass();
 		if (msg.send_status == "SENT-PI") {
+			$("#messages li:last #timestamp-sent").text('PENDING');
 			$("#messages li:last #timestamp-sent").addClass('sent-status-pending');
 		} else {
+			$("#messages li:last #timestamp-sent").text('FAILED');
 			$("#messages li:last #timestamp-sent").addClass('sent-status-fail');
 		}
 	} else if (contactInfo == "groups") {
