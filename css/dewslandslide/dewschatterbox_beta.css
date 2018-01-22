@@ -54,6 +54,10 @@
   color: red;
 }
 
+.sent-status-pending {
+  
+}
+
 textarea {
     resize: none;
 }
