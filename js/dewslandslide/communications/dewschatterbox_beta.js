@@ -1515,7 +1515,11 @@ $(document).ready(function() {
 		}
 	} else if (msg.type == "ackrpi"){
 		console.log("Status: "+msg.type);
-		console.log(msg);
+		if (msg.send_status == "SENT-PI") {
+			$("#messages li:last #timestamp-sent").addClass('sent-status-pending');
+		} else {
+			$("#messages li:last #timestamp-sent").addClass('sent-status-fail');
+		}
 	} else if (contactInfo == "groups") {
 
 		if (msg.type == "smsrcv") {
