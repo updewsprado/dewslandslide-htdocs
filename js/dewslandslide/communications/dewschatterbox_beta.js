@@ -1504,16 +1504,18 @@ $(document).ready(function() {
 } else {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
+		console.log(msg);
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 			if (msg.status == "SENT") {
 				$("#messages li:last #timestamp-sent").addClass('sent-status-success');
 			} else {
-				$("#messages li:last #timestamp-sent").addClass('sent-status-fail');
+				$("#messages li:last #timestamp-sent").addClass('sent-status-pending');
 			}
 		}
 	} else if (msg.type == "ackrpi"){
 		console.log("Status: "+msg.type);
+		console.log(msg);
 	} else if (contactInfo == "groups") {
 
 		if (msg.type == "smsrcv") {
