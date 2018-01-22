@@ -1504,21 +1504,17 @@ $(document).ready(function() {
 } else {
 	var numbers = /^[0-9]+$/; 
 	if (msg.type == "ackgsm") {
-		console.log(msg);
+		$("#messages li:last #timestamp-sent").removeClass();
 		if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
 			$("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
 			if (msg.status == "SENT") {
-				console.log('success go here');
-				console.log(msg.status);
 				$("#messages li:last #timestamp-sent").addClass('sent-status-success');
 			} else {
-				console.log('pending go here');
-				console.log(msg.status);
 				$("#messages li:last #timestamp-sent").addClass('sent-status-pending');
 			}
 		}
 	} else if (msg.type == "ackrpi"){
-		console.log("Status: "+msg.type);
+		$("#messages li:last #timestamp-sent").removeClass();
 		if (msg.send_status == "SENT-PI") {
 			$("#messages li:last #timestamp-sent").addClass('sent-status-pending');
 		} else {
