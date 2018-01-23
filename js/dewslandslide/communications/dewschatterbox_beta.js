@@ -125,10 +125,8 @@ function sendViaAlertMonitor(dashboard_data){
 		$('#site-abbr').val(dashboard_data["name"]);
 
 	} else {
-
 		// $('#send-btn-ewi-amd').prop('disabled',true);
 		// $("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
-
 		var current_client_time = moment().format('YYYY-MM-DD HH:mm:ss');
 		var remainder = moment(current_client_time).minute() % 30;
 		var client_release_time = moment(current_client_time).subtract(remainder,"m").format("YYYY-MM-DD HH:mm:00");
@@ -159,13 +157,14 @@ function sendViaAlertMonitor(dashboard_data){
 		}
 
 		// HOTFIX OF g0/r0/s0 sites
-
 		if (dashboard_data.internal_alert_level.indexOf('A2-g0') > -1) {
 			dashboard_data.internal_alert_level = "A2-G";
 		} else if (dashboard_data.internal_alert_level.indexOf('A1-R0') > -1) {
 			dashboard_data.internal_alert_level = "A1-R";
-		} else if (dashboard_data.internal_alert_level.indexOf('A2-s0') > -1 || dashboard_data.internal_alert_level.indexOf('A3-S0') > -1) {
+		} else if (dashboard_data.internal_alert_level.indexOf('A3-S0') > -1) {
 			dashboard_data.internal_alert_level = "A3-S";
+		} else if (dashboard_data.internal_alert_level.indexOf('A2-s0') > -1) {
+			dashboard_data.internal_alert_level = "A2-s";
 		}
 
 
@@ -252,6 +251,7 @@ function sendViaAlertMonitor(dashboard_data){
 			async: true,
 			data: {trigger_type:alertTrigger,level: alertLevel},
 			success: function(data) {
+				console.log(data);
 				if (data != null) {
 					var techInfo = JSON.parse(data);
 					if (dashboard_data.status == "on-going" && alertLevel.includes("3") == true) {
