@@ -251,7 +251,6 @@ function sendViaAlertMonitor(dashboard_data){
 			async: true,
 			data: {trigger_type:alertTrigger,level: alertLevel},
 			success: function(data) {
-				console.log(data);
 				if (data != null) {
 					var techInfo = JSON.parse(data);
 					if (dashboard_data.status == "on-going" && alertLevel.includes("3") == true) {
