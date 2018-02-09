@@ -1242,7 +1242,11 @@ $(document).ready(function() {
 	function connectWS() {
 		$('#chatterbox-loading').modal('show');
 		console.log("trying to connect to web socket server");
-		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
+		try {
+			var tempConn = new WebSocket("ws://"+window.location.host+":5050");
+		} catch (err) {
+			$.notify('VPN Connection detected, Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.',{autoHideDelay: 100000});
+		}
 
 		tempConn.onopen = function(e) {
 			$('#chatterbox-loading').modal('hide');
