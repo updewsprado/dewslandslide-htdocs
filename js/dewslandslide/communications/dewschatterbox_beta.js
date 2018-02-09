@@ -1242,11 +1242,8 @@ $(document).ready(function() {
 	function connectWS() {
 		$('#chatterbox-loading').modal('show');
 		console.log("trying to connect to web socket server");
-		try {
-			var tempConn = new WebSocket("ws://"+window.location.host+":5050");
-		} catch (err) {
-			$.notify('VPN Connection detected, Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.',{autoHideDelay: 100000});
-		}
+
+		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
 			$('#chatterbox-loading').modal('hide');
@@ -1602,7 +1599,7 @@ tempConn.onclose = function(e) {
 	else if(event.code == 1006) {
 		reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 		$('.notifyjs-wrapper').hide();
-		$.notify('VPN Connection detected, Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.','error');
+		$.notify('VPN Connection detected. Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.','error');
 		disableCommands();
 
 		connection_status = false;
