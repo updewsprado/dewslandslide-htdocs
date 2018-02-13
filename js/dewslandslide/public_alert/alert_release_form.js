@@ -172,6 +172,7 @@ function onSiteChange () {
 
             const { status: event_status, event_start, validity } = event;
             if (event_status === "on-going" || event_status === "extended") {
+                this_event_status = event_status;
                 validity_global = validity;
                 $("#status").html($("#status").html().replace("[STATUS]", event_status.toUpperCase()));
                 if (event_status === "on-going") {
@@ -363,7 +364,7 @@ function onPublicAlertLevelChange () {
 
         // Show invalid alert notification if Alert is lowered prematurely
         if (!$.isEmptyObject(current_event)) {
-            if (alert_level === "A0" && moment($("#timestamp_entry").val()).add(30, "minutes").isBefore(current_event.validity)) {
+            if (value === "A0" && moment($("#timestamp_entry").val()).add(30, "minutes").isBefore(current_event.validity)) {
                 this_event_status = "invalid";
                 $("#alert_invalid").slideDown();
             } else $("#alert_invalid").slideUp();
