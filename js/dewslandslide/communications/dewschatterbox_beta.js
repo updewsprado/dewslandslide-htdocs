@@ -1242,6 +1242,7 @@ $(document).ready(function() {
 	function connectWS() {
 		$('#chatterbox-loading').modal('show');
 		console.log("trying to connect to web socket server");
+
 		var tempConn = new WebSocket("ws://"+window.location.host+":5050");
 
 		tempConn.onopen = function(e) {
@@ -1597,6 +1598,8 @@ tempConn.onclose = function(e) {
 		reason = "No status code was actually present.";
 	else if(event.code == 1006) {
 		reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
+		$('.notifyjs-wrapper').hide();
+		$.notify('VPN Connection detected. Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.','error');
 		disableCommands();
 
 		connection_status = false;
