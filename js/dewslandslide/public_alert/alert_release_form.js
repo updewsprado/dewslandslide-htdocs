@@ -370,7 +370,7 @@ function onPublicAlertLevelChange () {
             } else $("#alert_invalid").slideUp();
         }
 
-        $(trigger_switch).trigger("change");
+        $(".cbox_trigger_switch").trigger("change");
         $(".cbox_trigger").trigger("change");
     });
 }
