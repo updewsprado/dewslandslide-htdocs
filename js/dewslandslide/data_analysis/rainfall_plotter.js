@@ -8,8 +8,8 @@ const rainfall_colors = {
 $(document).ready(() => {
     const temp = {
         site_code: "agb",
-        start_date: "2017-11-16T00:00:00",
-        end_date: "2017-11-22T00:00:00"
+        start_date: "2017-10-16T00:00:00",
+        end_date: "2017-10-22T00:00:00"
     };
 
     getPlotDataForRainfall(temp)
@@ -204,6 +204,52 @@ function createCumulativeRainfallChart (data, temp, source) {
     });
 }
 
+function setEndDate(id){
+    var fromDate = '';
+    currentTimeStamp = moment().format('YYYY-MM-DDTHH:mm:ss');
+    if(id == 1){
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('7 days <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(7,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 2) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('10 days <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(10,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 3) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('2 weeks <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(14,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 4) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('1 month <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(30,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 5) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('3 months <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(90,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 6) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('6 months <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(120,'days').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 7) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('1 year <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(1,'year').format('YYYY-MM-DDTHH:mm:ss');
+    }else if (id == 8) {
+        $('#fromDateSelected').empty();
+        $('#fromDateSelected').append('All <span class="caret"></span>');
+        fromDate = moment(currentTimeStamp).subtract(5,'year').format('YYYY-MM-DDTHH:mm:ss');
+    }
+    const temp = {
+        site_code: "agb",
+        start_date: currentTimeStamp,
+        end_date: fromDate
+    };
+    
+    getPlotDataForRainfall(temp);
+
+}
+
 function createInstantaneousRainfallChart (data, temp, source, null_processed) {
     const { site_code, start_date, end_date } = temp;
     const {
@@ -310,3 +356,5 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         //syncronizeCrossHairs(chart, `${id}2`, "rain");
     });
 }
+
+
