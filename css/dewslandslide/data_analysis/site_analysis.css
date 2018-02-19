@@ -21,6 +21,11 @@
   font-weight: 600;
   text-indent: 2em; }
 
+.plot-title-hr {
+  margin-top: 10px;
+  margin-left: 20px;
+  border-color: #cccccc; }
+
 #options-bar {
   padding-left: 0;
   padding-right: 20px; }

@@ -6,57 +6,79 @@ const rainfall_colors = {
 };
 
 $(document).ready(() => {
-    const temp = {
-        site_code: "agb",
-        start_date: "2017-11-16T00:00:00",
-        end_date: "2017-11-22T00:00:00"
-    };
+    initializeRainSourcesButton();
 
-    getPlotDataForRainfall(temp)
-    .done((datalist) => {
-        console.log(datalist);
+    // const input = {
+    //     site_code: "agb",
+    //     start_date: "2017-11-16T00:00:00",
+    //     end_date: "2017-11-22T00:00:00"
+    // };
 
-        datalist.forEach((source) => {
-            const { null_ranges } = source;
-            let { source_table } = source;
-
-            if (isFinite(source_table)) {
-                source_table = `noah_${source_table}`;
-                source.source_table = source_table;
-            }
-
-            createPlotContainer("rainfall", source_table);
-
-            const series_data = [];
-            const max_rval_data = [];
-            Object.keys(rainfall_colors).forEach((name) => {
-                const color = rainfall_colors[name];
-                const entry = {
-                    name,
-                    step: true,
-                    data: source[name],
-                    color,
-                    id: name,
-                    fillOpacity: 1,
-                    lineWidth: 1
-                };
-                if (name !== "rain") series_data.push(entry);
-                else max_rval_data.push(entry);
-            });
-
-            const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "#44AAD533" }));
-            createInstantaneousRainfallChart(max_rval_data, temp, source, null_processed);
-            createCumulativeRainfallChart(series_data, temp, source);
-        });
-    })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
-    });
+    // getRainDataSourcesPerSite(input.site_code)
+    // .done((sources) => {
+    //     createRainSourcesButton(sources);
+    //     $("#rainfall-sources-btn-group").show();
+    // });
 });
 
-function getPlotDataForRainfall ({ site_code, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForRainfall/${site_code}/${start_date}/${end_date}`)
+function initializeRainSourcesButton () {
+    $(document).on("click", "#rainfall-sources-btn-group button", ({ target }) => {
+        const isLoaded = $(target).data("loaded");
+        const table = $(target).val();
+        if (isLoaded) {
+            $(`#${table}`).slideToggle({
+                complete () {
+                    $(target).toggleClass("active");
+                }
+            });
+        } else {
+            const temp = input;
+            temp.source = table;
+
+            $("#loading").modal("show");
+            getPlotDataForRainfall(temp)
+            .done((datalist) => {
+                console.log(datalist);
+                plotRainfall(datalist, temp);
+                $(target).data("loaded", true);
+                $(target).addClass("active");
+                $("#loading").modal("hide");
+            })
+            .catch(({ responseText, status: conn_status, statusText }) => {
+                alert(`Status ${conn_status}: ${statusText}`);
+                alert(responseText);
+            });
+        }
+    });
+}
+
+function getRainDataSourcesPerSite (site_code) {
+    return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`)
+    .catch(err => err);
+}
+
+function createRainSourcesButton (sources) {
+    $btn_group = $("#rainfall-sources-btn-group > .btn-group");
+    $btn_group.empty();
+    sources.forEach(({ source_table }) => {
+        const txt = source_table.toUpperCase();
+        const table = isFinite(source_table) ? `NOAH ${txt}` : txt;
+
+        $btn_group.append($("<button>", {
+            type: "button",
+            class: "btn btn-primary btn-sm",
+            value: source_table,
+            text: `${table}`,
+            "data-loaded": false
+        }));
+    });
+}
+
+function getPlotDataForRainfall ({
+    site_code, start_date, end_date, source
+}) {
+    const s = (typeof source === "undefined") ? "all" : source;
+    return $.getJSON(`../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`)
     .catch(err => err);
 }
 
@@ -71,11 +93,50 @@ function createPlotContainer (data_type, source_table) {
         ["instantaneous", "cumulative"].forEach((x) => {
             $(`#${source_table}`)
             .append($("<div>", {
-                class: "col-sm-6",
+                class: "col-sm-6 rainfall-chart",
                 id: `${source_table}-${x}`
             }));
         });
     }
+}
+
+function plotRainfall (datalist, temp) {
+    datalist.forEach((source) => {
+        const { null_ranges } = source;
+        let { source_table } = source;
+
+        createPlotContainer("rainfall", source_table);
+
+        const series_data = [];
+        const max_rval_data = [];
+        Object.keys(rainfall_colors).forEach((name) => {
+            const color = rainfall_colors[name];
+            const entry = {
+                name,
+                step: true,
+                data: source[name],
+                color,
+                id: name,
+                fillOpacity: 1,
+                lineWidth: 1
+            };
+            if (name !== "rain") series_data.push(entry);
+            else max_rval_data.push(entry);
+        });
+
+        const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "#44AAD533" }));
+        createInstantaneousRainfallChart(max_rval_data, temp, source, null_processed);
+        createCumulativeRainfallChart(series_data, temp, source);
+    });
+}
+
+function createRainPlotSubtitle (distance, source_table) {
+    let source = source_table.toUpperCase();
+    if (isFinite(source_table)) {
+        source = `NOAH ${source_table}`;
+    }
+    const subtitle = distance === null ? source : `${source} (${distance} KM)`;
+    return subtitle;
 }
 
 function createCumulativeRainfallChart (data, temp, source) {
@@ -83,7 +144,6 @@ function createCumulativeRainfallChart (data, temp, source) {
     const {
         distance, max_72h, max_rain_2year, source_table
     } = source;
-    const subtitle = distance === null ? source_table.toUpperCase() : `${source_table.toUpperCase()} (${distance} KM)`;
 
     Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
     $(`#${source_table}-cumulative`).highcharts({
@@ -102,7 +162,7 @@ function createCumulativeRainfallChart (data, temp, source) {
             }
         },
         subtitle: {
-            text: `Source : <b>${subtitle}</b>`,
+            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
             style: {
                 fontSize: "10px"
             }
@@ -119,14 +179,7 @@ function createCumulativeRainfallChart (data, temp, source) {
                 text: "Date"
             },
             events: {
-                afterSetExtremes () {
-                    if (!this.chart.options.chart.isZoomed) {
-                        const xMin = this.chart.xAxis[0].min;
-                        const xMax = this.chart.xAxis[0].max;
-                        const zmRange = 0.5;
-                        zoomEvent(id, zmRange, xMin, xMax, "rain");
-                    }
-                }
+                setExtremes: syncExtremes
             }
         },
         yAxis: {
@@ -155,7 +208,6 @@ function createCumulativeRainfallChart (data, temp, source) {
                     text: `72-hr threshold (${max_rain_2year})`
                 }
             }]
-
         },
         tooltip: {
             shared: true,
@@ -199,8 +251,6 @@ function createCumulativeRainfallChart (data, temp, source) {
         credits: {
             enabled: false
         }
-    }, (chart) => {
-        // syncronizeCrossHairs(chart, id, "rain");
     });
 }
 
@@ -209,7 +259,6 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
     const {
         distance, max_rval, source_table
     } = source;
-    const subtitle = distance === null ? source_table.toUpperCase() : `${source_table.toUpperCase()} (${distance} KM)`;
 
     Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
     $(`#${source_table}-instantaneous`).highcharts({
@@ -227,7 +276,7 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             }
         },
         subtitle: {
-            text: `Source : <b>${subtitle}</b>`,
+            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
             style: {
                 fontSize: "10px"
             }
@@ -245,16 +294,8 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
                 text: "Date"
             },
             events: {
-                afterSetExtremes () {
-                    if (!this.chart.options.chart.isZoomed) {
-                        const xMin = this.chart.xAxis[0].min;
-                        const xMax = this.chart.xAxis[0].max;
-                        const zmRange = 0.5;
-                        zoomEvent(id, zmRange, xMin, xMax, "rain");
-                    }
-                }
+                setExtremes: syncExtremes
             }
-
         },
         yAxis: {
             max: max_rval,
@@ -306,7 +347,27 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         credits: {
             enabled: false
         }
-    }, (chart) => {
-        //syncronizeCrossHairs(chart, `${id}2`, "rain");
     });
+}
+
+/**
+ * Override the reset function, we don't need to hide the tooltips and crosshairs.
+ */
+Highcharts.Pointer.prototype.reset = () => {};
+
+/**
+ * Synchronize zooming through the setExtremes event handler.
+ */
+function syncExtremes (e) {
+    const thisChart = this.chart;
+
+    if (e.trigger !== "syncExtremes") { // Prevent feedback loop
+        Highcharts.each(Highcharts.charts, (chart) => {
+            if (chart !== thisChart) {
+                if (chart.xAxis[0].setExtremes) { // It is null while updating
+                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: "syncExtremes" });
+                }
+            }
+        });
+    }
 }
