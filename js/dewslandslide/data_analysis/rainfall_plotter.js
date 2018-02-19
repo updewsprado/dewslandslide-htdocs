@@ -7,18 +7,7 @@ const rainfall_colors = {
 
 $(document).ready(() => {
     initializeRainSourcesButton();
-
-    // const input = {
-    //     site_code: "agb",
-    //     start_date: "2017-11-16T00:00:00",
-    //     end_date: "2017-11-22T00:00:00"
-    // };
-
-    // getRainDataSourcesPerSite(input.site_code)
-    // .done((sources) => {
-    //     createRainSourcesButton(sources);
-    //     $("#rainfall-sources-btn-group").show();
-    // });
+    onRainfallDurationButtonClick();
 });
 
 function initializeRainSourcesButton () {
@@ -32,14 +21,19 @@ function initializeRainSourcesButton () {
                 }
             });
         } else {
-            const temp = input;
-            temp.source = table;
+            const input = {
+                site_code: $("#site_code").val(),
+                end_date: $("#data_timestamp").val(),
+                start_date: getStartDate(),
+                source: table
+            };
 
             $("#loading").modal("show");
-            getPlotDataForRainfall(temp)
+            getPlotDataForRainfall(input)
             .done((datalist) => {
                 console.log(datalist);
-                plotRainfall(datalist, temp);
+                $(`#${table}`).show();
+                plotRainfall(datalist, input);
                 $(target).data("loaded", true);
                 $(target).addClass("active");
                 $("#loading").modal("hide");
@@ -52,13 +46,54 @@ function initializeRainSourcesButton () {
     });
 }
 
+function onRainfallDurationButtonClick () {
+    $("#rainfall-duration li").click(({ target }) => {
+        const { value, duration } = $(target).data();
+
+        $("#rainfall-duration li.active").removeClass("active");
+        $(target).parent().addClass("active");
+
+        $("#rainfall-duration-btn").empty()
+        .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
+
+        const loaded_plots = [];
+        $btn_group = $("#rainfall-sources-btn-group");
+        $btn_group.find("button").each((i, elem) => {
+            const table = elem.value;
+            if ($(elem).data("loaded") === true && $(elem).hasClass("active")) {
+                loaded_plots.push(table);
+            }
+            $(elem).data("loaded", false);
+            $(elem).removeClass("active");
+        });
+
+        if (loaded_plots.length === 0) $btn_group.first().trigger("click");
+        else {
+            loaded_plots.forEach((table) => { $btn_group.find(`[value=${table}]`).trigger("click"); });
+        }
+    });
+}
+
+function getStartDate () {
+    let start_date = "";
+    const end_date = moment($("#data_timestamp").val());
+    const { value, duration } = $("#rainfall-duration li.active > a").data();
+
+    if (value !== "All") {
+        start_date = moment(end_date).subtract(value, duration)
+        .format("YYYY-MM-DDTHH:mm:ss");
+    }
+
+    return start_date;
+}
+
 function getRainDataSourcesPerSite (site_code) {
     return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`)
     .catch(err => err);
 }
 
 function createRainSourcesButton (sources) {
-    $btn_group = $("#rainfall-sources-btn-group > .btn-group");
+    $btn_group = $("#rainfall-sources-btn-group");
     $btn_group.empty();
     sources.forEach(({ source_table }) => {
         const txt = source_table.toUpperCase();
@@ -85,7 +120,7 @@ function getPlotDataForRainfall ({
 function createPlotContainer (data_type, source_table) {
     $(`#${data_type}-plots`)
     .append($("<div>", {
-        class: `${data_type}-plot-container`,
+        class: `${data_type}-plot-container plot-container`,
         id: source_table
     }));
 
@@ -102,8 +137,7 @@ function createPlotContainer (data_type, source_table) {
 
 function plotRainfall (datalist, temp) {
     datalist.forEach((source) => {
-        const { null_ranges } = source;
-        let { source_table } = source;
+        const { null_ranges, source_table } = source;
 
         createPlotContainer("rainfall", source_table);
 

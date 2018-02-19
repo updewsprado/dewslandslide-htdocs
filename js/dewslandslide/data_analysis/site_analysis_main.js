@@ -1,6 +1,4 @@
 
-let input = {};
-
 $(document).ready(() => {
     initializeTimestamps();
     initializeForm();
@@ -69,20 +67,17 @@ function initializeForm () {
         },
         submitHandler (form) {
             const data = $("#site-analysis-form").serializeArray();
-            const temp = {};
-            input = {};
-            data.forEach(({ name, value }) => { temp[name] = value === "" ? null : value; });
-            input.site_code = temp.site_code;
-            input.end_date = temp.data_timestamp;
-            // for now end_date "2017-11-22 00:00:00"
-            input.start_date = "2017-11-16T00:00:00";
+            const input = {};
+            data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
 
             $("#loading").modal("show");
+            $(".plot-container").remove();
+
             getRainDataSourcesPerSite(input.site_code)
             .done((sources) => {
                 createRainSourcesButton(sources);
                 $rain_btn_group = $("#rainfall-sources-btn-group");
-                $rain_btn_group.show();
+                $("#rainfall-plot-options").show();
                 $rain_btn_group.find("button:first").trigger("click");
             });
         }
