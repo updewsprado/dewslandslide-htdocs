@@ -7,7 +7,7 @@ const rainfall_colors = {
 
 $(document).ready(() => {
     initializeRainSourcesButton();
-    onRainfallDurationButtonClick();
+    initializeRainfallDurationDropdownOnClick();
 });
 
 function initializeRainSourcesButton () {
@@ -24,7 +24,7 @@ function initializeRainSourcesButton () {
             const input = {
                 site_code: $("#site_code").val(),
                 end_date: $("#data_timestamp").val(),
-                start_date: getStartDate(),
+                start_date: getStartDate("rainfall"),
                 source: table
             };
 
@@ -46,7 +46,7 @@ function initializeRainSourcesButton () {
     });
 }
 
-function onRainfallDurationButtonClick () {
+function initializeRainfallDurationDropdownOnClick () {
     $("#rainfall-duration li").click(({ target }) => {
         const { value, duration } = $(target).data();
 
@@ -72,19 +72,6 @@ function onRainfallDurationButtonClick () {
             loaded_plots.forEach((table) => { $btn_group.find(`[value=${table}]`).trigger("click"); });
         }
     });
-}
-
-function getStartDate () {
-    let start_date = "";
-    const end_date = moment($("#data_timestamp").val());
-    const { value, duration } = $("#rainfall-duration li.active > a").data();
-
-    if (value !== "All") {
-        start_date = moment(end_date).subtract(value, duration)
-        .format("YYYY-MM-DDTHH:mm:ss");
-    }
-
-    return start_date;
 }
 
 function getRainDataSourcesPerSite (site_code) {
@@ -115,24 +102,6 @@ function getPlotDataForRainfall ({
     const s = (typeof source === "undefined") ? "all" : source;
     return $.getJSON(`../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`)
     .catch(err => err);
-}
-
-function createPlotContainer (data_type, source_table) {
-    $(`#${data_type}-plots`)
-    .append($("<div>", {
-        class: `${data_type}-plot-container plot-container`,
-        id: source_table
-    }));
-
-    if (data_type === "rainfall") {
-        ["instantaneous", "cumulative"].forEach((x) => {
-            $(`#${source_table}`)
-            .append($("<div>", {
-                class: "col-sm-6 rainfall-chart",
-                id: `${source_table}-${x}`
-            }));
-        });
-    }
 }
 
 function plotRainfall (datalist, temp) {

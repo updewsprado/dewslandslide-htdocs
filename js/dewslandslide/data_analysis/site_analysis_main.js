@@ -70,16 +70,66 @@ function initializeForm () {
             const input = {};
             data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
 
+            // const temp = {
+            //     end_date: input.data_timestamp,
+            //     start_date: getStartDate("surficial"),
+            //     site_code: input.site_code
+            // };
+
             $("#loading").modal("show");
             $(".plot-container").remove();
+
+            let site_name = $("#site_code").find("option:selected").text();
+            [, site_name] = site_name.match(/\(([^)]+)\)/);
+            $("#site_name").html(`Brgy. ${site_name} (${input.site_code.toUpperCase()})`);
 
             getRainDataSourcesPerSite(input.site_code)
             .done((sources) => {
                 createRainSourcesButton(sources);
-                $rain_btn_group = $("#rainfall-sources-btn-group");
                 $("#rainfall-plot-options").show();
+                $rain_btn_group = $("#rainfall-sources-btn-group");
                 $rain_btn_group.find("button:first").trigger("click");
             });
+
+            $("#surficial-plot-options").show();
+            $surficial_btn_group = $("#surficial-cracks-btn-group");
+            $surficial_btn_group.find("button:first").trigger("click");
         }
     });
+}
+
+function getStartDate (plot_type) {
+    let start_date = "";
+    const end_date = moment($("#data_timestamp").val());
+    let data = null;
+
+    if (plot_type === "rainfall") data = $("#rainfall-duration li.active > a").data();
+    else if (plot_type === "surficial") data = $("#surficial-duration li.active > a").data();
+
+    const { value, duration } = data;
+
+    if (value !== "All") {
+        start_date = moment(end_date).subtract(value, duration)
+        .format("YYYY-MM-DDTHH:mm:ss");
+    }
+
+    return start_date;
+}
+
+function createPlotContainer (data_type, source_table) {
+    $(`#${data_type}-plots`)
+    .append($("<div>", {
+        class: `${data_type}-plot-container plot-container row`,
+        id: source_table
+    }));
+
+    if (data_type === "rainfall") {
+        ["instantaneous", "cumulative"].forEach((x) => {
+            $(`#${source_table}`)
+            .append($("<div>", {
+                class: "col-sm-6 rainfall-chart",
+                id: `${source_table}-${x}`
+            }));
+        });
+    }
 }
