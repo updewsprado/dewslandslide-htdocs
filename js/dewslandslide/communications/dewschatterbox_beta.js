@@ -2666,6 +2666,8 @@ $('#send-msg').on('click',function(){
 		messages = [];
 		counters = 0;
 		ewi_filter = "";
+		console.log($('#server-time').text());
+		debugger;
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
 			user = "You";
@@ -2677,7 +2679,6 @@ $('#send-msg').on('click',function(){
 				});
 
 				gsmTimestampIndicator = $('#server-time').text();
-				console.log(gsmTimestampIndicator);
 				temp_msg_holder = {
 					'type': 'smssend',
 					'user': user,
@@ -2698,6 +2699,7 @@ $('#send-msg').on('click',function(){
 
 				$('#msg').val('');
 			} else {
+				gsmTimestampIndicator = $('#server-time').text();
 				var tagOffices = [];
 				$('input[name="offices"]:checked').each(function() {
 					tagOffices.push(this.value);
@@ -2739,7 +2741,6 @@ $('#send-msg').on('click',function(){
 
 			user = "You";
 			gsmTimestampIndicator = $('#server-time').text();
-			console.log(gsmTimestampIndicator);
 			temp_msg_holder = {
 				'type': 'smssend',
 				'user': user,
