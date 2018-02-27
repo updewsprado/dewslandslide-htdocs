@@ -1,38 +1,89 @@
 
 $(document).ready(() => {
-    initializeSurficialCracksButton();
+    initializeSurficialMarkersButton();
     initializeSurficialDurationDropDownOnClick();
+
+    Highcharts.SVGRenderer.prototype.symbols.asterisk = function (x, y, w, h) {
+        return [
+            "M", x - 3, y - 3,
+            "L", x + w + 3, y + h + 3,
+            "M", x + w + 3, y - 3,
+            "L", x - 3, y + h + 3,
+            "M", x - 4, y + h / 2,
+            "L", x + w + 4, y + h / 2,
+            "M", x + w / 2, y - 4,
+            "L", x + w / 2, y + h + 4,
+            "z"
+        ];
+    };
+
+    if (Highcharts.VMLRenderer) {
+        Highcharts.VMLRenderer.prototype.symbols.asterisk =
+            Highcharts.SVGRenderer.prototype.symbols.asterisk;
+    }
 });
 
-function initializeSurficialCracksButton () {
-    $(document).on("click", "#surficial-cracks-btn-group button", ({ target }) => {
+function initializeSurficialMarkersButton () {
+    $(document).on("click", "#surficial-markers-btn-group button", ({ target }) => {
         const isLoaded = $(target).data("loaded");
-        const crack = $(target).val();
+        const marker = $(target).val();
+        const site_code = $("#site_code").val();
+
+        const $active_btn = $("#surficial-markers-btn-group button.active");
+        if ($active_btn.val() !== marker) {
+            $active_btn.removeClass("active");
+            $(".surficial-plot-container").not(":hidden").slideUp();
+        }
+
         if (isLoaded) {
-            // $(`#${table}`).slideToggle({
-            //     complete () {
-            //         $(target).toggleClass("active");
-            //     }
-            // });
-            console.log("loaded");
+            let div = null;
+            if (marker === "surficial") {
+                div = `${site_code}-${marker}`;
+            } else {
+                div = `marker-${marker}`;
+            }
+
+            $(`#${div}`).slideToggle({
+                complete () {
+                    $(target).toggleClass("active");
+                }
+            });
         } else {
             $("#loading").modal("show");
+            $(target).addClass("active");
+
             const input = {
-                site_code: $("#site_code").val(),
+                site_code,
                 end_date: $("#data_timestamp").val(),
                 start_date: getStartDate("surficial")
             };
 
-            if (crack === "surficial") {
+            if (marker === "surficial") {
+                $(`#${site_code}-surficial`).remove();
                 getPlotDataForSurficial(input)
                 .done((series) => {
                     console.log(series);
-                    createSurficialCracksButton(series);
+                    createSurficialMarkersButton(series);
 
-                    $(`#${input.site_code}-${crack}`).show();
+                    $(`#${input.site_code}-surficial`).show();
                     plotSurficial(series, input);
                     $(target).data("loaded", true);
-                    $(target).addClass("active");
+                    $("#loading").modal("hide");
+                })
+                .catch(({ responseText, status: conn_status, statusText }) => {
+                    alert(`Status ${conn_status}: ${statusText}`);
+                    alert(responseText);
+                });
+            } else {
+                input.marker_name = marker;
+                delete input.start_date;
+
+                $(`#marker-${marker}`).remove();
+                getPlotDataForMarkerAcceleration(input)
+                .done((trend_dataset) => {
+                    console.log(trend_dataset);
+                    plotMarkerTrendingAnalysis(trend_dataset, input);
+                    $(target).data("loaded", true);
                     $("#loading").modal("hide");
                 })
                 .catch(({ responseText, status: conn_status, statusText }) => {
@@ -53,6 +104,22 @@ function initializeSurficialDurationDropDownOnClick () {
 
         $("#surficial-duration-btn").empty()
         .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
+
+        const loaded_plots = [];
+        $btn_group = $("#surficial-markers-btn-group");
+        $btn_group.find("button").each((i, elem) => {
+            const table = elem.value;
+            if ($(elem).data("loaded") === true && $(elem).hasClass("active")) {
+                loaded_plots.push(table);
+            }
+            $(elem).data("loaded", false);
+            $(elem).removeClass("active");
+        });
+
+        if (loaded_plots.length === 0) $btn_group.first().trigger("click");
+        else {
+            loaded_plots.forEach((table) => { $btn_group.find(`[value=${table}]`).trigger("click"); });
+        }
     });
 }
 
@@ -61,20 +128,25 @@ function getPlotDataForSurficial ({ site_code, start_date, end_date }) {
     .catch(err => err);
 }
 
-function createSurficialCracksButton (series) {
-    const cracks = [];
+function createSurficialMarkersButton (series) {
+    const markers = ["Markers"];
     series.forEach(({ name }) => {
-        cracks.push(name);
+        markers.push(name);
     });
 
-    $btn_group = $("#surficial-cracks-btn-group");
-    $(".surficial-cracks").remove();
-    cracks.forEach((crack) => {
+    $(".surficial-markers").remove();
+    $btn_group = $("#surficial-markers-btn-group");
+    markers.forEach((marker) => {
+        let classes = "btn btn-primary btn-sm surficial-markers";
+        if (marker === "Markers") {
+            classes = "btn btn-sm no-click surficial-markers";
+        }
+
         $btn_group.append($("<button>", {
             type: "button",
-            class: "btn btn-primary btn-sm surficial-cracks",
-            value: crack,
-            text: crack,
+            class: classes,
+            value: marker,
+            text: marker,
             "data-loaded": false
         }));
     });
@@ -84,7 +156,6 @@ function plotSurficial (series, input) {
     const { site_code } = input;
     createPlotContainer("surficial", `${site_code}-surficial`);
     createSurficialChart(series, input);
-    $("#loading").modal("hide");
 }
 
 function createSurficialChart (data, input) {
@@ -139,6 +210,233 @@ function createSurficialChart (data, input) {
                     events: {
 
                     }
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function getPlotDataForMarkerAcceleration ({ site_code, marker_name, end_date }) {
+    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`)
+    .catch(err => err);
+}
+
+function plotMarkerTrendingAnalysis (trend_dataset, input) {
+    const { marker_name } = input;
+    createPlotContainer("surficial", `marker-${marker_name}`, "marker");
+
+    trend_dataset.forEach((chart_data) => {
+        const { dataset_name } = chart_data;
+        const series = processDatasetForPlotting(chart_data);
+
+        if (dataset_name === "velocity_acceleration") {
+            createMarkerAccelerationChart(series, input);
+        } else if (dataset_name === "displacement_interpolation") {
+            createMarkerInterpolationChart(series, input);
+        } else if (dataset_name === "velocity_acceleration_time") {
+            createMarkerAccelerationVsTimeChart(series, input);
+        }
+    });
+    $("#loading").modal("hide");
+}
+
+function processDatasetForPlotting ({ dataset_name, dataset }) {
+    if (dataset_name === "velocity_acceleration") {
+        dataset.forEach(({ name }, index) => {
+            if (name === "Threshold Interval") {
+                dataset[index] = {
+                    ...dataset[index],
+                    type: "arearange",
+                    lineWidth: 0,
+                    fillOpacity: 0.4,
+                    zIndex: 0
+                };
+            } else if (name === "Last Data Point") {
+                dataset[index] = {
+                    ...dataset[index],
+                    marker: {
+                        symbol: "asterisk",
+                        lineColor: null,
+                        lineWidth: 3
+                    }
+                };
+            }
+        });
+    } else if (dataset_name === "displacement_interpolation") {
+        dataset.forEach(({ name }, index) => {
+            if (name === "Surficial Data") {
+                dataset[index].type = "scatter";
+            } else if (name === "Interpolation") {
+                dataset[index] = { ...dataset[index], marker: { enabled: true, radius: 0 } };
+            }
+        });
+    } else if (dataset_name === "velocity_acceleration_time") {
+        dataset.forEach(({ name }, index) => {
+            if (name === "Velocity") {
+                dataset[index].yAxis = 1;
+            }
+        });
+    }
+    return dataset;
+}
+
+function createMarkerAccelerationChart (data, input) {
+    const { site_code, marker_name, end_date } = input;
+    $(`#marker-${marker_name}-vel_v_accel`).highcharts({
+        series: data,
+        chart: {
+            type: "spline",
+            zoomType: "x",
+            panning: true,
+            panKey: "shift",
+            width: $(`#marker-${marker_name}-tab-content`).width()
+        },
+        title: {
+            text: `<b>Velocity Acceleration of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+        },
+        subtitle: {
+            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+        },
+        xAxis: {
+            title: {
+                text: "Velocity (cm/day)"
+            }
+        },
+        yAxis: {
+            title: {
+                text: "Acceleration (cm/day^2)"
+            }
+        },
+        tooltip: {
+            headerFormat: "",
+            shared: true,
+            crosshairs: true
+        },
+        plotOptions: {
+            line: {
+                marker: {
+                    enabled: true
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function createMarkerInterpolationChart (data, input) {
+    const { site_code, marker_name, end_date } = input;
+    $(`#marker-${marker_name}-interpolation`).highcharts({
+        series: data,
+        chart: {
+            type: "spline",
+            zoomType: "x",
+            panning: true,
+            panKey: "shift",
+            width: $(`#marker-${marker_name}-tab-content`).width()
+        },
+        title: {
+            text: `<b>Displacement Interpolation of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+        },
+        subtitle: {
+            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+        },
+        xAxis: {
+            type: "datetime",
+            dateTimeLabelFormats: {
+                month: "%e. %b %Y",
+                year: "%b"
+            },
+            title: {
+                text: "Date"
+            }
+        },
+        yAxis: {
+            title: {
+                text: "Displacement (cm)"
+            }
+        },
+        tooltip: {
+            crosshairs: true
+        },
+        plotOptions: {
+            line: {
+                marker: {
+                    enabled: true
+                }
+            },
+            scatter: {
+                tooltip: {
+                    pointFormat: "Date/Time: <b>{point.x:%A, %e %b, %H:%M:%S}</b><br>Displacement: <b>{point.y:.2f}</b>"
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function createMarkerAccelerationVsTimeChart (data, input) {
+    const { site_code, marker_name, end_date } = input;
+    $(`#marker-${marker_name}-vel_v_accel_v_time`).highcharts({
+        series: data,
+        chart: {
+            type: "line",
+            zoomType: "x",
+            panning: true,
+            panKey: "shift",
+            width: $(`#marker-${marker_name}-tab-content`).width()
+        },
+        title: {
+            text: `<b>Velocity & Acceleration vs Time Chart of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+        },
+        subtitle: {
+            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+        },
+        xAxis: {
+            type: "datetime",
+            dateTimeLabelFormats: {
+                month: "%e. %b %Y",
+                year: "%b"
+            },
+            title: {
+                text: "Time (Days)"
+            }
+        },
+        yAxis: [{
+            title: {
+                text: "Velocity (cm/day)",
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            }
+        }, {
+            title: {
+                text: "Acceleration (cm/days^2)",
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+            shared: true,
+            crosshairs: true
+        },
+        plotOptions: {
+            line: {
+                marker: {
+                    enabled: false
                 }
             }
         },

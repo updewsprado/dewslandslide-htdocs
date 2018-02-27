@@ -56,3 +56,17 @@ hr.options-divider {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+// For surficial data
+// marker analysis chart tabs
+.no-click {
+    pointer-events: none;
+}
+
+.marker-chart-tab-group {
+    padding-left: 36px;
+}
+
+.tab-content > .tab-pane {
+    padding-top: 20px;
+}

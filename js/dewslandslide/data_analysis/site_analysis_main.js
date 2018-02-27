@@ -92,8 +92,8 @@ function initializeForm () {
             });
 
             $("#surficial-plot-options").show();
-            $surficial_btn_group = $("#surficial-cracks-btn-group");
-            $surficial_btn_group.find("button:first").trigger("click");
+            $surficial_btn_group = $("#surficial-markers-btn-group");
+            $surficial_btn_group.find("button:first").data("loaded", false).trigger("click");
         }
     });
 }
@@ -116,7 +116,7 @@ function getStartDate (plot_type) {
     return start_date;
 }
 
-function createPlotContainer (data_type, source_table) {
+function createPlotContainer (data_type, source_table, sub_type = null) {
     $(`#${data_type}-plots`)
     .append($("<div>", {
         class: `${data_type}-plot-container plot-container row`,
@@ -131,5 +131,37 @@ function createPlotContainer (data_type, source_table) {
                 id: `${source_table}-${x}`
             }));
         });
+    } else if (data_type === "surficial") {
+        if (sub_type === "marker") {
+            createMarkerTabs(source_table);
+        }
     }
+}
+
+function createMarkerTabs (source_table) {
+    $(`#${source_table}`)
+    .append($(`<div id="${source_table}-tab-group" class="marker-chart-tab-group col-sm-12"><ul class="nav nav-tabs nav-justified"></ul></div>`))
+    .append($("<div>", {
+        id: `${source_table}-tab-content`,
+        class: "tab-content col-sm-12"
+    }));
+
+    const marker_tables = [
+        { id: "vel_v_accel", label: "Velocity Acceleration Chart" },
+        { id: "interpolation", label: "Displacement interpolation Chart" },
+        { id: "vel_v_accel_v_time", label: "Velocity/Acceleration vs Time Chart" }
+    ];
+
+    marker_tables.forEach(({ id, label }) => {
+        $(`#${source_table}-tab-group > ul`)
+        .append($(`<li><a data-toggle='tab' href='#${source_table}-${id}'><strong>${label}</strong></a></li>`));
+
+        $(`#${source_table}-tab-content`)
+        .append($("<div>", {
+            id: `${source_table}-${id}`,
+            class: "tab-pane fade"
+        }));
+    });
+
+    $(`#${source_table}-tab-group li:first > a`).trigger("click");
 }
