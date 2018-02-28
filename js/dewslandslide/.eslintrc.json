@@ -30,6 +30,11 @@
         "no-use-before-define": 0,
         "camelcase": 0,
         "prefer-arrow-callback": 1,
-        "no-undef": 1
+        "no-undef": 1,
+        "no-var": 0,
+        "no-param-reassign": [
+            2,
+            {"props": true}
+        ]
     }
 }
