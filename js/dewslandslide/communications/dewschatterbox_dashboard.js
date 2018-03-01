@@ -111,6 +111,7 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
 
     let alertLevel = dashboard_data.internal_alert_level.split("-")[0];
     const alertTrigger = dashboard_data.internal_alert_level.split("-")[1];
+
     $.ajax({
         type: "POST",
         url: "../communications/getkeyinputviatriggertype",
@@ -138,16 +139,18 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                     }
                 }
             }
+
             $.ajax({
                 type: "POST",
                 url: "../communications/getbackboneviastatus",
                 async: true,
-                data: { alert_status: techInfo.alertLevel },
+                data: { alert_status: techInfo.alert_status },
                 success (techInfoData) {
                     var backboneMessage = JSON.parse(techInfoData);
                     if (alertLevel.length === 2 && alertLevel.indexOf("A") !== -1) {
                         alertLevel = alertLevel.replace("A", "Alert ");
                     }
+
                     $.ajax({
                         type: "POST",
                         url: "../communications/getrecommendedresponse",
@@ -173,7 +176,7 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                                 }
                             }
                             for (let counter = 0; counter < backboneMessage.length; counter += 1) {
-                                if (backboneMessage[counter].alert_status.toLowerCase() === dashboard_data.status) {
+                               if (backboneMessage[counter].alert_status.toLowerCase() === dashboard_data.status) {
                                     template = backboneMessage[counter].template;
                                     switch (dashboard_data.day) {
                                         case 0:
@@ -230,9 +233,6 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
 
                             const release_time = moment(dashboard_data.data_timestamp).format("YYYY-MM-DD hh:mm A");
                             const onset_time = moment(dashboard_data.event_start).format("YYYY-MM-DD hh:mm A");
-
-                            // const data_timestamp = dashboard_data.data_timestamp;
-                            // const latest_release_id = dashboard_data.latest_release_id;
 
                             let parsed_time;
                             let meridiem;
