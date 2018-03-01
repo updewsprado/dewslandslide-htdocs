@@ -1,193 +1,179 @@
 var data_timestamp;
 var latest_release_id;
 function sendViaAlertMonitor (dashboard_data) {
-    if (window.location.href === `${window.location.origin}/communications/chatterbox_beta` || window.location.href === `${window.location.origin}/communications/chatterbox_beta#`) {
-        let internal_alert = "";
-        let backbone_message = "";
-        let recommended_response = "";
-        let alertLevel = dashboard_data.alert_level;
-        if (alertLevel.length === 2 && alertLevel.indexOf("A") !== -1) {
-            alertLevel = alertLevel.replace("A", "Alert ");
-        }
+    let internal_alert = "";
+    let backbone_message = "";
+    let recommended_response = "";
+    let alertLevel = dashboard_data.alert_level;
+    if (alertLevel.length === 2 && alertLevel.indexOf("A") !== -1) {
+        alertLevel = alertLevel.replace("A", "Alert ");
+    }
 
-        if (dashboard_data.internal_alert !== "N/A") {
-            $.ajax({
-                type: "POST",
-                url: "../communications/getkeyinputviatriggertype",
-                async: false,
-                data: { trigger_type: dashboard_data.internal_alert },
-                success (response) {
-                    internal_alert = JSON.parse(response);
-                }
-            });
-        }
+    if (dashboard_data.internal_alert !== "N/A") {
+        $.ajax({
+            type: "POST",
+            url: "../communications/getkeyinputviatriggertype",
+            async: false,
+            data: { trigger_type: dashboard_data.internal_alert },
+            success (response) {
+                internal_alert = JSON.parse(response);
+            }
+        });
+    }
 
-        if (dashboard_data.alert_status !== "N/A") {
-            $.ajax({
-                type: "POST",
-                url: "../communications/getbackboneviastatus",
-                async: false,
-                data: { alert_status: dashboard_data.alert_status },
-                success (response) {
-                    backbone_message = JSON.parse(response);
-                }
-            });
-        }
+    if (dashboard_data.alert_status !== "N/A") {
+        $.ajax({
+            type: "POST",
+            url: "../communications/getbackboneviastatus",
+            async: false,
+            data: { alert_status: dashboard_data.alert_status },
+            success (response) {
+                backbone_message = JSON.parse(response);
+            }
+        });
+    }
 
-        if (alertLevel !== "N/A") {
-            $.ajax({
-                type: "POST",
-                url: "../communications/getrecommendedresponse",
-                async: false,
-                data: { recommended_response: alertLevel },
-                success (response) {
-                    recommended_response = JSON.parse(response);
-                    for (let counter = 0; counter < recommended_response.length; counter += 1) {
-                        if (recommended_response[counter].alert_status === dashboard_data.alert_status) {
-                            recommended_response = recommended_response[counter];
-                        }
+    if (alertLevel !== "N/A") {
+        $.ajax({
+            type: "POST",
+            url: "../communications/getrecommendedresponse",
+            async: false,
+            data: { recommended_response: alertLevel },
+            success (response) {
+                recommended_response = JSON.parse(response);
+                for (let counter = 0; counter < recommended_response.length; counter += 1) {
+                    if (recommended_response[counter].alert_status === dashboard_data.alert_status) {
+                        recommended_response = recommended_response[counter];
                     }
                 }
-            });
-        }
-
-        let final_template = backbone_message[0].template;
-
-        const currentDate = new Date();
-        const current_meridiem = currentDate.getHours();
-
-        if (current_meridiem >= 13 && current_meridiem <= 18) {
-            final_template = final_template.replace("(greetings)", "hapon");
-        } else if (current_meridiem >= 18 && current_meridiem <= 23) {
-            final_template = final_template.replace("(greetings)", "gabi");
-        } else if (current_meridiem >= 0 && current_meridiem <= 3) {
-            final_template = final_template.replace("(greetings)", "gabi");
-        } else if (current_meridiem >= 4 && current_meridiem <= 11) {
-            final_template = final_template.replace("(greetings)", "umaga");
-        } else {
-            final_template = final_template.replace("(greetings)", "tanghali");
-        }
-
-        final_template = final_template.replace("(alert_level)", dashboard_data.alert_level);
-        const ewiLocation = `${dashboard_data.sitio}, ${dashboard_data.barangay}, ${dashboard_data.municipality}, ${dashboard_data.province}`;
-        let formatSbmp = ewiLocation.replace("null", "");
-        if (formatSbmp.charAt(0) === ",") {
-            formatSbmp = formatSbmp.substr(1);
-        }
-
-        final_template = final_template.replace("(site_location)", formatSbmp);
-        final_template = final_template.replace("(recommended_response)", recommended_response.key_input);
-        final_template = final_template.replace("(technical_info)", internal_alert.key_input);
-
-        const currentTime = moment().format("YYYY-MM-DD HH:mm");
-        if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 00:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-07:30 AM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
-
-            final_template = final_template.replace("(next_ewi_time)", "04:00 AM");
-            final_template = final_template.replace("(next_ewi_date)", "mamayang");
-        } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 08:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-07:30 AM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
-
-            final_template = final_template.replace("(next_ewi_time)", "08:00 AM");
-            final_template = final_template.replace("(next_ewi_date)", "mamayang");
-        } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 08:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 12:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-11:30 AM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
-
-            final_template = final_template.replace("(next_ewi_time)", "12:00 NN");
-            final_template = final_template.replace("(next_ewi_date)", "mamayang");
-        } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 12:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 16:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-3:30 PM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
-
-            final_template = final_template.replace("(next_ewi_time)", "04:00 PM");
-            final_template = final_template.replace("(next_ewi_date)", "mamayang");
-        } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 16:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 20:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-7:30 AM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "bukas");
-
-            final_template = final_template.replace("(next_ewi_time)", "08:00 PM");
-            final_template = final_template.replace("(next_ewi_date)", "mamayang");
-        } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 20:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").add(24, "hours").format("YYYY-MM-DD")} 00:00`).valueOf()) {
-            final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-7:30 AM");
-            final_template = final_template.replace("(gndmeas_date_submission)", "bukas");
-
-            final_template = final_template.replace("(next_ewi_time)", "12:00 MN");
-            final_template = final_template.replace("(next_ewi_date)", "bukas ng");
-        } else {
-            alert("Error Occured: Please contact Administrator");
-        }
-
-        final_template = final_template.replace("(current_date)", moment(dashboard_data.data_timestamp).format("LL"));
-        $("#msg").val(final_template);
-        $("#site-abbr").val(dashboard_data.name);
-    } else {
+            }
+        });
     }
+
+    let final_template = backbone_message[0].template;
+
+    const currentDate = new Date();
+    const current_meridiem = currentDate.getHours();
+
+    if (current_meridiem >= 13 && current_meridiem <= 18) {
+        final_template = final_template.replace("(greetings)", "hapon");
+    } else if (current_meridiem >= 18 && current_meridiem <= 23) {
+        final_template = final_template.replace("(greetings)", "gabi");
+    } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+        final_template = final_template.replace("(greetings)", "gabi");
+    } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+        final_template = final_template.replace("(greetings)", "umaga");
+    } else {
+        final_template = final_template.replace("(greetings)", "tanghali");
+    }
+
+    final_template = final_template.replace("(alert_level)", dashboard_data.alert_level);
+    const ewiLocation = `${dashboard_data.sitio}, ${dashboard_data.barangay}, ${dashboard_data.municipality}, ${dashboard_data.province}`;
+    let formatSbmp = ewiLocation.replace("null", "");
+    if (formatSbmp.charAt(0) === ",") {
+        formatSbmp = formatSbmp.substr(1);
+    }
+
+    final_template = final_template.replace("(site_location)", formatSbmp);
+    final_template = final_template.replace("(recommended_response)", recommended_response.key_input);
+    final_template = final_template.replace("(technical_info)", internal_alert.key_input);
+
+    const currentTime = moment().format("YYYY-MM-DD HH:mm");
+    if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 00:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-07:30 AM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
+
+        final_template = final_template.replace("(next_ewi_time)", "04:00 AM");
+        final_template = final_template.replace("(next_ewi_date)", "mamayang");
+    } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 08:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-07:30 AM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
+
+        final_template = final_template.replace("(next_ewi_time)", "08:00 AM");
+        final_template = final_template.replace("(next_ewi_date)", "mamayang");
+    } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 08:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 12:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-11:30 AM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
+
+        final_template = final_template.replace("(next_ewi_time)", "12:00 NN");
+        final_template = final_template.replace("(next_ewi_date)", "mamayang");
+    } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 12:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 16:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-3:30 PM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "mamaya");
+
+        final_template = final_template.replace("(next_ewi_time)", "04:00 PM");
+        final_template = final_template.replace("(next_ewi_date)", "mamayang");
+    } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 16:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 20:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-7:30 AM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "bukas");
+
+        final_template = final_template.replace("(next_ewi_time)", "08:00 PM");
+        final_template = final_template.replace("(next_ewi_date)", "mamayang");
+    } else if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 20:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").add(24, "hours").format("YYYY-MM-DD")} 00:00`).valueOf()) {
+        final_template = final_template.replace("(gndmeas_time_submission)", "bago mag-7:30 AM");
+        final_template = final_template.replace("(gndmeas_date_submission)", "bukas");
+
+        final_template = final_template.replace("(next_ewi_time)", "12:00 MN");
+        final_template = final_template.replace("(next_ewi_date)", "bukas ng");
+    } else {
+        alert("Error Occured: Please contact Administrator");
+    }
+
+    final_template = final_template.replace("(current_date)", moment(dashboard_data.data_timestamp).format("LL"));
+    $("#msg").val(final_template);
+    $("#site-abbr").val(dashboard_data.name);
 }
 
 $(document).ready(() => {
     var first_load = false;
-    var user,
-        contactnum;
-    var contactnumTrimmed = [];
-    var contactInfo;
-    var contactname;
-    var contactSuggestions;
-    var contactsList = [];
+    var user;
+    var raw_contact_number;
+    var trimmed_number = [];
+    var contact_info;
+    var contact_name;
+    var contact_suggestions; /* should be inside the web socket function */
+    // var contactsList = [];
     var messages = [];
-    var searchResults = [];
+    var search_results = [];
     var quick_inbox_registered = [];
     var quick_event_inbox = [];
     var quick_inbox_unknown = [];
     var quick_release = [];
     var group_message_quick_access = [];
-    var group_contacts_quick_access = [];
-    var temp,
-        tempMsg,
-        tempUser,
-        tempRequest;
-    var msgType;
-    var WSS_CONNECTION_STATUS = -1;
-    var isFirstSuccessfulConnect = true;
-    var officesAndSites;
-    var employeeTags = [];
-    var groupTags = [];
-    var testName;
-    var testNumbers;
-    var displayMessage;
-    var multiContactsList = [];
-    var timerID = 0;
-    var ewirecipients;
-    var lastMessageTimeStamp = "";
-    var lastMessageTimeStampYou = "";
-    var ewiFlagger = false;
-    var convoFlagger = false;
+    var temp; /* for research */
+    var tempMsg;
+    var tempUser;
+    var tempRequest;
+    var message_type; 
+    var WSS_CONNECTION_STATUS = -1; /* for review */
+    var is_first_successful_connect = true; /* flag detected */
+    var offices_and_sites;
+    var employee_tags = [];
+    var group_tags = [];
+    var last_message_time_stamp_recipient = "";
+    var last_message_time_stamp_sender = "";
+    var ewi_recipient_flag = false;
+    var eom_flag = false; /* for review */
     var connection_status = true;
-    var conn = connectWS();
-    var quickGroupSelectionFlag = false;
-    var delayReconn = 10000;
-    var gsmTimestampIndicator = "";
+    var wss_connect = connectWS();
+    var quick_group_selection_flag = false;
+    var reconnection_delay = 10000;
+    var gsm_timestamp_indicator = "";
     var gintags_msg_details;
-    var tagger_id = "";
     var temp_ewi_template_holder = "";
     var temp_msg_holder = "";
-    var socket = "";
     var narrative_recipients = [];
     var tag_indicator = "";
     var searched_cache = [];
-    var dasboard_data_holder;
-    var contactInfo = [];
     var routine_reminder_msg;
-    var actual_routine;
     var temp_multiple_sites = "";
+    let message_counter = 0;
 
-    if (window.location.host != "www.dewslandslide.com") {
+    if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
     }
 
-    if (window.location.href == `${window.location.origin}/communications/chatterbox_beta` || window.location.href == `${window.location.origin}/communications/chatterbox_beta#`) {
+    if (window.location.href === `${window.location.origin}/communications/chatterbox_beta` || window.location.href === `${window.location.origin}/communications/chatterbox_beta#`) {
         var recent_contacts_collection = [];
         var recent_sites_collection = [];
         getRecentActivity();
@@ -269,7 +255,7 @@ $(document).ready(() => {
 
     $(".rv_searched div.recent_searched").on("click", function () {
         $(".recent_activities").hide();
-        conn.send(JSON.stringify(recent_searched_collection[$(this).index()]));
+        wss_connect.send(JSON.stringify(recent_searched_collection[$(this).index()]));
     });
 
     $("#send-routine-msg").on("click", () => {
@@ -305,7 +291,7 @@ $(document).ready(() => {
                     ewi_filter: true,
                     ewi_tag: false
                 };
-                conn.send(JSON.stringify(data));
+                wss_connect.send(JSON.stringify(data));
                 routine_msg = temp_msg;
             });
         });
@@ -338,9 +324,9 @@ $(document).ready(() => {
     $(".chat-message").scroll(() => {
         if (first_load == false) {
             if ($(".chat-message").scrollTop() == 0) {
-                if (msgType == "smsload") {
+                if (message_type == "smsload") {
                     getOldMessage();
-                } else if (msgType == "smsloadrequestgroup" || msgType == "smssendgroup") {
+                } else if (message_type == "smsloadrequestgroup" || message_type == "smssendgroup") {
                     getOldMessageGroup();
                 } else {
                     console.log("Invalid Request/End of the Conversation");
@@ -359,37 +345,37 @@ $(document).ready(() => {
         if (a == null || b == null) return false;
         if (a.length != b.length) return false;
 
-        for (var i = 0; i < a.length; ++i) {
-            if (a[i] !== b[i]) return false;
+        for (let counter = 0; counter < a.length; counter += 1) { // originally ++counter: subject to debugging
+            if (a[counter] !== b[counter]) return false;
         }
         return true;
     }
 
     function updateMessages (msg) {
-        if (msg.status == "SUCCESS" || msg.status == "SENT") {
+        if (msg.status === "SUCCESS" || msg.status === "SENT") {
             msg.status = 1;
         } else {
             msg.status = 0;
         }
         $("#search-key").hide();
 
-        if (msg.user == "You") {
+        if (msg.user === "You") {
             msg.isyou = 1;
 
-            if (contactInfo == "groups") {
-                if (msg.type == "loadEmployeeTag") {
+            if (contact_info === "groups") {
+                if (msg.type === "loadEmployeeTag") {
                     messages.push(msg);
                 } else {
-                    if (msgType == "smsloadrequestgroup") {
+                    if (message_type === "smsloadrequestgroup") {
                         messages.push(msg);
                     } else {
-                        searchResults.push(msg);
+                        search_results.push(msg);
                     }
-                    if (arraysEqual(msg.offices, groupTags.offices)) {
-                        if (msgType == "searchMessageGroup") {
-                            searchResults.push(msg);
-                        } else if (msg.sitenames != undefined || groupTags.sitenames != undefined) {
-                            if (arraysEqual(msg.sitenames.sort(), groupTags.sitenames)) {
+                    if (arraysEqual(msg.offices, group_tags.offices)) {
+                        if (message_type === "searchMessageGroup") {
+                            search_results.push(msg);
+                        } else if (msg.sitenames !== undefined || group_tags.sitenames !== undefined) {
+                            if (arraysEqual(msg.sitenames.sort(), group_tags.sitenames)) {
                                 messages.push(msg);
                             }
                         } else {
@@ -398,34 +384,34 @@ $(document).ready(() => {
                     }
                 }
             } else {
-                if (msgType == "smsloadrequestgroup") {
+                if (message_type === "smsloadrequestgroup") {
                     return;
                 }
-                if (msgType == "searchMessage" || msgType == "smsLoadSearched") {
-                    searchResults.push(msg);
-                } else if (msgType == "searchMessageGlobal") {
-                    searchResults.push(msg);
+                if (message_type === "searchMessage" || message_type === "smsLoadSearched") {
+                    search_results.push(msg);
+                } else if (message_type === "searchMessageGlobal") {
+                    search_results.push(msg);
                 } else {
                     messages.push(msg);
                 }
             }
-        } else if (contactInfo == "groups") {
-            if (msg.type == "loadEmployeeTag") {
+        } else if (contact_info === "groups") {
+            if (msg.type === "loadEmployeeTag") {
                 msg.isyou = 0;
                 messages.push(msg);
             } else {
-                if (msg.name == "unknown") {
+                if (msg.name === "unknown") {
                     return;
                 }
 
                 var isTargetSite = false;
-                for (i in groupTags.sitenames) {
+                for (i in group_tags.sitenames) {
                     if (msg.name == null || msg.msg != null) {
                         msg.isyou = 0;
                         msg.user = "PASALOAD REQUEST";
                         isTargetSite = true;
                         continue;
-                    } else if ((msg.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+                    } else if ((msg.name.toUpperCase()).indexOf(group_tags.sitenames[i].toUpperCase()) >= 0) {
                         isTargetSite = true;
                         continue;
                     }
@@ -436,12 +422,12 @@ $(document).ready(() => {
                 }
 
                 var isOffices = false;
-                for (i in groupTags.offices) {
+                for (i in group_tags.offices) {
                     if (msg.name == null) {
                         msg.name = "PASALOAD REQUEST";
                         isOffices = true;
                         continue;
-                    } else if ((msg.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+                    } else if ((msg.name.toUpperCase()).indexOf(group_tags.offices[i].toUpperCase()) >= 0) {
                         isOffices = true;
                         continue;
                     }
@@ -454,7 +440,7 @@ $(document).ready(() => {
                 if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
                     msg.isyou = 0;
                     msg.user = msg.name;
-                    searchResults.push(msg);
+                    search_results.push(msg);
                 } else {
                     msg.isyou = 0;
                     msg.user = msg.name;
@@ -462,35 +448,35 @@ $(document).ready(() => {
                 }
             }
         } else {
-            for (i in contactInfo) {
-                if (msg.type == "searchMessage" || msg.type == "searchMessageGroup" ||
-						msg.type == "smsLoadGroupSearched" || msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
-                    if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+            for (const counter in contact_info) {
+                if (msg.type === "searchMessage" || msg.type === "searchMessageGroup" ||
+                        msg.type === "smsLoadGroupSearched" || msg.type === "smsLoadSearched" || msg.type === "smsloadGlobalSearched") {
+                    if (contact_info[counter].numbers.search(trimmedContactNum(msg.user)) >= 0) {
                         msg.isyou = 0;
-                        msg.user = contactInfo[i].fullname;
-                        searchResults.push(msg);
+                        msg.user = contact_info[counter].fullname;
+                        search_results.push(msg);
                         break;
                     }
-                } else if (contactInfo[i].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+                } else if (contact_info[counter].numbers.search(trimmedContactNum(msg.user)) >= 0) {
                     msg.isyou = 0;
-                    msg.user = contactInfo[i].fullname;
+                    msg.user = contact_info[counter].fullname;
                     messages.push(msg);
                     break;
                 }
             }
         }
 
-        if (ewiFlagger == false && !(msg.type == "oldMessages" || msg.type == "oldMessagesGroup") &&
-			!(msg.type == "searchMessage" || msg.type == "searchMessageGroup" || msg.type == "searchMessageGlobal")) {
+        if (ewi_recipient_flag === false && !(msg.type === "oldMessages" || msg.type === "oldMessagesGroup") &&
+            !(msg.type === "searchMessage" || msg.type === "searchMessageGroup" || msg.type === "searchMessageGlobal")) {
             try {
-                if (messages[counters].user == "You") {
-                    if (lastMessageTimeStampYou == "") {
-                        lastMessageTimeStampYou = messages[counters].timestamp;
+                if (messages[message_counter].user === "You") {
+                    if (last_message_time_stamp_sender === "") {
+                        last_message_time_stamp_sender = messages[message_counter].timestamp;
                     }
-                } else if (lastMessageTimeStamp == "") {
-                    lastMessageTimeStamp = messages[counters].timestamp;
+                } else if (last_message_time_stamp_recipient === "") {
+                    last_message_time_stamp_recipient = messages[message_counter].timestamp;
                 }
-                if (msg.type == "smssend" || msg.type == "smssendgroup" || msg.type == "smssendgroupemployee") {
+                if (msg.type === "smssend" || msg.type === "smssendgroup" || msg.type === "smssendgroupemployee") {
                     var messages_html = messages_template_both({ messages });
                     var htmlString = $("#messages").html();
                     $("#messages").html(htmlString + messages_html);
@@ -571,36 +557,29 @@ $(document).ready(() => {
         }
     }
 
-    function loadMessageHistory (msg) {
-        alert("loadMessageHistory!");
-    }
-
-    var counters = 0;
+    
 
     function initLoadMessageHistory (msgHistory) {
-        if (msgHistory.hasNull == true) {
-            for (var i = 0; i < msgHistory.data.length; i++) {
+        if (msgHistory.hasNull === true) {
+            for (let counter = 0; counter < msgHistory.data.length; counter += 1) {
                 $(".list-ewi-recipient").append(`<li class='list-group-item'><div class='checkbox'><label><input type='checkbox' name='ewi_recipients' value='${JSON.stringify(msgHistory.data[i])}'>${
-                    msgHistory.data[i].office} ${msgHistory.data[i].sitename} ${msgHistory.data[i].lastname}, ${msgHistory.data[i].firstname
-                } - ${msgHistory.data[i].number}</label></div></li>`);
+                    msgHistory.data[counter].office} ${msgHistory.data[counter].sitename} ${msgHistory.data[counter].lastname}, ${msgHistory.data[counter].firstname
+                } - ${msgHistory.data[counter].number}</label></div></li>`);
             }
             $("#ewi-recipient-update-modal").modal("toggle");
         } else {
             if (msgHistory.data == null) {
                 return;
             }
-
-            console.log("initLoadMessageHistory");
-            var history = msgHistory.data;
-            ewirecipients = msgHistory;
+            const history = msgHistory.data;
             temp = msgHistory.data;
-            var msg;
-            for (var i = history.length - 1; i >= 0; i--) {
-                msg = history[i];
+            let msg;
+            for (let counter = history.length - 1; counter >= 0; counter -= 1) {
+                msg = history[counter];
                 updateMessages(msg);
-                counters++;
+                message_counter += 1;
             }
-            counters = 0;
+            message_counter = 0;
         }
         $(".chat-message").scrollTop($("#messages").height());
     }
@@ -617,52 +596,52 @@ $(document).ready(() => {
         };
 
         console.log(recipientsUpdate);
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     });
 
     function updateOldMessages (oldMessages) {
-        if (contactInfo == "groups") {
-            if (oldMessages.user == "You") {
+        if (contact_info === "groups") {
+            if (oldMessages.user === "You") {
                 oldMessages.isyou = 1;
                 messages.push(oldMessages);
             } else {
                 oldMessages.isyou = 0;
                 var isTargetSite = false;
-                for (i in groupTags.sitenames) {
-                    if ((oldMessages.name.toUpperCase()).indexOf(groupTags.sitenames[i].toUpperCase()) >= 0) {
+                for (i in group_tags.sitenames) {
+                    if ((oldMessages.name.toUpperCase()).indexOf(group_tags.sitenames[i].toUpperCase()) >= 0) {
                         isTargetSite = true;
                         continue;
                     }
                 }
-                if (isTargetSite == false) {
+                if (isTargetSite === false) {
                     return;
                 }
                 var isOffices = false;
-                for (i in groupTags.offices) {
-                    if ((oldMessages.name.toUpperCase()).indexOf(groupTags.offices[i].toUpperCase()) >= 0) {
+                for (i in group_tags.offices) {
+                    if ((oldMessages.name.toUpperCase()).indexOf(group_tags.offices[i].toUpperCase()) >= 0) {
                         isOffices = true;
                         continue;
                     }
                 }
 
-                if (isOffices == false) {
+                if (isOffices === false) {
                     return;
                 }
                 oldMessages.user = oldMessages.name;
                 messages.push(oldMessages);
             }
         } else {
-            for (i in contactInfo) {
-                if (oldMessages.user == "You") {
+            for (i in contact_info) {
+                if (oldMessages.user === "You") {
                     oldMessages.isyou = 1;
                     messages.push(oldMessages);
-                } else if (contactInfo[i].numbers.search(oldMessages.user) >= 0) {
+                } else if (contact_info[i].numbers.search(oldMessages.user) >= 0) {
                     oldMessages.isyou = 0;
-                    oldMessages.user = contactInfo[i].numbers;
+                    oldMessages.user = contact_info[i].numbers;
                     messages.push(oldMessages);
                 } else {
                     oldMessages.isyou = 0;
-                    oldMessages.user = contactInfo[i].fullname;
+                    oldMessages.user = contact_info[i].fullname;
                     messages.push(oldMessages);
                 }
             }
@@ -673,9 +652,9 @@ $(document).ready(() => {
     var tempTimestamp;
 
     function loadOldMessages (msg) {
-        counters = 0;
-        lastMessageTimeStampYou = "";
-        lastMessageTimeStamp = "";
+        message_counter = 0;
+        last_message_time_stamp_sender = "";
+        last_message_time_stamp_recipient = "";
 
         var oldMessagesIndi = msg.data;
         var oldMsg;
@@ -686,16 +665,16 @@ $(document).ready(() => {
                 oldMsg = oldMessagesIndi[i];
                 oldMsg.type = msg.type;
                 updateOldMessages(oldMsg);
-                if (messages[counters].user == "You") {
-                    if (lastMessageTimeStampYou == "") {
-                        lastMessageTimeStampYou = messages[counters].timestamp;
-                        tempTimestampYou = lastMessageTimeStampYou;
+                if (messages[message_counter].user === "You") {
+                    if (last_message_time_stamp_sender === "") {
+                        last_message_time_stamp_sender = messages[message_counter].timestamp;
+                        tempTimestampYou = last_message_time_stamp_sender;
                     }
-                } else if (lastMessageTimeStamp == "") {
-                    lastMessageTimeStamp = messages[counters].timestamp;
-                    tempTimestamp = lastMessageTimeStamp;
+                } else if (last_message_time_stamp_recipient === "") {
+                    last_message_time_stamp_recipient = messages[message_counter].timestamp;
+                    tempTimestamp = last_message_time_stamp_recipient;
                 }
-                counters++;
+                message_counter += 1;
             }
 
             var htmlStringMessage = $("#messages").html();
@@ -703,7 +682,7 @@ $(document).ready(() => {
             $("#messages").html(messages_html + htmlStringMessage);
             $(".chat-message").scrollTop(200);
         } else {
-            convoFlagger = true;
+            eom_flag = true;
             alert("End of the Conversation");
             console.log("Invalid Request/End of the Conversation");
         }
@@ -711,31 +690,31 @@ $(document).ready(() => {
     }
 
     function getOldMessage () {
-        if (lastMessageTimeStampYou == "") {
-            lastMessageTimeStampYou = tempTimestampYou;
+        if (last_message_time_stamp_sender == "") {
+            last_message_time_stamp_sender = tempTimestampYou;
         }
 
-        if (lastMessageTimeStamp == "") {
-            lastMessageTimeStamp = tempTimestamp;
+        if (last_message_time_stamp_recipient === "") {
+            last_message_time_stamp_recipient = tempTimestamp;
         }
 
         var request = {
             type: "oldMessage",
-            number: contactnumTrimmed,
-            timestampYou: lastMessageTimeStampYou,
-            timestampIndi: lastMessageTimeStamp
+            number: trimmed_number,
+            timestampYou: last_message_time_stamp_sender,
+            timestampIndi: last_message_time_stamp_recipient
         };
 
-        tempTimestampYou = lastMessageTimeStampYou;
-        tempTimestamp = lastMessageTimeStamp;
+        tempTimestampYou = last_message_time_stamp_sender;
+        tempTimestamp = last_message_time_stamp_recipient;
 
         $("#user").val("You");
         messages = [];
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function getOldMessageGroup () {
-        groupTags = [];
+        group_tags = [];
         user = "You";
         var tagOffices = [];
         $("input[name=\"offices\"]:checked").each(function () {
@@ -748,36 +727,36 @@ $(document).ready(() => {
         });
 
         tagSitenames.sort();
-        if (lastMessageTimeStampYou == "") {
-            lastMessageTimeStampYou = tempTimestampYou;
+        if (last_message_time_stamp_sender == "") {
+            last_message_time_stamp_sender = tempTimestampYou;
         }
 
-        if (lastMessageTimeStamp == "") {
-            lastMessageTimeStamp = tempTimestamp;
+        if (last_message_time_stamp_recipient == "") {
+            last_message_time_stamp_recipient = tempTimestamp;
         }
 
         request = {
             type: "oldMessageGroup",
             offices: tagOffices,
             sitenames: tagSitenames,
-            lastMessageTimeStampYou,
-            lastMessageTimeStampGroup: lastMessageTimeStamp
+            last_message_time_stamp_sender,
+            lastMessageTimeStampGroup: last_message_time_stamp_recipient
         };
 
-        groupTags = {
+        group_tags = {
             type: "oldMessageGroup",
             offices: tagOffices,
             sitenames: tagSitenames
         };
 
-        tempTimestampYou = lastMessageTimeStampYou;
-        tempTimestamp = lastMessageTimeStamp;
+        tempTimestampYou = last_message_time_stamp_sender;
+        tempTimestamp = last_message_time_stamp_recipient;
 
         $("#user").val("You");
 
         messages = [];
-        contactInfo = "groups";
-        conn.send(JSON.stringify(request));
+        contact_info = "groups";
+        wss_connect.send(JSON.stringify(request));
     }
 
     function initLoadQuickInbox (quickInboxMsg) {
@@ -832,7 +811,7 @@ $(document).ready(() => {
     }
 
     function initLoadGroupMessageQA (siteMembers) {
-        group_contacts_quick_access = [];
+        let group_contacts_quick_access = [];
         group_message_quick_access = [];
         if (siteMembers.data == null) {
             return;
@@ -907,9 +886,9 @@ $(document).ready(() => {
 
             connection_status = true;
             WSS_CONNECTION_STATUS = 0;
-            delayReconn = 10000;
+            reconnection_delay = 10000;
 
-            if (isFirstSuccessfulConnect) {
+            if (is_first_successful_connect) {
                 getOfficesAndSitenames();
                 setTimeout(
                     () => {
@@ -918,7 +897,7 @@ $(document).ready(() => {
                     },
                     500
                 );
-                isFirstSuccessfulConnect = false;
+                is_first_successful_connect = false;
             }
             if (window.timerID) {
                 window.clearInterval(window.timerID);
@@ -930,7 +909,7 @@ $(document).ready(() => {
         tempConn.onmessage = function (e) {
             var msg = JSON.parse(e.data);
             tempMsg = msg;
-            msgType = msg.type;
+            message_type = msg.type;
             if ((msg.type == "smsload") || (msg.type == "smsloadrequestgroup") || (msg.type == "loadEmployeeTag")) {
                 $("#chatterbox-loading").modal("hide");
                 initLoadMessageHistory(msg);
@@ -942,21 +921,21 @@ $(document).ready(() => {
                 loadGroups();
             } else if (msg.type == "oldMessage") {
                 loadOldMessages(msg);
-                msgType = "smsload";
+                message_type = "smsload";
             } else if (msg.type == "oldMessageGroup") {
                 loadOldMessages(msg);
-                msgType = "smsloadrequestgroup";
+                message_type = "smsloadrequestgroup";
             } else if (msg.type == "searchMessage") {
                 $("#chatterbox-loading").modal("hide");
                 loadSearchedMessage(msg);
-                msgType = "searchMessage";
+                message_type = "searchMessage";
             } else if (msg.type == "searchMessageGlobal") {
                 $("#chatterbox-loading").modal("hide");
                 loadSearchedMessage(msg);
             } else if (msg.type == "searchMessageGroup") {
                 $("#chatterbox-loading").modal("hide");
                 loadSearchedMessage(msg);
-                msgType = "searchMessageGroup";
+                message_type = "searchMessageGroup";
             } else if (msg.type == "searchGintags") {
                 $("#chatterbox-loading").modal("hide");
                 loadSearchedMessage(msg);
@@ -989,10 +968,10 @@ $(document).ready(() => {
             } else if (msg.type == "groupMessageQuickAcces") {
                 initLoadGroupMessageQA(msg);
             } else if (msg.type == "loadofficeandsites") {
-                officesAndSites = msg;
-                loadOfficesAndSites(officesAndSites);
+                offices_and_sites = msg;
+                loadOfficesAndSites(offices_and_sites);
             } else if (msg.type == "loadnamesuggestions") {
-                contactSuggestions = msg.data;
+                contact_suggestions = msg.data;
 
                 if (msg.data == null) {
                     return;
@@ -1160,7 +1139,7 @@ $(document).ready(() => {
                 var numbers = /^[0-9]+$/;
                 if (msg.type == "ackgsm") {
                     $("#messages li:last #timestamp-sent").removeClass();
-                    if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsmTimestampIndicator) {
+                    if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                         $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
                         if (msg.status == "SENT") {
                             $("#messages li:last #timestamp-sent").addClass("sent-status-success");
@@ -1177,7 +1156,7 @@ $(document).ready(() => {
                         $("#messages li:last #timestamp-sent").text("FAILED");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-fail");
                     }
-                } else if (contactInfo == "groups") {
+                } else if (contact_info === "groups") {
                     if (msg.type == "smsrcv") {
                         $.notify("New Message Received!", "info");
                         updateQuickInbox(msg);
@@ -1212,17 +1191,17 @@ $(document).ready(() => {
 
                     if (msg.user.match(numbers)) {
                         console.log("all numbers");
-                        for (i in contactnumTrimmed) {
-                            if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.user)) {
+                        for (i in trimmed_number) {
+                            if (normalizedContactNum(trimmed_number[i]) == normalizedContactNum(msg.user)) {
                                 updateMessages(msg);
                                 return;
                             }
                         }
                     } else {
                         console.log("alphanumeric keywords for msg.user");
-                        for (i in contactnumTrimmed) {
+                        for (i in trimmed_number) {
                             for (j in msg.numbers) {
-                                if (normalizedContactNum(contactnumTrimmed[i]) == normalizedContactNum(msg.numbers[j])) {
+                                if (normalizedContactNum(trimmed_number[i]) == normalizedContactNum(msg.numbers[j])) {
                                     updateMessages(msg);
                                     return;
                                 }
@@ -1341,17 +1320,17 @@ $(document).ready(() => {
     function waitForSocketConnection () {
         if (!window.timerID) {
             window.timerID = setInterval(() => {
-                if (conn.readyState === 1) {
+                if (wss_connect.readyState === 1) {
                     console.log("Connection is made");
                     return;
                 }
-                console.log(`wait for connection... ${delayReconn}`);
-                conn = connectWS();
+                console.log(`wait for connection... ${reconnection_delay}`);
+                wss_connect = connectWS();
                 waitForSocketConnection();
-                if (delayReconn < 20000) {
-                    delayReconn += 1000;
+                if (reconnection_delay < 20000) {
+                    reconnection_delay += 1000;
                 }
-            }, delayReconn);
+            }, reconnection_delay);
         }
     }
     function trimmedContactNum (inputContactNumber) {
@@ -1405,7 +1384,7 @@ $(document).ready(() => {
             type: "requestnamesuggestions",
             namequery: nameQuery
         };
-        conn.send(JSON.stringify(nameSuggestionRequest));
+        wss_connect.send(JSON.stringify(nameSuggestionRequest));
     }
 
     function getFollowingNameQuery (allNameQueries) {
@@ -1420,13 +1399,13 @@ $(document).ready(() => {
         if (source == "normal") {
             var flags = [],
                 uniqueName = [],
-                l = contactInfo.length,
+                l = contact_info.length,
                 i;
             for (i = 0; i < l; i++) {
-                if (flags[contactInfo[i].fullname]) { continue; }
+                if (flags[contact_info[i].fullname]) { continue; }
 
-                flags[contactInfo[i].fullname] = true;
-                uniqueName.push(contactInfo[i].fullname);
+                flags[contact_info[i].fullname] = true;
+                uniqueName.push(contact_info[i].fullname);
             }
 
             var tempText = "",
@@ -1511,7 +1490,7 @@ $(document).ready(() => {
     });
 
     $("input[name=\"opt-search\"]").on("change", function () {
-        if ($(this).val() == "timestamp-sent-search" || $(this).val() == "timestamp-written-search") {
+        if ($(this).val() === "timestamp-sent-search" || $(this).val() === "timestamp-written-search") {
             $("#time-div-container").show();
             $("#key-div-container").hide();
         } else {
@@ -1522,38 +1501,38 @@ $(document).ready(() => {
 
     function searchMessage () {
         messages = [];
-        searchResults = [];
-        if (msgType == "smsload" || msgType == "searchMessage") {
+        search_results = [];
+        if (message_type === "smsload" || message_type === "searchMessage") {
             searchMessageIndividual();
-        } else if (msgType == "smssendgroup" || msgType == "searchMessageGroup" || msgType == "smsloadrequestgroup") {
+        } else if (message_type === "smssendgroup" || message_type === "searchMessageGroup" || message_type === "smsloadrequestgroup") {
             searchMessageGroup();
         } else {
-            console.log(msgType);
+            console.log(message_type);
             console.log("Invalid Request");
         }
     }
 
     function searchMessageIndividual () {
-        for (var numLen = 0; numLen < contactnumTrimmed.length; numLen++) {
-            if (contactnumTrimmed[numLen].length == 12) {
-                contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(2);
-            } else if (contactnumTrimmed[numLen].length == 11) {
-                contactnumTrimmed[numLen] = contactnumTrimmed[numLen].slice(1);
+        for (let numLen = 0; numLen < trimmed_number.length; numLen += 1) {
+            if (trimmed_number[numLen].length === 12) {
+                trimmed_number[numLen] = trimmed_number[numLen].slice(2);
+            } else if (trimmed_number[numLen].length === 11) {
+                trimmed_number[numLen] = trimmed_number[numLen].slice(1);
             } else {
             }
         }
         var request = {
             type: "searchMessageIndividual",
-            number: contactnumTrimmed,
+            number: trimmed_number,
             timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
             searchKey: $("#search-key").val()
         };
 
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchMessageGroup () {
-        groupTags = [];
+        group_tags = [];
 
         user = "You";
 
@@ -1575,7 +1554,7 @@ $(document).ready(() => {
             searchKey: $("#search-key").val()
         };
 
-        groupTags = {
+        group_tags = {
             type: "searchMessageGroup",
             offices: tagOffices,
             sitenames: tagSitenames,
@@ -1583,8 +1562,8 @@ $(document).ready(() => {
         };
 
         messages = [];
-        contactInfo = "groups";
-        conn.send(JSON.stringify(request));
+        contact_info = "groups";
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchMessageGlobal (searchKey, searchLimit) {
@@ -1594,7 +1573,7 @@ $(document).ready(() => {
             searchLimit
         };
         console.log(request);
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchGintagMessages (searchKey, searchLimit) {
@@ -1603,7 +1582,7 @@ $(document).ready(() => {
             searchKey,
             searchLimit
         };
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchTimestampsent (fromDate, toDate, searchLimit) {
@@ -1613,7 +1592,7 @@ $(document).ready(() => {
             searchToDate: toDate,
             searchLimit
         };
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchTimestampwritten (fromDate, toDate, searchLimit) {
@@ -1623,7 +1602,7 @@ $(document).ready(() => {
             searchToDate: toDate,
             searchLimit
         };
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchUnknownNumber (unknownNumber, searchLimit) {
@@ -1632,7 +1611,7 @@ $(document).ready(() => {
             searchKey: unknownNumber,
             searchLimit
         };
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     function searchGeneralMessages (message, searchLimit) {
@@ -1641,7 +1620,7 @@ $(document).ready(() => {
             searchKey: message,
             searchLimit
         };
-        conn.send(JSON.stringify(request));
+        wss_connect.send(JSON.stringify(request));
     }
 
     var coloredTimestamp;
@@ -1667,11 +1646,11 @@ $(document).ready(() => {
         if (type == "searchMessage") {
             var request = {
                 type: "smsLoadSearched",
-                number: contactnumTrimmed,
+                number: trimmed_number,
                 timestamp
             };
 
-            conn.send(JSON.stringify(request));
+            wss_connect.send(JSON.stringify(request));
         } else if (type == "searchMessageGroup") {
             var timestampYou = "";
             var timestampGroup = "";
@@ -1700,13 +1679,13 @@ $(document).ready(() => {
                 timestampGroup
             };
 
-            conn.send(JSON.stringify(request));
+            wss_connect.send(JSON.stringify(request));
         } else if (type == "searchMessageGlobal" || type == "searchGintags" || type == "searchedUnknownNumber") {
-            contactInfo = [{ fullname: user, numbers: `0${trimmedContactNum(user_number)}` }];
+            contact_info = [{ fullname: user, numbers: `0${trimmedContactNum(user_number)}` }];
 
             $("#current-contacts h4").text(user);
             document.title = user;
-            contactnumTrimmed = [];
+            trimmed_number = [];
 
             request = {
                 type: "smsloadGlobalSearched",
@@ -1715,12 +1694,12 @@ $(document).ready(() => {
                 sms_msg: sms_message,
                 timestamp
             };
-            contactnumTrimmed = [user_number];
+            trimmed_number = [user_number];
             user = "You";
 
-            conn.send(JSON.stringify(request));
+            wss_connect.send(JSON.stringify(request));
         } else if (type == "searchedTimestampsent") {
-            contactnumTrimmed = [];
+            trimmed_number = [];
 
             request = {
                 type: "smsLoadTimestampsentSearched",
@@ -1730,9 +1709,9 @@ $(document).ready(() => {
                 sms_msg: sms_message,
                 timestamp
             };
-            contactnumTrimmed = [user_number];
+            trimmed_number = [user_number];
             user = "You";
-            conn.send(JSON.stringify(request));
+            wss_connect.send(JSON.stringify(request));
         } else if (type == "searchedTimestampwritten") {
             request = {
                 type: "smsLoadTimestampwrittenSearched",
@@ -1742,9 +1721,9 @@ $(document).ready(() => {
                 sms_msg: sms_message,
                 timestamp
             };
-            contactnumTrimmed = [user_number];
+            trimmed_number = [user_number];
             user = "You";
-            conn.send(JSON.stringify(request));
+            wss_connect.send(JSON.stringify(request));
         }
     }
 
@@ -1768,7 +1747,7 @@ $(document).ready(() => {
 
     function paginate (data) {
         // Initialize pages
-        var temp = [];
+        temp = [];
         for (var item_counter = 1; item_counter <= data.totalItems; item_counter++) {
             if (item_counter % 50 != 0) {
                 temp.push(data.data[item_counter]);
@@ -1787,41 +1766,41 @@ $(document).ready(() => {
                 for (var paginate_counter = 0; paginate_counter < searched_cache[page - 1].length; paginate_counter++) {
                     updateGlobalMessage(searched_cache[page - 1][paginate_counter]);
                 }
-                var messages_html = messages_template_both({ messages: searchResults });
+                var messages_html = messages_template_both({ messages: search_results });
                 $("#search-global-result").html(messages_html);
                 var maxScroll = $(document).height() - $(window).height();
                 $("#search-global-result").scrollTop(maxScroll);
-                searchResults = [];
+                search_results = [];
             }
         });
     }
 
     function loadSearchedMessage (msg) {
-        counters = 0;
+        message_counter = 0;
         if (msg.type == "searchMessage" || msg.type == "searchMessageGroup") {
             messages = [];
-            searchResults = [];
+            search_results = [];
             var searchedResult = msg.data;
             var res;
             try {
                 for (var i = searchedResult.length - 1; i >= 0; i--) {
                     res = searchedResult[i];
                     updateMessages(res);
-                    counters++;
+                    message_counter += 1;
                 }
             } catch (err) {
                 console.log("No Result/Invalid Request");
             }
-            var messages_html = messages_template_both({ messages: searchResults });
+            var messages_html = messages_template_both({ messages: search_results });
             $("#search-result").html(messages_html);
             $("#search-result-modal").modal("toggle");
 
             if (msg.type == "searchMessage") {
-                msgType = "smsload";
+                message_type = "smsload";
             } else {
-                msgType = "smsloadrequestgroup";
+                message_type = "smsloadrequestgroup";
             }
-            counters = 0;
+            message_counter = 0;
         } else if (msg.type == "smsLoadSearched" || msg.type == "smsLoadGroupSearched") {
             messages = [];
             var searchedResult = msg.data;
@@ -1835,22 +1814,22 @@ $(document).ready(() => {
                             contact_header = res.user;
                         }
                     }
-                    counters++;
+                    message_counter += 1;
                 }
             } catch (err) {
                 console.log("No Result/Invalid Request");
             }
 
-            var messages_html = messages_template_both({ messages: searchResults });
+            var messages_html = messages_template_both({ messages: search_results });
             $("#messages").html(messages_html);
             messages = [];
 
             if (msg.type == "smsLoadSearched" || msg.type == "smsloadGlobalSearched") {
-                msgType = "smsload";
+                message_type = "smsload";
             } else if (msg.type == "smsLoadGroupSearched") {
-                msgType = "smsloadrequestgroup";
+                message_type = "smsloadrequestgroup";
             }
-            counters = 0;
+            message_counter = 0;
 
             var targetLi = document.getElementById(coloredTimestamp);
             targetLi.style.border = "solid";
@@ -1860,7 +1839,7 @@ $(document).ready(() => {
             $("html, body").scrollTop(targetLi.offsetTop - 300);
         } else if (msg.type == "smsloadGlobalSearched" || msg.type == "smsloadTimestampsentSearched" || msg.type == "smsloadTimestampwrittenSearched") {
             messages = [];
-            contactnumTrimmed = [];
+            trimmed_number = [];
             var searchedResult = msg.data;
             var res;
             var contact_header = "";
@@ -1873,19 +1852,19 @@ $(document).ready(() => {
                             contact_header = res.user;
                         }
                     }
-                    counters++;
+                    message_counter += 1;
                 }
             } catch (err) {
                 console.log("No Result/Invalid Request");
             }
-            msgType = "smsload";
-            var messages_html = messages_template_both({ messages: searchResults });
+            message_type = "smsload";
+            var messages_html = messages_template_both({ messages: search_results });
             $("#messages").html(messages_html);
-            counters = 0;
+            message_counter = 0;
 
             $("#convo-header .panel-heading").text(msg.talking_to);
-            contactnumTrimmed.push(`0${msg.mobile_no}`);
-            $("#convo-header .panel-body").text(contactnumTrimmed);
+            trimmed_number.push(`0${msg.mobile_no}`);
+            $("#convo-header .panel-body").text(trimmed_number);
             $("#contact-indicator").val(msg.talking_to);
 
             $("#main-container").removeClass("hidden");
@@ -1921,15 +1900,15 @@ $(document).ready(() => {
                     };
 
                     paginate(msg_search_data);
-                    searchResults = [];
+                    search_results = [];
                 } else {
                     for (var i = 0; i < searchedResult.length; i++) {
                         res = searchedResult[i];
                         updateGlobalMessage(res);
-                        counters++;
+                        message_counter += 1;
                     }
 
-                    var messages_html = messages_template_both({ messages: searchResults });
+                    var messages_html = messages_template_both({ messages: search_results });
                     $("#search-global-result").html(messages_html);
                     var maxScroll = $(document).height() - $(window).height();
                     $("#search-global-result").scrollTop(maxScroll);
@@ -1941,43 +1920,43 @@ $(document).ready(() => {
         } else {
             console.log("No Result/Invalid Request");
         }
-        searchResults = [];
-        counters = 0;
+        search_results = [];
+        message_counter = 0;
     }
 
     function updateGlobalMessage (msg) {
         if (msg.user == "You" || msg.sender == "You") {
             msg.isyou = 1;
-            searchResults.push(msg);
+            search_results.push(msg);
         } else {
             msg.isyou = 0;
             msg.user = msg.user;
-            searchResults.push(msg);
+            search_results.push(msg);
         }
     }
 
     function displayGroupTagsForThread () {
         var tempText = "[Sitenames: ";
         var titleSites = "";
-        var tempCountSitenames = groupTags.sitenames.length;
+        var tempCountSitenames = group_tags.sitenames.length;
         $("#convo-header .panel-body").text("");
-        for (i in groupTags.sitenames) {
-            displayDetailsForThread(groupTags.sitenames[i]);
+        for (i in group_tags.sitenames) {
+            displayDetailsForThread(group_tags.sitenames[i]);
             if (i == tempCountSitenames - 1) {
-                tempText += groupTags.sitenames[i];
-                titleSites += groupTags.sitenames[i];
+                tempText += group_tags.sitenames[i];
+                titleSites += group_tags.sitenames[i];
             } else {
-                tempText = `${tempText + groupTags.sitenames[i]}, `;
-                titleSites = `${titleSites + groupTags.sitenames[i]}, `;
+                tempText = `${tempText + group_tags.sitenames[i]}, `;
+                titleSites = `${titleSites + group_tags.sitenames[i]}, `;
             }
         }
         tempText = `${tempText}]; [Offices: `;
-        var tempCountOffices = groupTags.offices.length;
-        for (i in groupTags.offices) {
+        var tempCountOffices = group_tags.offices.length;
+        for (i in group_tags.offices) {
             if (i == tempCountOffices - 1) {
-                tempText += groupTags.offices[i];
+                tempText += group_tags.offices[i];
             } else {
-                tempText = `${tempText + groupTags.offices[i]}, `;
+                tempText = `${tempText + group_tags.offices[i]}, `;
             }
         }
 
@@ -1994,7 +1973,7 @@ $(document).ready(() => {
             sites,
             type: "groumMembersForQuickAccess"
         };
-        conn.send(JSON.stringify(data));
+        wss_connect.send(JSON.stringify(data));
     }
 
     function displayDetailsForThread (siteabr) {
@@ -2062,16 +2041,15 @@ $(document).ready(() => {
 
         Awesomplete.$(".dropdown-input").addEventListener("keyup", (e) => {
             var code = (e.keyCode || e.which);
-            if (code == 37 || code == 38 || code == 39 || code == 40) {
+            if (code === 37 || code === 38 || code === 39 || code === 40) {
                 return;
             }
 
-            var allNameQueries = $(".dropdown-input").val();
-            var nameQuery = getFollowingNameQuery(allNameQueries);
+            const allNameQueries = $(".dropdown-input").val();
+            const nameQuery = getFollowingNameQuery(allNameQueries);
 
             if (allNameQueries.length < 3) {
-                multiContactsList = [];
-                contactnumTrimmed = [];
+                trimmed_number = [];
             }
 
             if (nameQuery.length >= 3) {
@@ -2109,9 +2087,9 @@ $(document).ready(() => {
 
     $(document).on("click", "#quick-release-display li", function () {
         $("#chatterbox-loading").modal("show");
-        counters = 0;
-        convoFlagger = false;
-        groupTags = [];
+        message_counter = 0;
+        eom_flag = false;
+        group_tags = [];
 
         user = "You";
 
@@ -2142,21 +2120,21 @@ $(document).ready(() => {
             });
         }
 
-        groupTags = {
+        group_tags = {
             type: "smsloadrequestgroup",
             offices: tagOffices,
             sitenames: tagSitenames
         };
 
-        addSitesActivity(groupTags);
+        addSitesActivity(group_tags);
         displayGroupTagsForThread();
         displayGroupMembersForQuickAccess(tagOffices, tagSitenames);
 
         $("#user").val("You");
         $("#messages").html("");
         messages = [];
-        contactInfo = "groups";
-        conn.send(JSON.stringify(groupTags));
+        contact_info = "groups";
+        wss_connect.send(JSON.stringify(group_tags));
         $("#main-container").removeClass("hidden");
     });
 
@@ -2173,43 +2151,43 @@ $(document).ready(() => {
     }
 
     function startChat (source = "normal") {
-        convoFlagger = false;
-        contactnumTrimmed = [];
-        contactInfo = [];
-        counters = 0;
+        eom_flag = false;
+        trimmed_number = [];
+        contact_info = [];
+        message_counter = 0;
 
         $(".recent_activities").hide();
         user = "You";
 
-        if (source == "normal") {
-            contactname = $(".dropdown-input").val();
-            contactnum = contactname.split(";");
+        if (source === "normal") {
+            contact_name = $(".dropdown-input").val();
+            raw_contact_number = contact_name.split(";");
 
-            for (var counter = 0; counter < contactnum.length; counter++) {
-                if (contactnum[counter].trim() != "") {
-                    var raw = trimmedContactNum(contactnum[counter]);
-                    for (var sub_counter = 0; sub_counter < raw.length; sub_counter++) {
-                        contactnumTrimmed.push(raw[sub_counter]);
+            for (let counter = 0; counter < raw_contact_number.length; counter += 1) {
+                if (raw_contact_number[counter].trim() !== "") {
+                    const raw = trimmedContactNum(raw_contact_number[counter]);
+                    for (let sub_counter = 0; sub_counter < raw.length; sub_counter += 1) {
+                        trimmed_number.push(raw[sub_counter]);
 
                         var contactraw_inf = {
-                            fullname: contactnum[counter],
+                            fullname: raw_contact_number[counter],
                             numbers: raw[sub_counter]
                         };
-                        contactInfo.push(contactraw_inf);
+                        contact_info.push(contactraw_inf);
                     }
                 }
             }
-        } else if (source == "quickInbox") {
-            contactname = qiFullContact;
-            contactnum = contactname;
-            contactnumTrimmed = trimmedContactNum(contactnum);
+        } else if (source === "quickInbox") {
+            contact_name = qiFullContact;
+            raw_contact_number = contact_name;
+            trimmed_number = trimmedContactNum(raw_contact_number);
 
-            contactInfo = [{ fullname: contactname, numbers: contactnum }];
+            contact_info = [{ fullname: contact_name, numbers: raw_contact_number }];
         }
 
         displayContactNamesForThread(source);
 
-        if (contactnumTrimmed.length <= 0) {
+        if (trimmed_number.length <= 0) {
             alert("Error: Invalid Contact Number here");
             return;
         }
@@ -2219,12 +2197,12 @@ $(document).ready(() => {
 
         var msgHistory = {
             type: "smsloadrequest",
-            number: contactnumTrimmed,
-            name: contactInfo,
+            number: trimmed_number,
+            name: contact_info,
             timestamp: moment().format("YYYY-MM-DD HH:mm:ss")
         };
 
-        temp_multiple_sites = contactnumTrimmed;
+        temp_multiple_sites = trimmed_number;
 
         addContactsActivity(msgHistory);
 
@@ -2233,12 +2211,12 @@ $(document).ready(() => {
         messages = [];
 
         tempRequest = msgHistory;
-        conn.send(JSON.stringify(msgHistory));
+        wss_connect.send(JSON.stringify(msgHistory));
     }
 
     $("#go-chat").click(() => {
-        lastMessageTimeStamp = "";
-        lastMessageTimeStampYou = "";
+        last_message_time_stamp_recipient = "";
+        last_message_time_stamp_sender = "";
         tempTimestamp = "";
         tempTimestampYou = "";
 
@@ -2254,46 +2232,47 @@ $(document).ready(() => {
 
     var testMsg;
     $("#send-msg").on("click", () => {
+        let display_message;
         if (connection_status == false) {
             console.log("NO CONNECTION");
         } else {
             messages = [];
-            counters = 0;
+            message_counter = 0;
             ewi_filter = "";
             console.log($("#server-time").text());
 
-            if (contactInfo == "groups") {
+            if (contact_info == "groups") {
                 var text = $("#msg").val();
                 user = "You";
 
-                if (quickGroupSelectionFlag == true) {
+                if (quick_group_selection_flag === true) {
                     var emp_tag = [];
                     $("input[name=\"tag\"]:checked").each(function () {
                         emp_tag.push(this.value);
                     });
 
-                    gsmTimestampIndicator = $("#server-time").text();
+                    gsm_timestamp_indicator = $("#server-time").text();
                     temp_msg_holder = {
                         type: "smssend",
                         user,
                         tag: emp_tag,
                         msg: text + footer,
-                        timestamp_written: gsmTimestampIndicator,
+                        timestamp_written: gsm_timestamp_indicator,
                         ewi_tag: false
                     };
 
-                    displayMessage = temp_msg_holder;
+                    display_message = temp_msg_holder;
 
-                    conn.send(JSON.stringify(temp_msg_holder));
+                    wss_connect.send(JSON.stringify(temp_msg_holder));
 
-                    msgType = "smssendgroup";
+                    message_type = "smssendgroup";
                     testMsg = msg;
-                    counters = 0;
+                    message_counter = 0;
                     messages = [];
 
                     $("#msg").val("");
                 } else {
-                    gsmTimestampIndicator = $("#server-time").text();
+                    gsm_timestamp_indicator = $("#server-time").text();
                     var tagOffices = [];
                     $("input[name=\"offices\"]:checked").each(function () {
                         tagOffices.push(this.value);
@@ -2311,40 +2290,40 @@ $(document).ready(() => {
                         sitenames: tagSitenames,
                         msg: text + footer,
                         ewi_filter: $("input[name=\"opt-ewi-recipients\"]:checked").val(),
-                        timestamp_written: gsmTimestampIndicator,
+                        timestamp_written: gsm_timestamp_indicator,
                         ewi_tag: false
                     };
 
-                    displayMessage = temp_msg_holder;
+                    display_message = temp_msg_holder;
 
-                    conn.send(JSON.stringify(temp_msg_holder));
+                    wss_connect.send(JSON.stringify(temp_msg_holder));
 
-                    msgType = "smssendgroup";
+                    message_type = "smssendgroup";
                     testMsg = msg;
-                    counters = 0;
+                    message_counter = 0;
                     messages = [];
                     $("#msg").val("");
                 }
             } else {
                 var text = $("#msg").val();
                 var normalized = [];
-                for (i in contactnumTrimmed) {
-                    normalized[i] = normalizedContactNum(contactnumTrimmed[i]);
+                for (i in trimmed_number) {
+                    normalized[i] = normalizedContactNum(trimmed_number[i]);
                 }
 
                 user = "You";
-                gsmTimestampIndicator = $("#server-time").text();
+                gsm_timestamp_indicator = $("#server-time").text();
                 temp_msg_holder = {
                     type: "smssend",
                     user,
                     numbers: normalized,
                     msg: text + footer,
-                    timestamp_written: gsmTimestampIndicator,
+                    timestamp_written: gsm_timestamp_indicator,
                     ewi_tag: false
                 };
 
-                displayMessage = temp_msg_holder;
-                conn.send(JSON.stringify(temp_msg_holder));
+                display_message = temp_msg_holder;
+                wss_connect.send(JSON.stringify(temp_msg_holder));
                 $("#msg").val("");
             }
 
@@ -2354,11 +2333,11 @@ $(document).ready(() => {
 
     function loadGroups () {
         $(".recent_activities").hide();
-        if (quickGroupSelectionFlag == true) {
+        if (quick_group_selection_flag == true) {
             $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
             $("#modal-select-offices").find(".checkbox").find("input").prop("checked", false);
             loadGroupsEmployee();
-        } else if (quickGroupSelectionFlag == false) {
+        } else if (quick_group_selection_flag == false) {
             $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", false);
             loadGroupsCommunity();
         } else {
@@ -2367,9 +2346,9 @@ $(document).ready(() => {
     }
 
     function loadGroupsCommunity () {
-        counters = 0;
-        convoFlagger = false;
-        groupTags = [];
+        message_counter = 0;
+        eom_flag = false;
+        group_tags = [];
 
         user = "You";
 
@@ -2384,13 +2363,13 @@ $(document).ready(() => {
         });
         tagSitenames.sort();
 
-        groupTags = {
+        group_tags = {
             type: "smsloadrequestgroup",
             offices: tagOffices,
             sitenames: tagSitenames
         };
 
-        addSitesActivity(groupTags);
+        addSitesActivity(group_tags);
 
         displayGroupTagsForThread();
         displayGroupMembersForQuickAccess(tagOffices, tagSitenames);
@@ -2398,8 +2377,8 @@ $(document).ready(() => {
         $("#user").val("You");
         $("#messages").html("");
         messages = [];
-        contactInfo = "groups";
-        conn.send(JSON.stringify(groupTags));
+        contact_info = "groups";
+        wss_connect.send(JSON.stringify(group_tags));
         $("#main-container").removeClass("hidden");
     }
 
@@ -2415,25 +2394,25 @@ $(document).ready(() => {
         $("#user").val("You");
         $("#messages").html("");
         messages = [];
-        contactInfo = "groups";
+        contact_info = "groups";
 
         requestTag = {
             type: "smsloadrequesttag",
             teams: dynaTags
         };
-        conn.send(JSON.stringify(requestTag));
+        wss_connect.send(JSON.stringify(requestTag));
         $("#main-container").removeClass("hidden");
     }
 
     $("#go-load-groups").click(() => {
         $("#chatterbox-loading").modal("show");
         first_load = true;
-        groupTags = [];
+        group_tags = [];
         tempTimestampYou = "";
         tempTimestampGroup = "";
-        lastMessageTimeStampYou = "";
-        lastMessageTimeStamp = "";
-        if (connection_status == false) {
+        last_message_time_stamp_sender = "";
+        last_message_time_stamp_recipient = "";
+        if (connection_status === false) {
             console.log("NO CONNECTION");
         } else {
             loadGroups();
@@ -2451,7 +2430,7 @@ $(document).ready(() => {
     $("#response-contact-container").on("click", "tr:has(td)", function () {
         var table = $("#response-contact-container").DataTable();
         var data = table.row(this).data();
-        if (data[0].charAt(0) == "c") {
+        if (data[0].charAt(0) === "c") {
             reset_cc();
             var container = document.getElementById("community-contact-wrapper");
             var input = document.createElement("input");
@@ -2501,14 +2480,14 @@ $(document).ready(() => {
             $("#grouptags_ec").val(data[7]);
 
             var numbers = data[6].split(",");
-            var grouptags = data[7].split(",");
+            var group_tags = data[7].split(",");
 
             for (x = 0; x < numbers.length; x++) {
                 $("#numbers_ec").tagsinput("add", numbers[x]);
             }
 
-            for (y = 0; y < grouptags.length; y++) {
-                $("#grouptags_ec").tagsinput("add", grouptags[y]);
+            for (y = 0; y < group_tags.length; y++) {
+                $("#grouptags_ec").tagsinput("add", group_tags[y]);
             }
         }
     });
@@ -2911,6 +2890,7 @@ $(document).ready(() => {
     });
 
     $("#send-btn-ewi-amd").click(() => {
+        temp = [];
         $("#loading").show();
         var current_recipients = $("#ewi-recipients-dashboard").tagsinput("items");
         var default_recipients = $("#default-recipients").val().split(",");
@@ -2921,7 +2901,7 @@ $(document).ready(() => {
             if ($.inArray(el, default_recipients) == -1) difference.push(el);
         });
 
-        ewiFlagger = true;
+        ewi_recipient_flag = true;
         var footer = ` -${$("#footer-ewi").val()} from PHIVOLCS-DYNASLOPE`;
         var text = $("#constructed-ewi-amd").val();
         if (temp_ewi_template_holder == $("#constructed-ewi-amd").val()) {
@@ -2929,7 +2909,7 @@ $(document).ready(() => {
         }
 
         try {
-            for (var counter = 0; counter < current_recipients.length; counter++) {
+            for (let counter = 0; counter < current_recipients.length; counter++) {
                 var raw_office = current_recipients[counter].split(":");
                 if ($.inArray(raw_office[0].trim(), tagOffices) == -1) {
                     tagOffices.push(raw_office[0].trim());
@@ -2962,35 +2942,35 @@ $(document).ready(() => {
                 ewi_tag: true
             };
 
-            conn.send(JSON.stringify(msg));
-            msgType = "smssendgroup";
+            wss_connect.send(JSON.stringify(msg));
+            message_type = "smssendgroup";
             messages = [];
             updateMessages(msg);
 
-            if (difference != null || difference.length != 0) {
-                var added_contacts = [];
+            if (difference != null || difference.length !== 0) {
+                const added_contacts = [];
                 difference.forEach((x) => {
-                    if (x.indexOf("|") == -1) {
+                    if (x.indexOf("|") === -1) {
                         added_contacts.push([x]);
                     } else {
-                        var temp = x.split("|");
+                        temp = x.split("|");
                         added_contacts.push(temp.splice(1, 1));
                     }
                 });
 
-                for (var counter = 0; counter < added_contacts.length; counter++) {
+                for (let counter = 0; counter < added_contacts.length; counter += 1) {
                     user = "You";
-                    gsmTimestampIndicator = $("#server-time").text();
-                    console.log(gsmTimestampIndicator);
+                    gsm_timestamp_indicator = $("#server-time").text();
+                    console.log(gsm_timestamp_indicator);
                     temp_msg_holder = {
                         type: "smssend",
                         user,
                         numbers: added_contacts[counter],
                         msg: text + footer,
-                        timestamp_written: gsmTimestampIndicator,
+                        timestamp_written: gsm_timestamp_indicator,
                         ewi_tag: true
                     };
-                    conn.send(JSON.stringify(temp_msg_holder));
+                    wss_connect.send(JSON.stringify(temp_msg_holder));
                 }
             }
 
@@ -3032,7 +3012,7 @@ $(document).ready(() => {
             console.log("NO CONNECTION");
         } else {
             $("#search-global-message-modal").modal("toggle");
-            searchResults = [];
+            search_results = [];
             counter = 0;
             $("#search-global-keyword").val("");
         }
@@ -3070,7 +3050,7 @@ $(document).ready(() => {
             var msg = {
                 type: "loadofficeandsitesrequest"
             };
-            conn.send(JSON.stringify(msg));
+            wss_connect.send(JSON.stringify(msg));
         } catch (err) {
         }
     }
@@ -3079,14 +3059,14 @@ $(document).ready(() => {
         var msg = {
             type: "smsloadquickinboxrequest"
         };
-        conn.send(JSON.stringify(msg));
+        wss_connect.send(JSON.stringify(msg));
     }
 
     function getLatestAlert () {
         var msg = {
             type: "latestAlerts"
         };
-        conn.send(JSON.stringify(msg));
+        wss_connect.send(JSON.stringify(msg));
     }
 
     function getRecentActivity () {
@@ -3250,33 +3230,33 @@ $(document).ready(() => {
     }
 
     $("a[href=\"#emp-group\"]").on("click", () => {
-        employeeTags = [];
+        employee_tags = [];
         $.get("../chatterbox/getEmployeeTags", (data) => {
             var dataFetched = JSON.parse(data);
-            for (var x = 0; x < dataFetched.length; x++) {
-                var parts = dataFetched[x].grouptags.split(/[ ,.]+/);
-                if (employeeTags.length <= 0) {
-                    for (var y = 0; y < parts.length; y++) {
-                        employeeTags.push(parts[y]);
+            for (let counter = 0; counter < dataFetched.length; counter += 1) {
+                const parts = dataFetched[counter].group_tags.split(/[ ,.]+/);
+                if (employee_tags.length <= 0) {
+                    for (let sub_counter = 0; sub_counter < parts.length; sub_counter += 1) {
+                        employee_tags.push(parts[sub_counter]);
                     }
                 } else {
-                    for (var y = 0; y < parts.length; y++) {
-                        if (!(employeeTags.indexOf(parts[y]) > -1)) {
-                            employeeTags.push(parts[y]);
+                    for (let sub_counter = 0; sub_counter < parts.length; sub_counter += 1) {
+                        if (!(employee_tags.indexOf(parts[sub_counter]) > -1)) {
+                            employee_tags.push(parts[sub_counter]);
                         }
                     }
                 }
             }
-            loadEmployeeTags(employeeTags);
+            loadEmployeeTags(employee_tags);
         });
     });
 
     $("#emp-grp-flag").on("click", () => {
-        quickGroupSelectionFlag = true;
+        quick_group_selection_flag = true;
     });
 
     $("#comm-grp-flag").on("click", () => {
-        quickGroupSelectionFlag = false;
+        quick_group_selection_flag = false;
     });
 
     function loadEmployeeTags (tags) {
@@ -3445,7 +3425,7 @@ $(document).ready(() => {
                 $("tfoot tr").append($("<th />", { text: "Group Tags" }));
 
                 for (var i = 0; i < data.length; i++) {
-                    var newContent = `<tr><td style='display:none;'>e_${data[i].eid}</td><td>${data[i].firstname}</td><td>${data[i].lastname}</td><td>${data[i].nickname}</td><td>${data[i].birthday}</td><td>${data[i].email}</td><td>${data[i].numbers}</td><td>${data[i].grouptags}</td></tr>`;
+                    var newContent = `<tr><td style='display:none;'>e_${data[i].eid}</td><td>${data[i].firstname}</td><td>${data[i].lastname}</td><td>${data[i].nickname}</td><td>${data[i].birthday}</td><td>${data[i].email}</td><td>${data[i].numbers}</td><td>${data[i].group_tags}</td></tr>`;
                     $("#response-contact-container tbody").append(newContent);
                 }
 
@@ -3585,7 +3565,7 @@ $(document).ready(() => {
                     birthday: $("#birthdate_ec").val(),
                     email: $("#email_ec").val(),
                     numbers: $("#numbers_ec").val(),
-                    grouptags: $("#grouptags_ec").val()
+                    group_tags: $("#grouptags_ec").val()
                 };
                 $.post("../communications/chatterbox/addcontact", { contact: JSON.stringify(data) })
                 .done((response) => {
@@ -3633,7 +3613,7 @@ $(document).ready(() => {
                     birthdate: $("#birthdate_ec").val(),
                     email: $("#email_ec").val(),
                     numbers: $("#numbers_ec").val(),
-                    grouptags: $("#grouptags_ec").val()
+                    group_tags: $("#grouptags_ec").val()
                 };
                 updateContactService(data, "employee-contact-wrapper");
             }
@@ -3691,9 +3671,9 @@ $(document).ready(() => {
                     type: "GET",
                     async: false,
                     success (data) {
-                        var data = JSON.parse(data);
-                        for (var counter = 0; counter < data.length; counter++) {
-                            tagname_collection.push(data[counter].tag_name);
+                        var all_gin_tags = JSON.parse(data);
+                        for (let counter = 0; counter < all_gin_tags.length; counter += 1) {
+                            tagname_collection.push(all_gin_tags[counter].tag_name);
                         }
                     }
                 });
@@ -3712,11 +3692,11 @@ $(document).ready(() => {
                     type: "GET",
                     async: false,
                     success (data) {
-                        var data = JSON.parse(data);
-                        for (var counter = 0; counter < data.length; counter++) {
-                            var raw_grouptags = data[counter].grouptags.split(",");
-                            for (var raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter++) {
-                                if ($.inArray(raw_grouptags[raw_counter], group_tag) == -1) {
+                        const employee_contacts = JSON.parse(data);
+                        for (let counter = 0; counter < employee_contacts.length; counter += 1) {
+                            const raw_grouptags = employee_contacts[counter].group_tags.split(",");
+                            for (let raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter += 1) {
+                                if ($.inArray(raw_grouptags[raw_counter], group_tag) === -1) {
                                     group_tag.push(raw_grouptags[raw_counter]);
                                 }
                             }
