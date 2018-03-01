@@ -70,12 +70,6 @@ function initializeForm () {
             const input = {};
             data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
 
-            // const temp = {
-            //     end_date: input.data_timestamp,
-            //     start_date: getStartDate("surficial"),
-            //     site_code: input.site_code
-            // };
-
             $("#loading").modal("show");
             $(".plot-container").remove();
 
@@ -94,6 +88,8 @@ function initializeForm () {
             $("#surficial-plot-options").show();
             $surficial_btn_group = $("#surficial-markers-btn-group");
             $surficial_btn_group.find("button:first").data("loaded", false).trigger("click");
+
+            processSubsurfaceColumnDropDown(input.site_code);
         }
     });
 }
@@ -134,6 +130,16 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
     } else if (data_type === "surficial") {
         if (sub_type === "marker") {
             createMarkerTabs(source_table);
+        }
+    } else if (data_type === "subsurface") {
+        if (sub_type === "column-position") {
+            ["downslope", "across-slope"].forEach((x) => {
+                $(`#${source_table}`)
+                .append($("<div>", {
+                    class: "col-sm-6 column-position-chart",
+                    id: `${source_table}-${x}`
+                }));
+            });
         }
     }
 }

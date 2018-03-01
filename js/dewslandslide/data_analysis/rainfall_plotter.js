@@ -354,11 +354,6 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
 }
 
 /**
- * Override the reset function, we don't need to hide the tooltips and crosshairs.
- */
-Highcharts.Pointer.prototype.reset = () => {};
-
-/**
  * Synchronize zooming through the setExtremes event handler.
  */
 function syncExtremes (e) {
