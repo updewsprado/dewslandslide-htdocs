@@ -2398,12 +2398,6 @@ $(document).ready(() => {
 
     var isFirstAdvancedSearchActivation = false;
 
-    function disableCommands () {
-    }
-
-    function enableCommands () {
-    }
-
     function getOfficesAndSitenames () {
         try {
             var msg = {
