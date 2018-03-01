@@ -1,6 +1,19 @@
+var wss_connect = connectWS();
+
+
 $(document).ready(function() {
 
-})
+});
+
+function getOfficesAndSitenames () {
+    try {
+        var msg = {
+            type: "loadofficeandsitesrequest"
+        };
+        wss_connect.send(JSON.stringify(msg));
+    } catch (err) {
+    }
+}
 
 function connectWS () {
     $("#chatterbox-loading").modal("show");

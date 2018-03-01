@@ -1,6 +1,76 @@
+var first_load = false;
+var user;
+var raw_contact_number;
+var trimmed_number = [];
+var contact_info;
+var contact_name;
+var contact_suggestions; /* should be inside the web socket function */
+// var contactsList = [];
+var messages = [];
+var search_results = [];
+var quick_inbox_registered = [];
+var quick_event_inbox = [];
+var quick_inbox_unknown = [];
+var quick_release = [];
+var group_message_quick_access = [];
+var temp; /* for research */
+var tempMsg;
+var tempUser;
+var tempRequest;
+var message_type;
+var WSS_CONNECTION_STATUS = -1; /* for review */
+var offices_and_sites;
+var employee_tags = [];
+var group_tags = [];
+var last_message_time_stamp_recipient = "";
+var last_message_time_stamp_sender = "";
+var ewi_recipient_flag = false;
+var eom_flag = false; /* for review */
+var connection_status = true;
+
+var quick_group_selection_flag = false;
+var reconnection_delay = 10000;
+var gsm_timestamp_indicator = "";
+var gintags_msg_details;
+var temp_ewi_template_holder = "";
+var temp_msg_holder = "";
+var narrative_recipients = [];
+var tag_indicator = "";
+var searched_cache = [];
+var routine_reminder_msg;
+var temp_multiple_sites = "";
+let message_counter = 0;
+var is_first_successful_connect = true; /* flag detected */
+
+var messages_template_both = Handlebars.compile($("#messages-template-both").html());
+var selected_contact_template = Handlebars.compile($("#selected-contact-template").html());
+var quick_inbox_template = Handlebars.compile($("#quick-inbox-template").html());
+var quick_release_template = Handlebars.compile($("#quick-release-template").html());
+var group_message_template = Handlebars.compile($("#group-message-template").html());
+var ewi_template = Handlebars.compile($("#ewi_template").html());
+
 $(document).ready(function() {
 
 });
+
+try {
+    Handlebars.registerHelper("ifCond", function (v1, v2, v3, v4, v5, v6, options) {
+        if (v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5 || v1 == v6) {
+            return options.fn(this);
+        }
+        return options.inverse(this);
+    });
+
+    Handlebars.registerHelper("breaklines", (text) => {
+        text = Handlebars.Utils.escapeExpression(text);
+        text = text.replace(/(\r\n|\n|\r)/gm, " ");
+        return new Handlebars.SafeString(text);
+    });
+
+    Handlebars.registerHelper("escape", variable => variable.replace(/(['"-])/g, "\\$1"));
+} catch (err) {
+    console.log(err.message);
+}
 
 function initLoadMessageHistory (msgHistory) {
     if (msgHistory.hasNull === true) {
@@ -60,6 +130,67 @@ function initLoadLatestAlerts (latestAlerts) {
                 }
             }
         });
+    }
+}
+
+function getLatestAlert () {
+    var msg = {
+        type: "latestAlerts"
+    };
+    wss_connect.send(JSON.stringify(msg));
+}
+
+function updateLatestPublicRelease (msg) {
+    try {
+        quick_release.unshift(msg);
+        var quick_release_html = quick_release_template({ quick_release });
+        $("#quick-release-display").html(quick_release_html);
+        $("#quick-release-display").scrollTop(0);
+    } catch (err) {
+        console.log(err.message)
+    }
+}
+
+function updateQuickInbox (msg) {
+    if (window.location.href == `${window.location.origin}/communications/chatterbox_beta` || window.location.href == `${window.location.origin}/communications/chatterbox_beta#`) {
+        if (msg.user == "You") {
+        } else {
+            var targetInbox;
+            var quick_inbox_html;
+            if (msg.name == "unknown") {
+                try {
+                    msg.isunknown = 1;
+                    targetInbox = "#quick-inbox-unknown-display";
+                    quick_inbox_unknown.unshift(msg);
+                    quick_inbox_html = quick_inbox_template({ quick_inbox_messages: quick_inbox_unknown });
+                } catch (err) {
+                }
+            } else {
+                try {
+                    msg.isunknown = 0;
+                    targetInbox = "#quick-inbox-display";
+                    quick_inbox_registered.unshift(msg);
+                    quick_inbox_html = quick_inbox_template({ quick_inbox_messages: quick_inbox_registered });
+                } catch (err) {
+                }
+            }
+            $(targetInbox).html(quick_inbox_html);
+            $(targetInbox).scrollTop(0);
+        }
+
+        if (msg.onevent == 1) {
+            if (msg.user != "You") {
+                var targetInbox;
+                var quick_inbox_html;
+                msg.isunknown = 0;
+                targetInbox = "#quick-event-inbox-display";
+                quick_event_inbox.unshift(msg);
+                quick_inbox_html = quick_inbox_template({ quick_inbox_messages: quick_event_inbox });
+            }
+
+            $(targetInbox).html(quick_inbox_html);
+            $(targetInbox).scrollTop(0);
+        }
     }
 }
 
