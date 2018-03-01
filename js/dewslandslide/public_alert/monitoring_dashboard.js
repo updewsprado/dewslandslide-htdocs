@@ -523,7 +523,7 @@ function buildDashboardTables( data )
 	        	},
 	        	{
 	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
+	            		return "<a onclick='chatterboxViaMonitoringDashboard("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
 	            	}
 	        	}
 	    	],
@@ -603,7 +603,7 @@ function buildDashboardTables( data )
 	        	},
 	        	{
 	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
+	            		return "<a onclick='chatterboxViaMonitoringDashboard("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
 	            	}
 	        	}
 			],
