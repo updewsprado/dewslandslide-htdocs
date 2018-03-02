@@ -1,6 +1,5 @@
 var wss_connect = connectWS();
 
-
 $(document).ready(function() {
 
 });

@@ -41,7 +41,7 @@ var routine_reminder_msg;
 var temp_multiple_sites = "";
 let message_counter = 0;
 var is_first_successful_connect = true; /* flag detected */
-
+var footer = `\n\n-${first_name} from PHIVOLCS-DYNASLOPE`;
 var messages_template_both = Handlebars.compile($("#messages-template-both").html());
 var selected_contact_template = Handlebars.compile($("#selected-contact-template").html());
 var quick_inbox_template = Handlebars.compile($("#quick-inbox-template").html());
@@ -50,7 +50,15 @@ var group_message_template = Handlebars.compile($("#group-message-template").htm
 var ewi_template = Handlebars.compile($("#ewi_template").html());
 
 $(document).ready(function() {
+    try {
+        let remChars = 800 - $("#msg").val().length - footer.length;
+        $("#remaining_chars").text(remChars);
+        $("#msg").attr("maxlength", remChars);
 
+    } catch (err) {
+        console.log(err);
+        console.log("Chatterbox : monitoring dashboard mode");
+    }
 });
 
 try {
@@ -95,6 +103,153 @@ function initLoadMessageHistory (msgHistory) {
         message_counter = 0;
     }
     $(".chat-message").scrollTop($("#messages").height());
+}
+
+function updateMessages (msg) {
+    if (msg.status === "SUCCESS" || msg.status === "SENT") {
+        msg.status = 1;
+    } else {
+        msg.status = 0;
+    }
+    $("#search-key").hide();
+
+    if (msg.user === "You") {
+        msg.isyou = 1;
+
+        if (contact_info === "groups") {
+            if (msg.type === "loadEmployeeTag") {
+                messages.push(msg);
+            } else {
+                if (message_type === "smsloadrequestgroup") {
+                    messages.push(msg);
+                } else {
+                    search_results.push(msg);
+                }
+                if (arraysEqual(msg.offices, group_tags.offices)) {
+                    if (message_type === "searchMessageGroup") {
+                        search_results.push(msg);
+                    } else if (msg.sitenames !== undefined || group_tags.sitenames !== undefined) {
+                        if (arraysEqual(msg.sitenames.sort(), group_tags.sitenames)) {
+                            messages.push(msg);
+                        }
+                    } else {
+                        messages.push(msg);
+                    }
+                }
+            }
+        } else {
+            if (message_type === "smsloadrequestgroup") {
+                return;
+            }
+            if (message_type === "searchMessage" || message_type === "smsLoadSearched") {
+                search_results.push(msg);
+            } else if (message_type === "searchMessageGlobal") {
+                search_results.push(msg);
+            } else {
+                messages.push(msg);
+            }
+        }
+    } else if (contact_info === "groups") {
+        if (msg.type === "loadEmployeeTag") {
+            msg.isyou = 0;
+            messages.push(msg);
+        } else {
+            if (msg.name === "unknown") {
+                return;
+            }
+
+            var isTargetSite = false;
+            for (i in group_tags.sitenames) {
+                if (msg.name == null || msg.msg != null) {
+                    msg.isyou = 0;
+                    msg.user = "PASALOAD REQUEST";
+                    isTargetSite = true;
+                    continue;
+                } else if ((msg.name.toUpperCase()).indexOf(group_tags.sitenames[i].toUpperCase()) >= 0) {
+                    isTargetSite = true;
+                    continue;
+                }
+            }
+
+            if (isTargetSite == false) {
+                return;
+            }
+
+            var isOffices = false;
+            for (i in group_tags.offices) {
+                if (msg.name == null) {
+                    msg.name = "PASALOAD REQUEST";
+                    isOffices = true;
+                    continue;
+                } else if ((msg.name.toUpperCase()).indexOf(group_tags.offices[i].toUpperCase()) >= 0) {
+                    isOffices = true;
+                    continue;
+                }
+            }
+
+            if (isOffices == false) {
+                return;
+            }
+
+            if (msg.type == "searchMessageGroup" || msg.type == "smsLoadGroupSearched") {
+                msg.isyou = 0;
+                msg.user = msg.name;
+                search_results.push(msg);
+            } else {
+                msg.isyou = 0;
+                msg.user = msg.name;
+                messages.push(msg);
+            }
+        }
+    } else {
+        for (const counter in contact_info) {
+            if (msg.type === "searchMessage" || msg.type === "searchMessageGroup" ||
+                    msg.type === "smsLoadGroupSearched" || msg.type === "smsLoadSearched" || msg.type === "smsloadGlobalSearched") {
+                if (contact_info[counter].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+                    msg.isyou = 0;
+                    msg.user = contact_info[counter].fullname;
+                    search_results.push(msg);
+                    break;
+                }
+            } else if (contact_info[counter].numbers.search(trimmedContactNum(msg.user)) >= 0) {
+                msg.isyou = 0;
+                msg.user = contact_info[counter].fullname;
+                messages.push(msg);
+                break;
+            }
+        }
+    }
+
+    if (ewi_recipient_flag === false && !(msg.type === "oldMessages" || msg.type === "oldMessagesGroup") &&
+        !(msg.type === "searchMessage" || msg.type === "searchMessageGroup" || msg.type === "searchMessageGlobal")) {
+        try {
+            if (messages[message_counter].user === "You") {
+                if (last_message_time_stamp_sender === "") {
+                    last_message_time_stamp_sender = messages[message_counter].timestamp;
+                }
+            } else if (last_message_time_stamp_recipient === "") {
+                last_message_time_stamp_recipient = messages[message_counter].timestamp;
+            }
+            if (msg.type === "smssend" || msg.type === "smssendgroup" || msg.type === "smssendgroupemployee") {
+                var messages_html = messages_template_both({ messages });
+                var htmlString = $("#messages").html();
+                $("#messages").html(htmlString + messages_html);
+                $(".chat-message").scrollTop($("#messages").height());
+                messages = [];
+            } else {
+                var messages_html = messages_template_both({ messages });
+                $("#messages").html(messages_html);
+                $(".chat-message").scrollTop($("#messages").height());
+            }
+        } catch (err) {
+            console.log("Not a Scroll/Search related feature");
+        }
+    }
+}
+
+function updateRemainingCharacters () {
+    remChars = 800 - $("#msg").val().length - footer.length;
+    $("#remaining_chars").text(remChars);
 }
 
 function initLoadLatestAlerts (latestAlerts) {

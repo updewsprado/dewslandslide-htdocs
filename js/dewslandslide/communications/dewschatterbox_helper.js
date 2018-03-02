@@ -12,11 +12,6 @@ function setTargetTime (hour, minute) {
     return t;
 }
 
-function updateRemainingCharacters () {
-    remChars = 800 - $("#msg").val().length - footer.length;
-    $("#remaining_chars").text(remChars);
-}
-
 function arraysEqual (a, b) {
     if (a === b) return true;
     if (a == null || b == null) return false;
