@@ -49,4 +49,4 @@ var quick_release_template = Handlebars.compile($("#quick-release-template").htm
 var group_message_template = Handlebars.compile($("#group-message-template").html());
 var ewi_template = Handlebars.compile($("#ewi_template").html());
 
-let message_counter = 0;
+var message_counter = 0;
