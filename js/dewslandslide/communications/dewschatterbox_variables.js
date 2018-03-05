@@ -50,3 +50,4 @@ var group_message_template = Handlebars.compile($("#group-message-template").htm
 var ewi_template = Handlebars.compile($("#ewi_template").html());
 
 var message_counter = 0;
+var comboplete;

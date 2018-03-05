@@ -8,6 +8,64 @@ $(document).ready(function() {
         console.log(err);
         console.log("Chatterbox : monitoring dashboard mode");
     }
+
+    try {
+        comboplete = new Awesomplete("input.dropdown-input[data-multiple]", {
+            filter (text, input) {
+                return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+            },
+
+            replace (text) {
+                var before = this.input.value.match(/^.+;\s*|/)[0];
+                this.input.value = `${before + text}; `;
+            },
+            minChars: 3
+        });
+        comboplete.list = [];
+
+        Awesomplete.$(".dropdown-input").addEventListener("click", () => {
+            var nameQuery = $(".dropdown-input").val();
+
+            if (nameQuery.length >= 3) {
+                if (comboplete.ul.childNodes.length === 0) {
+                    comboplete.evaluate();
+                } else if (comboplete.ul.hasAttribute("hidden")) {
+                    comboplete.open();
+                } else {
+                    comboplete.close();
+                }
+            }
+        });
+
+        Awesomplete.$(".dropdown-input").addEventListener("keyup", (e) => {
+            var code = (e.keyCode || e.which);
+            if (code === 37 || code === 38 || code === 39 || code === 40) {
+                return;
+            }
+
+            const allNameQueries = $(".dropdown-input").val();
+            const nameQuery = getFollowingNameQuery(allNameQueries);
+
+            if (allNameQueries.length < 3) {
+                trimmed_number = [];
+            }
+
+            if (nameQuery.length >= 3) {
+                getNameSuggestions(nameQuery);
+            } else {
+                comboplete.close();
+            }
+        }, false);
+
+        Awesomplete.$(".dropdown-input").addEventListener("awesomplete-selectcomplete", (e) => {
+            var allText = $(".dropdown-input").val();
+            var size = allText.length;
+            var allNameQueries = allText.slice(0, size - 2);
+            var nameQuery = getFollowingNameQuery(allNameQueries);
+        }, false);
+    } catch (err) {
+        console.log(err.message);
+    }
 });
 
 try {
@@ -196,6 +254,23 @@ function updateMessages (msg) {
     }
 }
 
+
+function getNameSuggestions (nameQuery) {
+    var nameSuggestionRequest = {
+        type: "requestnamesuggestions",
+        namequery: nameQuery
+    };
+    wss_connect.send(JSON.stringify(nameSuggestionRequest));
+}
+
+function getFollowingNameQuery (allNameQueries) {
+    var before = allNameQueries.match(/^.+;\s*|/)[0];
+    var size = before.length;
+    var nameQuery = allNameQueries.slice(size);
+
+    return nameQuery;
+}
+
 function updateRemainingCharacters () {
     remChars = 800 - $("#msg").val().length - footer.length;
     $("#remaining_chars").text(remChars);
@@ -352,6 +427,104 @@ function initLoadGroupMessageQA (siteMembers) {
             updateGroupMessageQuickAccess(msg);
         }
     }
+}
+
+function updateGroupMessageQuickAccess (msg) {
+    try {
+        group_message_quick_access.unshift(msg);
+        let group_message_html = group_message_template({ group_message: group_message_quick_access });
+        $("#group-message-display").html(group_message_html);
+        $("#group-message-display").scrollTop(0);
+    } catch (err) {
+        console.log(err.message);
+    }
+}
+
+function updateOldMessages (oldMessages) {
+    if (contact_info === "groups") {
+        if (oldMessages.user === "You") {
+            oldMessages.isyou = 1;
+            messages.push(oldMessages);
+        } else {
+            oldMessages.isyou = 0;
+            var isTargetSite = false;
+            for (i in group_tags.sitenames) {
+                if ((oldMessages.name.toUpperCase()).indexOf(group_tags.sitenames[i].toUpperCase()) >= 0) {
+                    isTargetSite = true;
+                    continue;
+                }
+            }
+            if (isTargetSite === false) {
+                return;
+            }
+            var isOffices = false;
+            for (i in group_tags.offices) {
+                if ((oldMessages.name.toUpperCase()).indexOf(group_tags.offices[i].toUpperCase()) >= 0) {
+                    isOffices = true;
+                    continue;
+                }
+            }
+
+            if (isOffices === false) {
+                return;
+            }
+            oldMessages.user = oldMessages.name;
+            messages.push(oldMessages);
+        }
+    } else {
+        for (i in contact_info) {
+            if (oldMessages.user === "You") {
+                oldMessages.isyou = 1;
+                messages.push(oldMessages);
+            } else if (contact_info[i].numbers.search(oldMessages.user) >= 0) {
+                oldMessages.isyou = 0;
+                oldMessages.user = contact_info[i].numbers;
+                messages.push(oldMessages);
+            } else {
+                oldMessages.isyou = 0;
+                oldMessages.user = contact_info[i].fullname;
+                messages.push(oldMessages);
+            }
+        }
+    }
+}
+
+function loadOldMessages (msg) {
+    message_counter = 0;
+    last_message_time_stamp_sender = "";
+    last_message_time_stamp_recipient = "";
+
+    var oldMessagesIndi = msg.data;
+    var oldMsg;
+    messages = [];
+
+    if (msg.data != null) {
+        for (var i = oldMessagesIndi.length - 1; i >= 0; i--) {
+            oldMsg = oldMessagesIndi[i];
+            oldMsg.type = msg.type;
+            updateOldMessages(oldMsg);
+            if (messages[message_counter].user === "You") {
+                if (last_message_time_stamp_sender === "") {
+                    last_message_time_stamp_sender = messages[message_counter].timestamp;
+                    tempTimestampYou = last_message_time_stamp_sender;
+                }
+            } else if (last_message_time_stamp_recipient === "") {
+                last_message_time_stamp_recipient = messages[message_counter].timestamp;
+                tempTimestamp = last_message_time_stamp_recipient;
+            }
+            message_counter += 1;
+        }
+
+        var htmlStringMessage = $("#messages").html();
+        var messages_html = messages_template_both({ messages });
+        $("#messages").html(messages_html + htmlStringMessage);
+        $(".chat-message").scrollTop(200);
+    } else {
+        eom_flag = true;
+        alert("End of the Conversation");
+        console.log("Invalid Request/End of the Conversation");
+    }
+    console.log("Loading Old Messages");
 }
 
 function loadOfficesAndSites (msg) {
