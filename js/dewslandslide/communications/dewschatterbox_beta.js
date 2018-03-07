@@ -1517,6 +1517,7 @@ $(document).ready(function() {
 			}
 		}
 	} else if (msg.type == "ackrpi"){
+		insertLogForCpuMemUsage(msg.cpu_usage,msg.mem_usage,msg.timestamp_written);
 		$("#messages li:last #timestamp-sent").removeClass();
 		if (msg.send_status == "SENT-PI") {
 			$("#messages li:last #timestamp-sent").text('PENDING');
@@ -2662,12 +2663,9 @@ $('#send-msg').on('click',function(){
 	if (connection_status == false){
 		console.log("NO CONNECTION");
 	} else {
-
 		messages = [];
 		counters = 0;
 		ewi_filter = "";
-		console.log($('#server-time').text());
-		debugger;
 		if (contactInfo == "groups") {
 			var text = $('#msg').val();
 			user = "You";
@@ -2772,6 +2770,18 @@ function loadGroups(){
 		alert('Something went wrong, Please contact the Administrator');
 	}
 
+}
+
+function insertLogForCpuMemUsage(cpu,mem,timestamp) {
+	let cpu_mem_usage = {
+		"error_description" : "CPU USAGE: "+cpu+"%"+" MEM USAGE: "+parseFloat(mem)+" GB",
+		"timestamp" : timestamp
+	};
+
+	$.post( "../../utitlities/insertProcUsage/", {cpu_mem : cpu_mem_usage})
+	.done(function(data) {
+		console.log(data);
+	});
 }
 
 function loadGroupsCommunity(){
