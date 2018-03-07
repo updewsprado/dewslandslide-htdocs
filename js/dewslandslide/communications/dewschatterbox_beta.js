@@ -2778,7 +2778,7 @@ function insertLogForCpuMemUsage(cpu,mem,timestamp) {
 		"timestamp" : timestamp
 	};
 
-	$.post( "../../utitlities/insertProcUsage/", {cpu_mem : cpu_mem_usage})
+	$.post( "../utilities/insertProcUsage/", {cpu_mem : cpu_mem_usage})
 	.done(function(data) {
 		console.log(data);
 	});
