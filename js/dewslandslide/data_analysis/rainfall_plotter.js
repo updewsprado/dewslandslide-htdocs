@@ -263,7 +263,6 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         distance, max_rval, source_table
     } = source;
 
-    Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
     $(`#${source_table}-instantaneous`).highcharts({
         series: data,
         chart: {

@@ -1,7 +1,11 @@
 
 $(document).ready(() => {
+    let validator = null;
     initializeTimestamps();
     initializeForm();
+    // validateForm();
+
+    Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
 });
 
 function initializeTimestamps () {
@@ -18,11 +22,10 @@ function initializeTimestamps () {
 }
 
 function initializeForm () {
-    $("#site-analysis-form").validate({
+    validator = $("#site-analysis-form").validate({
         debug: true,
         rules: {
-            site_code: "required",
-            data_timestamp: "required"
+            data_timestamp: "required",
         },
         messages: { comments: "" },
         errorPlacement (error, element) {
@@ -66,6 +69,9 @@ function initializeForm () {
             } else $(element).next("span").addClass("glyphicon-ok").removeClass("glyphicon-remove");
         },
         submitHandler (form) {
+            // console.log("Entered submitHandler");
+            // return false;
+
             const data = $("#site-analysis-form").serializeArray();
             const input = {};
             data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
@@ -93,6 +99,27 @@ function initializeForm () {
         }
     });
 }
+
+// function validateForm () {
+//     $(".submit-btn").on("click", ({ target }) => {
+//         const id = $(target).prop("id");
+//         console.log(id);
+//         $(".has-error").removeClass("has-error");
+//         $(".glyphicon-remove, .glyphicon-ok").remove();
+
+//         validator.resetForm();
+//         $("#site_code").rules("remove");
+//         $("#subsurface_column").rules("remove");
+
+//         if (id === "plot-site-level") {
+//             $("#site_code").rules("add", { required: true });
+//         } else {
+//             $("#subsurface_column").rules("add", { required: true });
+//         }
+
+//         $("#site-analysis-form").valid();
+//     });
+// }
 
 function getStartDate (plot_type) {
     let start_date = "";
