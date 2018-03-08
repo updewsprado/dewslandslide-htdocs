@@ -48,7 +48,8 @@ var comboplete;
 
 var data_timestamp;
 var latest_release_id;
-
+var coloredTimestamp;
+    
 try {
 	var messages_template_both = Handlebars.compile($("#messages-template-both").html());
 	var selected_contact_template = Handlebars.compile($("#selected-contact-template").html());
