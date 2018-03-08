@@ -42,12 +42,20 @@ var temp_multiple_sites = "";
 
 var is_first_successful_connect = true; /* flag detected */
 var footer = `\n\n-${first_name} from PHIVOLCS-DYNASLOPE`;
-var messages_template_both = Handlebars.compile($("#messages-template-both").html());
-var selected_contact_template = Handlebars.compile($("#selected-contact-template").html());
-var quick_inbox_template = Handlebars.compile($("#quick-inbox-template").html());
-var quick_release_template = Handlebars.compile($("#quick-release-template").html());
-var group_message_template = Handlebars.compile($("#group-message-template").html());
-var ewi_template = Handlebars.compile($("#ewi_template").html());
 
 var message_counter = 0;
 var comboplete;
+
+var data_timestamp;
+var latest_release_id;
+
+try {
+	var messages_template_both = Handlebars.compile($("#messages-template-both").html());
+	var selected_contact_template = Handlebars.compile($("#selected-contact-template").html());
+	var quick_inbox_template = Handlebars.compile($("#quick-inbox-template").html());
+	var quick_release_template = Handlebars.compile($("#quick-release-template").html());
+	var group_message_template = Handlebars.compile($("#group-message-template").html());
+	var ewi_template = Handlebars.compile($("#ewi_template").html());
+} catch (err) {
+	console.log("Chatterbox dashboard mode!");
+}

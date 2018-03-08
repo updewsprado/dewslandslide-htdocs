@@ -1,3 +1,120 @@
+$(document).ready(() => {
+
+    $("#ewi-asap-modal").on("shown.bs.modal", () => {
+        temp_ewi_template_holder = $("#constructed-ewi-amd").val();
+    });
+    $("#edit-btn-ewi-amd").click(() => {
+        if ($("#edit-btn-ewi-amd").val() === "edit") {
+            $("#constructed-ewi-amd").prop("disabled", false);
+            $("#edit-btn-ewi-amd").val("undo");
+            $("#edit-btn-ewi-amd").text("Undo");
+            $("#edit-btn-ewi-amd").attr("class", "btn btn-danger");
+        } else {
+            $("#constructed-ewi-amd").prop("disabled", true);
+            $("#constructed-ewi-amd").val(temp_ewi_template_holder);
+            $("#edit-btn-ewi-amd").attr("class", "btn btn-warning");
+            $("#edit-btn-ewi-amd").text("Edit");
+            $("#edit-btn-ewi-amd").val("edit");
+        }
+    });
+
+    $("#send-btn-ewi-amd").click(() => {
+        temp = [];
+        $("#loading").show();
+        var current_recipients = $("#ewi-recipients-dashboard").tagsinput("items");
+        var default_recipients = $("#default-recipients").val().split(",");
+        var difference = [];
+        var tagOffices = [];
+
+        $.grep(current_recipients, (el) => {
+            if ($.inArray(el, default_recipients) == -1) difference.push(el);
+        });
+
+        ewi_recipient_flag = true;
+        var footer = ` -${$("#footer-ewi").val()} from PHIVOLCS-DYNASLOPE`;
+        var text = $("#constructed-ewi-amd").val();
+        if (temp_ewi_template_holder == $("#constructed-ewi-amd").val()) {
+            $("#edit-btn-ewi-amd").val("edit");
+        }
+
+        try {
+            for (let counter = 0; counter < current_recipients.length; counter++) {
+                var raw_office = current_recipients[counter].split(":");
+                if ($.inArray(raw_office[0].trim(), tagOffices) == -1) {
+                    tagOffices.push(raw_office[0].trim());
+                }
+            }
+
+            console.log(tagOffices);
+            $("input[name=\"offices\"]").prop("checked", false);
+            $("input[name=\"sitenames\"]").prop("checked", false);
+
+            var tagSitenames = [];
+            tagSitenames.push($("#site-abbr").val().toUpperCase());
+
+            switch (tagSitenames[0]) {
+                case "MSL":
+                    tagSitenames[0] = "MES";
+                    break;
+                case "MSU":
+                    tagSitenames[0] = "MES";
+                    break;
+            }
+
+            var msg = {
+                type: "smssendgroup",
+                user: "You",
+                offices: tagOffices,
+                sitenames: tagSitenames,
+                msg: text + footer,
+                ewi_filter: true,
+                ewi_tag: true
+            };
+
+            wss_connect.send(JSON.stringify(msg));
+            message_type = "smssendgroup";
+            messages = [];
+            updateMessages(msg);
+
+            if (difference != null || difference.length !== 0) {
+                const added_contacts = [];
+                difference.forEach((x) => {
+                    if (x.indexOf("|") === -1) {
+                        added_contacts.push([x]);
+                    } else {
+                        temp = x.split("|");
+                        added_contacts.push(temp.splice(1, 1));
+                    }
+                });
+
+                for (let counter = 0; counter < added_contacts.length; counter += 1) {
+                    user = "You";
+                    gsm_timestamp_indicator = $("#server-time").text();
+                    console.log(gsm_timestamp_indicator);
+                    temp_msg_holder = {
+                        type: "smssend",
+                        user,
+                        numbers: added_contacts[counter],
+                        msg: text + footer,
+                        timestamp_written: gsm_timestamp_indicator,
+                        ewi_tag: true
+                    };
+                    wss_connect.send(JSON.stringify(temp_msg_holder));
+                }
+            }
+
+            $("#constructed-ewi-amd").val("");
+            $("#ewi-asap-modal").modal("toggle");
+            $(`#${latest_release_id}_sms`).css("color", "red").attr("data-sent", 1);
+        } catch (err) {
+            $("#result-ewi-message").text("Failed!, Please check the template.");
+            alert(err.stack);
+            $("#success-ewi-modal").modal("toggle");
+            $("#ewi-asap-modal").modal("toggle");
+        }
+    });
+});
+
 function chatterboxViaMonitoringDashboard (dashboard_data) {
     $("#send-btn-ewi-amd").prop("disabled", true);
     $("#send-btn-ewi-amd").attr("title", "4/8/12 PM/AM Lock implemented, wait for the proper release time.");
