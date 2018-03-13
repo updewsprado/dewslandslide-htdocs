@@ -1,15 +1,55 @@
 
 $(document).ready(() => {
     $("#loading").modal("show");
-    getPlotDataForSubsurface("magta", "2016-10-13T13:00:00")
-    .done((subsurface_data) => {
-        console.log(subsurface_data);
 
-        subsurface_data.forEach(({ type, data }) => {
-            if (type === "column_position") plotColumnPosition(data);
-            else if (type === "displacement") plotDisplacement(data);
-            else if (type === "velocity_alerts") plotVelocityAlerts(data);
-        });
+    // getPlotDataForSubsurface("magta", "2016-10-13T13:00:00")
+    // .done((subsurface_data) => {
+    //     console.log(subsurface_data);
+    //     subsurface_data.forEach(({ type, data }) => {
+    //         if (type === "column_position") plotColumnPosition(data);
+    //         else if (type === "displacement") plotDisplacement(data);
+    //         else if (type === "velocity_alerts") plotVelocityAlerts(data);
+    //     });
+    //     $("#loading").modal("hide");
+    // })
+    // .catch(({ responseText, status: conn_status, statusText }) => {
+    //     alert(`Status ${conn_status}: ${statusText}`);
+    //     alert(responseText);
+    // });
+
+    const form = {
+        site_column: "gamb",
+        start_date: "2017-11-12T12:00:00",
+        end_date: "2017-11-13T12:00:00"
+    };
+
+    getPlotDataForNodeHealthSummary(form.site_column)
+    .done((column_summary) => {
+        console.log(column_summary);
+        plotNodeHealthSummary(column_summary, form);
+        $("#loading").modal("hide");
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
+    });
+
+    getPlotDataForDataPresence(form)
+    .done((data_presence) => {
+        console.log(data_presence);
+        plotDataPresence(data_presence, form);
+        $("#loading").modal("hide");
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
+    });
+
+    getPlotDataForCommunicationHealth(form)
+    .done((communication_health) => {
+        console.log(communication_health);
+        plotCommunicationHealth(communication_health, form);
+        $("#loading").modal("hide");
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -80,7 +120,6 @@ function plotDisplacement (column_data) {
 
         createDisplacementChart(col_data, "agbta");
     });
-    $("#loading").modal("hide");
 }
 
 function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }) {
@@ -154,7 +193,8 @@ function createColumnPositionChart (orientation, column_data, site_column) {
             height: 800
         },
         title: {
-            text: "<b>Column Position Plot</b>"
+            text: "<b>Column Position Plot</b>",
+            style: { fontSize: "16px" }
         },
         subtitle: {
             text: `<b>Source: ${site_column.toUpperCase()}</b>`
@@ -202,6 +242,9 @@ function createColumnPositionChart (orientation, column_data, site_column) {
             labelFormatter () {
                 return `${moment(this.name).format("DD MMM YYYY, HH:mm")}`;
             }
+        },
+        credits: {
+            enabled: false
         }
     });
 }
@@ -221,7 +264,8 @@ function createDisplacementChart (column_data, site_column) {
             width: 400
         },
         title: {
-            text: `<b>Displacement Plot, ${xAxisTitle}</b>`
+            text: `<b>Displacement Plot, ${xAxisTitle}</b>`,
+            style: { fontSize: "16px" }
         },
         subtitle: {
             text: `<b>Source: ${(site_column).toUpperCase()}</b><br><br><b>Note: </b> + - consistently increasing/decreasing trend`
@@ -257,6 +301,9 @@ function createDisplacementChart (column_data, site_column) {
         },
         legend: {
             enabled: false
+        },
+        credits: {
+            enabled: false
         }
     });
 }
@@ -275,7 +322,8 @@ function createVelocityAlertsChart (orientation, data, site_column) {
             width: 400
         },
         title: {
-            text: `<b>Velocity Alerts Plot, ${xAxisTitle}</b>`
+            text: `<b>Velocity Alerts Plot, ${xAxisTitle}</b>`,
+            style: { fontSize: "16px" }
         },
         subtitle: {
             text: `<b>Source: ${site_column.toUpperCase()}</b>`
@@ -320,6 +368,278 @@ function createVelocityAlertsChart (orientation, data, site_column) {
                     radius: 2
                 }
             }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function getPlotDataForNodeHealthSummary (site_column) {
+    return $.getJSON(`../site_analysis/getPlotDataForNodeHealthSummary/${site_column}`)
+    .catch(err => err);
+}
+
+function plotNodeHealthSummary (series, { site_column }) {
+    createNodeHealthSummaryChart(series, site_column);
+}
+
+function createNodeHealthSummaryChart (series, site_column) {
+    const divisor = Math.floor(series.length / 25);
+    $("#node-health-summary").highcharts({
+        series: [{
+            name: "Nodes",
+            borderColor: "#444444",
+            borderWidth: 1,
+            data: series,
+            dataLabels: {
+                enabled: true,
+                color: "#222222",
+                style: {
+                    textShadow: "none"
+                },
+                formatter () {
+                    return `${this.point.id}`;
+                }
+            }
+        }],
+        chart: {
+            type: "heatmap",
+            height: 120 + (divisor * 20),
+            marginTop: 40,
+            marginBottom: 40
+        },
+        title: {
+            text: `<b>Node Health Summary of ${site_column.toUpperCase()}</b>`,
+            style: { fontSize: "14px" }
+        },
+        xAxis: {
+            visible: false,
+            categories: []
+        },
+        yAxis: {
+            reversed: true,
+            categories: [],
+            title: null,
+            labels: {
+                format: "&ensp;",
+                useHTML: true
+            }
+        },
+        colorAxis: {
+            stops: [
+                [0, "#7cb5ec"],
+                [0.5, "#ffed49"],
+                [1, "#ff1414"]
+            ],
+            min: 0,
+            max: 2
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            formatter () {
+                const {
+                    timestamp, id_date, flagger,
+                    status, comment, id
+                } = this.point;
+                let final_stat = "Ok";
+                let added_info = "";
+
+                if (typeof status !== "undefined") {
+                    final_stat = status;
+                    added_info = `Timestamp: <b>${moment(timestamp).format("DD MMM YYYY, HH:mm")}</b><br/>` +
+                    `Identification Date: <b>${moment(id_date).format("DD MMM YYYY")}</b><br/>` +
+                    `Comment: <b>${comment}</b><br/>Flagger: <b>${flagger}</b>`;
+                }
+
+                const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
+                return tooltip;
+            }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function getPlotDataForDataPresence ({ site_column, start_date, end_date }) {
+    return $.getJSON(`../site_analysis/getPlotDataForDataPresence/${site_column}/${start_date}/${end_date}`)
+    .catch(err => err);
+}
+
+function plotDataPresence (data, { site_column }) {
+    createDataPresenceChart(data, site_column);
+}
+
+// function createDataPresenceChart (data_presence, site_column) {
+//     const { data_presence: series_data, min_date, max_date } = data_presence;
+//     $("#data-presence").highcharts({
+//         series: [{
+//             data: series_data,
+//             name: "timestamp",
+//             borderColor: "#666666",
+//             borderWidth: 1,
+//             pointWidth: 17
+//         }],
+//         chart: {
+//             type: "column",
+//             height: 170
+//         },
+//         title: {
+//             text: `<b>Data Presence Chart of ${site_column.toUpperCase()}</b>`,
+//             style: { fontSize: "14px" }
+//         },
+//         xAxis: {
+//             min: min_date,
+//             max: max_date,
+//             title: {
+//                 text: "Timestamps"
+//             },
+//             crosshair: true,
+//             type: "datetime",
+//             dateTimeLabelFormats: {
+//                 month: "%e. %b %Y",
+//                 year: "%b"
+//             },
+//             labels: {
+//                 step: 0.5
+//             }
+//         },
+//         yAxis: {
+//             min: 0,
+//             max: 1,
+//             title: null,
+//             labels: {
+//                 format: "&ensp;",
+//                 useHTML: true
+//             }
+//         },
+//         tooltip: {
+//             headerFormat: "{point.x:%A, %e %b, %H:%M:%S}<br/>",
+//             pointFormat: ""
+//         }
+//     });
+// }
+
+function createDataPresenceChart (data_presence, site_column) {
+    const { data_presence: series } = data_presence;
+    const divisor = Math.floor(series.length / 20);
+    $("#data-presence").highcharts({
+        series: [{
+            name: "Timestamps",
+            borderColor: "#444444",
+            borderWidth: 1,
+            data: series,
+            dataLabels: {
+                enabled: true,
+                color: "#222222",
+                style: {
+                    textShadow: "none"
+                },
+                formatter () {
+                    return `${moment(this.point.id).format("h:mm")}`;
+                }
+            }
+        }],
+        chart: {
+            type: "heatmap",
+            height: 90 + (divisor * 20)
+        },
+        title: {
+            text: `<b>Data Presence Chart of ${site_column.toUpperCase()}</b>`,
+            style: { fontSize: "14px" }
+        },
+        xAxis: {
+            visible: false,
+            categories: []
+        },
+        yAxis: {
+            reversed: true,
+            categories: [],
+            title: null,
+            labels: {
+                format: "&ensp;",
+                useHTML: true
+            }
+        },
+        colorAxis: {
+            stops: [
+                [0, "#666666"],
+                [0.5, "#7cb5ec"],
+                [1, "#ffed49"]
+            ],
+            min: 0,
+            max: 2
+        },
+        legend: {
+            enabled: false,
+            align: "right",
+            layout: "vertical",
+            margin: 0,
+            verticalAlign: "top",
+            y: 25,
+            symbolHeight: 320
+        },
+        tooltip: {
+            formatter () {
+                return `<b>Timestamp:</b> ${moment(this.point.id).format("DD MMM YYYY, HH:mm")}`;
+            }
+        },
+        credits: {
+            enabled: false
+        }
+    });
+}
+
+function getPlotDataForCommunicationHealth ({ site_column, start_date, end_date }) {
+    return $.getJSON(`../site_analysis/getPlotDataForCommunicationHealth/${site_column}/${start_date}/${end_date}`)
+    .catch(err => err);
+}
+
+function plotCommunicationHealth (data, form) {
+    createCommunicationHealthChart(data, form);
+}
+
+function createCommunicationHealthChart (communication_health, form) {
+    const { site_column, start_date, end_date } = form;
+    $("#communication-health").highcharts({
+        series: communication_health,
+        chart: {
+            type: "column",
+            height: 300
+        },
+        title: {
+            text: `<b>Communication Health Chart of ${site_column.toUpperCase()} (${moment(start_date).format("M/D/YYYY H:mm")} - ${moment(end_date).format("M/D/YYYY H:mm")})</b>`,
+            style: { fontSize: "14px" }
+        },
+        xAxis: {
+            min: 1,
+            title: {
+                text: "Node number"
+            },
+            allowDecimals: false
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            title: {
+                text: "Health Percentage (%)"
+            }
+        },
+        tooltip: {
+            crosshairs: true,
+            shared: true,
+            headerFormat: "Node {point.x}<br/>"
+        },
+        legend: {
+            align: "right",
+            verticalAlign: "middle",
+            layout: "vertical"
+        },
+        credits: {
+            enabled: false
         }
     });
 }

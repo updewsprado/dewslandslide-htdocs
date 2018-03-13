@@ -2,7 +2,7 @@
 $(document).ready(() => {
     let validator = null;
     initializeTimestamps();
-    initializeForm();
+    validator = initializeForm();
     // validateForm();
 
     Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
@@ -22,10 +22,10 @@ function initializeTimestamps () {
 }
 
 function initializeForm () {
-    validator = $("#site-analysis-form").validate({
+    const validator = $("#site-analysis-form").validate({
         debug: true,
         rules: {
-            data_timestamp: "required",
+            data_timestamp: "required"
         },
         messages: { comments: "" },
         errorPlacement (error, element) {
@@ -98,6 +98,8 @@ function initializeForm () {
             processSubsurfaceColumnDropDown(input.site_code);
         }
     });
+
+    return validator;
 }
 
 // function validateForm () {
