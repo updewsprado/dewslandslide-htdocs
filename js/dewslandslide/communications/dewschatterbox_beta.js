@@ -2148,33 +2148,17 @@ $(document).ready(() => {
             });
         }
      } else {
-        $("#employee-contact-wrapper input").each(function () {
-            if (($(this).val() == "" || $(this).val() == null) && $(this).attr("id") != undefined) {
-                empty_fields++;
-            }
-        });
-
-        if (empty_fields > 0) {
-            $("#contact-result").remove();
-            var container = document.getElementById("employee-contact-wrapper");
-            var resContainer = document.createElement("div");
-            resContainer.id = "contact-result";
-            resContainer.className = "alert alert-danger";
-            resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
-            container.insertBefore(resContainer, container.childNodes[0]);
-        } else if (confirm("The Changes you made will be saved. \n Do you want to proceed?")) {
-            data = {
-                id: $("#eid").val(),
-                firstname: $("#firstname_ec").val(),
-                lastname: $("#lastname_ec").val(),
-                nickname: $("#nickname_ec").val(),
-                birthdate: $("#birthdate_ec").val(),
-                email: $("#email_ec").val(),
-                numbers: $("#numbers_ec").val(),
-                group_tags: $("#grouptags_ec").val()
-            };
-            updateContactService(data, "employee-contact-wrapper");
-        }
+        data = {
+            id: $("#eid").val(),
+            firstname: $("#firstname_ec").val(),
+            lastname: $("#lastname_ec").val(),
+            nickname: $("#nickname_ec").val(),
+            birthdate: $("#birthdate_ec").val(),
+            email: $("#email_ec").val(),
+            numbers: $("#numbers_ec").val(),
+            group_tags: $("#grouptags_ec").val()
+        };
+        updateContactService(data, "employee-contact-wrapper");  
      }
     });
 
