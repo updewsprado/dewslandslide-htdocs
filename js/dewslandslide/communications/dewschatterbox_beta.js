@@ -933,8 +933,6 @@ $(document).ready(() => {
             console.log("Error: User or Name is null");
             return;
         }
-        console.log(`User: ${fullContact}`);
-
         qiFullContact = fullContact;
         startChat(source = "quickInbox");
     }
@@ -2007,7 +2005,6 @@ $(document).ready(() => {
             url: "../chatterbox/get_employee_contacts",
             success (response) {
                 var data = JSON.parse(response);
-                console.log(data);
                 $("#response-contact-container").DataTable().clear();
                 $("#response-contact-container").DataTable().destroy();
 
@@ -2235,7 +2232,6 @@ $(document).ready(() => {
         current_gintags = getGintagService(gintags_msg_details[5]);
         $("#gintag-modal").modal("toggle");
         $(".bootstrap-tagsinput").prop("disabled", true);
-        console.log("tagging may occur");
     });
 
     $("#gintags").on("beforeItemAdd", (event) => {

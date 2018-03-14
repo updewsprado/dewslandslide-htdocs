@@ -280,8 +280,6 @@ function initLoadLatestAlerts (latestAlerts) {
     if (latestAlerts.data == null) {
         return;
     }
-
-    console.log("Loading Latest Public Releases.");
     var alerts = latestAlerts.data;
     temp = latestAlerts.data;
     var msg;
@@ -377,8 +375,6 @@ function initLoadQuickInbox (quickInboxMsg) {
     if (quickInboxMsg.data == null) {
         return;
     }
-
-    console.log("initLoadQuickInbox");
     var qiMessages = quickInboxMsg.data;
     temp = quickInboxMsg.data;
     var msg;
