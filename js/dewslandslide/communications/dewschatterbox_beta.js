@@ -2252,26 +2252,9 @@ $(document).ready(() => {
         }
     });
 
-    $("#confirm-gintags").click(() => {
-        var tags = holdTags.split(",");
-        var current_tags = $("#gintags").val().split(","); if (current_tags.length == 1 && current_tags[0] == 0) { current_tags = []; }
-        var diff = "";
-        $("#gintag-modal").modal("toggle");
-        if (tags.length > current_tags.length) {
-            diff = $(tags).not(current_tags).get();
-            removeGintagService(gintags_msg_details, diff);
-        } else if (tags.length < current_tags.length) {
-            diff = $(tags).not(current_tags).get();
-            insertGintagService(gintags_msg_details);
-        } else {
-            insertGintagService(gintags_msg_details);
-        }
-    });
-
     $("#gintags").tagsinput({
         typeahead: {
-            displayKey: "text",
-            source (query) {
+            source : function(query) {
                 let tagname_collection = [];
                 $.ajax({
                     url: "../../../gintagshelper/getAllGinTags",
@@ -2286,6 +2269,22 @@ $(document).ready(() => {
                 });
                 return tagname_collection;
             }
+        }
+    });
+
+    $("#confirm-gintags").click(() => {
+        var tags = holdTags.split(",");
+        var current_tags = $("#gintags").val().split(","); if (current_tags.length == 1 && current_tags[0] == 0) { current_tags = []; }
+        var diff = "";
+        $("#gintag-modal").modal("toggle");
+        if (tags.length > current_tags.length) {
+            diff = $(tags).not(current_tags).get();
+            removeGintagService(gintags_msg_details, diff);
+        } else if (tags.length < current_tags.length) {
+            diff = $(tags).not(current_tags).get();
+            insertGintagService(gintags_msg_details);
+        } else {
+            insertGintagService(gintags_msg_details);
         }
     });
 
