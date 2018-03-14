@@ -2063,7 +2063,7 @@ $(document).ready(() => {
                 resContainer.className = "alert alert-danger";
                 resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
                 container.insertBefore(resContainer, container.childNodes[0]);
-            } else if (confirm("The Changes you made will be saved. \n Do you want to proceed?")) {
+            } else {
                 data = {
                     id: $("#c_id").val(),
                     firstname: $("#firstname_cc").val(),
@@ -2195,7 +2195,7 @@ $(document).ready(() => {
                 resContainer.className = "alert alert-danger";
                 resContainer.innerHTML = "<strong>Failed!</strong> All fields must be filled up.";
                 container.insertBefore(resContainer, container.childNodes[0]);
-            } else if (confirm("The Changes you made will be saved. \n Do you want to proceed?")) {
+            } else {
                 data = {
                     id: $("#eid").val(),
                     firstname: $("#firstname_ec").val(),
