@@ -3933,7 +3933,7 @@ function accel1filtered(data,list){
 			if(data.version == 2){
 				var ms_id = '33';
 			}else{
-				var ms_id = '12'
+				var ms_id = '12';
 			}
 			
 			accel2filtered(data,series_data,ms_id,list)
