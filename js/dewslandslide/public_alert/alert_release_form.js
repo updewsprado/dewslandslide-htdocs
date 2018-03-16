@@ -198,6 +198,10 @@ function onSiteChange () {
                 .find("option")
                 .prop("disabled", false);
             }
+
+            // TO-DO: Break out of promise chain if status is finished or invalid
+            // return $.Deferred().reject(); else return event
+            // change this chain from done -> then
         })
         .then(getLastRelease)
         .done((release) => {

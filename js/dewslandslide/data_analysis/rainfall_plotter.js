@@ -160,15 +160,11 @@ function createCumulativeRainfallChart (data, temp, source) {
         },
         title: {
             text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: {
-                fontSize: "12px"
-            }
+            style: { fontSize: "12px" }
         },
         subtitle: {
             text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: {
-                fontSize: "10px"
-            }
+            style: { fontSize: "10px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -179,7 +175,7 @@ function createCumulativeRainfallChart (data, temp, source) {
                 year: "%b"
             },
             title: {
-                text: "Date"
+                text: "<b>Date</b>"
             },
             events: {
                 setExtremes: syncExtremes
@@ -187,7 +183,7 @@ function createCumulativeRainfallChart (data, temp, source) {
         },
         yAxis: {
             title: {
-                text: "Value (mm)"
+                text: "<b>Value (mm)</b>"
             },
             max: Math.max(0, (max_72h - parseFloat(max_rain_2year))) + parseFloat(max_rain_2year),
             min: 0,
@@ -222,30 +218,6 @@ function createCumulativeRainfallChart (data, temp, source) {
                     radius: 3
                 },
                 cursor: "pointer"
-            },
-            area: {
-                marker: {
-                    lineWidth: 3,
-                    lineColor: null
-                }
-            },
-            scatter: {
-                marker: {
-                    radius: 5,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: "rgb(100,100,100)"
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                }
             }
         },
         legend: {
@@ -273,15 +245,11 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         },
         title: {
             text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: {
-                fontSize: "12px"
-            }
+            style: { fontSize: "12px" }
         },
         subtitle: {
             text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: {
-                fontSize: "10px"
-            }
+            style: { fontSize: "10px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -293,7 +261,7 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
                 year: "%b"
             },
             title: {
-                text: "Date"
+                text: "<b>Date</b>"
             },
             events: {
                 setExtremes: syncExtremes
@@ -303,7 +271,7 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             max: max_rval,
             min: 0,
             title: {
-                text: "Value (mm)"
+                text: "<b>Value (mm)</b>"
             }
         },
         tooltip: {
@@ -311,37 +279,12 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             crosshairs: true
         },
         plotOptions: {
-            scatter: {
-                marker: {
-                    radius: 5,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: "rgb(100,100,100)"
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                }
-            },
             series: {
                 marker: {
                     radius: 3
                 },
                 cursor: "pointer"
-            },
-            area: {
-                marker: {
-                    lineWidth: 3,
-                    lineColor: null
-                }
             }
-
         },
         legend: {
             enabled: false

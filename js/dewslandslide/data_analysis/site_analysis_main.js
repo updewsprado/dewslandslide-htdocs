@@ -89,6 +89,9 @@ function initializeForm () {
                 $("#rainfall-plot-options").show();
                 $rain_btn_group = $("#rainfall-sources-btn-group");
                 $rain_btn_group.find("button:first").trigger("click");
+                /*$rain_btn_group.find("button").each((index, button) => {
+                    $(button).trigger("click");
+                });*/
             });
 
             $("#surficial-plot-options").show();
@@ -126,11 +129,7 @@ function initializeForm () {
 function getStartDate (plot_type) {
     let start_date = "";
     const end_date = moment($("#data_timestamp").val());
-    let data = null;
-
-    if (plot_type === "rainfall") data = $("#rainfall-duration li.active > a").data();
-    else if (plot_type === "surficial") data = $("#surficial-duration li.active > a").data();
-
+    const data = $(`#${plot_type}-duration li.active > a`).data();
     const { value, duration } = data;
 
     if (value !== "All") {

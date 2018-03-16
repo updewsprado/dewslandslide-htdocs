@@ -3,7 +3,7 @@ $(document).ready(() => {
     initializeSurficialMarkersButton();
     initializeSurficialDurationDropDownOnClick();
 
-    Highcharts.SVGRenderer.prototype.symbols.asterisk = function (x, y, w, h) {
+    Highcharts.SVGRenderer.prototype.symbols.asterisk = ((x, y, w, h) => {
         return [
             "M", x - 3, y - 3,
             "L", x + w + 3, y + h + 3,
@@ -15,7 +15,7 @@ $(document).ready(() => {
             "L", x + w / 2, y + h + 4,
             "z"
         ];
-    };
+    });
 
     if (Highcharts.VMLRenderer) {
         Highcharts.VMLRenderer.prototype.symbols.asterisk =
@@ -175,7 +175,7 @@ function createSurficialChart (data, input) {
         },
         yAxis: {
             title: {
-                text: "Displacement (cm)"
+                text: "<b>Displacement (cm)</b>"
             }
         },
         xAxis: {
@@ -187,7 +187,7 @@ function createSurficialChart (data, input) {
                 year: "%b"
             },
             title: {
-                text: "Date"
+                text: "<b>Date</b>"
             }
         },
         tooltip: {
@@ -252,14 +252,15 @@ function processDatasetForPlotting ({ dataset_name, dataset }) {
                     type: "arearange",
                     lineWidth: 0,
                     fillOpacity: 0.4,
-                    zIndex: 0
+                    zIndex: 0,
+                    color: "#ffa500"
                 };
             } else if (name === "Last Data Point") {
                 dataset[index] = {
                     ...dataset[index],
                     marker: {
                         symbol: "asterisk",
-                        lineColor: null,
+                        lineColor: "#f5dc26",
                         lineWidth: 3
                     }
                 };
@@ -302,12 +303,12 @@ function createMarkerAccelerationChart (data, input) {
         },
         xAxis: {
             title: {
-                text: "Velocity (cm/day)"
+                text: "<b>Velocity (cm/day)</b>"
             }
         },
         yAxis: {
             title: {
-                text: "Acceleration (cm/day^2)"
+                text: "<b>Acceleration (cm/day^2)</b>"
             }
         },
         tooltip: {
@@ -352,12 +353,12 @@ function createMarkerInterpolationChart (data, input) {
                 year: "%b"
             },
             title: {
-                text: "Date"
+                text: "<b>Date</b>"
             }
         },
         yAxis: {
             title: {
-                text: "Displacement (cm)"
+                text: "<b>Displacement (cm)</b>"
             }
         },
         tooltip: {
@@ -405,19 +406,19 @@ function createMarkerAccelerationVsTimeChart (data, input) {
                 year: "%b"
             },
             title: {
-                text: "Time (Days)"
+                text: "<b>Time (Days)</b>"
             }
         },
         yAxis: [{
             title: {
-                text: "Velocity (cm/day)",
+                text: "<b>Velocity (cm/day)</b>",
                 style: {
                     color: Highcharts.getOptions().colors[1]
                 }
             }
         }, {
             title: {
-                text: "Acceleration (cm/days^2)",
+                text: "<b>Acceleration (cm/days^2)</b>",
                 style: {
                     color: Highcharts.getOptions().colors[0]
                 }
