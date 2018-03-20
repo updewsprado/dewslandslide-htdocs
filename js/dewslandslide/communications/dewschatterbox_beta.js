@@ -2269,8 +2269,10 @@ $(document).ready(() => {
                     async: false,
                     success (data) {
                         const employee_contacts = JSON.parse(data);
+                        console.log(employee_contacts);
                         for (let counter = 0; counter < employee_contacts.length; counter += 1) {
-                            const raw_grouptags = employee_contacts[counter].group_tags.split(",");
+                            console.log(employee_contacts[counter].grouptags.split(","));
+                            const raw_grouptags = employee_contacts[counter].grouptags.split(",");
                             for (let raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter += 1) {
                                 if ($.inArray(raw_grouptags[raw_counter], group_tag) === -1) {
                                     group_tag.push(raw_grouptags[raw_counter]);
