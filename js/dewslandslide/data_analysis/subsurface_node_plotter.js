@@ -8,6 +8,8 @@ $(document).ready(() => {
     }
     initializeSubsurfaceNode(input);
     initializeOnNodeClicked();
+    initializeNodeSummaryDurationOnDropdownClick();
+    // initializeOnNodePlot();
 });
 
 function initializeNodeSelector () {
@@ -51,11 +53,27 @@ function initializeOnNodeClicked () {
 
         if( event_ids.length > 0 )
         {
-            console.log(event_ids); console.log($target);
+      //   	const nodes_selected = event_ids.join("-");
+    		// // initializeOnNodePlot(nodes_selected);
+    		// plotSubsurfaceNode(nodes_selected);
+      //       console.log(nodes_selected);
         }
 
         return false;
     	
+	});
+}
+
+function initializeOnNodePlot () {
+	$("#plot-node-level").click(function(){
+		const nodes = $("#nodes").val();
+		const formatted_nodes = node.join("-");
+    	if (nodes_selected) {
+    		plotSubsurfaceNode(nodes_selected);
+    		// alert(nodes_selected);
+    	}else {
+    		alert("please select a node");
+    	}
 	});
 }
 
@@ -77,6 +95,7 @@ function initializeSubsurfaceNode (input) {
             else if (series_name === "y-accelerometer") createYAccelerometerChart(data);
             else if (series_name === "z-accelerometer") createZAccelerometerChart(data);
         });
+        $("#loading").modal("hide");
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -84,9 +103,51 @@ function initializeSubsurfaceNode (input) {
     });
 }
 
+function initializeNodeSummaryDurationOnDropdownClick () {
+	$("#node-summary-duration li").click(({ target }) => {
+        const { value, duration } = $(target).data();
+        const parent_id = $(target).parents(".btn-group").prop("id");
+        console.log($(target).data());
+        $(`#${parent_id} li.active`).removeClass("active");
+        $(target).parent().addClass("active");
+
+        $(`#${parent_id}-btn`).empty()
+        .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
+
+        const form = {
+            column_name: "agbta",
+            start_date: getStartDate(parent_id.replace("-duration", "")),
+            end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm"),
+            node: "1-3-5"
+        };
+        console.log(form);
+
+        $("#loading").modal("show");
+
+        if (parent_id === "node-summary-duration") {
+            plotSubsurfaceNode(form);
+        } //else plotSubsurfaceAnalysisCharts(form);
+    });
+}
+
 function getSiteNodeNumber (column_name) {
     return $.getJSON(`../site_analysis/NodeNumberPerSite/${column_name}`)
     .catch(err => err);
+}
+
+function plotSubsurfaceNode (form){
+	$("#battery-graph").empty();
+	$("#x-accelerometer-graph").empty();
+	$("#y-accelerometer-graph").empty();
+	$("#z-accelerometer-graph").empty();
+	// const input = {
+ //    	column_name: "agbta",
+ //    	start_date: "2016-01-15",
+ //    	end_date: "2016-01-21",
+ //    	node: sample_node
+ //    }
+    // console.log(sample_node);
+    initializeSubsurfaceNode(form);
 }
 
 function createNodes (sources) {
@@ -115,6 +176,7 @@ function appendNodes (node_count) {
 function getPlotDataForNode ({
     column_name, start_date, end_date, node
 }) {
+	// const { event_ids: event_ids } = node;
     return $.getJSON(`../site_analysis/getPlotDataForNode/${column_name}/${start_date}/${end_date}/${node}`)
     .catch(err => err);
 }
