@@ -1,11 +1,17 @@
 
 $(document).ready(() => {
+    adjustOptionsBarOnWindowResize();
+
     let validator = null;
     initializeTimestamps();
     validator = initializeForm();
     // validateForm();
 
-    Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
+    onSiteCodeDropdownClick();
+    onSubsurfaceColumnDropdownClick();
+    onOptionsBarToggleClick();
+
+    formatHighchartsGlobalOptions();
 });
 
 function initializeTimestamps () {
@@ -16,16 +22,42 @@ function initializeTimestamps () {
             horizontal: "right",
             vertical: "bottom"
         }
-    }).on("dp.show", function (e) {
+    })
+    .on("dp.show", function (e) {
         $(this).data("DateTimePicker").maxDate(moment().second(0));
     });
+}
+
+function adjustOptionsBarOnWindowResize () {
+    $(window).on("resize", () => {
+        const window_h = $(window).height();
+        const page_header = $(".page-header").height();
+        const nav_top = $(".navbar-fixed-top").height();
+        const nav_bottom = $(".navbar-fixed-bottom").height();
+
+        const final = window_h - page_header - nav_top - nav_bottom - 100;
+        const is_collapsed = $("#options-bar").data("collapsed") || "false";
+
+        let overflow = "hidden";
+        if (is_collapsed === "false") {
+            overflow = final > 785 ? "hidden" : "visible";
+        }
+
+        $("#options-bar > .panel").css({
+            "max-height": final,
+            "overflow-y": overflow,
+            "overflow-x": "hidden"
+        });
+    })
+    .resize();
 }
 
 function initializeForm () {
     const validator = $("#site-analysis-form").validate({
         debug: true,
         rules: {
-            data_timestamp: "required"
+            data_timestamp: "required",
+            site_code: "required"
         },
         messages: { comments: "" },
         errorPlacement (error, element) {
@@ -126,6 +158,46 @@ function initializeForm () {
 //     });
 // }
 
+function onSiteCodeDropdownClick () {
+    $("#site_code").change(({ currentTarget: { value: site_code } }) => {
+        processSubsurfaceColumnDropDown(site_code);
+    });
+}
+
+function onSubsurfaceColumnDropdownClick () {
+    $("#subsurface_column").change(({ currentTarget: { value: subsurface_column } }) => {
+        processNodeDropDown(subsurface_column);
+    });
+}
+
+function onOptionsBarToggleClick () {
+    $("#toggle-options-bar").click(() => {
+        const $bar = $("#options-bar");
+        const $plots = $("#main-plots-container");
+        const is_collapsed = $bar.data("collapsed");
+
+        if (is_collapsed === "false") {
+            $(".hideable").css("visibility", "hidden");
+            $bar.switchClass("col-sm-3", "col-sm-1", {
+                complete () {
+                    $bar.data("collapsed", "true");
+                    $(window).resize();
+                }
+            });
+            $plots.switchClass("col-sm-9", "col-sm-11");
+        } else {
+            $plots.switchClass("col-sm-11", "col-sm-9");
+            $bar.switchClass("col-sm-1", "col-sm-3", {
+                complete () {
+                    $bar.data("collapsed", "false");
+                    $(".hideable").css("visibility", "visible");
+                    $(window).resize();
+                }
+            });
+        }
+    });
+}
+
 function getStartDate (plot_type) {
     let start_date = "";
     const end_date = moment($("#data_timestamp").val());
@@ -198,4 +270,19 @@ function createMarkerTabs (source_table) {
     });
 
     $(`#${source_table}-tab-group li:first > a`).trigger("click");
+}
+
+function formatHighchartsGlobalOptions () {
+    const options = Highcharts.getOptions().exporting.buttons.contextButton.menuItems;
+    Highcharts.setOptions({
+        global: { timezoneOffset: -8 * 60 },
+        exporting: {
+            buttons: {
+                contextButton: {
+                    enabled: true,
+                    menuItems: options.splice(2)
+                }
+            }
+        }
+    });
 }

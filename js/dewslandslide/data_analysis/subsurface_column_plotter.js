@@ -78,7 +78,7 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
         alert(responseText);
-    });;
+    });
 }
 
 function getPlotDataForColumnSummary (form, include_node_health) {
