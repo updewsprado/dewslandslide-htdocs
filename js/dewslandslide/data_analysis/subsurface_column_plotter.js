@@ -2,10 +2,8 @@
 $(document).ready(() => {
     initializeColumnSummaryDurationDropdownOnClick();
 
-    // $("#loading").modal("show");
-
     const form = {
-        site_column: "magta",
+        subsurface_column: "magta",
         start_date: "2016-10-11T12:00:00",
         end_date: "2016-10-12T12:00:00"
     };
@@ -53,16 +51,18 @@ function initializeColumnSummaryDurationDropdownOnClick () {
         .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
 
         const form = {
-            site_column: "magta",
-            start_date: getStartDate(parent_id.replace("-duration", "")),
+            subsurface_column: $("#subsurface_column").val(),
+            start_date: getStartDate(parent_id.replace("-duration")),
             end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm")
         };
 
-        $("#loading").modal("show");
-
         if (parent_id === "column-summary-duration") {
+            $("#subsurface-column-summary-plots .loading-bar").show();
             plotColumnSummaryCharts(form, 0);
-        } else plotSubsurfaceAnalysisCharts(form);
+        } else {
+            $("#subsurface-plots .loading-bar").show();
+            plotSubsurfaceAnalysisCharts(form);
+        }
     });
 }
 
@@ -71,9 +71,11 @@ function initializeColumnSummaryDurationDropdownOnClick () {
  */
 
 function plotColumnSummaryCharts (form, include_node_health = true) {
+    $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
         delegateColumnSummaryDataForPlotting(column_summary, form);
+        $("#subsurface-column-summary-plots .loading-bar").hide();
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -82,8 +84,8 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
 }
 
 function getPlotDataForColumnSummary (form, include_node_health) {
-    const { site_column, start_date, end_date } = form;
-    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${site_column}/${start_date}/${end_date}/${include_node_health}`)
+    const { subsurface_column, start_date, end_date } = form;
+    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`)
     .catch(err => err);
 }
 
@@ -97,14 +99,13 @@ function delegateColumnSummaryDataForPlotting (column_summary, form) {
             default: break;
         }
     });
-    $("#loading").modal("hide");
 }
 
-function plotNodeHealthSummary (series, { site_column }) {
-    createNodeHealthSummaryChart(series, site_column);
+function plotNodeHealthSummary (series, { subsurface_column }) {
+    createNodeHealthSummaryChart(series, subsurface_column);
 }
 
-function createNodeHealthSummaryChart (series, site_column) {
+function createNodeHealthSummaryChart (series, subsurface_column) {
     const divisor = Math.floor(series.length / 25);
     $("#node-health-summary").highcharts({
         series: [{
@@ -130,7 +131,7 @@ function createNodeHealthSummaryChart (series, site_column) {
             marginBottom: 40
         },
         title: {
-            text: `<b>Node Health Summary of ${site_column.toUpperCase()}</b>`,
+            text: `<b>Node Health Summary of ${subsurface_column.toUpperCase()}</b>`,
             style: { fontSize: "14px" }
         },
         xAxis: {
@@ -189,7 +190,7 @@ function plotDataPresence (data, form) {
 }
 
 function createDataPresenceChart (data_presence, form) {
-    const { site_column, end_date } = form;
+    const { subsurface_column, end_date } = form;
     const { data_presence: series, min_date, is_capped } = data_presence;
     const divisor = Math.floor(series.length / 20);
     $("#data-presence").highcharts({
@@ -215,7 +216,7 @@ function createDataPresenceChart (data_presence, form) {
             height: 90 + (divisor * 20)
         },
         title: {
-            text: `<b>Data Presence Chart of ${site_column.toUpperCase()} (${moment(min_date).format("M/D/YYYY")} - ${moment(end_date).format("M/D/YYYY")})</b>`,
+            text: `<b>Data Presence Chart of ${subsurface_column.toUpperCase()} (${moment(min_date).format("M/D/YYYY")} - ${moment(end_date).format("M/D/YYYY")})</b>`,
             style: { fontSize: "14px" }
         },
         subtitle: {
@@ -276,7 +277,7 @@ function plotCommunicationHealth (data, form) {
 }
 
 function createCommunicationHealthChart (communication_health, form) {
-    const { site_column, start_date, end_date } = form;
+    const { subsurface_column, start_date, end_date } = form;
     $("#communication-health").highcharts({
         series: communication_health,
         chart: {
@@ -284,7 +285,7 @@ function createCommunicationHealthChart (communication_health, form) {
             height: 300
         },
         title: {
-            text: `<b>Communication Health Chart of ${site_column.toUpperCase()} (${moment(start_date).format("M/D/YYYY H:mm")} - ${moment(end_date).format("M/D/YYYY H:mm")})</b>`,
+            text: `<b>Communication Health Chart of ${subsurface_column.toUpperCase()} (${moment(start_date).format("M/D/YYYY H:mm")} - ${moment(end_date).format("M/D/YYYY H:mm")})</b>`,
             style: { fontSize: "14px" }
         },
         xAxis: {
@@ -322,9 +323,11 @@ function createCommunicationHealthChart (communication_health, form) {
  */
 
 function plotSubsurfaceAnalysisCharts (form) {
+    $("#subsurface-plots .loading-bar").show();
     getPlotDataForSubsurface(form)
     .done((subsurface_data) => {
         delegateSubsurfaceDataForPlotting(subsurface_data, form);
+        $("#subsurface-plots .loading-bar").hide();
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -332,8 +335,8 @@ function plotSubsurfaceAnalysisCharts (form) {
     });
 }
 
-function getPlotDataForSubsurface ({ site_column, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForSubsurface/${site_column}/${start_date}/${end_date}`)
+function getPlotDataForSubsurface ({ subsurface_column, start_date, end_date }) {
+    return $.getJSON(`../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`)
     .catch(err => err);
 }
 
@@ -344,21 +347,19 @@ function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
         else if (type === "displacement") plotDisplacement(data, form);
         else if (type === "velocity_alerts") plotVelocityAlerts(data, form);
     });
-    $("#loading").modal("hide");
 }
 
-function plotColumnPosition (column_data, { site_column }) {
+function plotColumnPosition (column_data, { subsurface_column }) {
     const { data: data_list } = column_data;
     data_list.forEach(({ orientation, data }) => {
         const col_data = { ...column_data };
         const colored_data = assignColorToEachSeries(data);
         col_data.data = colored_data;
-        createColumnPositionChart(orientation, col_data, site_column);
+        createColumnPositionChart(orientation, col_data, subsurface_column);
     });
-    $("#loading").modal("hide");
 }
 
-function plotDisplacement (column_data, { site_column }) {
+function plotDisplacement (column_data, { subsurface_column }) {
     column_data.forEach((data, index) => {
         const { data: series_list, annotations } = data;
 
@@ -376,11 +377,11 @@ function plotDisplacement (column_data, { site_column }) {
             annotations
         };
 
-        createDisplacementChart(col_data, site_column);
+        createDisplacementChart(col_data, subsurface_column);
     });
 }
 
-function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, { site_column }) {
+function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, { subsurface_column }) {
     const processed_data = assignColorToEachSeries(timestamps_per_node);
     velocity_alerts.forEach(({ orientation, data }) => {
         const alerts = data;
@@ -403,18 +404,18 @@ function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, { site_co
             };
             colored_data.push(series);
         });
-        createVelocityAlertsChart(orientation, colored_data, site_column);
+        createVelocityAlertsChart(orientation, colored_data, subsurface_column);
     });
 }
 
-function createColumnPositionChart (orientation, column_data, site_column) {
+function createColumnPositionChart (orientation, column_data, subsurface_column) {
     const { data, max_position, min_position } = column_data;
     const xAxisTitle = orientation === "across_slope" ? "Across Slope" : "Downslope";
 
     $(`#column-position-${orientation}`).highcharts({
         series: data,
         chart: {
-            type: "line",
+            type: "scatter",
             zoomType: "x",
             height: 800
         },
@@ -423,7 +424,7 @@ function createColumnPositionChart (orientation, column_data, site_column) {
             style: { fontSize: "14px" }
         },
         subtitle: {
-            text: `<b>Source: ${site_column.toUpperCase()}</b>`,
+            text: `<b>Source: ${subsurface_column.toUpperCase()}</b>`,
             style: { fontSize: "12px" }
         },
         plotOptions: {
@@ -476,7 +477,7 @@ function createColumnPositionChart (orientation, column_data, site_column) {
     });
 }
 
-function createDisplacementChart (column_data, site_column) {
+function createDisplacementChart (column_data, subsurface_column) {
     const { orientation, data, annotations } = column_data;
     const xAxisTitle = orientation === "across_slope" ? "Across Slope" : "Downslope";
 
@@ -495,7 +496,7 @@ function createDisplacementChart (column_data, site_column) {
             style: { fontSize: "14px" }
         },
         subtitle: {
-            text: `<b>Source: ${(site_column).toUpperCase()}</b><br><br><b>Note: </b> + - consistently increasing/decreasing trend`,
+            text: `<b>Source: ${(subsurface_column).toUpperCase()}</b><br><br><b>Note: </b> + - consistently increasing/decreasing trend`,
             style: { fontSize: "12px" }
         },
         xAxis: {
@@ -536,7 +537,7 @@ function createDisplacementChart (column_data, site_column) {
     });
 }
 
-function createVelocityAlertsChart (orientation, data, site_column) {
+function createVelocityAlertsChart (orientation, data, subsurface_column) {
     const category = data.map(x => x.name).unshift();
     const xAxisTitle = orientation === "across_slope" ? "Across Slope" : "Downslope";
     $(`#velocity-alerts-${orientation}`).highcharts({
@@ -554,7 +555,7 @@ function createVelocityAlertsChart (orientation, data, site_column) {
             style: { fontSize: "14px" }
         },
         subtitle: {
-            text: `<b>Source: ${site_column.toUpperCase()}</b>`,
+            text: `<b>Source: ${subsurface_column.toUpperCase()}</b>`,
             style: { fontSize: "12px" }
         },
         credits: {

@@ -25,10 +25,11 @@ function initializeRainSourcesButton () {
                 site_code: $("#site_code").val(),
                 end_date: $("#data_timestamp").val(),
                 start_date: getStartDate("rainfall"),
-                source: table
+                source: "all" // table
             };
 
-            $("#loading").modal("show");
+            $loading_rain = $("#rainfall-plots .loading-bar");
+            $loading_rain.show();
             getPlotDataForRainfall(input)
             .done((datalist) => {
                 console.log(datalist);
@@ -36,7 +37,7 @@ function initializeRainSourcesButton () {
                 plotRainfall(datalist, input);
                 $(target).data("loaded", true);
                 $(target).addClass("active");
-                $("#loading").modal("hide");
+                $loading_rain.hide();
             })
             .catch(({ responseText, status: conn_status, statusText }) => {
                 alert(`Status ${conn_status}: ${statusText}`);
@@ -56,21 +57,61 @@ function initializeRainfallDurationDropdownOnClick () {
         $("#rainfall-duration-btn").empty()
         .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
 
-        const loaded_plots = [];
         $btn_group = $("#rainfall-sources-btn-group");
-        $btn_group.find("button").each((i, elem) => {
-            const table = elem.value;
-            if ($(elem).data("loaded") === true && $(elem).hasClass("active")) {
-                loaded_plots.push(table);
-            }
-            $(elem).data("loaded", false);
-            $(elem).removeClass("active");
+
+        // All rainfall plots implementation
+        $btn_group.find("button:first").data("loaded", false).trigger("click");
+        $btn_group.find("button").each((index, button) => {
+            const table = $(button).val();
+            $(`#${table}`).show();
+            $(button).removeClass("active").addClass("active");
+            $(button).data("loaded", true);
         });
 
-        if (loaded_plots.length === 0) $btn_group.first().trigger("click");
-        else {
-            loaded_plots.forEach((table) => { $btn_group.find(`[value=${table}]`).trigger("click"); });
-        }
+        /**
+         * On-demand implementation for each rainfall graph
+        **/
+        // const loaded_plots = [];
+        // $btn_group.find("button").each((i, elem) => {
+        //     const table = elem.value;
+        //     if ($(elem).data("loaded") === true && $(elem).hasClass("active")) {
+        //         loaded_plots.push(table);
+        //     }
+        //     $(elem).data("loaded", false);
+        //     $(elem).removeClass("active");
+        // });
+
+        // if (loaded_plots.length === 0) $btn_group.first().trigger("click");
+        // else {
+        //     loaded_plots.forEach((table) => {
+        //          $btn_group.find(`[value=${table}]`).trigger("click");
+        //     });
+        // }
+    });
+}
+
+function plotRainfallCharts (site_code) {
+    $("#rainfall-plots .plot-container").remove();
+    getRainDataSourcesPerSite(site_code)
+    .done((sources) => {
+        createRainSourcesButton(sources);
+        $("#rainfall-plot-options").show();
+        $rain_btn_group = $("#rainfall-sources-btn-group");
+
+        // All rainfall plots implementation
+        $rain_btn_group.find("button:first").trigger("click");
+        $rain_btn_group.find("button").each((index, button) => {
+            $(button).removeClass("active").addClass("active");
+            $(button).data("loaded", true);
+        });
+
+        /**
+         * On-demand implementation for each rainfall graph
+        **/
+        // $rain_btn_group.find("button:first").trigger("click");
+        // $rain_btn_group.find("button").each((index, button) => {
+        //     $(button).trigger("click");
+        // });
     });
 }
 

@@ -1,15 +1,18 @@
 
+let validator = null;
 $(document).ready(() => {
     adjustOptionsBarOnWindowResize();
-
-    let validator = null;
+    createStickyOptionsBar();
     initializeTimestamps();
-    validator = initializeForm();
-    // validateForm();
 
-    onSiteCodeDropdownClick();
-    onSubsurfaceColumnDropdownClick();
-    onOptionsBarToggleClick();
+    validator = initializeForm();
+    validateForm(validator);
+
+    initializeSiteCodeDropdownOnChange();
+    initializeSubsurfaceColumnDropdownOnChange();
+    initializeOptionsBarToggleOnClick();
+
+    loadDefaultSite();
 
     formatHighchartsGlobalOptions();
 });
@@ -25,35 +28,29 @@ function initializeTimestamps () {
     })
     .on("dp.show", function (e) {
         $(this).data("DateTimePicker").maxDate(moment().second(0));
+        setTimeout(() => {
+            $(".bootstrap-datetimepicker-widget").css({ left: -17 });
+        }, 50);
     });
 }
 
-function adjustOptionsBarOnWindowResize () {
-    $(window).on("resize", () => {
-        const window_h = $(window).height();
-        const page_header = $(".page-header").height();
-        const nav_top = $(".navbar-fixed-top").height();
-        const nav_bottom = $(".navbar-fixed-bottom").height();
-
-        const final = window_h - page_header - nav_top - nav_bottom - 100;
-        const is_collapsed = $("#options-bar").data("collapsed") || "false";
-
-        let overflow = "hidden";
-        if (is_collapsed === "false") {
-            overflow = final > 785 ? "hidden" : "visible";
-        }
-
-        $("#options-bar > .panel").css({
-            "max-height": final,
-            "overflow-y": overflow,
-            "overflow-x": "hidden"
-        });
-    })
-    .resize();
+function loadDefaultSite () {
+    // $("#data_timestamp").val(moment().format("YYYY-MM-DD HH:mm:ss"));
+    $("#data_timestamp").val("2017-11-11 00:00:00");
+    $("#site_code").val("agb").trigger("change");
+    $("#plot-site-level").trigger("click");
 }
 
+function createStickyOptionsBar () {
+    $("#options-bar").stick_in_parent({
+        offset_top: 80,
+        bottoming: false
+    });
+}
+
+let submit_btn_id = null;
 function initializeForm () {
-    const validator = $("#site-analysis-form").validate({
+    const val = $("#site-analysis-form").validate({
         debug: true,
         rules: {
             data_timestamp: "required",
@@ -101,76 +98,150 @@ function initializeForm () {
             } else $(element).next("span").addClass("glyphicon-ok").removeClass("glyphicon-remove");
         },
         submitHandler (form) {
-            // console.log("Entered submitHandler");
-            // return false;
+            $("#loading").modal("show");
 
             const data = $("#site-analysis-form").serializeArray();
-            const input = {};
+            let input = {};
             data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
 
-            $("#loading").modal("show");
-            $(".plot-container").remove();
+            input = {
+                ...input,
+                end_date: moment(input.data_timestamp).format("YYYY-MM-DDTHH:mm")
+            };
 
-            let site_name = $("#site_code").find("option:selected").text();
-            [, site_name] = site_name.match(/\(([^)]+)\)/);
-            $("#site_name").html(`Brgy. ${site_name} (${input.site_code.toUpperCase()})`);
+            let $container;
 
-            getRainDataSourcesPerSite(input.site_code)
-            .done((sources) => {
-                createRainSourcesButton(sources);
-                $("#rainfall-plot-options").show();
-                $rain_btn_group = $("#rainfall-sources-btn-group");
-                $rain_btn_group.find("button:first").trigger("click");
-                /*$rain_btn_group.find("button").each((index, button) => {
-                    $(button).trigger("click");
-                });*/
-            });
+            if (submit_btn_id === "plot-site-level") {
+                let address = $("#site_code option:selected").text();
+                address = address.match(/\(([^)]+)\)/, address);
+                $("#site-name").text(address[1]);
 
-            $("#surficial-plot-options").show();
-            $surficial_btn_group = $("#surficial-markers-btn-group");
-            $surficial_btn_group.find("button:first").data("loaded", false).trigger("click");
+                $container = $("#site-plots-container");
 
-            processSubsurfaceColumnDropDown(input.site_code);
+                plotRainfallCharts(input.site_code);
+                plotSurficialCharts();
+            } else if (submit_btn_id === "plot-column-level") {
+                const column_name = $("#subsurface_column option:selected").text();
+                $("#column-name").text(column_name.toUpperCase());
+
+                $container = $("#subsurface-column-plots-container");
+
+                input.start_date = getStartDate("column-summary");
+                plotColumnSummaryCharts(input);
+
+                input.start_date = getStartDate("subsurface");
+                plotSubsurfaceAnalysisCharts(input);
+            } else if (submit_btn_id === "plot-node-level") {
+                let node_names = input.nodes;
+                node_names = /,/.test(node_names) === true ? `Nodes ${node_names}` : `Node ${node_names}`;
+                $("#node-name").text(node_names);
+
+                $container = $("#subsurface-node-plots-container");
+
+                input = {
+                    ...input,
+                    start_date: getStartDate("node-summary"),
+                    nodes: input.nodes.replace(/, /g, "-")
+                };
+                plotNodeLevelCharts(input);
+            }
+
+            $container.slideDown();
+            $container.data("site-loaded", input.site_code);
+
+            hideSections(input.site_code);
+
+            $("#loading").modal("hide");
+            console.log(input);
         }
     });
 
-    return validator;
+    return val;
 }
 
-// function validateForm () {
-//     $(".submit-btn").on("click", ({ target }) => {
-//         const id = $(target).prop("id");
-//         console.log(id);
-//         $(".has-error").removeClass("has-error");
-//         $(".glyphicon-remove, .glyphicon-ok").remove();
+function validateForm (form) {
+    $(".submit-btn").on("click", ({ currentTarget }) => {
+        submit_btn_id = $(currentTarget).prop("id");
 
-//         validator.resetForm();
-//         $("#site_code").rules("remove");
-//         $("#subsurface_column").rules("remove");
+        $(".has-error").removeClass("has-error");
+        $(".glyphicon-remove, .glyphicon-ok").remove();
+        form.resetForm();
 
-//         if (id === "plot-site-level") {
-//             $("#site_code").rules("add", { required: true });
-//         } else {
-//             $("#subsurface_column").rules("add", { required: true });
-//         }
+        $("#site_code").rules("remove");
+        $("#subsurface_column").rules("remove");
+        $("#nodes").rules("remove");
 
-//         $("#site-analysis-form").valid();
-//     });
-// }
+        switch (submit_btn_id) {
+            case "plot-node-level":
+                $("#nodes").rules("add", { required: true });
+                // fallthrough
+            case "plot-column-level":
+                $("#subsurface_column").rules("add", { required: true });
+                // fallthrough
+            case "plot-site-level": // fallthrough
+            default:
+                $("#site_code").rules("add", { required: true });
+                break;
+        }
 
-function onSiteCodeDropdownClick () {
+        $("#site-analysis-form").valid();
+    });
+}
+
+function hideSections (site_code) {
+    $(".section").each((index, element) => {
+        const site_loaded = $(element).data("site-loaded");
+        if (site_loaded !== site_code) {
+            $(element).slideUp();
+        }
+    });
+}
+
+function initializeSiteCodeDropdownOnChange () {
     $("#site_code").change(({ currentTarget: { value: site_code } }) => {
-        processSubsurfaceColumnDropDown(site_code);
+        const code = site_code === "" ? "x" : site_code;
+        processSubsurfaceColumnDropDown(code);
+        updateBreadcrumb("site");
     });
 }
 
-function onSubsurfaceColumnDropdownClick () {
+function initializeSubsurfaceColumnDropdownOnChange () {
     $("#subsurface_column").change(({ currentTarget: { value: subsurface_column } }) => {
-        processNodeDropDown(subsurface_column);
+        const column = subsurface_column === "" ? "x" : subsurface_column;
+        processNodeDropDown(column);
+        updateBreadcrumb("column");
     });
 }
 
-function onOptionsBarToggleClick () {
+function updateBreadcrumb (section) {
+    const $breadcrumb = $("#main-plots-container .breadcrumb");
+    const $main = $breadcrumb.find(".main");
+    $main.nextAll().remove();
+
+    switch (section) {
+        case "node":
+            let node_names = $("#nodes").val();
+            node_names = /,/.test(node_names) === true ? `Nodes ${node_names}` : `Node ${node_names}`;
+            $main.after($("<li>", {
+                text: node_names
+            }));
+            // fall through
+        case "column":
+            $main.after($("<li>", {
+                text: $("#subsurface_column").val().toUpperCase()
+            }));
+            // fall through
+        case "site":
+            $main.after($("<li>", {
+                text: $("#site_code").val().toUpperCase()
+            }));
+            // fall through
+        default:
+            break;
+    }
+}
+
+function initializeOptionsBarToggleOnClick () {
     $("#toggle-options-bar").click(() => {
         const $bar = $("#options-bar");
         const $plots = $("#main-plots-container");
@@ -178,24 +249,66 @@ function onOptionsBarToggleClick () {
 
         if (is_collapsed === "false") {
             $(".hideable").css("visibility", "hidden");
+            $(".hideable-hide").hide();
+            $bar.find(".fa-angle-double-left")
+            .switchClass("fa-angle-double-left", "fa-angle-double-right");
             $bar.switchClass("col-sm-3", "col-sm-1", {
                 complete () {
                     $bar.data("collapsed", "true");
                     $(window).resize();
                 }
             });
-            $plots.switchClass("col-sm-9", "col-sm-11");
+            $plots.switchClass("col-sm-9", "col-sm-11", {
+                complete () {
+                    resizeCharts();
+                }
+            });
         } else {
-            $plots.switchClass("col-sm-11", "col-sm-9");
+            $bar.find(".fa-angle-double-right")
+            .switchClass("fa-angle-double-right", "fa-angle-double-left");
+            $plots.switchClass("col-sm-11", "col-sm-9", {
+                complete () {
+                    resizeCharts();
+                }
+            });
             $bar.switchClass("col-sm-1", "col-sm-3", {
                 complete () {
                     $bar.data("collapsed", "false");
                     $(".hideable").css("visibility", "visible");
+                    $(".hideable-hide").show();
                     $(window).resize();
                 }
             });
         }
     });
+}
+
+function adjustOptionsBarOnWindowResize () {
+    $(window).on("resize", () => {
+        const window_h = $(window).height();
+        const page_header = $(".page-header").height();
+        const nav_top = $(".navbar-fixed-top").height();
+        const nav_bottom = $(".navbar-fixed-bottom").height();
+
+        const final = window_h - page_header - nav_top - nav_bottom - 100;
+        const is_collapsed = $("#options-bar").data("collapsed") || "false";
+
+        let overflow = "hidden";
+        if (is_collapsed === "false") {
+            overflow = final > 785 ? "auto" : "auto";
+        }
+
+        $("#options-bar > .panel").css({
+            "max-height": final,
+            "overflow-y": overflow,
+            "overflow-x": overflow
+        });
+    })
+    .resize();
+}
+
+function resizeCharts () {
+    window.dispatchEvent(new Event("resize"));
 }
 
 function getStartDate (plot_type) {
@@ -283,6 +396,7 @@ function formatHighchartsGlobalOptions () {
                     menuItems: options.splice(2)
                 }
             }
-        }
+        },
+        chart: { reflow: true }
     });
 }

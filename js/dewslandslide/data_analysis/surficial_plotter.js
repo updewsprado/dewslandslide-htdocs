@@ -3,8 +3,8 @@ $(document).ready(() => {
     initializeSurficialMarkersButton();
     initializeSurficialDurationDropDownOnClick();
 
-    Highcharts.SVGRenderer.prototype.symbols.asterisk = ((x, y, w, h) => {
-        return [
+    Highcharts.SVGRenderer.prototype.symbols.asterisk = (x, y, w, h) =>
+        [
             "M", x - 3, y - 3,
             "L", x + w + 3, y + h + 3,
             "M", x + w + 3, y - 3,
@@ -15,13 +15,21 @@ $(document).ready(() => {
             "L", x + w / 2, y + h + 4,
             "z"
         ];
-    });
 
     if (Highcharts.VMLRenderer) {
         Highcharts.VMLRenderer.prototype.symbols.asterisk =
             Highcharts.SVGRenderer.prototype.symbols.asterisk;
     }
 });
+
+function plotSurficialCharts () {
+    $("#surficial-plots .plot-container").remove();
+    $("#surficial-plot-options").show();
+    $surficial_btn_group = $("#surficial-markers-btn-group");
+    setTimeout(() => {
+        $surficial_btn_group.find("button:first").data("loaded", false).trigger("click");
+    }, 700);
+}
 
 function initializeSurficialMarkersButton () {
     $(document).on("click", "#surficial-markers-btn-group button", ({ target }) => {
@@ -49,7 +57,8 @@ function initializeSurficialMarkersButton () {
                 }
             });
         } else {
-            $("#loading").modal("show");
+            $loading_surficial = $("#surficial-plots .loading-bar");
+            $loading_surficial.show();
             $(target).addClass("active");
 
             const input = {
@@ -68,7 +77,7 @@ function initializeSurficialMarkersButton () {
                     $(`#${input.site_code}-surficial`).show();
                     plotSurficial(series, input);
                     $(target).data("loaded", true);
-                    $("#loading").modal("hide");
+                    $loading_surficial.hide();
                 })
                 .catch(({ responseText, status: conn_status, statusText }) => {
                     alert(`Status ${conn_status}: ${statusText}`);
@@ -84,7 +93,7 @@ function initializeSurficialMarkersButton () {
                     console.log(trend_dataset);
                     plotMarkerTrendingAnalysis(trend_dataset, input);
                     $(target).data("loaded", true);
-                    $("#loading").modal("hide");
+                    $loading_surficial.hide();
                 })
                 .catch(({ responseText, status: conn_status, statusText }) => {
                     alert(`Status ${conn_status}: ${statusText}`);
@@ -240,7 +249,6 @@ function plotMarkerTrendingAnalysis (trend_dataset, input) {
             createMarkerAccelerationVsTimeChart(series, input);
         }
     });
-    $("#loading").modal("hide");
 }
 
 function processDatasetForPlotting ({ dataset_name, dataset }) {
