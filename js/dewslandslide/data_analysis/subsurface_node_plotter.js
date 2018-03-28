@@ -1,7 +1,7 @@
 
 $(document).ready(() => {
     const input = {
-        column_name: "agbta",
+        column_name: "bolb",
         start_date: "2016-01-15",
         end_date: "2016-01-21",
         node: "1-3-5"
@@ -126,10 +126,6 @@ function plotNodeLevelCharts (input) {
         console.log(subsurface_node_data);
         subsurface_node_data.forEach((series) => {
             createGeneralNodeChart(series, input);
-            // if (series_name === "battery") createBatteryChart(data);
-            // else if (series_name === "x-accelerometer") createXAccelerometerChart(data);
-            // else if (series_name === "y-accelerometer") createYAccelerometerChart(data);
-            // else if (series_name === "z-accelerometer") createZAccelerometerChart(data);
         });
         $("#loading").modal("hide");
     })
@@ -150,8 +146,8 @@ function createGeneralNodeChart ({ series_name, data }, input) {
     const { column_name, start_date, end_date } = input;
     const cap = series_name === "battery" ? 1 : 3;
     const title = series_name.slice(0, cap).toUpperCase() + series_name.slice(cap);
-
-    $(`#${series_name}-graph`).highcharts({
+    if (data.length > 0) {
+    	$(`#${series_name}-graph`).highcharts({
         series: data,
         chart: {
             type: "line",
@@ -210,4 +206,6 @@ function createGeneralNodeChart ({ series_name, data }, input) {
             enabled: false
         }
     });
+    } 
+    
 }
