@@ -2106,7 +2106,6 @@ $(document).ready(() => {
             });
         }
         } else {
-            console.log('go here');
             data = {
                 'category': 'dewslcontacts',
                 'eid': '',
@@ -2143,7 +2142,7 @@ $(document).ready(() => {
 
 
     $("#comm-settings-cmd button[type=\"submit\"]").on("click", () => {
-        if ($("#settings-cmd").val() != "updatecontact") {
+        if ($("#settings-cmd").val() == "updatecontact") {
             let empty_fields = 0;
             $("#community-contact-wrapper input").each(function () {
                 if (($(this).val() == "" || $(this).val() == null) && $(this).attr("id") != undefined) {
