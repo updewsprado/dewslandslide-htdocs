@@ -2,16 +2,6 @@ $(document).ready(function(){
 
 });
 
-function setTargetTime (hour, minute) {
-    var t = new Date();
-    t.setHours(hour);
-    t.setMinutes(minute);
-    t.setSeconds(0);
-    t.setMilliseconds(0);
-
-    return t;
-}
-
 function arraysEqual (a, b) {
     if (a === b) return true;
     if (a == null || b == null) return false;
