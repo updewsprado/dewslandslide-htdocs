@@ -28,18 +28,59 @@ describe("normalizedContactNum", () => {
     });
 });
 
-describe("loadSearchedMessage", () => {   // ON HOLD. ASK JOHN ON WHETHER THIS IS AN ACTIVE FUNCTION OR UNUSED FUNCTION
+describe("[SKIPPED] loadSearchedMessage", () => {   // ON HOLD. 
     it("should return ...", () => {
+        let msg = {
+            type: "searchMessage",
+            data: "Hello world",
+            user: "You",
+            sender: "You",
+            status: "Success",
+            name: null,
+            isyou: 1
+        };
         const trigger = loadSearchedMessage("po");
         console.log(trigger);
-        expect(trigger).to.equal();
+        expect(trigger).to.equal("Error");
     });
 });
 
-describe("updateGlobalMessage", () => {
+describe("[SKIPPED] updateGlobalMessage", () => {
     it("should ...", () => {
         const trigger = updateGlobalMessage("");
         console.log(trigger);
-        expect(trigger).to.equal("639121231234");
+        expect(trigger).to.equal("Error");
+    });
+});
+
+describe("[SKIPPED] paginate", () => {
+    it("should ...", () => {
+        const trigger = paginate("");
+        console.log(trigger);
+        expect(trigger).to.equal("Error");
+    });
+});
+
+describe("[SKIPPED] reset_ec", () => {
+    it("should ...", () => {
+        const trigger = paginate("");
+        console.log(trigger);
+        expect(trigger).to.equal("Error");
+    });
+});
+
+describe("[SKIPPED] reset_ec", () => {
+    it("should ...", () => {
+        const trigger = reset_ec("");
+        console.log(trigger);
+        expect(trigger).to.equal("Error");
+    });
+});
+
+describe("[SKIPPED] reset_cc", () => {
+    it("should ...", () => {
+        const trigger = reset_cc("");
+        console.log(trigger);
+        expect(trigger).to.equal("Error");
     });
 });
