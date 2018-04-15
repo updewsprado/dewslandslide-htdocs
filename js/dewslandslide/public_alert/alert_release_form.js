@@ -631,7 +631,7 @@ function disableDivsOnNoDataClick (trigger) {
     const $triggers_div = $(triggers_div_temp);
     if (trigger.checked) {
         $triggers_div.prop("checked", false).prop("disabled", true);
-        if ($(trigger_letter).val().toUpperCase() === "M") {
+        if (trigger_letter.toUpperCase() === "M") {
             $triggers_div.parent().next().children("input")
             .prop("disabled", true)
             .val("");
