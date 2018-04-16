@@ -30,6 +30,7 @@ function getSiteSubsurfaceColumns (site_code) {
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
+    console.log(column_list);
     column_list.forEach(({ name: site_code }) => {
         $("#subsurface_column").append($("<option>", {
             value: site_code,
@@ -49,10 +50,10 @@ function initializeColumnSummaryDurationDropdownOnClick () {
 
         $(`#${parent_id}-btn`).empty()
         .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
-
+        
         const form = {
             subsurface_column: $("#subsurface_column").val(),
-            start_date: getStartDate(parent_id.replace("-duration")),
+            start_date: getStartDate(parent_id.replace("-duration", "")),
             end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm")
         };
 
@@ -90,7 +91,6 @@ function getPlotDataForColumnSummary (form, include_node_health) {
 }
 
 function delegateColumnSummaryDataForPlotting (column_summary, form) {
-    console.log(column_summary);
     column_summary.forEach(({ data, series_name }) => {
         switch (series_name) {
             case "node_summary": plotNodeHealthSummary(data, form); break;
@@ -341,7 +341,6 @@ function getPlotDataForSubsurface ({ subsurface_column, start_date, end_date }) 
 }
 
 function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
-    console.log(subsurface_data);
     subsurface_data.forEach(({ type, data }) => {
         if (type === "column_position") plotColumnPosition(data, form);
         else if (type === "displacement") plotDisplacement(data, form);
@@ -635,6 +634,7 @@ function makeRainbowColors (size) {
 }
 
 function sinToHex ({ index, size }, phase) {
+    console.log(phase);
     const sin = Math.sin(Math.PI / size * 2 * index + phase);
     const int = Math.floor(sin * 127) + 128;
     const hex = int.toString(16);
