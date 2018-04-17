@@ -5,11 +5,18 @@ function appendInput (type, selector, name, value) {
 }
 
 describe("arraysEqual", () => {
-    it("should be equal to false", () => {
+    it("should be equal to true", () => {
         const trigger = arraysEqual([1,2,3],[1,2,3]);
         console.log(trigger);
         expect(trigger).to.equal(true);
     });
+
+    it("should be equal to false", () => {
+        const trigger = arraysEqual([1,5,3],[1,2,3]);
+        console.log(trigger);
+        expect(trigger).to.equal(false);
+    });
+    
 });
 
 describe("trimmedContactNum", () => {
@@ -18,6 +25,13 @@ describe("trimmedContactNum", () => {
         console.log(trigger);
         expect(trigger[0]).to.equal("9121231234");
     });
+
+    it("should return an array with value \"9178141908\" at index 0", () => {
+        const trigger = trimmedContactNum("09178141908");
+        console.log(trigger);
+        expect(trigger[0]).to.equal("9178141908");
+    });
+
 });
 
 describe("normalizedContactNum", () => {
