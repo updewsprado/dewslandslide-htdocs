@@ -122,7 +122,36 @@ function sendViaAlertMonitor (dashboard_data) {
     $("#site-abbr").val(dashboard_data.name);
 }
 
+let on_edit = null;
+let pms_reference_id = null;
+const pms_instances = [];
+
 $(document).ready(() => {
+
+    $(".report").click(function() {
+
+        const instance = PMS_MODAL.create({
+            modal_id: `chatterbox-accuracy-1`,
+            metric_name: "",
+            module_name: "Chatterbox"
+        });
+
+        setTimeout(() => {
+            if (instance.is_attached) {
+                pms_instances[`s${release_id}`] = instance;
+            }
+        }, 300);
+
+
+        console.log(pms_instances);
+        instance.set({
+            reference_id: pms_reference_id,
+            reference_table: "chatterbox"
+        });
+        instance.show();
+        instance.print();
+    });
+
 
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
