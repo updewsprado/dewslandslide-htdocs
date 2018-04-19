@@ -139,11 +139,9 @@ function connectWS () {
                 $("#messages li").last().addClass("tagged");
             }
 
-            let temp_msg_holder = {
-                "sms_id" : msg.data[parseInt(msg.data.length - 1)],
-                "timestamp" : msg.timestamp,
-                "table_used" : "smsoutbox"
-            }
+            temp_msg_holder.sms_id = msg.data[parseInt(msg.data.length - 1)];
+            temp_msg_holder.timestamp = msg.timestamp;
+            temp_msg_holder.table_used = "smsoutbox";
 
             updateMessages(temp_msg_holder);
 
