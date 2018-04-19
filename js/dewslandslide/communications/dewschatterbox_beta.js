@@ -138,7 +138,7 @@ $(document).ready(() => {
         $("#routine-reminder-option").removeClass("active");
         $("#routine-msg").val("");
         $(this).addClass("active");
-        $("#def-recipients").text("Default recipients: LLMC, BLGU, MLGU");
+        $("#def-recipients").text("Default recipients: LEWC, BLGU, MLGU");
         $.get("../communications/getRoutine", (data) => {
             var routine_template = JSON.parse(data);
             $("#routine-msg").val(routine_template[0].template);
@@ -147,7 +147,7 @@ $(document).ready(() => {
 
     $("#routine-reminder-option").on("click", function () {
         $("#routine-actual-option").removeClass("active");
-        $("#def-recipients").text("Default recipients: LLMC");
+        $("#def-recipients").text("Default recipients: LEWC");
         $("#routine-msg").val("");
         $("#routine-msg").val(routine_reminder_msg);
         $(this).addClass("active");
@@ -199,9 +199,9 @@ $(document).ready(() => {
         $("#chatterbox-loading").modal("show");
         var offices = [];
         if ($(".btn.btn-primary.active").val() == "Reminder Message") {
-            offices = ["LLMC"];
+            offices = ["LEWC"];
         } else {
-            offices = ["LLMC", "MLGU", "BLGU"];
+            offices = ["LEWC", "MLGU", "BLGU"];
         }
         var sites_on_routine = [];
         var routine_msg = $("#routine-msg").val();
@@ -882,7 +882,7 @@ $(document).ready(() => {
 
         user = "You";
 
-        var tagOffices = ["LLMC", "BLGU", "MLGU", "PLGU", "REG8"];
+        var tagOffices = ["LEWC", "BLGU", "MLGU", "PLGU", "REG8"];
 
         var tagSitenames = [];
         tagSitenames.push($(this).closest("li").find("input[type='text']").val()
