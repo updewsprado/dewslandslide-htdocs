@@ -23,7 +23,6 @@ $(document).ready(() => {
     });
 
     $("body").on("click", ".report", () => {
-        console.log(pms_instances);
         const instance = pms_instances[`s${release_id}`];
         instance.set({
             reference_id: release_id,
@@ -89,8 +88,6 @@ function getFirstEventRelease (event_id) {
 }
 
 function addOnsetMessageIfApplicable (release, release_id, obj) {
-    console.log(release);
-
     const [{ release_id: id, release_time: time, data_timestamp: data_ts }] = release;
     const { loc, alert, text } = obj;
     const onset = id === release_id;
@@ -141,14 +138,12 @@ function setPerformanceMonitoringModal (bulletin_div) {
     const instance = PMS_MODAL.create({
         modal_id: `bulletin-accuracy-${release_id}`,
         metric_name: "bulletin_accuracy",
-        module_name: "Bulletin"
+        module_name: "Bulletin",
+        type: "accuracy"
     });
 
-    setTimeout(() => {
-        if (instance.is_attached) {
-            pms_instances[`s${release_id}`] = instance;
-        }
-    }, 300);
+    if (!instance.is_attached) { setTimeout(null, 300); }
+    pms_instances[`s${release_id}`] = instance;
 }
 
 function renderPDF (id) {
