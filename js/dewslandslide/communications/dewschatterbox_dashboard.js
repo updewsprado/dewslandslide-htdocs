@@ -45,7 +45,6 @@ $(document).ready(() => {
                 }
             }
 
-            console.log(tagOffices);
             $("input[name=\"offices\"]").prop("checked", false);
             $("input[name=\"sitenames\"]").prop("checked", false);
 
@@ -90,7 +89,6 @@ $(document).ready(() => {
                 for (let counter = 0; counter < added_contacts.length; counter += 1) {
                     user = "You";
                     gsm_timestamp_indicator = $("#server-time").text();
-                    console.log(gsm_timestamp_indicator);
                     temp_msg_holder = {
                         type: "smssend",
                         user,
@@ -351,6 +349,8 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                             const release_time = moment(dashboard_data.data_timestamp).format("YYYY-MM-DD hh:mm A");
                             const onset_time = moment(dashboard_data.event_start).format("YYYY-MM-DD hh:mm A");
 
+                            data_timestamp = release_time;
+                            
                             let parsed_time;
                             let meridiem;
 

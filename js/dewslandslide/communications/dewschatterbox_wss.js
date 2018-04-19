@@ -139,9 +139,12 @@ function connectWS () {
                 $("#messages li").last().addClass("tagged");
             }
 
-            temp_msg_holder.sms_id = msg.data[parseInt(msg.data.length - 1)];
-            temp_msg_holder.timestamp = msg.timestamp;
-            temp_msg_holder.table_used = "smsoutbox";
+            let temp_msg_holder = {
+                "sms_id" : msg.data[parseInt(msg.data.length - 1)],
+                "timestamp" : msg.timestamp,
+                "table_used" : "smsoutbox"
+            }
+
             updateMessages(temp_msg_holder);
 
             var current_timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -213,9 +216,8 @@ function connectWS () {
                                 barangay: event_details.barangay,
                                 sition: event_details.sition,
                                 ewi_sms_timestamp: current_timestamp,
-                                narrative_template
+                                narrative_template: narrative_template
                             };
-
                             $.post("../narrativeAutomation/insert/", { narratives: narrative_details })
                             .done((response) => {
                                 var start = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -314,12 +316,8 @@ function connectWS () {
                 var sender = msg.name.split(" ");
 
                 for (var i = 0; i < selected_site.length; i++) {
-                    console.log(selected_site[i]);
-                    console.log(sender[0]);
                     if (selected_site[i] == sender[0]) {
                         for (var x = 0; x < selected_office.length; x++) {
-                            console.log(selected_office[x]);
-                            console.log(sender[1]);
                             if (selected_office[x] == sender[1]) {
                                 updateMessages(msg);
                             }
@@ -333,7 +331,6 @@ function connectWS () {
                 }
 
                 if (msg.user.match(numbers)) {
-                    console.log("all numbers");
                     for (i in trimmed_number) {
                         if (normalizedContactNum(trimmed_number[i]) == normalizedContactNum(msg.user)) {
                             updateMessages(msg);
@@ -341,7 +338,6 @@ function connectWS () {
                         }
                     }
                 } else {
-                    console.log("alphanumeric keywords for msg.user");
                     for (i in trimmed_number) {
                         for (j in msg.numbers) {
                             if (normalizedContactNum(trimmed_number[i]) == normalizedContactNum(msg.numbers[j])) {
