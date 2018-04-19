@@ -137,11 +137,15 @@ function createRainSourcesButton (sources) {
     });
 }
 
-function getPlotDataForRainfall ({
-    site_code, start_date, end_date, source
-}) {
+function getPlotDataForRainfall (args, isEOS = false) {
+    const {
+        site_code, start_date, end_date, source
+    } = args;
     const s = (typeof source === "undefined") ? "all" : source;
-    return $.getJSON(`../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`)
+    let url = `/../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+    
+    return $.getJSON(url)
     .catch(err => err);
 }
 

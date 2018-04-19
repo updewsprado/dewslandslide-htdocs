@@ -132,8 +132,14 @@ function initializeSurficialDurationDropDownOnClick () {
     });
 }
 
-function getPlotDataForSurficial ({ site_code, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`)
+function getPlotDataForSurficial (args, isEOS = false) {
+    const {
+        site_code, start_date, end_date
+    } = args;
+    let url = `/../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+
+    return $.getJSON(url)
     .catch(err => err);
 }
 

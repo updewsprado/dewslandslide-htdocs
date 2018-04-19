@@ -50,7 +50,7 @@ function initializeColumnSummaryDurationDropdownOnClick () {
 
         $(`#${parent_id}-btn`).empty()
         .append(`${value} ${duration}&emsp;<span class="caret"></span>`);
-        
+
         const form = {
             subsurface_column: $("#subsurface_column").val(),
             start_date: getStartDate(parent_id.replace("-duration", "")),
@@ -335,8 +335,14 @@ function plotSubsurfaceAnalysisCharts (form) {
     });
 }
 
-function getPlotDataForSubsurface ({ subsurface_column, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`)
+function getPlotDataForSubsurface (args, isEOS = false) {
+    const {
+        subsurface_column, start_date, end_date
+    } = args;
+    let url = `/../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+
+    return $.getJSON(url)
     .catch(err => err);
 }
 
@@ -487,8 +493,7 @@ function createDisplacementChart (column_data, subsurface_column) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800,
-            width: 400
+            height: 800
         },
         title: {
             text: `<b>Displacement Plot, ${xAxisTitle}</b>`,
@@ -546,8 +551,7 @@ function createVelocityAlertsChart (orientation, data, subsurface_column) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800,
-            width: 400
+            height: 800
         },
         title: {
             text: `<b>Velocity Alerts Plot, ${xAxisTitle}</b>`,
@@ -634,7 +638,6 @@ function makeRainbowColors (size) {
 }
 
 function sinToHex ({ index, size }, phase) {
-    console.log(phase);
     const sin = Math.sin(Math.PI / size * 2 * index + phase);
     const int = Math.floor(sin * 127) + 128;
     const hex = int.toString(16);

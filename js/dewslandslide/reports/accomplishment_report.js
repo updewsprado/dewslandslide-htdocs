@@ -736,7 +736,7 @@ function initializeGraphRelatedInputs()
             let type = x[0], site = x[1];
             let shift_start = $("#shift_start").val();
             let shift_end = $("#shift_end").val();
-            window.open("/data_analysis/Eos_onModal/" + current_user_id + "/" + type + "/" + site + "/" + shift_start + "/" + shift_end, "_blank", "menubar=0");
+            window.open(location.origin+"/data_analysis/eos_charts/" + current_user_id + "/" + type + "/" + site + "/" + shift_start + "/" + shift_end, "_blank");
         }
     });
 }
