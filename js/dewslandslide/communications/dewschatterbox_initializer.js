@@ -238,12 +238,14 @@ function updateMessages (msg) {
                 last_message_time_stamp_recipient = messages[message_counter].timestamp;
             }
             if (msg.type === "smssend" || msg.type === "smssendgroup" || msg.type === "smssendgroupemployee") {
+                console.log(messages);
                 var messages_html = messages_template_both({ messages });
                 var htmlString = $("#messages").html();
                 $("#messages").html(htmlString + messages_html);
                 $(".chat-message").scrollTop($("#messages").height());
                 messages = [];
             } else {
+                console.log(messages);
                 var messages_html = messages_template_both({ messages });
                 $("#messages").html(messages_html);
                 $(".chat-message").scrollTop($("#messages").height());

@@ -1048,6 +1048,7 @@ $(document).ready(() => {
                         ewi_tag: false
                     };
 
+                    console.log(temp_msg_holder);
                     display_message = temp_msg_holder;
 
                     wss_connect.send(JSON.stringify(temp_msg_holder));
@@ -1081,6 +1082,7 @@ $(document).ready(() => {
                         ewi_tag: false
                     };
 
+                    console.log(temp_msg_holder);
                     display_message = temp_msg_holder;
 
                     wss_connect.send(JSON.stringify(temp_msg_holder));
