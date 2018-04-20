@@ -187,7 +187,8 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                         number = temp;
                     });
 
-                    if (dashboard_data.status === "extended" && dashboard_data.day !== null) {
+                    console.log(dashboard_data);
+                    if (dashboard_data.status === "extended" && dashboard_data.day != null) {
                         if (contacts[counter].office !== "PLGU" && contacts[counter].office !== "GDAPD-PHIV" && contacts[counter].office !== "REG8") {
                             const detailed = `${contacts[counter].office} : ${contacts[counter].lastname} ${contacts[counter].firstname} ${number}`;
                             default_recipients.push(detailed);
