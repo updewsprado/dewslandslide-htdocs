@@ -1,18 +1,22 @@
 
 let validator = null;
 $(document).ready(() => {
-    adjustOptionsBarOnWindowResize();
-    createStickyOptionsBar();
-    initializeTimestamps();
+    const paths = window.location.pathname.split("/");
 
-    validator = initializeForm();
-    validateForm(validator);
+    if (paths[2] !== "eos_charts") {
+        adjustOptionsBarOnWindowResize();
+        createStickyOptionsBar();
+        initializeTimestamps();
 
-    initializeSiteCodeDropdownOnChange();
-    initializeSubsurfaceColumnDropdownOnChange();
-    initializeOptionsBarToggleOnClick();
+        validator = initializeForm();
+        validateForm(validator);
 
-    loadDefaultSite();
+        initializeSiteCodeDropdownOnChange();
+        initializeSubsurfaceColumnDropdownOnChange();
+        initializeOptionsBarToggleOnClick();
+
+        loadDefaultSite();
+    }
 
     formatHighchartsGlobalOptions();
 });

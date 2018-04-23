@@ -1,5 +1,15 @@
 $(document).ready(() => {
     initializeChartData();
+
+    Highcharts.setOptions({
+        exporting: {
+            buttons: {
+                contextButton: {
+                    enabled: false
+                }
+            }
+        }
+    });
 });
 
 function initializeChartData () {
@@ -10,10 +20,9 @@ function initializeChartData () {
     const start_date = values[8].replace("%20", " ");
     const end_date = values[9].replace("%20", " ");
 
-    const end = moment(end_date).subtract(1, "hour").format("YYYY-MM-DDTHH:mm");
+    const end = moment(end_date).subtract(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
     const start = eosGetStartDate(category, end_date);
-    console.log(end, start);
-    // alert(eosGetStartDate(category, end_date));
+
     let site_code = null;
     let column_name = null;
     if (category === "subsurface") column_name = site_detail;
@@ -26,18 +35,166 @@ function initializeChartData () {
 
     $("head title", window.parent.document).text(tab_title);
 
+    const obj = {
+        site_code, start, end, user_id
+    };
+
     switch (category) {
         case "rain":
-            plotEoSRainfall(site_code, start, end);
+            plotEoSRainfall(obj);
             break;
         case "surficial":
-            plotEoSSurficial(site_code, start, end);
+            plotEoSSurficial(obj);
             break;
         case "subsurface":
-            plotEoSSubsurface(column_name, start, end);
+            plotEoSSubsurface(obj);
             break;
         default: break;
     }
+}
+
+function eosGetStartDate (category, end_date) {
+    let start_date = "";
+    let value = "";
+    let duration = "";
+
+    switch (category) {
+        case "rain":
+            value = 10;
+            duration = "days";
+            break;
+        case "surficial":
+            value = 10;
+            duration = "days";
+            break;
+        case "subsurface":
+            value = 3;
+            duration = "days";
+            break;
+        default: break;
+    }
+
+    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").format("YYYY-MM-DDTHH:mm");
+    return start_date;
+}
+
+function plotEoSRainfall (args) {
+    const {
+        site_code, start, end, user_id
+    } = args;
+
+    $("#site-plots-container, #rainfall-plots").show();
+    $("#surficial-plots, #site-plots-container > div > .plot-title-hr").hide();
+
+    const input = {
+        site_code,
+        start_date: start,
+        end_date: end,
+        source: "all" // table
+    };
+
+    const $loading_rain = $("#rainfall-plots .loading-bar");
+    $loading_rain.show();
+
+    getPlotDataForRainfall(input, true)
+    .done((datalist) => {
+        plotRainfall(datalist, input);
+        $loading_rain.hide();
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
+    });
+}
+
+function plotEoSSurficial (args) {
+    const {
+        site_code, start, end, user_id
+    } = args;
+
+    $("#site-plots-container, #surficial-plots").show();
+    $("#rainfall-plots, #site-plots-container > div > .plot-title-hr").hide();
+
+    const $loading_surficial = $("#surficial-plots .loading-bar");
+    $loading_surficial.show();
+
+    $("#surficial-plots").show();
+    const input = {
+        site_code,
+        start_date: start,
+        end_date: end
+    };
+
+    getPlotDataForSurficial(input, true)
+    .done((series) => {
+        console.log(series);
+        createSurficialMarkersButton(series);
+
+        $(`#${input.site_code}-surficial`).show();
+        plotSurficial(series, input);
+        $loading_surficial.hide();
+
+        createSVG("surficial", site_code, user_id);
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
+    });
+}
+
+function plotEoSSubsurface (column_name, start, end) {
+    $("#subsurface-column-plots-container, #subsurface-plots").show();
+    $("#subsurface-column-summary-plots, #subsurface-column-plots-container > div > .plot-title-hr").hide();
+    $("#subsurface-plots .loading-bar").show();
+
+    const input = {
+        subsurface_column: column_name,
+        start_date: start,
+        end_date: end
+    };
+
+    getPlotDataForSubsurface(input, true)
+    .done((subsurface_data) => {
+        delegateSubsurfaceDataForPlotting(subsurface_data, input);
+        $("#subsurface-plots .loading-bar").hide();
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
+    });
+}
+
+function createSVG (plot_type, site_detail, user_id) {
+    let svg = null;
+
+    $(".highcharts-root").removeAttr("xmlns").removeAttr("version");
+
+    switch (plot_type) {
+        case "rainfall":
+            break;
+        case "surficial":
+            svg = createSurficialSVG();
+            break;
+        case "subsurface":
+            break;
+        default: break;
+    }
+
+    // console.log(site_detail, plot_type, user_id);
+
+    $.post("/../chart_export/saveChartSVG", {
+        svg, site: site_detail, type: plot_type, connection_id: user_id
+    })
+    .done((data) => {
+        console.log("done");
+    });
+}
+
+function createSurficialSVG () {
+    // const div_id = $(".highcharts-container").map((index, { id }) => id).get();
+    // return $(`#${div_id}`).html();
+    const a = Highcharts.charts[0];
+    return a.getSVG();
 }
 
 function svgChart (idBox) {
@@ -154,106 +311,5 @@ function svgChart (idBox) {
         const t0 = $("#tester_id_time").html();
         const t1 = performance.now();
         const total = [site, (t1 - t0).toFixed(4), from_time, to_time];
-    });
-}
-
-function eosGetStartDate (category, end_date) {
-    let start_date = "";
-    let value = "";
-    let duration = "";
-    switch (category) {
-        case "rain":
-            value = 10;
-            duration = "days";
-            break;
-        case "surficial":
-            value = 10;
-            duration = "days";
-            break;
-        case "subsurface":
-            value = 3;
-            duration = "days";
-            break;
-        default: break;
-    }
-    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").format("YYYY-MM-DDTHH:mm");
-    return start_date;
-}
-
-function plotEoSRainfall (site_code, start, end) {
-    $("#site-plots-container, #rainfall-plots").show();
-    $("#surficial-plots, #site-plots-container > div > .plot-title-hr").hide();
-
-    const input = {
-        site_code,
-        start_date: start,
-        end_date: end,
-        source: "all" // table
-    };
-
-    const $loading_rain = $("#rainfall-plots .loading-bar");
-    $loading_rain.show();
-
-    getPlotDataForRainfall(input, true)
-    .done((datalist) => {
-        plotRainfall(datalist, input);
-        $loading_rain.hide();
-    })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
-    });
-
-    svgChart("rain");
-}
-
-function plotEoSSurficial (site_code, start, end) {
-    $("#site-plots-container, #surficial-plots").show();
-    $("#rainfall-plots, #site-plots-container > div > .plot-title-hr").hide();
-
-    const $loading_surficial = $("#surficial-plots .loading-bar");
-    $loading_surficial.show();
-
-    $("#surficial-plots").show();
-    const input = {
-        site_code,
-        start_date: start,
-        end_date: end
-    };
-
-    getPlotDataForSurficial(input, true)
-    .done((series) => {
-        console.log(series);
-        createSurficialMarkersButton(series);
-
-        $(`#${input.site_code}-surficial`).show();
-        plotSurficial(series, input);
-        $loading_surficial.hide();
-    })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
-    });
-}
-
-function plotEoSSubsurface (column_name, start, end) {
-    $("#subsurface-column-plots-container, #subsurface-plots").show();
-    $("#subsurface-column-summary-plots, #subsurface-column-plots-container > div > .plot-title-hr").hide();
-    $("#subsurface-plots .loading-bar").show();
-
-    const input = {
-        subsurface_column: column_name,
-        start_date: start,
-        end_date: end
-    };
-
-    getPlotDataForSubsurface(input, true)
-    .done((subsurface_data) => {
-        delegateSubsurfaceDataForPlotting(subsurface_data, input);
-        $("#subsurface-plots .loading-bar").hide();
-    })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
     });
 }

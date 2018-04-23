@@ -30,7 +30,6 @@ function getSiteSubsurfaceColumns (site_code) {
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
-    console.log(column_list);
     column_list.forEach(({ name: site_code }) => {
         $("#subsurface_column").append($("<option>", {
             value: site_code,
@@ -75,6 +74,7 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
     $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
+        console.log(column_summary);
         delegateColumnSummaryDataForPlotting(column_summary, form);
         $("#subsurface-column-summary-plots .loading-bar").hide();
     })
@@ -178,9 +178,6 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
                 const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
                 return tooltip;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
@@ -265,9 +262,6 @@ function createDataPresenceChart (data_presence, form) {
                 }
                 return `Timestamp: <b>${moment(this.point.id).format("DD MMM YYYY, HH:mm")}</b><br/>Status: <b>${status}</b>`;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
