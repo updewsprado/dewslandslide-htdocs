@@ -281,20 +281,13 @@ function connectWS () {
         } else {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
-                console.log("GO HERE FOR ACKGSM");
-                console.log(gsm_timestamp_indicator);
-                console.log($("#messages li:last #timestamp-written").text());
-                console.log($("#chat-user").text());
-                debugger;
                 $("#messages li:last #timestamp-sent").removeClass();
                 if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
                     if (msg.status == "SENT") {
-                        console.log("GO HERE FOR SENT");
                         $("#messages li:last .ack_status").text("SENT-GSM");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-success");
                     } else {
-                        console.log("GO HERE FOR FAIL");
                         $("#messages li:last .ack_status").text("FAIL-GSM");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
                         $("#messages li:last #chat-user").removeClass("sent-status-pending");
