@@ -113,6 +113,19 @@ function initLoadMessageHistory (msgHistory) {
 }
 
 function updateMessages (msg) {
+
+    if (msg.timestamp_sent == null) {
+        msg.noTimestamp = 1;
+    } else {
+        msg.noTimestamp = 0;
+    }
+
+    if (msg.type != null) {
+        msg.recentlySent = 1;
+    } else {
+        msg.recentlySent = 0;
+    }
+
     if (msg.status === "SUCCESS" || msg.status === "SENT") {
         msg.status = 1;
     } else {
@@ -238,12 +251,14 @@ function updateMessages (msg) {
                 last_message_time_stamp_recipient = messages[message_counter].timestamp;
             }
             if (msg.type === "smssend" || msg.type === "smssendgroup" || msg.type === "smssendgroupemployee") {
+                console.log(messages);
                 var messages_html = messages_template_both({ messages });
                 var htmlString = $("#messages").html();
                 $("#messages").html(htmlString + messages_html);
                 $(".chat-message").scrollTop($("#messages").height());
                 messages = [];
             } else {
+                console.log(messages);
                 var messages_html = messages_template_both({ messages });
                 $("#messages").html(messages_html);
                 $(".chat-message").scrollTop($("#messages").height());
