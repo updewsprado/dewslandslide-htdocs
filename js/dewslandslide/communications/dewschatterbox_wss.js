@@ -285,19 +285,26 @@ function connectWS () {
                 if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
                     if (msg.status == "SENT") {
+                        $("#messages li:last .ack_status").text("SENT-GSM");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-success");
                     } else {
+                        $("#messages li:last .ack_status").text("FAIL-GSM");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
+                        $("#messages li:last #chat-user").removeClass("sent-status-pending");
+                        $("#messages li:last #chat-user").addClass("sent-status-fail");
                     }
                 }
             } else if (msg.type == "ackrpi") {
                 $("#messages li:last #timestamp-sent").removeClass();
                 if (msg.send_status == "SENT-PI") {
-                    $("#messages li:last #timestamp-sent").text("PENDING");
+                    $("#messages li:last .ack_status").text("SENT-PI");
                     $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
+                    $("#messages li:last #chat-user").addClass("sent-status-pending");
                 } else {
-                    $("#messages li:last #timestamp-sent").text("FAILED");
-                    $("#messages li:last #timestamp-sent").addClass("sent-status-fail");
+                    $("#messages li:last .ack_status").text("FAIL-GSM");
+                    $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
+                    $("#messages li:last #chat-user").removeClass("sent-status-pending");
+                    $("#messages li:last #chat-user").addClass("sent-status-fail");
                 }
             } else if (contact_info === "groups") {
                 if (msg.type == "smsrcv") {
@@ -357,7 +364,6 @@ function connectWS () {
             reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
             $(".notifyjs-wrapper").hide();
             $.notify("VPN Connection detected. Please disable your VPN Proxy (Ultrasurf, Hotspotshield, TunnelBear, etc..) then refresh the page.", "error");
-
             connection_status = false;
             $("#send-msg").addClass("disabled");
             waitForSocketConnection();
