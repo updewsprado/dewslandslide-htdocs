@@ -285,13 +285,13 @@ function connectWS () {
                 if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
                     if (msg.status == "SENT") {
-                        $("#messages li:last .ack_status").text("SENT-GSM");
+                        $("#messages li:last .ack_status").text("Sent by GSM");
                         $("#messages li:last .fas").removeClass("fa-spinner fa-spin");
                         $("#messages li:last .fas").addClass("fa-check-circle");
                         $("#messages li:last .primary-font").addClass("sent-status-success");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-success");
                     } else {
-                        $("#messages li:last .ack_status").text("FAIL-GSM");
+                        $("#messages li:last .ack_status").text("GSM sending failed");
                         $("#messages li:last .fas").removeClass("fa-spinner fa-spin");
                         $("#messages li:last .fas").addClass("fa-times-circle");
                         $("#messages li:last .primary-font .right-content").addClass("sent-status-fail");
@@ -303,11 +303,11 @@ function connectWS () {
             } else if (msg.type == "ackrpi") {
                 $("#messages li:last #timestamp-sent").removeClass();
                 if (msg.send_status == "SENT-PI") {
-                    $("#messages li:last .ack_status").text("SENT-PI");
+                    $("#messages li:last .ack_status").text("Sent to server");
                     $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
                     $("#messages li:last #chat-user").addClass("sent-status-pending");
                 } else {
-                    $("#messages li:last .ack_status").text("FAIL-GSM");
+                    $("#messages li:last .ack_status").text("Unable to send to server");
                     $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
                     $("#messages li:last #chat-user").removeClass("sent-status-pending");
                     $("#messages li:last #chat-user").addClass("sent-status-fail");
