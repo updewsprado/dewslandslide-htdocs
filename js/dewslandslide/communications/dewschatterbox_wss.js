@@ -284,6 +284,8 @@ function connectWS () {
                 console.log("GO HERE FOR ACKGSM");
                 console.log(gsm_timestamp_indicator);
                 console.log($("#messages li:last #timestamp-written").text());
+                console.log($("#chat-user").text());
+                debugger;
                 $("#messages li:last #timestamp-sent").removeClass();
                 if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
