@@ -286,9 +286,15 @@ function connectWS () {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
                     if (msg.status == "SENT") {
                         $("#messages li:last .ack_status").text("SENT-GSM");
+                        $("#messages li:last .fas").removeClass("fa-spinner fa-spin");
+                        $("#messages li:last .fas").addClass("fa-check-circle");
+                        $("#messages li:last .primary-font .right-content").addClass("sent-status-success");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-success");
                     } else {
                         $("#messages li:last .ack_status").text("FAIL-GSM");
+                        $("#messages li:last .fas").removeClass("fa-spinner fa-spin");
+                        $("#messages li:last .fas").addClass("fa-times-circle");
+                        $("#messages li:last .primary-font .right-content").addClass("sent-status-fail");
                         $("#messages li:last #timestamp-sent").addClass("sent-status-pending");
                         $("#messages li:last #chat-user").removeClass("sent-status-pending");
                         $("#messages li:last #chat-user").addClass("sent-status-fail");
