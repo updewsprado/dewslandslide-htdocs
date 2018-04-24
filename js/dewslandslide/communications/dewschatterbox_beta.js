@@ -330,7 +330,7 @@ $(document).ready(() => {
             type: "oldMessageGroup",
             offices: tagOffices,
             sitenames: tagSitenames,
-            last_message_time_stamp_sender,
+            lastMessageTimeStampYou: last_message_time_stamp_sender,
             lastMessageTimeStampGroup: last_message_time_stamp_recipient
         };
 
