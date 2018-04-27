@@ -129,7 +129,7 @@ const pms_instances = [];
 $(document).ready(() => {
 
     $(".report").click(function() {
-
+        console.log(pms_module_indicator);
         const instance = PMS_MODAL.create({
             modal_id: `chatterbox-accuracy-1`,
             metric_name: "",
@@ -152,6 +152,17 @@ $(document).ready(() => {
         instance.print();
     });
 
+    $("#registered_inbox").click(function() {
+        pms_module_indicator = "registered_inbox";
+    });
+
+    $("#unregistered_inbox").click(function() {
+        pms_module_indicator = "unregistered_inbox";
+    });
+
+    $("#event_inbox").click(function() {
+        pms_module_indicator = "event_inbox";
+    });
 
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
