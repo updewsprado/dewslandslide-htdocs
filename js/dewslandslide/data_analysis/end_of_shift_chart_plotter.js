@@ -17,9 +17,7 @@ function initializeChartData () {
     const user_id = values[5];
     const category = values[6]; // if rain, suficial or subsurface
     const site_detail = values[7];
-    const start_date = values[8].replace("%20", " ");
     const end_date = values[9].replace("%20", " ");
-
     const end = moment(end_date).subtract(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
     const start = eosGetStartDate(category, end_date);
 
@@ -35,10 +33,11 @@ function initializeChartData () {
 
     $("head title", window.parent.document).text(tab_title);
 
+    if (category === "subsurface") site_code = column_name;
     const obj = {
         site_code, start, end, user_id
     };
-
+    console.log(obj);
     switch (category) {
         case "rain":
             plotEoSRainfall(obj);
@@ -74,7 +73,7 @@ function eosGetStartDate (category, end_date) {
         default: break;
     }
 
-    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").format("YYYY-MM-DDTHH:mm");
+    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").subtract(30, "minute").format("YYYY-MM-DDTHH:mm");
     return start_date;
 }
 
@@ -100,6 +99,8 @@ function plotEoSRainfall (args) {
     .done((datalist) => {
         plotRainfall(datalist, input);
         $loading_rain.hide();
+
+        createSVG("rainfall", site_code, user_id);
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -117,8 +118,8 @@ function plotEoSSurficial (args) {
 
     const $loading_surficial = $("#surficial-plots .loading-bar");
     $loading_surficial.show();
-
     $("#surficial-plots").show();
+
     const input = {
         site_code,
         start_date: start,
@@ -142,13 +143,17 @@ function plotEoSSurficial (args) {
     });
 }
 
-function plotEoSSubsurface (column_name, start, end) {
+function plotEoSSubsurface (args) {
+    const {
+        site_code, start, end, user_id
+    } = args;
+
     $("#subsurface-column-plots-container, #subsurface-plots").show();
     $("#subsurface-column-summary-plots, #subsurface-column-plots-container > div > .plot-title-hr").hide();
     $("#subsurface-plots .loading-bar").show();
 
     const input = {
-        subsurface_column: column_name,
+        subsurface_column: site_code,
         start_date: start,
         end_date: end
     };
@@ -157,6 +162,8 @@ function plotEoSSubsurface (column_name, start, end) {
     .done((subsurface_data) => {
         delegateSubsurfaceDataForPlotting(subsurface_data, input);
         $("#subsurface-plots .loading-bar").hide();
+
+        createSVG("subsurface", site_code, user_id);
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -166,21 +173,20 @@ function plotEoSSubsurface (column_name, start, end) {
 
 function createSVG (plot_type, site_detail, user_id) {
     let svg = null;
-
     $(".highcharts-root").removeAttr("xmlns").removeAttr("version");
 
     switch (plot_type) {
         case "rainfall":
+            svg = createRainfallSVG();
             break;
         case "surficial":
             svg = createSurficialSVG();
             break;
         case "subsurface":
+            svg = createSubsurfaceSVG();
             break;
         default: break;
     }
-
-    // console.log(site_detail, plot_type, user_id);
 
     $.post("/../chart_export/saveChartSVG", {
         svg, site: site_detail, type: plot_type, connection_id: user_id
@@ -190,126 +196,66 @@ function createSVG (plot_type, site_detail, user_id) {
     });
 }
 
-function createSurficialSVG () {
-    // const div_id = $(".highcharts-container").map((index, { id }) => id).get();
-    // return $(`#${div_id}`).html();
-    const a = Highcharts.charts[0];
-    return a.getSVG();
+function createRainfallSVG () {
+    for (let counter = 0; counter < 8; counter += 1) {
+        const chart = Highcharts.charts[counter];
+        const svg = chart.getSVG();
+        $("#rainfall-svg").append(svg);
+    }
+    delegateChartSVGPosition("rainfall");
+
+    const rain_chart = $("#rain_charts").html();
+    return rain_chart;
 }
 
-function svgChart (idBox) {
-    const values = window.location.href.split("/");
-    const connection_id = values[5];
-    const category = values[6];
-    const site = values[7];
-
-    const name_site = ((($("tspan").text()).split(".")));
-    const extracted_name = (name_site[0]).split(" ");
-    $(".highcharts-contextbutton").attr("visibility", "hidden");
-
-    if (idBox == "rain") {
-        $(".highcharts-root").removeAttr("xmlns");
-        $(".highcharts-root").removeAttr("version");
-
-        const idsSub = $(".collapse").map(function () {
-            return this.id;
-        }).get();
-
-        var ids0 = [];
-        const ids1 = [];
-        for (var i = 0; i < idsSub.length; i++) {
-            if (idsSub[i].length < 6 || idsSub[i] == "rain_arq" || idsSub[i] == "rain_senslope") {
-                ids0.push(idsSub[i]);
-            } else {
-                ids1.push(idsSub[i]);
-            }
-        }
-        const ids2 = $(".rainGraph .in").map(function () {
-            return this.id;
-        }).get();
-        const ids4 = [];
-        for (var i = 0; i < ids0.length; i++) {
-            for (var a = 0; a < ids2.length; a++) {
-                if (ids0[i] == ids2[a]) {
-                    ids4.push(ids0[i]);
-                }
-            }
-        }
-
-        for (var i = 0; i < ids4.length; i++) {
-            $(`#${ids4[i]} .highcharts-container  .highcharts-root`).attr("x", 760);
-            $(`#${ids4[i]} .highcharts-container  .highcharts-root`).attr("y", (i) * 300);
-        }
-
-        const ids5 = [];
-        for (var i = 0; i < ids0.length; i++) {
-            for (var a = 0; a < ids2.length; a++) {
-                if (ids1[i] == ids2[a]) {
-                    ids5.push(ids1[i]);
-                }
-            }
-        }
-
-        for (var i = 0; i < ids5.length; i++) {
-            $(`#${ids5[i]} .highcharts-container  .highcharts-root`).attr("x", 100);
-            $(`#${ids5[i]} .highcharts-container  .highcharts-root`).attr("y", (i) * 300);
-        }
-
-        var ids = $(".highcharts-container").map(function () {
-            return this.id;
-        }).get();
-
-        if (ids.length == 4) {
-            $("#rainBox").attr("height", "1100");
-        } else if (ids.length == 5) {
-            $("#rainBox").attr("height", "1600");
-        }
-
-        for (var i = 0; i < ids.length; i++) {
-            $("#rainBox").append($(`#${ids[i]}`).html());
-        }
-
-        var all_data = $("#rainAll").html();
-    } else if (idBox == "subsurface") {
-        $(".highcharts-root").removeAttr("xmlns");
-        $(".highcharts-root").removeAttr("version");
-
-        var ids0 = ["colspangraph", "dis", "velocity"];
-        const idsall = [];
-        for (var i = 0; i < ids0.length; i++) {
-            $(`#${ids0[i]}1 .highcharts-container  .highcharts-root`).attr("x", 50);
-            $(`#${ids0[i]}1 .highcharts-container  .highcharts-root`).attr("y", i * 900);
-            $("#subBox").append($(`#${ids0[i]}1 .highcharts-container `).html());
-        }
-
-        for (var i = 0; i < ids0.length; i++) {
-            $(`#${ids0[i]}2 .highcharts-container  .highcharts-root`).attr("x", 660);
-            $(`#${ids0[i]}2 .highcharts-container  .highcharts-root`).attr("y", i * 900);
-            $("#subBox").append($(`#${ids0[i]}2 .highcharts-container`).html());
-        }
-
-        var all_data = $("#subAll").html();
-    } else if (idBox == "surficial") {
-        var ids = $(".highcharts-container").map(function () {
-            return this.id;
-        }).get();
-
-        var all_data = $(`#${ids[0]}`).html();
+function createSubsurfaceSVG () {
+    for (let counter = 0; counter < 6; counter += 1) {
+        const chart = Highcharts.charts[counter];
+        const svg = chart.getSVG();
+        $("#subsurface-svg").append(svg);
     }
+    delegateChartSVGPosition("subsurface");
 
-    $.post("/../chart_export/saveChartSVG", {
-        svg: all_data, site, type: category, connection_id
-    })
-    .done((data) => {
-        console.log("done");
-        $("#loading").modal("hide");
-        $(".modal-backdrop").remove();
+    const subsurface_charts = $("#subsurface_charts").html();
+    return subsurface_charts;
+}
 
-        const values = window.location.href.split("/");
-        const to_time = values[9];
-        const from_time = values[8];
-        const t0 = $("#tester_id_time").html();
-        const t1 = performance.now();
-        const total = [site, (t1 - t0).toFixed(4), from_time, to_time];
-    });
+function delegateChartSVGPosition (type) {
+    let y_axis_even = 0;
+    let y_axis_odd = 0;
+    let chart_count = 0;
+
+    if (type === "rainfall") chart_count = 8;
+    else if (type === "subsurface") chart_count = 6;
+
+    for (let counter = 1; counter <= chart_count; counter += 1) {
+        const tag = `#${type}-svg svg:nth-child(${counter})`;
+        if (counter % 2 === 0) {
+            $(tag).attr({
+                x: 600,
+                y: y_axis_even
+            });
+            y_axis_even += returnYaxisValue(type);
+        } else {
+            $(tag).attr({
+                x: 0,
+                y: y_axis_odd
+            });
+            y_axis_odd += returnYaxisValue(type);
+        }
+    }
+}
+
+function createSurficialSVG () {
+    const surficial_chart = Highcharts.charts[0];
+    return surficial_chart.getSVG();
+}
+
+function returnYaxisValue (type) {
+    let y_axis_value = 0;
+
+    if (type === "rainfall") y_axis_value = 400;
+    y_axis_value = 800;
+
+    return y_axis_value;
 }

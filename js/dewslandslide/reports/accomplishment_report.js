@@ -863,13 +863,17 @@ function downloadCharts (site) {
     $(`#graph_checkbox_${site}`).find("input[type=checkbox]:checked")
     .each(function (index, cbox) {
         let val = $(this).val();
+        console.log(val);
         if (val.search("subsurface") == -1) {
             const x = val.search("_");
             val = val.slice(0, x);
+            console.log(val);
         }
         svg.push(val);
     });
-
+    console.log(site);
+    console.log(svg);
+    console.log(current_user_id);
     $("#loading .progress-bar").text("Rendering end-of-shift charts...");
     $("#loading").modal("show");
     $.post("/../../chart_export/renderCharts", { site, svg, connection_id: current_user_id })

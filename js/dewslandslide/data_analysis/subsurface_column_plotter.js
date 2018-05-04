@@ -330,6 +330,7 @@ function plotSubsurfaceAnalysisCharts (form) {
 }
 
 function getPlotDataForSubsurface (args, isEOS = false) {
+    console.log(args);
     const {
         subsurface_column, start_date, end_date
     } = args;
