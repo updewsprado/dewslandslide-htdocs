@@ -129,41 +129,9 @@ const pms_instances = [];
 $(document).ready(() => {
 
     $(".report").click(function() {
-        console.log(pms_module_indicator);
-        const instance = PMS_MODAL.create({
-            modal_id: `chatterbox-accuracy-1`,
-            metric_name: "",
-            module_name: "Chatterbox"
-        });
 
-        setTimeout(() => {
-            if (instance.is_attached) {
-                pms_instances[`s${release_id}`] = instance;
-            }
-        }, 300);
-
-
-        console.log(pms_instances);
-        instance.set({
-            reference_id: pms_reference_id,
-            reference_table: "chatterbox"
-        });
-        instance.show();
-        instance.print();
     });
-
-    $("#registered_inbox").click(function() {
-        pms_module_indicator = "registered_inbox";
-    });
-
-    $("#unregistered_inbox").click(function() {
-        pms_module_indicator = "unregistered_inbox";
-    });
-
-    $("#event_inbox").click(function() {
-        pms_module_indicator = "event_inbox";
-    });
-
+    
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
     }
@@ -1320,6 +1288,8 @@ $(document).ready(() => {
     });
 
     $("#btn-contact-settings").click(() => {
+        pms_module_indicator = "contact_settigns";
+
         $("#employee-contact-wrapper").prop("hidden", true);
         $("#community-contact-wrapper").prop("hidden", true);
         $("#response-contact-container_wrapper").prop("hidden", true);
@@ -1683,6 +1653,7 @@ $(document).ready(() => {
     });
 
     $("#btn-gbl-search").click(() => {
+        pms_module_indicator = "quick_search";
         if (connection_status == false) {
             console.log("NO CONNECTION");
         } else {
@@ -1705,6 +1676,7 @@ $(document).ready(() => {
     });
 
     $("#btn-advanced-search").click(() => {
+        pms_module_indicator = "quick_group_selection";
         if (connection_status == false) {
             console.log("NO CONNECTION");
         } else {
