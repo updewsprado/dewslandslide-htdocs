@@ -57,7 +57,7 @@ function cbx_report_submit(module_indicator) {
     const instance = PMS_MODAL.create({
         modal_id: `chatterbox-accuracy-1`,
         metric_name: module_indicator,
-        module_name: "Chatterbox"
+        module_name: "chatterbox"
     });
 
     setTimeout(() => {
@@ -74,4 +74,42 @@ function cbx_report_submit(module_indicator) {
     });
     instance.show();
     instance.print();
+}
+
+function attachMetricChecklist() {
+	 $(".metric-checklist").empty();
+	switch(pms_module_indicator) {
+	    case "quick_search":
+	        $(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	        break;
+	    case "routine_section":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "sms_section":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "contact_settings":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "quick_group_selection":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "registered_inbox":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "unregistered_inbox":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "event_inbox":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "qa_site_with_event":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    case "qa_group_message":
+	    	$(".metric-checklist").append("<div class='col-sm-12' style='margin-left:15px;'><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='greeting'>Employee Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='data_ts'>Community Contact Settings</label></div><div class='col-sm-4'><label class='checkbox-inline'><input type='checkbox' name='ewi-sms-checkbox' value='alert_desc'>Contact Suggestion</label></div></div>");
+	    	break
+	    default:
+	       console.log("def");
+	}
 }
