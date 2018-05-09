@@ -944,20 +944,6 @@ $(document).ready(function() {
 			WSS_CONNECTION_STATUS = 0;
 			delayReconn = 10000;
 
-			// if (isFirstSuccessfulConnect) {
-			// 	getOfficesAndSitenames();
-			// 	setTimeout(
-			// 		function() {
-			// 			getInitialQuickInboxMessages();
-			// 			getLatestAlert();
-			// 		}, 
-			// 		500);
-			// 	isFirstSuccessfulConnect = false;
-			// }
-			// if (window.timerID) {
-			// 	window.clearInterval(window.timerID);
-			// 	window.timerID = 0;
-			// }
 			$("#send-msg").removeClass("disabled");
 		};
 
@@ -2014,6 +2000,7 @@ try {
 		parseContactInfo(nameQuery);
 	}, false);
 } catch(err) {
+	console.log(err);
 }
 
 var qiFullContact = null;
