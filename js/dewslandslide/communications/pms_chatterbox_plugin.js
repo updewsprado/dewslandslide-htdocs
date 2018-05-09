@@ -1,79 +1,116 @@
+let pms_data = {};
+let page = "";
+
+const instance = PMS_MODAL.create({
+    modal_id: "chatterbox-accuracy-1";
+});
+
 $(document).ready(() => {
 
+    setTimeout(() => {
+        if (instance.is_attached) {
+            pms_instances['12'] = instance;
+        }
+    }, 300);
+
 	$("#quick_search_report").click(function() {
-		pms_module_indicator = "quick_search";
-		cbx_report_submit(pms_module_indicator);
+		pms_data = {
+			"metric_indicator": "quick_search",
+			"table_source": "smsinbox,smsoutbox"
+		};
+		cbx_report_submit(pms_data);
 	});
 
 	$("#routine_report").click(function() {
-		pms_module_indicator = "routine_section";
-		cbx_report_submit(pms_module_indicator);
+		pms_data = {
+			"metric_indicator": "routine_section",
+			"table_source": "site",
+			"modal_id": "chx_pms_modal"
+		};
+		cbx_report_submit(pms_data);
 	});
 
 	$("#sms_report").click(function() {
-		pms_module_indicator = "sms_section";
-		cbx_report_submit(pms_module_indicator);
+		pms_data = {
+			"metric_indicator": "sms_section",
+			"table_source": "smsinbox"
+		};
+		cbx_report_submit(pms_data);
 	});
 
 	$("#contact_settings_report").click(function() {
-		pms_module_indicator = "contact_settings";
-		cbx_report_submit(pms_module_indicator);
+		pms_data = {
+			"metric_indicator": "contact_settings",
+			"table_source": "communitycontacts"
+		};
+		cbx_report_submit(pms_data);
 	});
 
 	$("#quick_group_selection_report").click(function() {
-		pms_module_indicator = "quick_group_selection";
-		cbx_report_submit(pms_module_indicator);
+		pms_data = {
+			"metric_indicator": "quick_group_selection",
+			"table_source": "site"
+		};
+		cbx_report_submit(pms_data);
 	});
 
 
     $("#registered_inbox").click(function() {
-        pms_module_indicator = "registered_inbox";
+		pms_data = {
+			"metric_indicator": "registered_inbox",
+			"table_source": "smsinbox"
+		};
     });
 
     $("#unregistered_inbox").click(function() {
-        pms_module_indicator = "unregistered_inbox";
+		pms_data = {
+			"metric_indicator": "unregistered_inbox",
+			"table_source": "smsinbox"
+		};
     });
 
     $("#event_inbox").click(function() {
-        pms_module_indicator = "event_inbox";
+		pms_data = {
+			"metric_indicator": "event_inbox",
+			"table_source": "smsinbox"
+		};
     });
 
 	$("#qa_site_with_event_report").click(function() {
-		pms_module_indicator = "qa_site_with_event";
+		pms_data = {
+			"metric_indicator": "qa_site_with_event",
+			"table_source": "site"
+		};
 	});
 
 	$("#qa_group_message_report").click(function() {
-		pms_module_indicator = "qa_group_message";
+		pms_data = {
+			"metric_indicator": "qa_group_message",
+			"table_source": "site"
+		};
 	});
 
 	$(".report-tabs").click(function() {
-		cbx_report_submit(pms_module_indicator);
+		cbx_report_submit(pms_data);
 	});
-
+	
+	$("#report-pms-submit").on("click",function() {
+		console.log("TEST");
+	})
 });
 
-function cbx_report_submit(module_indicator) {
-    console.log(module_indicator);
-    const instance = PMS_MODAL.create({
-        modal_id: `chatterbox-accuracy-1`,
-        metric_name: module_indicator,
+function cbx_report_submit(pms_data) {
+    console.log(pms_data.metric_indicator);
+    instance.set({
+        reference_id: 0,
+        reference_table: "communitycontacts",
+        metric_name: pms_data.metric_indicator,
         module_name: "chatterbox"
     });
 
-    setTimeout(() => {
-        if (instance.is_attached) {
-            pms_instances[`s${release_id}`] = instance;
-        }
-    }, 300);
-
-
-    console.log(pms_instances);
-    instance.set({
-        reference_id: pms_reference_id,
-        reference_table: "chatterbox"
-    });
     instance.show();
     instance.print();
+    console.log(instance);
 }
 
 function attachMetricChecklist() {
@@ -112,4 +149,11 @@ function attachMetricChecklist() {
 	    default:
 	       console.log("def");
 	}
+}
+
+function timelinessReport() {
+	$.post("../narrativeAutomation/insert/", { narratives: narrative_details })
+    .done((response) => {
+
+    });
 }

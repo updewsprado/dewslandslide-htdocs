@@ -281,6 +281,17 @@ function connectWS () {
         } else {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
+                let execution_time = moment(msg.timestamp_written).subtract(moment(msg.timestamp_sent));
+                let timeliness_report = {
+                    "type": "timeliness",
+                    "metric_name": "sms_execution_time",
+                    "module_name": "chatterbox",
+                    "reference_id": msg.sms_id,
+                    "reference_table": "smsoutbox",
+                    "execution_time": execution_time
+                };
+                PMS.send(timeliness_report);
+                
                 $("#messages li:last #timestamp-sent").removeClass();
                 if ($("#chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == gsm_timestamp_indicator) {
                     $("#messages li:last #timestamp-sent").html(msg.timestamp_sent);
