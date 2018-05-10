@@ -1,8 +1,8 @@
 
 const rainfall_colors = {
-    "24h": "#4969FCE6",
-    "72h": "#EF4532E6",
-    rain: "#000000E6"
+    "24h": "rgba(73, 105, 252, 0.9)",
+    "72h": "rgba(239, 69, 50, 0.9)",
+    rain: "rgba(0, 0, 0, 0.9)"
 };
 
 $(document).ready(() => {
@@ -172,7 +172,7 @@ function plotRainfall (datalist, temp) {
             else max_rval_data.push(entry);
         });
 
-        const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "#44AAD533" }));
+        const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "rgba(68, 170, 213, 0.3)" }));
         createInstantaneousRainfallChart(max_rval_data, temp, source, null_processed);
         createCumulativeRainfallChart(series_data, temp, source);
     });

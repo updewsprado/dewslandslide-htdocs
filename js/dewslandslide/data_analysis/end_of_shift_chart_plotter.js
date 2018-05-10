@@ -100,7 +100,7 @@ function plotEoSRainfall (args) {
         plotRainfall(datalist, input);
         $loading_rain.hide();
 
-        createSVG("rainfall", site_code, user_id);
+        createSVG("rain", site_code, user_id);
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
         alert(`Status ${conn_status}: ${statusText}`);
@@ -110,7 +110,7 @@ function plotEoSRainfall (args) {
 
 function plotEoSSurficial (args) {
     const {
-        site_code, start, end, user_id
+        site_code, end, user_id
     } = args;
 
     $("#site-plots-container, #surficial-plots").show();
@@ -122,16 +122,18 @@ function plotEoSSurficial (args) {
 
     const input = {
         site_code,
-        start_date: start,
+        start_date: "eos",
         end_date: end
     };
 
     getPlotDataForSurficial(input, true)
     .done((series) => {
-        console.log(series);
         createSurficialMarkersButton(series);
-
         $(`#${input.site_code}-surficial`).show();
+
+        const [{ data: [{ x: last_point_ts }] }] = series;
+        input.start_date = moment(last_point_ts).add.format("YYYY-MM-DDTHH:mm:ss");
+
         plotSurficial(series, input);
         $loading_surficial.hide();
 
@@ -176,7 +178,7 @@ function createSVG (plot_type, site_detail, user_id) {
     $(".highcharts-root").removeAttr("xmlns").removeAttr("version");
 
     switch (plot_type) {
-        case "rainfall":
+        case "rain":
             svg = createRainfallSVG();
             break;
         case "surficial":
@@ -191,8 +193,9 @@ function createSVG (plot_type, site_detail, user_id) {
     $.post("/../chart_export/saveChartSVG", {
         svg, site: site_detail, type: plot_type, connection_id: user_id
     })
-    .done((data) => {
-        console.log("done");
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        alert(responseText);
     });
 }
 
@@ -248,14 +251,12 @@ function delegateChartSVGPosition (type) {
 
 function createSurficialSVG () {
     const surficial_chart = Highcharts.charts[0];
+    const svg = surficial_chart.getSVG();
+
     return surficial_chart.getSVG();
 }
 
 function returnYaxisValue (type) {
-    let y_axis_value = 0;
-
-    if (type === "rainfall") y_axis_value = 400;
-    y_axis_value = 800;
-
-    return y_axis_value;
+    if (type === "rainfall") return 400;
+    return 800;
 }

@@ -63,7 +63,7 @@ function initializeSurficialMarkersButton () {
 
             const input = {
                 site_code,
-                end_date: $("#data_timestamp").val(),
+                end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm:ss"),
                 start_date: getStartDate("surficial")
             };
 
