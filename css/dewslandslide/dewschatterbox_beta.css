@@ -32,6 +32,10 @@
 	margin-top: 5px;
 }
 
+div.awesomplete > ul {
+  margin-top: 50px;
+}
+
 #timestamp-sent {
   color: blue;
 }

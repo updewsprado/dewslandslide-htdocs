@@ -1,6 +1,7 @@
 let WSS_CONNECTION_STATUS = -1;
-let conenction_status = false;
+let connection_status = false;
 let reconnection_delay = 10000;
+let wss_connect= connectWS();
 
 // const wss_types = ["smsload","smsloadrequestgroup","loadEmployeeTag","hasNullEWIRecipient","resumeLoading",
 // 					"oldMessage","oldMessageGroup","searchMessage","searchMessageGlobal","searchMessageGroup",
@@ -14,7 +15,10 @@ let reconnection_delay = 10000;
 const wss_types = ["loadnamesuggestions"];
 
 $(document).ready(function() {
-	function connectWS() {
+	
+});
+
+function connectWS() {
 		console.log("trying to connect to web socket server");
 		var wssConnection = new WebSocket("ws://"+window.location.host+":5050");
 
@@ -29,6 +33,7 @@ $(document).ready(function() {
 		wssConnection.onmessage = function(e) {
 			let msg_data = JSON.parse(e.data);
 			wss_types.forEach(function(type) {
+				console.log(type);
 				switch (type) {
 					case msg_data.type:
 						getContactSuggestion(msg_data);
@@ -56,11 +61,11 @@ $(document).ready(function() {
 			reason = "No status code was actually present.";
 		else if(event.code == 1006) {
 			reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
-			disableCommands();
+			// disableCommands();
 
-			connection_status = false;
-			$("#send-msg").addClass("disabled");
-			waitForSocketConnection();
+			// connection_status = false;
+			// $("#send-msg").addClass("disabled");
+			// waitForSocketConnection();
 		}
 		else if(event.code == 1007)
 			reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
@@ -80,6 +85,4 @@ $(document).ready(function() {
 	}
 
 	return wssConnection;
-}
-});
-
+	}
