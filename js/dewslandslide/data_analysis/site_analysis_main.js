@@ -1,5 +1,9 @@
 
 let validator = null;
+const chart_plots = new Set();
+const SITE_LEVEL_CONTAINER = new Set();
+const COLUMN_LEVEL_CONTAINER = new Set();
+const NODE_LEVEL_CONTAINER = new Set();
 $(document).ready(() => {
     const paths = window.location.pathname.split("/");
 
@@ -119,9 +123,8 @@ function initializeForm () {
                 let address = $("#site_code option:selected").text();
                 address = address.match(/\(([^)]+)\)/, address);
                 $("#site-name").text(address[1]);
-
                 $container = $("#site-plots-container");
-
+                deleteCreatedPlotContainerId("site");
                 plotRainfallCharts(input.site_code);
                 plotSurficialCharts();
             } else if (submit_btn_id === "plot-column-level") {
@@ -129,10 +132,9 @@ function initializeForm () {
                 $("#column-name").text(column_name.toUpperCase());
 
                 $container = $("#subsurface-column-plots-container");
-
                 input.start_date = getStartDate("column-summary");
+                deleteCreatedPlotContainerId("column");
                 plotColumnSummaryCharts(input);
-
                 input.start_date = getStartDate("subsurface");
                 plotSubsurfaceAnalysisCharts(input);
             } else if (submit_btn_id === "plot-node-level") {
@@ -147,6 +149,7 @@ function initializeForm () {
                     start_date: getStartDate("node-summary"),
                     nodes: input.nodes.replace(/, /g, "-")
                 };
+                deleteCreatedPlotContainerId("node");
                 plotNodeLevelCharts(input);
             }
 
@@ -177,12 +180,25 @@ function validateForm (form) {
 
         switch (submit_btn_id) {
             case "plot-node-level":
+                ["x_accelerometer", "y_accelerometer", "z_accelerometer", "battery_checkbox"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
                 $("#nodes").rules("add", { required: true });
                 // fallthrough
             case "plot-column-level":
+                ["node_health", "data_presence", "communication_health", "subsurface"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
                 $("#subsurface_column").rules("add", { required: true });
                 // fallthrough
-            case "plot-site-level": // fallthrough
+            case "plot-site-level":
+                ["rainfall", "surficial"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
+                break;
             default:
                 $("#site_code").rules("add", { required: true });
                 break;
@@ -341,8 +357,11 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
             $(`#${source_table}`)
             .append($("<div>", {
                 class: "col-sm-6 rainfall-chart",
-                id: `${source_table}-${x}`
+                id: `${source_table}-${x}`,
+                xmlns: "http://www.w3.org/2000/svg"
             }));
+            SITE_LEVEL_CONTAINER.add(`${source_table}-${x}`);
+            console.log(SITE_LEVEL_CONTAINER);
         });
     } else if (data_type === "surficial") {
         if (sub_type === "marker") {
@@ -356,8 +375,33 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
                     class: "col-sm-6 column-position-chart",
                     id: `${source_table}-${x}`
                 }));
+                COLUMN_LEVEL_CONTAINER.add(`${source_table}-${x}`);
+                console.log(COLUMN_LEVEL_CONTAINER);
+                alert();
             });
         }
+    }
+}
+
+function deleteCreatedPlotContainerId (level) {
+    switch (level) {
+        case "site":
+            SITE_LEVEL_CONTAINER.forEach(function (plotted) {
+                SITE_LEVEL_CONTAINER.delete(plotted);
+            });
+            break;
+        case "column":
+            COLUMN_LEVEL_CONTAINER.forEach(function (plotted) {
+                COLUMN_LEVEL_CONTAINER.delete(plotted);
+            });
+            break;
+        case "node":
+            NODE_LEVEL_CONTAINER.forEach(function (plotted) {
+                NODE_LEVEL_CONTAINER.delete(plotted);
+            });
+            break;
+        default:
+            break;
     }
 }
 
@@ -404,3 +448,4 @@ function formatHighchartsGlobalOptions () {
         chart: { reflow: true }
     });
 }
+

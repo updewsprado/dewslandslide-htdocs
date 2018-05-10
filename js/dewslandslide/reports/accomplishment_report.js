@@ -718,7 +718,7 @@ function initializeGraphRelatedInputs () {
             const [type, site] = $(currentTarget).val().split("_");
             const shift_start = $("#shift_start").val();
             const shift_end = $("#shift_end").val();
-            window.open(`${window.location.origin}/analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${shift_end}`, "_blank");
+            window.open(`${window.location.origin}/data_analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${shift_end}`, "_blank");
         }
     });
 }

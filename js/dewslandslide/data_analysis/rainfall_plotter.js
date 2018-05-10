@@ -27,7 +27,7 @@ function initializeRainSourcesButton () {
                 start_date: getStartDate("rainfall"),
                 source: "all" // table
             };
-
+            const get_all_charts = Highcharts.charts;
             $loading_rain = $("#rainfall-plots .loading-bar");
             $loading_rain.show();
             getPlotDataForRainfall(input)
@@ -38,6 +38,7 @@ function initializeRainSourcesButton () {
                 $(target).data("loaded", true);
                 $(target).addClass("active");
                 $loading_rain.hide();
+                createSVG("rainfall", input.site_code);
             })
             .catch(({ responseText, status: conn_status, statusText }) => {
                 alert(`Status ${conn_status}: ${statusText}`);
@@ -104,7 +105,6 @@ function plotRainfallCharts (site_code) {
             $(button).removeClass("active").addClass("active");
             $(button).data("loaded", true);
         });
-
         /**
          * On-demand implementation for each rainfall graph
         **/
@@ -173,6 +173,7 @@ function plotRainfall (datalist, temp) {
         });
 
         const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "#44AAD533" }));
+        
         createInstantaneousRainfallChart(max_rval_data, temp, source, null_processed);
         createCumulativeRainfallChart(series_data, temp, source);
     });

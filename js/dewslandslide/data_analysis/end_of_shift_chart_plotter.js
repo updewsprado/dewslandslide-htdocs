@@ -252,10 +252,6 @@ function createSurficialSVG () {
 }
 
 function returnYaxisValue (type) {
-    let y_axis_value = 0;
-
-    if (type === "rainfall") y_axis_value = 400;
-    y_axis_value = 800;
-
-    return y_axis_value;
+    if (type === "rainfall") return 400;
+    return 800;
 }
