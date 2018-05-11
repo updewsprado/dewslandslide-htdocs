@@ -144,7 +144,6 @@ function getPlotDataForSurficial (args, isEOS = false) {
 }
 
 function createSurficialMarkersButton (series) {
-    console.log(series);
     const markers = ["Markers"];
     series.forEach(({ name }) => {
         markers.push(name);
@@ -152,14 +151,14 @@ function createSurficialMarkersButton (series) {
 
     $(".surficial-markers").remove();
     $btn_group = $("#surficial-markers-btn-group");
-    markers.forEach((marker) => {
+    markers.forEach((marker_id) => {
         let classes = "btn btn-primary btn-sm surficial-markers";
-        if (marker === "Markers") {
+        if (marker_id === "Markers") {
             classes = "btn btn-sm no-click surficial-markers";
         }
-        const crack_id = "marker_"+marker;
+        
         $btn_group.append($("<button>", {
-            id: crack_id.toLowerCase(),
+            id: `marker_${marker_id.toLowerCase()}`,
             type: "button",
             class: classes,
             value: marker,
