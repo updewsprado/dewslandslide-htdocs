@@ -1,102 +1,104 @@
-$(document).ajaxStart(function () {
-  $('#loading').modal('toggle');
-  $(".bootstrap-select").click(function () {
-    $(this).addClass("open");
-  });
-});
-$(document).ajaxStop(function () {
-  $('#loading').modal('toggle');
-  $(".bootstrap-select").click(function () {
-    $(this).addClass("open");
-  });
-});
+
 
 $(document).ready(function(e) {
+  $(document).ajaxStart(function () {
+    $('#loading').modal('toggle');
+    $(".bootstrap-select").click(function () {
+      $(this).addClass("open");
+    });
+  });
+  $(document).ajaxStop(function () {
+    $('#loading').modal('toggle');
+    $(".bootstrap-select").click(function () {
+      $(this).addClass("open");
+    });
+  });
   $('#region_id').hide()
   $('#region_view_div').hide()
   $('.val_rain').hide()
   $( "#container").show()
   $.ajax({url: "/api/rainfallScanner", dataType: "json",
     success: function(result){
+      console.log(JSON.parse(result))
       if(result.length != 0){
-   var data = JSON.parse(result)
-   document.getElementById("rain_header").innerHTML =
-   "RAINFALL LEVEL PER SITE AS OF "+moment(data[0].ts).format('YYYY MMMM DD HH:mm:ss');
-   var site = [];
-   var day1 =[];
-   var day3 =[];
-   var year2max =[];
-   var year2maxhalf =[];
-   var data_filtered_site =[]
-   var data_all_unfilterd =[]
-     region_view(data)
-    for (i = 0; i <  data.length; i++) {
-      site.push(data[i].site.toUpperCase())
-      day1.push(parseFloat(data[i]["1D cml"]))
-      day3.push(parseFloat(data[i]["3D cml"]))
-      year2max.push(parseFloat(data[i]["2yr max"]))
-      year2maxhalf.push(parseFloat(data[i]["half of 2yr max"]))
-    }
-    $("#data-resolution").attr("data-slider-value","30")
-    $("#data-resolution").attr("data-value","30")
-    $("#data-resolution").attr("value","30")
-    $("#chart_view").val("All Sites");
-    $("#chart_view").selectpicker('refresh');
-    $("#operands_value").val("> =");
-    $("#operands_value").selectpicker('refresh');
-    $("#criteria1").val("2 year max half");
-    $("#criteria1").selectpicker('refresh');
-    for (i = 0; i <  data.length; i++) {
-      data_all_unfilterd.push(data[i])
-      if((data[i]["half of 2yr max"] * (0.80)) <= data[i]["1D cml"] ){
-       data_filtered_site.push(data[i]);
-       var percent =(data[i]["half of 2yr max"] * (0.80));
-     }
-   }
-   criteria_process(data_filtered_site,"container",percent)
-   criteriaSelection(data_all_unfilterd,"container")
-   percentage_select(data_all_unfilterd,"container")
-   $("#chart_view").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
-    var selected_view = $(this).find('option').eq(clickedIndex).text();
-    $("#operands_value").val("....");
-    $("#operands_value").selectpicker('refresh')
-    $("#criteria").val("....");
-    $("#criteria").selectpicker('refresh')
-    if(selected_view == "All Sites"){
-      $( "#container_region" ).slideUp()
-      $( "#container" ).show()
-      $('#region_id').slideUp("slow")
-      $('#region_view_div').slideUp("slow")
-      $('.percent_div').slideUp("slow")
-      $('.val_rain').slideUp("slow")
-      $("#criteria1").val("....");
+       var data = JSON.parse(result)
+       document.getElementById("rain_header").innerHTML =
+       "RAINFALL LEVEL PER SITE AS OF "+moment(data[0].ts).format('YYYY MMMM DD HH:mm:ss');
+       var site = [];
+       var day1 =[];
+       var day3 =[];
+       var year2max =[];
+       var year2maxhalf =[];
+       var data_filtered_site =[]
+       var data_all_unfilterd =[]
+       region_view(data)
+       for (i = 0; i <  data.length; i++) {
+        site.push(data[i].site.toUpperCase())
+        day1.push(parseFloat(data[i]["1D cml"]))
+        day3.push(parseFloat(data[i]["3D cml"]))
+        year2max.push(parseFloat(data[i]["2yr max"]))
+        year2maxhalf.push(parseFloat(data[i]["half of 2yr max"]))
+      }
+      $("#data-resolution").attr("data-slider-value","30")
+      $("#data-resolution").attr("data-value","30")
+      $("#data-resolution").attr("value","30")
+      $("#chart_view").val("All Sites");
+      $("#chart_view").selectpicker('refresh');
+      $("#operands_value").val("> =");
+      $("#operands_value").selectpicker('refresh');
+      $("#criteria1").val("2 year max half");
       $("#criteria1").selectpicker('refresh');
-      criteriaSelection(data,"container")
-      document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;All Sites";
-    }else if (selected_view == "Region"){
-     $('#region_id').slideDown("slow")
-     $('#region_view_div').slideDown()
-     $( "#container" ).slideUp()
-     $( "#container_region" ).slideDown("slow")
-     $('.percent_div').slideUp("slow")
-     $('.val_rain').slideUp("slow")
-     $("#criteria1").val("....");
-     $("#criteria1").selectpicker('refresh');
-     document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;Region";
-   }
+      for (i = 0; i <  data.length; i++) {
+        data_all_unfilterd.push(data[i])
+        if((data[i]["half of 2yr max"] * (0.80)) <= data[i]["1D cml"] ){
+         data_filtered_site.push(data[i]);
+         var percent =(data[i]["half of 2yr max"] * (0.80));
+       }
+     }
+     criteria_process(data_filtered_site,"container",percent)
+     criteriaSelection(data_all_unfilterd,"container")
+     percentage_select(data_all_unfilterd,"container")
+     $("#chart_view").on("changed.bs.select", function(e, clickedIndex, newValue, oldValue) {
+      var selected_view = $(this).find('option').eq(clickedIndex).text();
+      $("#operands_value").val("....");
+      $("#operands_value").selectpicker('refresh')
+      $("#criteria").val("....");
+      $("#criteria").selectpicker('refresh')
+      if(selected_view == "All Sites"){
+        $( "#container_region" ).slideUp()
+        $( "#container" ).show()
+        $('#region_id').slideUp("slow")
+        $('#region_view_div').slideUp("slow")
+        $('.percent_div').slideUp("slow")
+        $('.val_rain').slideUp("slow")
+        $("#criteria1").val("....");
+        $("#criteria1").selectpicker('refresh');
+        criteriaSelection(data,"container")
+        document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;All Sites";
+      }else if (selected_view == "Region"){
+       $('#region_id').slideDown("slow")
+       $('#region_view_div').slideDown()
+       $( "#container" ).slideUp()
+       $( "#container_region" ).slideDown("slow")
+       $('.percent_div').slideUp("slow")
+       $('.val_rain').slideUp("slow")
+       $("#criteria1").val("....");
+       $("#criteria1").selectpicker('refresh');
+       document.getElementById("small_header").innerHTML ="&nbsp;Rainfall Scanner Page&nbsp;&nbsp;< &nbsp;&nbsp;Region";
+     }
 
-   let dataJson = { 
-    sites : site,
-    day1 : day1, 
-    day3 : day3,
-    y2max : year2max,
-    y2maxhalf : year2maxhalf
-  }
-  rainScannerBar(dataJson,"container")
-});
- }else{
+     let dataJson = { 
+      sites : site,
+      day1 : day1, 
+      day3 : day3,
+      y2max : year2max,
+      y2maxhalf : year2maxhalf
+    }
+    rainScannerBar(dataJson,"container")
+  });
+   }else{
     document.getElementById("rain_header").innerHTML ="NO DATA";
- }
+  }
 }
 })   
 });

@@ -1,11 +1,12 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
 
 $(document).ready(function(e) {
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
+
 	var values = window.location.href.split("/")
 	var current_site = values[5];
 	$(".svgBox").hide()

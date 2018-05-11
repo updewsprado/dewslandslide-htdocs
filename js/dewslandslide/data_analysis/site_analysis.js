@@ -1,23 +1,24 @@
-$(document).ajaxStart(function () {
 
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-	});
-	$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
-	$("body").popover({ selector: '[data-toggle=popover]' });  
-
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-	$(".bootstrap-select").click(function () {
-		$(this).addClass("open");
-		
-	});
-
-});
 
 $(document).ready(function(e) {
+	$(document).ajaxStart(function () {
+
+		$('#loading').modal('toggle');
+		$(".bootstrap-select").click(function () {
+			$(this).addClass("open");
+		});
+		$("body").tooltip({ selector: '[data-toggle=tooltip]' }); 
+		$("body").popover({ selector: '[data-toggle=popover]' });  
+
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+		$(".bootstrap-select").click(function () {
+			$(this).addClass("open");
+			
+		});
+
+	});
 	$('.tag').hide()
 	downloadSvg();
 	$(".bootstrap-select").click(function () {
@@ -498,7 +499,7 @@ function getRainSenslope(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
-					var colors= ["#0000FF","#FF0000","#0000"]
+					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
@@ -597,7 +598,7 @@ function getRainArq(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
-					var colors= ["#0000FF","#FF0000","#0000"]
+					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {
@@ -696,7 +697,7 @@ function getRainNoah(site,dataSubmit,max_rain,id,distance) {
 					var max_array_data = [];
 					var all_cummulative=[];
 					var all_ts=[];
-					var colors= ["#0000FF","#FF0000","#0000"]
+					var colors= ["#0000FF","#FF0000","black"]
 					if(data.length != 0){
 						var jsonRespo = JSON.parse(data);
 						for (i = 0; i < jsonRespo.length; i++) {

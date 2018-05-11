@@ -108,7 +108,7 @@ $(document).ready( function() {
 		// Search candidate trigger if existing on latest and overdue
 		merged_arr = jQuery.merge(jQuery.merge([], ongoing.latest), ongoing.overdue);
 		let index = merged_arr.map(x => x.name).indexOf(site);
-		let previous = null;
+		let previous = null, enableReleaseButton = false;
 
 		if(index > -1)
 		{
@@ -116,7 +116,7 @@ $(document).ready( function() {
 			entry.trigger_list = showModalTriggers(row, previous.trigger_timestamp);
 			entry.previous_validity = previous.validity;
 
-			if( row.internal_alert == "A0" )
+			if( row.internal_alert == "A0" || row.internal_alert == "ND" )
 			{
 				if( moment(previous.validity).isAfter( moment(row.timestamp).add(30, 'minutes') ) )
 					entry.status = "invalid";
@@ -130,6 +130,7 @@ $(document).ready( function() {
 
 			let index_ex = ongoing.extended.map(x => x.name).indexOf(site);
 			entry.trigger_list = showModalTriggers(row, null);
+			enableReleaseButton = true;
 
 			if( row.status == "extended" ) 
 			{
@@ -140,9 +141,15 @@ $(document).ready( function() {
 				// Search if candidate trigger exists on extended
 				if(index_ex > -1) entry.previous_event_id = ongoing.extended[index_ex].event_id;
 				entry.status = "new";
-				$("#release").prop("disabled", false);
 			}
 		}
+		
+		// Check data timestamp for regular release (x:30)
+		// Disable send button if not else enable button
+		let hour = moment(row.timestamp).hour();
+		let minute = moment(row.timestamp).minutes();
+		if( hour % 4 == 3 && minute == 30 || enableReleaseButton ) $("#release").prop("disabled", false);
+		else $("#release").prop("disabled", true);
 
 		// Insert X on internal alert if Rx is not yet automatic on JSON
 		entry.rain_alert = row.rain_alert;
@@ -155,13 +162,6 @@ $(document).ready( function() {
 				$("#internal_alert_level").val(internal);
 			}
 		}
-
-		// Check data timestamp for regular release (x:30)
-		// Disable send button if not else enable button
-		let hour = moment(row.timestamp).hour();
-		let minute = moment(row.timestamp).minutes();
-		if( hour % 4 == 3 && minute == 30 ) $("#release").prop("disabled", false);
-		else $("#release").prop("disabled", true);
 
 		showInvalidTriggersOnModal( row );
 
@@ -516,14 +516,14 @@ function buildDashboardTables( data )
 	        	{ 
 	            	"data": "release_time",
 	            	"render": function (data, type, full) {
-	            		if( full.internal_alert_level == "A0" ) return "FINISHED";
+	            		if( full.internal_alert_level == "A0" || full.internal_alert_level == "ND" ) return "FINISHED";
 	            		else return full.release_time;
 	            	},
 	            	"name": "release_time"
 	        	},
 	        	{
 	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
+	            		return "<a onclick='chatterboxViaMonitoringDashboard("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
 	            	}
 	        	}
 	    	],
@@ -539,12 +539,26 @@ function buildDashboardTables( data )
 		    },
 		    "rowCallback": function( row, data, index ) 
 		    {
-                switch(data.internal_alert_level.slice(0,2))
+		    	let temp = data.internal_alert_level.slice(0,2);
+		    	if ( temp == "ND" ) { temp = (data.internal_alert_level.length > 2) ? 'A1' : 'A0'; }
+                switch(temp)
                 {
                 	case 'A2': $(row).addClass("alert_2"); break;
-                	case 'A1': case 'ND': $(row).addClass("alert_1"); break;
+                	case 'A1': $(row).addClass("alert_1"); break;
                     case 'A3': $(row).addClass("alert_3"); break;
                 }
+		  	},
+		  	"initComplete": function () 
+		  	{
+		  		let row_count = 0;
+		  		this.api().rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+		  			let data = this.data();
+		  			if(data.internal_alert_level != "A0" && data.internal_alert_level != "ND" ) {
+		  				row_count++;
+		  			}
+				});
+
+		  		$("#" + table + "-panel .row-count").text("Row count: " + row_count);
 		  	}
 	    });
 	};
@@ -589,14 +603,17 @@ function buildDashboardTables( data )
 	        	},
 	        	{
 	        		"render": function (data, type, full) {
-	            		return "<a onclick='sendViaAlertMonitor("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
+	            		return "<a onclick='chatterboxViaMonitoringDashboard("+JSON.stringify(full)+")'><span id='" + full.latest_release_id + "_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='" + full.latest_release_id + "' data-sent='0' data-event-id='"+ full.event_id +"'></span></a>";
 	            	}
 	        	}
 			],
 	    	"order" : [[3, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": false,
+	    	"info": true,
+	    	"infoCallback": function( settings, start, end, max, total, pre ) {
+	    		$("#extended-panel .row-count").text("Row count: " + end);
+			},
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
@@ -680,7 +697,10 @@ function buildDashboardTables( data )
 	    	"order" : [[3, "asc"]],
 	    	"processing": true,
 	    	"filter": false,
-	    	"info": false,
+	    	"info": true,
+	    	"infoCallback": function( settings, start, end, max, total, pre ) {
+	    		$("#candidate-panel .row-count").text("Row count: " + end);
+			},
 	    	"paginate": false,
 	    	"autoWidth": false,
 	    	"language": 
