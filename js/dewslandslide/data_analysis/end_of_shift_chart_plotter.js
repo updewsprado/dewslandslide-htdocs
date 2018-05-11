@@ -132,7 +132,7 @@ function plotEoSSurficial (args) {
         $(`#${input.site_code}-surficial`).show();
 
         const [{ data: [{ x: last_point_ts }] }] = series;
-        input.start_date = moment(last_point_ts).add.format("YYYY-MM-DDTHH:mm:ss");
+        input.start_date = moment(last_point_ts).format("YYYY-MM-DDTHH:mm:ss");
 
         plotSurficial(series, input);
         $loading_surficial.hide();
