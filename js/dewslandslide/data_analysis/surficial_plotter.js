@@ -161,8 +161,8 @@ function createSurficialMarkersButton (series) {
             id: `marker_${marker_id.toLowerCase()}`,
             type: "button",
             class: classes,
-            value: marker,
-            text: marker,
+            value: marker_id,
+            text: marker_id,
             "data-loaded": false
         }));
     });
