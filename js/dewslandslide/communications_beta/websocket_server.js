@@ -12,8 +12,6 @@ let wss_connect= connectWS();
 // 					"conSetAllOrgs","qgrAllSites","qgrAllOrgs","newAddedCommContact","fetchGroupSms","fetchSms","ackgsm",
 // 					"ackrpi","smsrcv"];
 
-const wss_types = ["loadnamesuggestions"];
-
 $(document).ready(function() {
 	
 });
@@ -32,16 +30,20 @@ function connectWS() {
 
 		wssConnection.onmessage = function(e) {
 			let msg_data = JSON.parse(e.data);
-			wss_types.forEach(function(type) {
-				console.log(type);
-				switch (type) {
-					case msg_data.type:
-						getContactSuggestion(msg_data);
-						break;
-					default:
-						break;
-				}
-			});
+			switch (msg_data.type) {
+				case "loadnamesuggestions":
+					getContactSuggestion(msg_data);
+					break;
+				case "qgrAllSites":
+					displaySitesSelection(msg_data.data);
+					break;
+				case "qgrAllOrgs":
+					displayOrgSelection(msg_data.data);
+					break;
+				default:
+					console.log("none");
+					break;
+			}
 		}
 
 	wssConnection.onclose = function(e) {

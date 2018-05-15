@@ -1,8 +1,5 @@
 $(document).ready(function() {
-
-
-initializeContactSuggestion($("#contact-suggestion").val());
-	
+	initializeContactSuggestion($("#contact-suggestion").val());
 });
 
 function initializeContactSuggestion(name_query) {
@@ -14,7 +11,6 @@ function initializeContactSuggestion(name_query) {
 }
 
 function getContactSuggestion (name_suggestion) {
-	console.log($("#contact-suggestion + ul").html());
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
 	let awesomplete = new Awesomplete(contact_suggestion_input);
 	let contact_suggestion_container = [];
@@ -45,19 +41,6 @@ function getRecentlyViewedSites () {
 }
 
 function getOnRoutineSites () {
-
-}
-
-function getQuickGroupSelection () {
-	getQuickCommunitySelection();
-	getQuickEmployeeSelection();
-}
-
-function getQuickCommunitySelection () {
-
-}
-
-function getQuickEmployeeSelection () {
 
 }
 
