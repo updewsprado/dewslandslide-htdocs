@@ -144,7 +144,7 @@ function getPlotDataForRainfall (args, isEOS = false) {
     const s = (typeof source === "undefined") ? "all" : source;
     let url = `/../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
-  
+
     return $.getJSON(url)
     .catch(err => err);
 }

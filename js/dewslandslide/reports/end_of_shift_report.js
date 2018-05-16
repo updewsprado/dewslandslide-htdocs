@@ -35,7 +35,7 @@ $(document).ready(() => {
 
     initializeTimestamps();
     initializeFormValidator();
-    initializeGraphRelatedInputs();
+    initializeGraphCheckboxesOnClick();
     initializeFileUploading();
     intializeSubmitButtons();
     initializeSiteSelectionModalAndCheckboxes();
@@ -222,9 +222,9 @@ function initializeSiteSelectionModalOkayButton () {
         sites_to_do = [];
         const $checkboxes = $site_modal.find("input:checked");
         $checkboxes.each((index, elem) => {
-            const { value, site: site_name, event: event_id } = $(elem).data();
+            const { value, site: site_code, event: event_id } = $(elem).data();
             const site_id = value.toString(10);
-            sites_to_do.push({ site_id, site_name, event_id });
+            sites_to_do.push({ site_id, site_code, event_id });
         });
 
         getShiftTriggers(all_release_and_event_ids)
@@ -332,6 +332,12 @@ function initializeMailRecipients () {
     }
 }
 
+/*************************************************
+ * A function that group by elements of an
+ * assorted array into array of arrays with
+ * additional parameter for filtering extended
+ * releases
+*************************************************/
 function groupBy (collection, property, type) {
     const values = [];
     let result = [];
@@ -575,7 +581,7 @@ function getMostRecentTriggersBeforeShift ({
 
 function buildEndOfShiftReportSiteTabs (data, hasActiveTabAlready) {
     const site_code = data.site;
-    const { event_id, internal_alert_level: alert } = data;
+    const { event_id, internal_alert_level: alert, validity } = data;
     const nav_id = `report_nav_${site_code}`;
     const field_id = `report_field_${site_code}`;
 
@@ -610,8 +616,10 @@ function buildEndOfShiftReportSiteTabs (data, hasActiveTabAlready) {
     const checkbox_id = `graph_checkbox_${site_code}`;
     $("#graph_checkbox_sample").clone().attr({
         id: `${checkbox_id}`,
-        hidden: false
+        hidden: false,
+        "data-validity": validity
     })
+    .addClass("graph_checkbox_panel")
     .appendTo(`#${field_id} .graphs-div`);
 
     const div = `#${checkbox_id}`;
@@ -854,7 +862,7 @@ function delegateReportsToTextAreas (reports) {
     });
 }
 
-function initializeGraphRelatedInputs () {
+function initializeGraphCheckboxesOnClick () {
     $(document).on("click", ".subsurface_options a", ({ currentTarget }) => {
         $(currentTarget).children("input").trigger("click");
     });
@@ -864,7 +872,15 @@ function initializeGraphRelatedInputs () {
             const [type, site] = $(currentTarget).val().split("_");
             const shift_start = $("#shift_start").val();
             const shift_end = $("#shift_end").val();
-            window.open(`${window.location.origin}/analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${shift_end}`, "_blank");
+            let validity = $(currentTarget).parents(".graph_checkbox_panel").data("validity");
+
+            // Add thirty minutes to the validity since shift_end is always
+            // 30 minutes ahead from last validity possible for the shift
+            validity = moment(validity).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss");
+
+            let end_ts = shift_end;
+            if (moment(validity).isBefore(shift_end)) end_ts = validity;
+            window.open(`${window.location.origin}/analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${end_ts}`, "_blank");
         }
     });
 }
@@ -954,6 +970,7 @@ function sendReport (site_code, event_id) {
     .then(() => mailReport(form_data))
     .then((x) => {
         $("#loading").modal("hide");
+        sites_to_do = sites_to_do.filter(y => y.site_code !== site_code);
         if (x === "Sent.") {
             console.log("Email sent.");
             $(`#report_nav_${site_code} a`).attr("style", "background-color: lightgreen !important");
@@ -998,8 +1015,8 @@ function saveExpertOpinion (event_id, analysis, shift_start) {
 
 function saveAllDataAnalysisAutomatically () {
     sites_to_do.forEach((obj) => {
-        const { site_name, event_id } = obj;
-        const analysis = CKEDITOR.instances[`shift_analysis_${site_name}`].getData();
+        const { site_code, event_id } = obj;
+        const analysis = CKEDITOR.instances[`shift_analysis_${site_code}`].getData();
         saveExpertOpinion(event_id, analysis, shift_timestamps.start);
     });
 
