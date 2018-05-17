@@ -19,15 +19,13 @@ function processNodeDropDown (subsurface_column) {
 
     getSiteColumnNodeCount(subsurface_column)
     .done(delegateNodeNumbersOnDropdown)
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "node count dropdown");
     });
 }
 
 function getSiteColumnNodeCount (subsurface_column) {
-    return $.getJSON(`../site_analysis/getSiteColumnNodeCount/${subsurface_column}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getSiteColumnNodeCount/${subsurface_column}`);
 }
 
 function delegateNodeNumbersOnDropdown (node_count) {
@@ -110,17 +108,15 @@ function plotNodeLevelCharts (input) {
         });
         $("#subsurface-node-plots .loading-bar").hide();
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "node charts");
     });
 }
 
 function getPlotDataForNode ({
     subsurface_column, start_date, end_date, nodes
 }) {
-    return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${nodes}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${nodes}`);
 }
 
 function createGeneralNodeChart ({ series_name, data }, input) {

@@ -18,15 +18,13 @@ function processSubsurfaceColumnDropDown (site_code) {
 
     getSiteSubsurfaceColumns(site_code)
     .done(delegateSubsurfaceColumnsOnDropDown)
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "subsurface column dropdown");
     });
 }
 
 function getSiteSubsurfaceColumns (site_code) {
-    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`)
-    .catch(err => err);
+    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`);
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
@@ -78,16 +76,14 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
         delegateColumnSummaryDataForPlotting(column_summary, form);
         $("#subsurface-column-summary-plots .loading-bar").hide();
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "column summary charts");
     });
 }
 
 function getPlotDataForColumnSummary (form, include_node_health) {
     const { subsurface_column, start_date, end_date } = form;
-    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`);
 }
 
 function delegateColumnSummaryDataForPlotting (column_summary, form) {
@@ -323,9 +319,8 @@ function plotSubsurfaceAnalysisCharts (form) {
         delegateSubsurfaceDataForPlotting(subsurface_data, form);
         $("#subsurface-plots .loading-bar").hide();
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "subsurface analysis charts");
     });
 }
 
@@ -337,8 +332,7 @@ function getPlotDataForSubsurface (args, isEOS = false) {
     let url = `/../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
 
-    return $.getJSON(url)
-    .catch(err => err);
+    return $.getJSON(url);
 }
 
 function delegateSubsurfaceDataForPlotting (subsurface_data, form) {

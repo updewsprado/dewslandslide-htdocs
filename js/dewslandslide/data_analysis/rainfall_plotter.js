@@ -39,9 +39,8 @@ function initializeRainSourcesButton () {
                 $(target).addClass("active");
                 $loading_rain.hide();
             })
-            .catch(({ responseText, status: conn_status, statusText }) => {
-                alert(`Status ${conn_status}: ${statusText}`);
-                alert(responseText);
+            .catch((x) => {
+                showErrorModal(x, "rainfall charts");
             });
         }
     });
@@ -112,12 +111,14 @@ function plotRainfallCharts (site_code) {
         // $rain_btn_group.find("button").each((index, button) => {
         //     $(button).trigger("click");
         // });
+    })
+    .catch((x) => {
+        showErrorModal(x, "rainfall sources buttons");
     });
 }
 
 function getRainDataSourcesPerSite (site_code) {
-    return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`)
-    .catch(err => err);
+    return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`);
 }
 
 function createRainSourcesButton (sources) {
@@ -145,8 +146,7 @@ function getPlotDataForRainfall (args, isEOS = false) {
     let url = `/../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
 
-    return $.getJSON(url)
-    .catch(err => err);
+    return $.getJSON(url);
 }
 
 function plotRainfall (datalist, temp) {

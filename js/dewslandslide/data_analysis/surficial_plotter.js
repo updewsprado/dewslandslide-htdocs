@@ -79,9 +79,8 @@ function initializeSurficialMarkersButton () {
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
                 })
-                .catch(({ responseText, status: conn_status, statusText }) => {
-                    alert(`Status ${conn_status}: ${statusText}`);
-                    alert(responseText);
+                .catch((x) => {
+                    showErrorModal(x, "surficial chart");
                 });
             } else {
                 input.marker_name = marker;
@@ -95,9 +94,8 @@ function initializeSurficialMarkersButton () {
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
                 })
-                .catch(({ responseText, status: conn_status, statusText }) => {
-                    alert(`Status ${conn_status}: ${statusText}`);
-                    alert(responseText);
+                .catch((x) => {
+                    showErrorModal(x, "marker acceleration chart");
                 });
             }
         }
@@ -139,8 +137,7 @@ function getPlotDataForSurficial (args, isEOS = false) {
     let url = `/../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
 
-    return $.getJSON(url)
-    .catch(err => err);
+    return $.getJSON(url);
 }
 
 function createSurficialMarkersButton (series) {
@@ -156,7 +153,7 @@ function createSurficialMarkersButton (series) {
         if (marker_id === "Markers") {
             classes = "btn btn-sm no-click surficial-markers";
         }
-        
+
         $btn_group.append($("<button>", {
             id: `marker_${marker_id.toLowerCase()}`,
             type: "button",
@@ -236,8 +233,7 @@ function createSurficialChart (data, input) {
 }
 
 function getPlotDataForMarkerAcceleration ({ site_code, marker_name, end_date }) {
-    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`);
 }
 
 function plotMarkerTrendingAnalysis (trend_dataset, input) {
