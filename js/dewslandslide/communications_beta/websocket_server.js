@@ -40,8 +40,10 @@ function connectWS() {
 				case "qgrAllOrgs":
 					displayOrgSelection(msg_data.data);
 					break;
+				case "smsloadquickinbox":
+					displayQuickInboxMain(msg_data.data);
 				default:
-					console.log("none");
+					console.log("No request to load.");
 					break;
 			}
 		}

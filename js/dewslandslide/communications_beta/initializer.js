@@ -1,13 +1,14 @@
 $(document).ready(function() {
 	initializeContactSuggestion($("#contact-suggestion").val());
+	initializeQuickInboxMessages();
 });
 
 function initializeContactSuggestion(name_query) {
-	let nameSuggestionRequest = {
+	let name_suggestion_request = {
 		'type': 'requestnamesuggestions',
 		'namequery': name_query,
 	};
-	wss_connect.send(JSON.stringify(nameSuggestionRequest));
+	wss_connect.send(JSON.stringify(name_suggestion_request));
 }
 
 function getContactSuggestion (name_suggestion) {
@@ -22,7 +23,29 @@ function getContactSuggestion (name_suggestion) {
 	awesomplete.list = contact_suggestion_container;
 }
 
-function getQuickInboxMessages () {
+function initializeQuickInboxMessages () {
+	getQuickInboxMain();
+	getQuickInboxEvent();
+	getQuickInboxUnregistered();
+	getQuickInboxDataLogger();
+}
+
+function getQuickInboxMain() {
+	let load_quick_inbox_main = {
+		'type': 'smsloadquickinboxrequest'
+	};
+	wss_connect.send(JSON.stringify(load_quick_inbox_main));
+}
+
+function getQuickInboxEvent() {
+
+}
+
+function getQuickInboxUnregistered() {
+
+}
+
+function getQuickInboxDataLogger() {
 
 }
 

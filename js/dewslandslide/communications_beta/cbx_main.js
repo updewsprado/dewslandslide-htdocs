@@ -1,3 +1,8 @@
+let quick_inbox_registered = [];
+let quick_inbox_unregistered = [];
+let quick_inbox_event = [];
+let quick_inbox_data_logger = [];
+
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
 	getQuickEmployeeSelection();
@@ -38,6 +43,27 @@ function displaySitesSelection(data) {
 		site_id = sitenames[i].site_id;
 		psgc = sitenames[i].psgc;
 		$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+sitename+'">'+sitename.toUpperCase()+'</label></div>');
+	}
+}
+
+function displayQuickInboxMain(msg_data) {
+	try {
+		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+		try {
+			for (let counter = 0; counter < msg_data.length; counter++) {
+				msg_data[counter].isunknown = 0;
+				quick_inbox_registered.unshift(msg_data[counter]);	
+			}
+			
+		} catch(err) {
+			console.log(err);
+		}
+
+		quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+		$("#quick-inbox-display").html(quick_inbox_html);
+		$("#quick-inbox-display").scrollTop(0);
+	} catch (err) {
+		console.log(err);
 	}
 }
 
