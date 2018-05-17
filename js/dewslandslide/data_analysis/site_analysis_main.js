@@ -2,6 +2,7 @@
 let validator = null;
 $(document).ready(() => {
     const paths = window.location.pathname.split("/");
+    reposition("#error-modal");
 
     if (paths[2] !== "eos_charts") {
         adjustOptionsBarOnWindowResize();
@@ -403,4 +404,21 @@ function formatHighchartsGlobalOptions () {
         },
         chart: { reflow: true }
     });
+}
+
+function showErrorModal (ajax, module) {
+    const { responseText, status, statusText } = ajax;
+    const $modal = $("#error-modal");
+    const $body_ul = $modal.find(".modal-body ul");
+    const text = `<li>Error loading ${module}</li>`;
+
+    if (!$modal.is(":visible")) {
+        $body_ul.empty()
+        .html(text);
+        $modal.modal("show");
+    } else {
+        $body_ul.append(text);
+    }
+
+    console.log(`%c► Error ${module}\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
 }
