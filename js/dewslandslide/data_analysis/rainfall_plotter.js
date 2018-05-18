@@ -1,8 +1,8 @@
 
 const rainfall_colors = {
-    "24h": "#4969FCE6",
-    "72h": "#EF4532E6",
-    rain: "#000000E6"
+    "24h": "rgba(73, 105, 252, 0.9)",
+    "72h": "rgba(239, 69, 50, 0.9)",
+    rain: "rgba(0, 0, 0, 0.9)"
 };
 
 $(document).ready(() => {
@@ -39,9 +39,8 @@ function initializeRainSourcesButton () {
                 $(target).addClass("active");
                 $loading_rain.hide();
             })
-            .catch(({ responseText, status: conn_status, statusText }) => {
-                alert(`Status ${conn_status}: ${statusText}`);
-                alert(responseText);
+            .catch((x) => {
+                showErrorModal(x, "rainfall charts");
             });
         }
     });
@@ -112,12 +111,14 @@ function plotRainfallCharts (site_code) {
         // $rain_btn_group.find("button").each((index, button) => {
         //     $(button).trigger("click");
         // });
+    })
+    .catch((x) => {
+        showErrorModal(x, "rainfall sources buttons");
     });
 }
 
 function getRainDataSourcesPerSite (site_code) {
-    return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`)
-    .catch(err => err);
+    return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`);
 }
 
 function createRainSourcesButton (sources) {
@@ -137,12 +138,15 @@ function createRainSourcesButton (sources) {
     });
 }
 
-function getPlotDataForRainfall ({
-    site_code, start_date, end_date, source
-}) {
+function getPlotDataForRainfall (args, isEOS = false) {
+    const {
+        site_code, start_date, end_date, source
+    } = args;
     const s = (typeof source === "undefined") ? "all" : source;
-    return $.getJSON(`../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`)
-    .catch(err => err);
+    let url = `/../site_analysis/getPlotDataForRainfall/${site_code}/${s}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+
+    return $.getJSON(url);
 }
 
 function plotRainfall (datalist, temp) {
@@ -168,7 +172,7 @@ function plotRainfall (datalist, temp) {
             else max_rval_data.push(entry);
         });
 
-        const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "#44AAD533" }));
+        const null_processed = null_ranges.map(({ from, to }) => ({ from, to, color: "rgba(68, 170, 213, 0.3)" }));
         createInstantaneousRainfallChart(max_rval_data, temp, source, null_processed);
         createCumulativeRainfallChart(series_data, temp, source);
     });

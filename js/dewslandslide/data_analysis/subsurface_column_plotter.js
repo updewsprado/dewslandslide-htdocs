@@ -18,15 +18,13 @@ function processSubsurfaceColumnDropDown (site_code) {
 
     getSiteSubsurfaceColumns(site_code)
     .done(delegateSubsurfaceColumnsOnDropDown)
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "subsurface column dropdown");
     });
 }
 
 function getSiteSubsurfaceColumns (site_code) {
-    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`)
-    .catch(err => err);
+    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`);
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
@@ -52,7 +50,7 @@ function initializeColumnSummaryDurationDropdownOnClick () {
 
         const form = {
             subsurface_column: $("#subsurface_column").val(),
-            start_date: getStartDate(parent_id.replace("-duration")),
+            start_date: getStartDate(parent_id.replace("-duration", "")),
             end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm")
         };
 
@@ -74,23 +72,21 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
     $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
+        console.log(column_summary);
         delegateColumnSummaryDataForPlotting(column_summary, form);
         $("#subsurface-column-summary-plots .loading-bar").hide();
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "column summary charts");
     });
 }
 
 function getPlotDataForColumnSummary (form, include_node_health) {
     const { subsurface_column, start_date, end_date } = form;
-    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`);
 }
 
 function delegateColumnSummaryDataForPlotting (column_summary, form) {
-    console.log(column_summary);
     column_summary.forEach(({ data, series_name }) => {
         switch (series_name) {
             case "node_summary": plotNodeHealthSummary(data, form); break;
@@ -178,9 +174,6 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
                 const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
                 return tooltip;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
@@ -265,9 +258,6 @@ function createDataPresenceChart (data_presence, form) {
                 }
                 return `Timestamp: <b>${moment(this.point.id).format("DD MMM YYYY, HH:mm")}</b><br/>Status: <b>${status}</b>`;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
@@ -329,19 +319,23 @@ function plotSubsurfaceAnalysisCharts (form) {
         delegateSubsurfaceDataForPlotting(subsurface_data, form);
         $("#subsurface-plots .loading-bar").hide();
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        showErrorModal(x, "subsurface analysis charts");
     });
 }
 
-function getPlotDataForSubsurface ({ subsurface_column, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`)
-    .catch(err => err);
+function getPlotDataForSubsurface (args, isEOS = false) {
+    console.log(args);
+    const {
+        subsurface_column, start_date, end_date
+    } = args;
+    let url = `/../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+
+    return $.getJSON(url);
 }
 
 function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
-    console.log(subsurface_data);
     subsurface_data.forEach(({ type, data }) => {
         if (type === "column_position") plotColumnPosition(data, form);
         else if (type === "displacement") plotDisplacement(data, form);
@@ -488,8 +482,7 @@ function createDisplacementChart (column_data, subsurface_column) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800,
-            width: 400
+            height: 800
         },
         title: {
             text: `<b>Displacement Plot, ${xAxisTitle}</b>`,
@@ -547,8 +540,7 @@ function createVelocityAlertsChart (orientation, data, subsurface_column) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800,
-            width: 400
+            height: 800
         },
         title: {
             text: `<b>Velocity Alerts Plot, ${xAxisTitle}</b>`,

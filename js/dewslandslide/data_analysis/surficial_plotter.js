@@ -63,7 +63,7 @@ function initializeSurficialMarkersButton () {
 
             const input = {
                 site_code,
-                end_date: $("#data_timestamp").val(),
+                end_date: moment($("#data_timestamp").val()).format("YYYY-MM-DDTHH:mm:ss"),
                 start_date: getStartDate("surficial")
             };
 
@@ -79,9 +79,8 @@ function initializeSurficialMarkersButton () {
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
                 })
-                .catch(({ responseText, status: conn_status, statusText }) => {
-                    alert(`Status ${conn_status}: ${statusText}`);
-                    alert(responseText);
+                .catch((x) => {
+                    showErrorModal(x, "surficial chart");
                 });
             } else {
                 input.marker_name = marker;
@@ -95,9 +94,8 @@ function initializeSurficialMarkersButton () {
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
                 })
-                .catch(({ responseText, status: conn_status, statusText }) => {
-                    alert(`Status ${conn_status}: ${statusText}`);
-                    alert(responseText);
+                .catch((x) => {
+                    showErrorModal(x, "marker acceleration chart");
                 });
             }
         }
@@ -132,9 +130,14 @@ function initializeSurficialDurationDropDownOnClick () {
     });
 }
 
-function getPlotDataForSurficial ({ site_code, start_date, end_date }) {
-    return $.getJSON(`../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`)
-    .catch(err => err);
+function getPlotDataForSurficial (args, isEOS = false) {
+    const {
+        site_code, start_date, end_date
+    } = args;
+    let url = `/../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`;
+    url = isEOS ? `/../../../../../..${url}` : url;
+
+    return $.getJSON(url);
 }
 
 function createSurficialMarkersButton (series) {
@@ -145,17 +148,18 @@ function createSurficialMarkersButton (series) {
 
     $(".surficial-markers").remove();
     $btn_group = $("#surficial-markers-btn-group");
-    markers.forEach((marker) => {
+    markers.forEach((marker_id) => {
         let classes = "btn btn-primary btn-sm surficial-markers";
-        if (marker === "Markers") {
+        if (marker_id === "Markers") {
             classes = "btn btn-sm no-click surficial-markers";
         }
 
         $btn_group.append($("<button>", {
+            id: `marker_${marker_id.toLowerCase()}`,
             type: "button",
             class: classes,
-            value: marker,
-            text: marker,
+            value: marker_id,
+            text: marker_id,
             "data-loaded": false
         }));
     });
@@ -229,8 +233,7 @@ function createSurficialChart (data, input) {
 }
 
 function getPlotDataForMarkerAcceleration ({ site_code, marker_name, end_date }) {
-    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`)
-    .catch(err => err);
+    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`);
 }
 
 function plotMarkerTrendingAnalysis (trend_dataset, input) {
