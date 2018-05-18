@@ -2970,8 +2970,8 @@ $('#settings-cmd').on('change',function(){
 		$('#settings-cmd').css("background-color", "#dff0d8");
 	}
 
-	if ($('#contact-category').val() == "econtacts") 
-{		if ($('#settings-cmd').val() == "addcontact") {
+	if ($('#contact-category').val() == "econtacts") {
+		if ($('#settings-cmd').val() == "addcontact") {
 			$('#emp-response-contact-container_wrapper').prop('hidden',true);
 			$('#comm-response-contact-container_wrapper').prop('hidden',true);
 			$('#community-contact-wrapper').prop('hidden', true);

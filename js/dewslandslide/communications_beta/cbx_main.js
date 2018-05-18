@@ -9,17 +9,47 @@ function getQuickGroupSelection () {
 }
 
 function getQuickCommunitySelection () {
-	var listSites = {
-		'type': "qgrSites"
+	try {
+		let list_of_sites = {
+			'type': "qgrSites"
+		}
+
+		let list_of_orgs = {
+			'type': "qgrOrgs"
+		}
+
+		wss_connect.send(JSON.stringify(list_of_sites));
+		wss_connect.send(JSON.stringify(list_of_orgs));
+		$('#advanced-search').modal("toggle");
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
 	}
 
-	var listSOrgs = {
-		'type': "qgrOrgs"
-	}
+}
 
-	wss_connect.send(JSON.stringify(listSites));
-	wss_connect.send(JSON.stringify(listSOrgs));
-	$('#advanced-search').modal("toggle");
+function getEmployeeContact(){
+	try {
+		let employee_details = {
+			'type': 'loadAllDewslContacts'
+		};
+		wss_connect.send(JSON.stringify(employee_details));
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}
+}
+
+function getCommunityContact(){
+	try {
+		let community_details = {
+			'type': 'loadAllCommunityContacts'
+		};
+		wss_connect.send(JSON.stringify(community_details));
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}
 }
 
 function getQuickEmployeeSelection () {
@@ -64,6 +94,7 @@ function displayQuickInboxMain(msg_data) {
 		$("#quick-inbox-display").scrollTop(0);
 	} catch (err) {
 		console.log(err);
+		//Add PMS here
 	}
 }
 
@@ -79,4 +110,30 @@ function displayOrgSelection(data){
 		office_id = offices[i].org_id;
 		$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+office+'" name="orgs" class="form-group" value="'+office+'">'+office.toUpperCase()+'</label></div>');
 	}
+}
+
+function displayContactSettingsMenu() {
+	$('#employee-contact-wrapper').prop('hidden', true);
+	$('#community-contact-wrapper').prop('hidden', true);
+	$('#comm-response-contact-container_wrapper').prop('hidden',true);
+	$('#emp-response-contact-container_wrapper').prop('hidden',true);
+	$('#update-contact-container').prop('hidden',true);
+	$('#contact-result').remove();
+	// fetchSiteAndOffice();
+}
+
+function displayDataTableCommunityContacts(cmmty_contact_data){
+	$('#comm-response-contact-container').DataTable({
+		destroy: true,
+		data: cmmty_contact_data,
+		columns: [
+		{ "data": "user_id", "title": "User ID"},
+		{ "data": "salutation", "title": "Salutation" },
+		{ "data": "firstname", "title": "Firstname"},
+		{ "data": "lastname", "title": "Lastname"},
+		{ "data": "middlename", "title": "Middlename"},
+		{ "data": "active_status", "title": "Active Status"}
+		]
+	});
+	$('#comm-response-contact-container').prop('hidden',false);
 }

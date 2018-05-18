@@ -42,6 +42,10 @@ function connectWS() {
 					break;
 				case "smsloadquickinbox":
 					displayQuickInboxMain(msg_data.data);
+					break;
+				case "fetchedCmmtyContacts":
+					displayDataTableCommunityContacts(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
