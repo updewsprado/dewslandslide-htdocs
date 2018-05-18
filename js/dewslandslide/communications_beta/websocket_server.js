@@ -3,19 +3,6 @@ let connection_status = false;
 let reconnection_delay = 10000;
 let wss_connect= connectWS();
 
-// const wss_types = ["smsload","smsloadrequestgroup","loadEmployeeTag","hasNullEWIRecipient","resumeLoading",
-// 					"oldMessage","oldMessageGroup","searchMessage","searchMessageGlobal","searchMessageGroup",
-// 					"searchGintags","smsLoadSearched","smsLoadGroupSearched","smsloadGlobalSearched",
-// 					"smsloadquickinbox","latestAlerts","loadofficeandsites","loadnamesuggestions","ewi_tagging",
-// 					"fetchedCmmtyContacts","fetchedDwslContacts","fetchedSelectedDwslContact","fetchedSelectedCmmtyContact",
-// 					"updatedDwslContact","newAddedDwslContact","updatedCmmtyContact","newAddedCommContact","conSetAllSites",
-// 					"conSetAllOrgs","qgrAllSites","qgrAllOrgs","newAddedCommContact","fetchGroupSms","fetchSms","ackgsm",
-// 					"ackrpi","smsrcv"];
-
-$(document).ready(function() {
-	
-});
-
 function connectWS() {
 		console.log("trying to connect to web socket server");
 		var wssConnection = new WebSocket("ws://"+window.location.host+":5050");
@@ -45,6 +32,9 @@ function connectWS() {
 					break;
 				case "fetchedCmmtyContacts":
 					displayDataTableCommunityContacts(msg_data.data);
+					break;
+				case "fetchedDwslContacts":
+					displayDataTableEmployeeContacts(msg_data.data);
 					break;
 				default:
 					console.log("No request to load.");

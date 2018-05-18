@@ -137,3 +137,18 @@ function displayDataTableCommunityContacts(cmmty_contact_data){
 	});
 	$('#comm-response-contact-container').prop('hidden',false);
 }
+
+function displayDataTableEmployeeContacts(dwsl_contact_data) {
+	$('#emp-response-contact-container').DataTable({
+		destroy: true,
+		data: dwsl_contact_data,
+		columns: [
+		{ "data": "user_id", "title": "User ID"},
+		{ "data": "firstname", "title": "Firstname"},
+		{ "data": "lastname", "title": "Lastname"},
+		{ "data": "team", "title": "Team"},
+		{ "data": "active_status", "title": "Active Status"}
+		]
+	});
+	$('#emp-response-contact-container').prop('hidden',false);
+}
