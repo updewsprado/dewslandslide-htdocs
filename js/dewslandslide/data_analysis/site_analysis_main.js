@@ -2,8 +2,6 @@
 let validator = null;
 const chart_plots = new Set();
 const SITE_LEVEL_CONTAINER = new Set();
-const COLUMN_LEVEL_CONTAINER = new Set();
-const NODE_LEVEL_CONTAINER = new Set();
 $(document).ready(() => {
     const paths = window.location.pathname.split("/");
 
@@ -375,9 +373,6 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
                     class: "col-sm-6 column-position-chart",
                     id: `${source_table}-${x}`
                 }));
-                COLUMN_LEVEL_CONTAINER.add(`${source_table}-${x}`);
-                console.log(COLUMN_LEVEL_CONTAINER);
-                alert();
             });
         }
     }
@@ -388,16 +383,6 @@ function deleteCreatedPlotContainerId (level) {
         case "site":
             SITE_LEVEL_CONTAINER.forEach(function (plotted) {
                 SITE_LEVEL_CONTAINER.delete(plotted);
-            });
-            break;
-        case "column":
-            COLUMN_LEVEL_CONTAINER.forEach(function (plotted) {
-                COLUMN_LEVEL_CONTAINER.delete(plotted);
-            });
-            break;
-        case "node":
-            NODE_LEVEL_CONTAINER.forEach(function (plotted) {
-                NODE_LEVEL_CONTAINER.delete(plotted);
             });
             break;
         default:
@@ -448,4 +433,3 @@ function formatHighchartsGlobalOptions () {
         chart: { reflow: true }
     });
 }
-

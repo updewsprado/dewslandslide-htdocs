@@ -8,6 +8,7 @@ function initializeDownloadChartsButton () {
         $("#chart-options").modal({ backdrop: "static", keyboard: false });
         $(".download_chart_checkbox").prop("checked", false);
         initializePlottedCharts();
+        downloadSelectedCharts();
     });
 }
 
@@ -25,40 +26,161 @@ function initializePlottedCharts () {
 }
 
 function createSVG (plot_type, site_detail) {
-    let svg = null;
+    // debugger;
+    // let svg = null;
     $(".highcharts-root").removeAttr("xmlns").removeAttr("version");
-
+    // console.log(plot_type);
     switch (plot_type) {
         case "rainfall":
-            svg = createRainfallSVG();
+            createRainfallSVG();
             break;
         case "surficial":
-            svg = createSurficialSVG();
+            createSurficialSVG();
             break;
-        case "subsurface":
-            svg = createSubsurfaceSVG();
+        case "node_health":
+            createColumnSummarySVG(plot_type);
+            break;
+        case "data_presence":
+            createColumnSummarySVG(plot_type);
+            break;
+        case "communication_health":
+            createColumnSummarySVG(plot_type);
+            break;
+        case "subsurface_column":
+            createSubsurfaceSVG();
+            break;
+        case "x-accelerometer":
+            createNodeSVG(plot_type);
+            break;
+        case "y-accelerometer":
+            createNodeSVG(plot_type);
+            break;
+        case "z-accelerometer":
+            createNodeSVG(plot_type);
+            break;
+        case "battery":
+            createNodeSVG(plot_type);
             break;
         default: break;
     }
-    console.log(svg);
-    $.post("/../site_analysis_charts/saveSiteAnalysisChart", {
-        svg, site: site_detail, type: plot_type
-    })
-    .done((data) => {
-        console.log("done");
-    });
 }
 
 function createRainfallSVG () {
     $("#rainfall_svg").empty();
     SITE_LEVEL_CONTAINER.forEach(function (rain_chart) {
-        console.log(rain_chart);
         const tag = `#${rain_chart} div:first`;
         const get_svg = $(tag).html();
         $("#rainfall_svg").append(get_svg);
         delegateChartSVGPosition("rainfall");
     });
-    return $("#rain_charts").html();
+    // return $("#rain_charts").html();
+}
+
+function createSurficialSVG () {
+    $("#surficial_svg").empty();
+    const tag = ".surficial-plot-container div:first";
+    const get_svg = $(tag).html();
+    $("#surficial_svg").append(get_svg);
+    // return $("#surficial_chart").html();
+}
+
+function createColumnSummarySVG (type) {
+    let tag = null;
+    let chart_append_id = null;
+    let chart_id = null;
+    switch (type) {
+        case "node_health":
+            $("#node_health_svg").empty();
+            tag = "#node-health-summary div:first";
+            chart_append_id = "#node_health_svg";
+            chart_id = "#node_health_chart";
+            console.log("node_health");
+            break;
+        case "data_presence":
+            $("#data_presence_svg").empty();
+            tag = "#data-presence div:first";
+            chart_append_id = "#data_presence_svg";
+            chart_id = "#data_presence_chart";
+            console.log("data_presence");
+            break;
+        case "communication_health":
+            $("#communication_health_svg").empty();
+            tag = "#communication-health div:first";
+            chart_append_id = "#communication_health_svg";
+            chart_id = "#communication_health_chart";
+            console.log("communication_health");
+            break;
+        default:
+            break;
+    }
+
+    const get_svg = $(tag).html();
+    $(chart_append_id).append(get_svg);
+    // return $(chart_id).html();
+}
+
+function createSubsurfaceSVG () {
+    $("#subsurface_svg").empty();
+    const subsurface_charts = [
+        "column-position-downslope",
+        "column-position-across_slope",
+        "subsurface-displacement-downslope",
+        "subsurface-displacement-across_slope",
+        "velocity-alerts-downslope",
+        "velocity-alerts-across_slope"
+    ];
+
+    subsurface_charts.forEach(function (subsurface_chart) {
+        const tag = `#${subsurface_chart} div:first`;
+        const get_svg = $(tag).html();
+        $("#subsurface_svg").append(get_svg);
+        delegateChartSVGPosition("subsurface");
+    });
+    // return $("#column-position").html();
+}
+
+function createNodeSVG (type) {
+    let tag = null;
+    let chart_append_id = null;
+    let chart_id = null;
+    switch (type) {
+        case "x-accelerometer":
+            $("#x_accelerometer_svg").empty();
+            tag = "#x-accelerometer-graph div:first";
+            chart_append_id = "#x_accelerometer_svg";
+            chart_id = "#x_accelerometer_chart";
+            break;
+        case "y-accelerometer":
+            $("#y_accelerometer_svg").empty();
+            tag = "#y-accelerometer-graph div:first";
+            chart_append_id = "#y_accelerometer_svg";
+            chart_id = "#y_accelerometer_chart";
+            break;
+        case "z-accelerometer":
+            $("#z_accelerometer_svg").empty();
+            tag = "#z-accelerometer-graph div:first";
+            chart_append_id = "#z_accelerometer_svg";
+            chart_id = "#z_accelerometer_chart";
+            break;
+        case "battery":
+            $("#battery_svg").empty();
+            tag = "#battery-graph div:first";
+            chart_append_id = "#battery_svg";
+            chart_id = "#battery_chart";
+            break;
+        default:
+            break;
+    }
+
+    const get_svg = $(tag).html();
+    $(chart_append_id).append(get_svg);
+    return $(chart_id).html();
+}
+
+function deleteAllChartPlotted () {
+    chart_plots.forEach(function (plotted) {
+        chart_plots.delete(plotted);
+    });
 }
 
 function delegateChartSVGPosition (type) {
@@ -74,15 +196,13 @@ function delegateChartSVGPosition (type) {
         if (counter % 2 === 0) {
             $(tag).attr({
                 x: 400,
-                y: y_axis_even,
-                id: `sample_${counter}`
+                y: y_axis_even
             });
             y_axis_even += returnYaxisValue(type);
         } else {
             $(tag).attr({
                 x: 0,
-                y: y_axis_odd,
-                id: `sample_${counter}`
+                y: y_axis_odd
             });
             y_axis_odd += returnYaxisValue(type);
         }
@@ -94,16 +214,23 @@ function returnYaxisValue (type) {
     return 800;
 }
 
-function createSurficialSVG () {
-
-}
-
-function createSubsurfaceSVG () {
-
-}
-
-function deleteAllChartPlotted () {
-    chart_plots.forEach(function (plotted) {
-        chart_plots.delete(plotted);
+function downloadSelectedCharts () {
+    $("body").on("click", "#download-charts-selected", ({ currentTarget }) => {
+        const chart_checked = [];
+        const charts_svg = [];
+        $("#chart_checkboxes input:checked").each(function () {
+            const chart_name = $(this).attr("value");
+            chart_checked.push(`${chart_name}_chart`);
+            charts_svg.push($(`#${chart_name}_chart`).html());
+            console.log(chart_checked);
+            console.log(charts_svg);
+        });
+        console.log(charts_svg);
+        // const site_detail = "agb";
+        // const plot_type = "sample";
+        $.post("/../chart_export/renderChart", { charts: charts_svg })
+        .done((data) => {
+            console.log("done");
+        });
     });
 }

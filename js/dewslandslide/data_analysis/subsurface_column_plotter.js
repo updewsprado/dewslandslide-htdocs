@@ -103,6 +103,7 @@ function delegateColumnSummaryDataForPlotting (column_summary, form) {
 
 function plotNodeHealthSummary (series, { subsurface_column }) {
     createNodeHealthSummaryChart(series, subsurface_column);
+    createSVG("node_health", subsurface_column);
 }
 
 function createNodeHealthSummaryChart (series, subsurface_column) {
@@ -184,6 +185,7 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
 
 function plotDataPresence (data, form) {
     createDataPresenceChart(data, form);
+    createSVG("data_presence", form.subsurface_column);
 }
 
 function createDataPresenceChart (data_presence, form) {
@@ -268,6 +270,7 @@ function createDataPresenceChart (data_presence, form) {
 
 function plotCommunicationHealth (data, form) {
     createCommunicationHealthChart(data, form);
+    createSVG("communication_health", form.subsurface_column);
 }
 
 function createCommunicationHealthChart (communication_health, form) {
@@ -347,6 +350,7 @@ function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
         else if (type === "displacement") plotDisplacement(data, form);
         else if (type === "velocity_alerts") plotVelocityAlerts(data, form);
     });
+    createSVG("subsurface_column", form.subsurface_column);
 }
 
 function plotColumnPosition (column_data, { subsurface_column }) {
