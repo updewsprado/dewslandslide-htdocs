@@ -225,12 +225,17 @@ function downloadSelectedCharts () {
             console.log(chart_checked);
             console.log(charts_svg);
         });
-        console.log(charts_svg);
-        // const site_detail = "agb";
-        // const plot_type = "sample";
-        $.post("/../site_analysis_charts/renderSelectedChart", { charts: charts_svg })
+
+        renderSelectedChartsOnSiteAnalysis()
         .done((data) => {
             console.log("done");
+        })
+        .catch((x) => {
+            showErrorModal(x, "rendering and downloading charts");
         });
     });
+}
+
+function renderSelectedChartsOnSiteAnalysis () {
+    return $.post("/../chart_export/renderSelectedChartsOnSiteAnalysis", { charts: charts_svg });
 }
