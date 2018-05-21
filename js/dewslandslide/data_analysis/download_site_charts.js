@@ -228,7 +228,7 @@ function downloadSelectedCharts () {
         console.log(charts_svg);
         // const site_detail = "agb";
         // const plot_type = "sample";
-        $.post("/../chart_export/renderChart", { charts: charts_svg })
+        $.post("/../site_analysis_charts/renderSelectedChart", { charts: charts_svg })
         .done((data) => {
             console.log("done");
         });
