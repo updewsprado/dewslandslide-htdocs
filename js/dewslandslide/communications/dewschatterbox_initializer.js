@@ -69,8 +69,8 @@ $(document).ready(function() {
 });
 
 try {
-    Handlebars.registerHelper("ifCond", function (v1, v2, v3, v4, v5, v6, options) {
-        if (v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5 || v1 == v6) {
+    Handlebars.registerHelper("ifCond", function (v1, v2, v3, v4, v5, v6, v7, options) {
+        if (v1 === v2 || v1 == v3 || v1 == v4 || v1 == v5 || v1 == v6 || v1 == v7) {
             return options.fn(this);
         }
         return options.inverse(this);
@@ -124,6 +124,12 @@ function updateMessages (msg) {
         msg.recentlySent = 1;
     } else {
         msg.recentlySent = 0;
+    }
+
+    if (msg.network == "GLOBE") {
+        msg.isGlobe = 1;
+    } else {
+        msg.isGlobe = 0;
     }
 
     if (msg.status === "SUCCESS" || msg.status === "SENT") {
@@ -347,6 +353,7 @@ function updateQuickInbox (msg) {
         } else {
             var targetInbox;
             var quick_inbox_html;
+
             if (msg.name == "unknown") {
                 try {
                     msg.isunknown = 1;
@@ -364,6 +371,7 @@ function updateQuickInbox (msg) {
                 } catch (err) {
                 }
             }
+
             $(targetInbox).html(quick_inbox_html);
             $(targetInbox).scrollTop(0);
         }
