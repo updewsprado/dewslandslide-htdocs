@@ -1,5 +1,6 @@
 var data_timestamp;
 var latest_release_id;
+$(".panel").height($(window).height() - 50);
 function sendViaAlertMonitor(dashboard_data){
 	if (($("#ewi-asap-modal").data('bs.modal') || {}).isShown == true) {
 		var internal_alert = "";
