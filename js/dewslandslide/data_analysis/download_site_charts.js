@@ -7,6 +7,7 @@ function initializeDownloadChartsButton () {
     $("body").on("click", "#download-charts", ({ currentTarget }) => {
         $("#chart-options").modal({ backdrop: "static", keyboard: false });
         $(".download_chart_checkbox").prop("checked", false);
+        $("#select-chart-message").hide();
         initializePlottedCharts();
         downloadSelectedCharts();
     });
@@ -226,16 +227,25 @@ function downloadSelectedCharts () {
             console.log(charts_svg);
         });
 
-        renderSelectedChartsOnSiteAnalysis()
-        .done((data) => {
-            console.log("done");
-        })
-        .catch((x) => {
-            showErrorModal(x, "rendering and downloading charts");
-        });
+        if (charts_svg.length < 1 || array === undefined) {
+            $("#select-chart-message").show(300);
+        } else {
+            renderSelectedChartsOnSiteAnalysis(charts_svg)
+            .done((data) => {
+                console.log("done");
+                if (data === "Finished") {
+                    //download compiled pdf code here
+                } else {
+                    //error downloading code here
+                }
+            })
+            .catch((x) => {
+                // showErrorModal(x, "rendering and downloading charts");
+            });
+        }
     });
 }
 
-function renderSelectedChartsOnSiteAnalysis () {
+function renderSelectedChartsOnSiteAnalysis (charts_svg) {
     return $.post("/../chart_export/renderSelectedChartsOnSiteAnalysis", { charts: charts_svg });
 }
