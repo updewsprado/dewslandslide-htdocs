@@ -13,33 +13,34 @@ describe("createRainFallSVG", () => {
         $loading_rain.show();
         getPlotDataForRainfall(input)
         .done((datalist) => {
-            console.log(datalist);
             plotRainfall(datalist, input);
-            $loading_rain.hide();
             createSVG("rainfall", input.site_code);
+            const find_div = $("#rainfall_svg").children().length;
+            console.log(find_div);
+            expect(find_div).to.equal(8);
         })
         .catch(({ responseText, status: conn_status, statusText }) => {
             alert(`Status ${conn_status}: ${statusText}`);
             alert(responseText);
         });
     });
-
-    it("should append 8 rain sources svg chart", () => {
-        const find_div = $("#rainfall_svg").children().length;
-        console.log(find_div);
-        expect(find_div).to.equal(8);
-    });
 });
 
 describe("createSurficialSVG", () => {
     it("should append surficial svg chart", () => {
-
+        
     });
 });
 
-describe("createSurficialSVG", () => {
-    it("should append node health svg chart", () => {
+describe("createColumnSummarySVG", () => {
 
+    before("describe plotter", () => {
+        plotColumnSummaryForTest();
+    });
+    it("should append node health svg chart", () => {
+        const find_div = $("#node_health_svg").children().length;
+        console.log(find_div);
+        expect(find_div).to.equal(1);
     });
 
     it("should append data presence svg chart", () => {
@@ -104,3 +105,13 @@ describe("returnYaxisValue", () => {
 
     });
 });
+
+
+function plotColumnSummaryForTest () {
+    const form = {
+        subsurface_column: "magta",
+        start_date: "2017-10-11T12:00:00",
+        end_date: "2017-10-12T12:00:00"
+    };
+    plotColumnSummaryCharts(form, 1);
+}
