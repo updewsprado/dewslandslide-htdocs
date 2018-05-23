@@ -2,6 +2,13 @@ let quick_inbox_registered = [];
 let quick_inbox_unregistered = [];
 let quick_inbox_event = [];
 let quick_inbox_data_logger = [];
+let chatterbox_user = "You";
+let message_container = [];
+
+let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+let messages_template_both = Handlebars.compile($('#messages-template-both').html());
+let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
+let quick_release_template = Handlebars.compile($('#quick-release-template').html());
 
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
@@ -91,7 +98,6 @@ function startConversation(details) {
 
 function displayQuickInboxMain(msg_data) {
 	try {
-		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
 				msg_data[counter].isunknown = 0;
@@ -233,3 +239,23 @@ function addNewMobileForCommunity () {
 		
 	});
 } 
+
+function displayConversationPanel(msg_data) {
+	$(".recent_activities").addClass("hidden");
+	$("#main-container").removeClass("hidden");
+	message_container = [];
+	msg_data.forEach(function(data) {
+		displayUpdatedMessages(data);
+	});
+}
+
+function displayUpdatedMessages(data) {
+	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
+	message_container.push(data);
+	messages_html = messages_template_both({'messages': message_container});
+	console.log(message_container);
+	let html_string = $('#messages').html();
+	$('#messages').html(html_string+messages_html);
+	$('.chat-message').scrollTop($('#messages').height());
+	message_container = [];
+}
