@@ -3463,7 +3463,6 @@ $('#emp-settings-cmd button[type="submit"]').on('click',function(){
 			'teams': $('#team_ec').val(),
 			'contact_active_status': $('#active_status_ec').val(),
 			'numbers': mobile_data,
-			'landline': landline_data
 		}
 
 		msg = {

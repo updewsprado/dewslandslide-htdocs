@@ -9,6 +9,8 @@ $(document).ready(function() {
 		} else {
 			$('#contact-settings').modal("toggle");
 			displayContactSettingsMenu();
+			addNewMobileForEmployee();
+			addNewMobileForCommunity();
 		}
 	});
 

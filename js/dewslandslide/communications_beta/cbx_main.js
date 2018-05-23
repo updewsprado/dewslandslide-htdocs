@@ -165,3 +165,71 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 	});
 	$('#emp-response-contact-container').prop('hidden',false);
 }
+
+let employee_input_count = 0;
+let community_input_count = 0;
+function addNewMobileForEmployee () {
+	$("#employee-add-number").click(function(){
+		if (employee_input_count <= 3) {
+			$("#mobile-div").append(
+			"<div class='row'>"+
+		    "<div class='col-md-4' title='Notes: If contact number is more than one seprate it by a comma.'>"+
+			"<label for='mobile_ec_'>Mobile #:</label>"+
+			"<input type='text' class='form-control' id='mobile_cc_' name='mobile_cc_' value='' required>"+
+			"</div>"+
+			"<div class='col-md-4' hidden>"+
+			"<label>Mobile ID #:</label>"+
+			"<input type='text' id='mobile_cc_id_' class='form-control' value='' disabled>"+
+			"</div>"+
+			"<div class='col-md-4'>"+
+			"<label>Mobile # Status:</label>"+
+			"<select class='form-control' id='mobile_cc_status_' class='form-control' value=''>"+
+			"<option value='1'>Active</option>"+
+			"<option value='0'>Inactive</option>"+
+			"</select>"+
+			"</div>"+
+			"<div class='col-md-4'>"+
+			"<label>Mobile # Priority:</label>"+
+			"<input type='text' id='mobile_cc_priority_' class='form-control' value=''>"+
+			"</div>"+
+			"</div>");
+			employee_input_count +=1;
+		} else {
+			$.notify("Reach the maximum entry for mobile number", "err");
+		}
+		
+	});
+} 
+
+function addNewMobileForCommunity () {
+	$("#community-add-number").click(function(){
+		if (community_input_count <= 3) {
+			$("#mobile-div-cc").append(
+			"<div class='row'>"+
+		    "<div class='col-md-4' title='Notes: If contact number is more than one seprate it by a comma.'>"+
+			"<label for='mobile_ec_'>Mobile #:</label>"+
+			"<input type='text' class='form-control' id='mobile_cc_' name='mobile_cc_' value='' required>"+
+			"</div>"+
+			"<div class='col-md-4' hidden>"+
+			"<label>Mobile ID #:</label>"+
+			"<input type='text' id='mobile_cc_id_' class='form-control' value='' disabled>"+
+			"</div>"+
+			"<div class='col-md-4'>"+
+			"<label>Mobile # Status:</label>"+
+			"<select class='form-control' id='mobile_cc_status_' class='form-control' value=''>"+
+			"<option value='1'>Active</option>"+
+			"<option value='0'>Inactive</option>"+
+			"</select>"+
+			"</div>"+
+			"<div class='col-md-4'>"+
+			"<label>Mobile # Priority:</label>"+
+			"<input type='text' id='mobile_cc_priority_' class='form-control' value=''>"+
+			"</div>"+
+			"</div>");
+			community_input_count +=1;
+		} else {
+			$.notify("Reach the maximum entry for mobile number", "err");
+		}
+		
+	});
+} 
