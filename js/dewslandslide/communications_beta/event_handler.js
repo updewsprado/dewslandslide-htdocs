@@ -4,7 +4,7 @@ $(document).ready(function() {
 	});
 
 	$('#btn-contact-settings').click(function(){
-		if (connection_status == false){
+		if (connection_status === false){
 			console.log("NO CONNECTION");
 		} else {
 			$('#contact-settings').modal("toggle");

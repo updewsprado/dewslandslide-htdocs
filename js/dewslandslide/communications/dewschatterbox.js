@@ -2168,7 +2168,6 @@ $('#response-contact-container').on('click', 'tr:has(td)', function(){
 });
 
 $('#btn-contact-settings').click(function() {
-
 	$('#employee-contact-wrapper').prop('hidden', true);
 	$('#community-contact-wrapper').prop('hidden', true);
 	$('#response-contact-container_wrapper').prop('hidden',true);

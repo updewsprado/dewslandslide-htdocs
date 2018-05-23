@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	initializeContactSuggestion($("#contact-suggestion").val());
 	initializeQuickInboxMessages();
+	onSubmitEmployeeContactForm();
 });
 
 function initializeContactSuggestion(name_query) {
