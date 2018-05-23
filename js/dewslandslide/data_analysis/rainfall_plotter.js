@@ -38,6 +38,7 @@ function initializeRainSourcesButton () {
                 $(target).data("loaded", true);
                 $(target).addClass("active");
                 $loading_rain.hide();
+                createSVG("rainfall", input.site_code);
             })
             .catch((x) => {
                 showErrorModal(x, "rainfall charts");

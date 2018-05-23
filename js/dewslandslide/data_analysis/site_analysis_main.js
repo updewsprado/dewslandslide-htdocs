@@ -1,5 +1,7 @@
 
 let validator = null;
+const chart_plots = new Set();
+const SITE_LEVEL_CONTAINER = new Set();
 $(document).ready(() => {
     const paths = window.location.pathname.split("/");
     reposition("#error-modal");
@@ -178,12 +180,25 @@ function validateForm (form) {
 
         switch (submit_btn_id) {
             case "plot-node-level":
+                ["x_accelerometer", "y_accelerometer", "z_accelerometer", "battery_checkbox"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
                 $("#nodes").rules("add", { required: true });
                 // fallthrough
             case "plot-column-level":
+                ["node_health", "data_presence", "communication_health", "subsurface"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
                 $("#subsurface_column").rules("add", { required: true });
                 // fallthrough
-            case "plot-site-level": // fallthrough
+            case "plot-site-level":
+                ["rainfall", "surficial"].forEach(function (plotted) {
+                    chart_plots.add(plotted);
+                });
+                console.log(chart_plots);
+                break;
             default:
                 $("#site_code").rules("add", { required: true });
                 break;
@@ -359,6 +374,18 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
                 }));
             });
         }
+    }
+}
+
+function deleteCreatedPlotContainerId (level) {
+    switch (level) {
+        case "site":
+            SITE_LEVEL_CONTAINER.forEach(function (plotted) {
+                SITE_LEVEL_CONTAINER.delete(plotted);
+            });
+            break;
+        default:
+            break;
     }
 }
 

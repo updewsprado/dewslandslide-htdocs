@@ -78,6 +78,7 @@ function initializeSurficialMarkersButton () {
                     plotSurficial(series, input);
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
+                    createSVG("surficial", input.site_code);
                 })
                 .catch((x) => {
                     showErrorModal(x, "surficial chart");

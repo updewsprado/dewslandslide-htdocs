@@ -105,6 +105,7 @@ function plotNodeLevelCharts (input) {
         console.log(subsurface_node_data);
         subsurface_node_data.forEach((series) => {
             createGeneralNodeChart(series, input);
+            createSVG(series.series_name, input.subsurface_column);
         });
         $("#subsurface-node-plots .loading-bar").hide();
     })
