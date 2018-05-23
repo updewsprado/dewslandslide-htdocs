@@ -76,6 +76,19 @@ function displaySitesSelection(data) {
 	}
 }
 
+function startConversation(details) {
+	try {
+		let convo_details = {
+			type: 'loadSmsConversation',
+			data: details
+		};
+		wss_connect.send(JSON.stringify(convo_details));
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}	
+}
+
 function displayQuickInboxMain(msg_data) {
 	try {
 		var quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());

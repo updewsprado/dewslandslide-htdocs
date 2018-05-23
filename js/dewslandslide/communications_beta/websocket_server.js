@@ -17,6 +17,7 @@ function connectWS() {
 
 		wssConnection.onmessage = function(e) {
 			let msg_data = JSON.parse(e.data);
+			console.log(e.data);
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
 					getContactSuggestion(msg_data);
@@ -35,6 +36,9 @@ function connectWS() {
 					break;
 				case "fetchedDwslContacts":
 					displayDataTableEmployeeContacts(msg_data.data);
+					break;
+				case "loadSmsConversation":
+					console.log(msg_data.data);
 					break;
 				default:
 					console.log("No request to load.");

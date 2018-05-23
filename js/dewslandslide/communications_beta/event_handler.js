@@ -12,6 +12,14 @@ $(document).ready(function() {
 		}
 	});
 
+	$("body").on("click","#quick-inbox-display li",function(){
+		let conversation_details = {
+			full_name: $(this).closest('li').find("input[type='text']").val(),
+			number: $(this).closest('li').find("input[type='text']").attr("id").replace(/'/g, "")
+		}
+		startConversation(conversation_details);
+	});
+
 	$('#contact-category option').prop('selected', function() {
 		$('#contact-category').css("border-color", "#d6d6d6");
 		$('#contact-category').css("background-color", "inherit");
