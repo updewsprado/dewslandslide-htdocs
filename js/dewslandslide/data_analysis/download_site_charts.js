@@ -227,7 +227,7 @@ function downloadSelectedCharts () {
             console.log(charts_svg);
         });
 
-        if (charts_svg.length < 1 || array === undefined) {
+        if (charts_svg.length < 1 || charts_svg === undefined) {
             $("#select-chart-message").show(300);
         } else {
             renderSelectedChartsOnSiteAnalysis(charts_svg)
