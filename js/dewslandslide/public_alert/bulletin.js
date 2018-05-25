@@ -11,7 +11,7 @@
 let on_edit = null;
 let release_id = null;
 let event_id = null;
-let editableOrigValue = [];
+let original_field_values = [];
 let bulletin_timestamp = null;
 
 const pms_instances = [];
@@ -22,7 +22,8 @@ $(document).ready(() => {
         edit(on_edit);
     });
 
-    $("body").on("click", ".report", () => {
+    // Commented out if bulletin still needs modal for PMS
+    /* $("body").on("click", ".report", () => {
         const instance = pms_instances[`s${release_id}`];
         instance.set({
             reference_id: release_id,
@@ -30,7 +31,7 @@ $(document).ready(() => {
         });
         instance.show();
         instance.print();
-    });
+    }); */
 });
 
 function loadBulletin (id1, id2) {
@@ -46,7 +47,8 @@ function loadBulletin (id1, id2) {
 
         addMailRecipients(is_onset);
 
-        setPerformanceMonitoringModal(bulletin_div);
+        // Commented out if bulletin still needs modal for PMS
+        // setPerformanceMonitoringModal(bulletin_div);
 
         $("#bulletinModal").modal({ backdrop: "static", keyboard: false, show: true });
     })
@@ -65,7 +67,8 @@ function processBulletinModal (modal_html, bulletin_div) {
     $(bulletin_div).html(modal_html);
 
     const loc = $("#location").text().replace(/\s+/g, " ").trim();
-    const alert = $("#alert_level_released").text().replace(/\s+/g, " ").trim().slice(0, 7);
+    const alert = $("#alert_level_released").text().replace(/\s+/g, " ").trim()
+    .slice(0, 7);
     const datetime = $("#datetime").text();
     const text = `DEWS-L Bulletin for ${datetime}\n${alert} - ${loc}`;
 
@@ -128,7 +131,8 @@ function addMailRecipients (is_onset) {
     }
 }
 
-function setPerformanceMonitoringModal (bulletin_div) {
+// Commented out if bulletin still needs modal for PMS
+/* function setPerformanceMonitoringModal (bulletin_div) {
     $(bulletin_div)
     .prepend($("<div class='row'>" +
         "<div class='col-sm-12 text-right'>" +
@@ -144,24 +148,27 @@ function setPerformanceMonitoringModal (bulletin_div) {
 
     if (!instance.is_attached) { setTimeout(null, 300); }
     pms_instances[`s${release_id}`] = instance;
-}
+} */
 
 function renderPDF (id) {
     console.log("ID", id, "on_edit", on_edit);
     const isEdited = on_edit === true ? 1 : 0;
-    let edits = [];
-    let editableEditedValue = [];
+    const edits = [];
+    const edited_field_values = [];
 
     if (isEdited) {
         $(".editable").each(function (i) {
-            editableEditedValue.push([$(this).prop("id"), $(this).val()]);
+            edited_field_values.push([$(this).prop("id"), $(this).val()]);
             const temp = encodeURIComponent($(this).val());
             edits.push(temp);
         });
 
-        console.log(editableOrigValue, editableEditedValue);
+        console.log(original_field_values, edited_field_values);
 
-        tagBulletin(release_id, editableEditedValue, editableOrigValue);
+        sendBulletinAccuracyReport(release_id, edited_field_values, original_field_values);
+
+        // GINTAGS implementation
+        // tagBulletin(release_id, edited_field_values, original_field_values);
     }
 
     $("#bulletinModal").modal("hide");
@@ -180,23 +187,46 @@ function renderPDF (id) {
         data: { edits: edits.join("**") }
     })
     .done((response) => {
-        if (response == "Success.") { console.log("PDF RENDERED"); } else console.log(response);
+        if (response === "Success.") { console.log("PDF RENDERED"); } else console.log(response);
     })
     .fail((a) => {
         console.log("Error rendering:", a);
     });
 }
 
-function tagBulletin (release_id, editableEditedValue, editableOrigValue) {
+function sendBulletinAccuracyReport (release_id, edited_field_values, original_field_values) {
+    const remarks_str = [];
+    for (let i = 0; i < edited_field_values.length; i += 1) {
+        if (edited_field_values[i][1] !== original_field_values[i][1]) {
+            let str = `Edited "${original_field_values[i][0]}"`;
+            str += `(from "${original_field_values[i][1]}" to "${edited_field_values[i][1]}")`;
+            remarks_str.push(str);
+        }
+    }
+
+    const report = {
+        type: "accuracy",
+        metric_name: "bulletin_accuracy",
+        module_name: "Bulletin",
+        report_message: remarks_str,
+        reference_id: "public_alert_release",
+        reference_table: "release_id"
+    };
+
+    PMS.send(report);
+}
+
+// GINTAGS implementation
+/* function tagBulletin (release_id, edited_field_values, original_field_values) {
     $.get(
         `/../../gintagshelper/getGinTagsViaTableElement/${release_id}`,
         (x) => {
             if (x.length == 0) {
                 const remarks_str = [];
-                for (let i = 0; i < editableEditedValue.length; i++) {
-                    if (editableEditedValue[i][1] !== editableOrigValue[i][1]) {
-                        let str = `Edited "${editableOrigValue[i][0]}"`;
-                        str += `(from "${editableOrigValue[i][1]}" to "${editableEditedValue[i][1]}")`;
+                for (let i = 0; i < edited_field_values.length; i++) {
+                    if (edited_field_values[i][1] !== original_field_values[i][1]) {
+                        let str = `Edited "${original_field_values[i][0]}"`;
+                        str += `(from "${original_field_values[i][1]}" to "${edited_field_values[i][1]}")`;
                         remarks_str.push(str);
                     }
                 }
@@ -218,7 +248,7 @@ function tagBulletin (release_id, editableEditedValue, editableOrigValue) {
             }
         }, "json"
     );
-}
+} */
 
 function sendMail (text, subject, filename, recipients) {
     $("#bulletinLoadingModal .progress-bar").text("Sending EWI and Bulletin...");
@@ -244,6 +274,16 @@ function sendMail (text, subject, filename, recipients) {
             setTimeout(() => {
                 if (data == "Sent.") {
                     console.log("Email sent");
+
+                    const report = {
+                        type: "timeliness",
+                        metric_name: "bulletin_accuracy",
+                        module_name: "Bulletin",
+                        report_message: remarks_str,
+                        execution_time: ""
+                    };
+
+                    PMS.send(report);
 
                     const people = recipients.map((x) => {
                         if (x == "rusolidum@phivolcs.dost.gov.ph") return x = "RUS";
@@ -296,7 +336,7 @@ function edit (on_edit) {
         $("#cancel, #bulletinModal .close").hide();
 
         $(".editable").each(function () {
-            editableOrigValue.push([$(this).prop("id"), $(this).text()]);
+            original_field_values.push([$(this).prop("id"), $(this).text()]);
             const isLonger = $(this).hasClass("longer_input") ? "col-sm-12" : "";
             $(this).replaceWith(`<input class='editable ${isLonger}' id='${$(this).prop("id")}' value='${$(this).text()}'>`);
         });
@@ -321,7 +361,7 @@ function edit (on_edit) {
         $("#edit-reminder").hide();
         $("#cancel, #bulletinModal .close").show();
         $(".edit-event-page").popover("destroy");
-        editableOrigValue = [];
+        original_field_values = [];
         $(".editable").each(function () {
             const isLonger = $(this).hasClass("col-sm-12") ? "longer_input" : "";
             $(this).replaceWith(`<span class='editable ${isLonger}' id='${$(this).prop("id")}'>${$(this).val()}</span>`);
