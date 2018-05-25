@@ -37,7 +37,14 @@ function connectWS() {
 					displayDataTableEmployeeContacts(msg_data.data);
 					break;
 				case "loadSmsConversation":
-					displayConversationPanel(msg_data.data);
+					displayConversationPanel(msg_data.data,msg_data.full_name);
+					break;
+				case "updatedDwslContact":
+					if (msg.status == true) {
+						$.notify(msg.return_msg,'success');
+					} else {
+						$.notify(msg.return_msg,'failed');
+					}
 					break;
 				default:
 					console.log("No request to load.");

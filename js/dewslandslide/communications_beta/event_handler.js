@@ -1,3 +1,4 @@
+let quick_group_selection_flag = false;
 $(document).ready(function() {
 	$('#btn-advanced-search').click(function(){
 		getQuickGroupSelection();
@@ -90,6 +91,27 @@ $(document).ready(function() {
 		} else {
 			console.log('Invalid Request');
 		}
+	});
+
+	$('#emp-grp-flag').on('click',function(){
+		quick_group_selection_flag = true;
+	});
+
+	$('#comm-grp-flag').on('click',function(){
+		quick_group_selection_flag = false;
+	});
+
+
+	$("#go-chat").click(function() {
+		let conversation_details = {
+			full_name: $("#contact-suggestion").val(),
+			number: "N/A"
+		}
+		startConversation(conversation_details);
+	});
+
+	$("#go-load-groups").click(function() {
+		loadSiteConversation();
 	});
 
 });
