@@ -400,3 +400,7 @@ textarea {
   padding: 0px;
 }
 
+.form-error {
+  border: 1px solid #ccc;
+}
+
