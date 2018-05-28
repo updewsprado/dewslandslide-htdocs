@@ -16,6 +16,7 @@ function connectWS() {
 		};
 
 		wssConnection.onmessage = function(e) {
+			// console.log(e.data);
 			let msg_data = JSON.parse(e.data);
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
@@ -39,6 +40,18 @@ function connectWS() {
 				case "loadSmsConversation":
 					displayConversationPanel(msg_data.data);
 					break;
+				case "newAddedDwslContact":
+					displayAddEmployeeContactMessage(msg_data);
+					break;
+				case "fetchedSelectedDwslContact":
+					displayUpdateEmployeeDetails(msg_data.data);
+					break;
+				case "newCommunityContact":
+					displayAddCommunityContactMessage(msg_data.data);
+					break;
+				case "updateCommunityContact":
+					displayUpdateCommunityDetails(msg_data.data);
+					break;	
 				default:
 					console.log("No request to load.");
 					break;

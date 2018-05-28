@@ -4,6 +4,7 @@ let quick_inbox_event = [];
 let quick_inbox_data_logger = [];
 let chatterbox_user = "You";
 let message_container = [];
+let current_user_id = $("#current_user_id").val();
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -172,36 +173,41 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 	$('#emp-response-contact-container').prop('hidden',false);
 }
 
-let employee_input_count = 0;
-let community_input_count = 0;
+let employee_input_count = 1;
+let community_input_count = 1;
 function addNewMobileForEmployee () {
 	$("#employee-add-number").click(function(){
-		if (employee_input_count <= 3) {
+		if (employee_input_count <= 4) {
 			$("#mobile-div").append(
 			"<div class='row'>"+
-		    "<div class='col-md-4' title='Notes: If contact number is more than one seprate it by a comma.'>"+
-			"<label for='mobile_ec_'>Mobile #:</label>"+
-			"<input type='text' class='form-control' id='mobile_cc_' name='mobile_cc_' value='' required>"+
+		    "<div class='col-md-4'>"+
+			"<label>Mobile #:</label>"+
+			"<input type='number' class='form-control employee_mobile_number' id='employee_mobile_number_"+employee_input_count+"'' name='employee_mobile_number' value='' required>"+
 			"</div>"+
 			"<div class='col-md-4' hidden>"+
 			"<label>Mobile ID #:</label>"+
-			"<input type='text' id='mobile_cc_id_' class='form-control' value='' disabled>"+
+			"<input type='text' id='employee_mobile_id_"+employee_input_count+"'' class='form-control employee_mobile_id' value='' disabled>"+
 			"</div>"+
 			"<div class='col-md-4'>"+
 			"<label>Mobile # Status:</label>"+
-			"<select class='form-control' id='mobile_cc_status_' class='form-control' value=''>"+
+			"<select class='form-control' id='employee_mobile_status_"+employee_input_count+"'' class='form-control employee_mobile_status' value=''>"+
 			"<option value='1'>Active</option>"+
 			"<option value='0'>Inactive</option>"+
 			"</select>"+
 			"</div>"+
 			"<div class='col-md-4'>"+
 			"<label>Mobile # Priority:</label>"+
-			"<input type='text' id='mobile_cc_priority_' class='form-control' value=''>"+
+			"<select class='form-control' id='employee_mobile_priority_"+employee_input_count+"'' class='form-control employee_mobile_priority' value=''>"+
+			"<option value=''>--------</option>"+
+			"<option value='1'>1</option>"+
+			"<option value='2'>2</option>"+
+			"<option value='3'>3</option>"+
+			"</select>"+
 			"</div>"+
 			"</div>");
 			employee_input_count +=1;
 		} else {
-			$.notify("Reach the maximum entry for mobile number", "err");
+			$.notify("Reach the maximum entry for mobile number", "warn");
 		}
 		
 	});
@@ -209,32 +215,37 @@ function addNewMobileForEmployee () {
 
 function addNewMobileForCommunity () {
 	$("#community-add-number").click(function(){
-		if (community_input_count <= 3) {
+		if (community_input_count <= 4) {
 			$("#mobile-div-cc").append(
 			"<div class='row'>"+
-		    "<div class='col-md-4' title='Notes: If contact number is more than one seprate it by a comma.'>"+
-			"<label for='mobile_ec_'>Mobile #:</label>"+
-			"<input type='text' class='form-control' id='mobile_cc_' name='mobile_cc_' value='' required>"+
+		    "<div class='col-md-4'>"+
+			"<label>Mobile #:</label>"+
+			"<input type='number' class='form-control community_mobile_number' id='community_mobile_number_"+community_input_count+"' name='community_mobile_number' value='' required>"+
 			"</div>"+
 			"<div class='col-md-4' hidden>"+
 			"<label>Mobile ID #:</label>"+
-			"<input type='text' id='mobile_cc_id_' class='form-control' value='' disabled>"+
+			"<input type='text' id='community_mobile_id_"+community_input_count+"' class='form-control community_mobile_id' value='' disabled>"+
 			"</div>"+
 			"<div class='col-md-4'>"+
 			"<label>Mobile # Status:</label>"+
-			"<select class='form-control' id='mobile_cc_status_' class='form-control' value=''>"+
+			"<select class='form-control' id='community_mobile_status_"+community_input_count+"' class='form-control community_mobile_status' value=''>"+
 			"<option value='1'>Active</option>"+
 			"<option value='0'>Inactive</option>"+
 			"</select>"+
 			"</div>"+
 			"<div class='col-md-4'>"+
 			"<label>Mobile # Priority:</label>"+
-			"<input type='text' id='mobile_cc_priority_' class='form-control' value=''>"+
+			"<select class='form-control' id='community_mobile_priority_"+community_input_count+"' class='form-control community_mobile_priority' value=''>"+
+			"<option value=''>--------</option>"+
+			"<option value='1'>1</option>"+
+			"<option value='2'>2</option>"+
+			"<option value='3'>3</option>"+
+			"</select>"+
 			"</div>"+
 			"</div>");
 			community_input_count +=1;
 		} else {
-			$.notify("Reach the maximum entry for mobile number", "err");
+			$.notify("Reach the maximum entry for mobile number", "warn");
 		}
 		
 	});
@@ -258,4 +269,58 @@ function displayUpdatedMessages(data) {
 	$('#messages').html(html_string+messages_html);
 	$('.chat-message').scrollTop($('#messages').height());
 	message_container = [];
+}
+
+function displayAddEmployeeContactMessage (msg_data) {
+	console.log(msg_data);
+	if(msg_data.status === true) {
+		$.notify(msg_data.return_msg, "success");
+		$("#user_id_ec").val(0);
+		$("#salutation_ec").val("");
+		$("#firstname_ec").val("");
+		$("#middlename_ec").val("");
+		$("#lastname_ec").val("");
+		$("#nickname_ec").val("");
+		$("#birthdate_ec").val("");
+		$("#gender_ec").val("");
+		$("#active_status_ec").val(1);
+		$("#mobile-div").empty();
+		employee_input_count = 1;
+	}else {
+		$.notify(msg_data, "warn");
+	}
+	
+}
+
+function displayAddCommunityContactMessage (msg_data) {
+	
+}
+
+function displayUpdateEmployeeDetails (employee_data) {
+	console.log(employee_data);
+	$("#user_id_ec").val(employee_data.contact_info.id);
+	$("#salutation_ec").val(employee_data.contact_info.salutation);
+	$("#firstname_ec").val(employee_data.contact_info.firstname);
+	$("#middlename_ec").val(employee_data.contact_info.middlename);
+	$("#lastname_ec").val(employee_data.contact_info.lastname);
+	$("#nickname_ec").val(employee_data.contact_info.nickname);
+	$("#birthdate_ec").val(employee_data.contact_info.birthday);
+	$("#gender_ec").val(employee_data.contact_info.gender);
+	$("#active_status_ec").val(employee_data.contact_info.contact_active_status);
+
+	for (var counter = 0; counter < employee_data.email_data.length; counter++) {
+		$('#email_ec').tagsinput('add',employee_data.email_data[counter].email);
+	}
+
+	for (var counter = 0; counter < employee_data.team_data.length; counter+=1) {
+		$('#team_ec').tagsinput('add',employee_data.team_data[counter].team_name);
+	}
+}
+
+function displayUpdateCommunityDetails (msg_data) {
+	
+}
+
+function displayTeamsForEmployee () {
+
 }
