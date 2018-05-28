@@ -80,7 +80,7 @@ function displaySitesSelection(data) {
 		sitename = sitenames[i].site_code;
 		site_id = sitenames[i].site_id;
 		psgc = sitenames[i].psgc;
-		$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+sitename+'">'+sitename.toUpperCase()+'</label></div>');
+		$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+site_id+'">'+sitename.toUpperCase()+'</label></div>');
 	}
 }
 
@@ -251,7 +251,8 @@ function addNewMobileForCommunity () {
 	});
 } 
 
-function displayConversationPanel(msg_data) {
+function displayConversationPanel(msg_data, full_data) {
+	$('#messages').empty();
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
 	message_container = [];
@@ -271,6 +272,7 @@ function displayUpdatedMessages(data) {
 	message_container = [];
 }
 
+<<<<<<< HEAD
 function displayAddEmployeeContactMessage (msg_data) {
 	console.log(msg_data);
 	if(msg_data.status === true) {
@@ -323,4 +325,52 @@ function displayUpdateCommunityDetails (msg_data) {
 
 function displayTeamsForEmployee () {
 
+}
+function loadSiteConversation(){
+	console.log("GO HERE");
+	if (quick_group_selection_flag == true) {
+		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
+		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
+		// loadGroupsEmployee();
+	} else  if (quick_group_selection_flag == false) {
+		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+		siteConversation();
+	} else {
+		alert('Something went wrong, Please contact the Administrator');
+	}
+}
+
+function siteConversation(){
+	try {
+		let tag_offices = [];
+		$('input[name="orgs"]:checked').each(function() {
+			tag_offices.push(this.value);
+		});
+
+		let tag_sites = [];
+		$('input[name="sitenames"]:checked').each(function() {
+			tag_sites.push(this.value);
+		});
+		tag_sites.sort();
+
+		let convo_request = {
+			'type': 'loadSmsForSites',
+			'organizations': tag_offices,
+			'sitenames': tag_sites
+		};
+
+		wss_connect.send(JSON.stringify(convo_request));
+	} catch(err) {
+		console.log(err);
+		// Add PMS here.
+	}
+
+
+	// displayGroupTagsForThread(tagOrgs,tagSitenames);
+
+	// $('#user').val('You');
+	// $('#messages').html('');
+	// messages = [];
+	// contactInfo = "groups";
+	// $('#main-container').removeClass('hidden');
 }
