@@ -46,6 +46,8 @@ function connectWS() {
 						$.notify(msg.return_msg,'failed');
 					}
 					break;
+				case "sendSms":
+					console.log(msg_data.data);
 				default:
 					console.log("No request to load.");
 					break;

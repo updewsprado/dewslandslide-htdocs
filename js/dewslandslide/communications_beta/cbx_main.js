@@ -245,16 +245,17 @@ function displayConversationPanel(msg_data, full_data) {
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
 	message_container = [];
+	recipient_container = [];
 	msg_data.forEach(function(data) {
 		displayUpdatedMessages(data);
 	});
 }
 
 function displayUpdatedMessages(data) {
+	if (recipient_container.includes(data.mobile_id) != true) {recipient_container.push(data.mobile_id);}
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
 	message_container.push(data);
 	messages_html = messages_template_both({'messages': message_container});
-	console.log(message_container);
 	let html_string = $('#messages').html();
 	$('#messages').html(html_string+messages_html);
 	$('.chat-message').scrollTop($('#messages').height());
@@ -299,13 +300,18 @@ function siteConversation(){
 		console.log(err);
 		// Add PMS here.
 	}
+}
 
-
-	// displayGroupTagsForThread(tagOrgs,tagSitenames);
-
-	// $('#user').val('You');
-	// $('#messages').html('');
-	// messages = [];
-	// contactInfo = "groups";
-	// $('#main-container').removeClass('hidden');
+function sendSms(recipients, message) {
+	try {
+		let convo_details = {
+			type: 'sendSmsToRecipients',
+			recipients: recipients,
+			message: message
+		};
+		wss_connect.send(JSON.stringify(convo_details));
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}	
 }
