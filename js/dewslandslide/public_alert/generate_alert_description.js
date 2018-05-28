@@ -4,9 +4,13 @@ main(arg);
 
 function main (args) {
     const [internal_alert] = args;
-    const [public_alert, trig_str] = internal_alert.split("-");
-    let triggers = trig_str.replace(/0|[r]?x/g, "");
-    triggers = triggers.split("");
+    const [initial_public, trig_str] = internal_alert.split("-");
+
+    let public_alert = initial_public;
+    if (initial_public === "ND") {
+        public_alert = (typeof trig_str !== "undefined") ? "A1" : "A0";
+    }
+
     let alert_description = "";
 
     if (public_alert === "A0") {
@@ -14,6 +18,9 @@ function main (args) {
         console.log(alert_description);
         return;
     }
+
+    let triggers = trig_str.replace(/0|[r]?x/g, "");
+    triggers = triggers.split("");
 
     const priorities = {
         S: { level: 2, inherent: 1, desc: "in sensors" },
