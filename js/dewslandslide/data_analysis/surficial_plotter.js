@@ -138,6 +138,7 @@ function getPlotDataForSurficial ({ site_code, start_date, end_date }) {
 }
 
 function createSurficialMarkersButton (series) {
+    console.log(series);
     const markers = ["Markers"];
     series.forEach(({ name }) => {
         markers.push(name);
@@ -150,8 +151,9 @@ function createSurficialMarkersButton (series) {
         if (marker === "Markers") {
             classes = "btn btn-sm no-click surficial-markers";
         }
-
+        const crack_id = "marker_"+marker;
         $btn_group.append($("<button>", {
+            id: crack_id.toLowerCase(),
             type: "button",
             class: classes,
             value: marker,
