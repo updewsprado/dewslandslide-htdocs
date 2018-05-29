@@ -133,4 +133,8 @@ $(document).ready(function() {
 		loadSiteConversation();
 	});
 
+	$("#send-msg").click(function() {
+		sendSms(recipient_container,$("#msg").val());
+	});
+
 });

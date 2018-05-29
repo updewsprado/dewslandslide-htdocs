@@ -47,6 +47,8 @@ function connectWS() {
 						$.notify(msg.return_msg,'failed');
 					}
 					break;
+				case "sendSms":
+					console.log(msg_data.data);
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;
