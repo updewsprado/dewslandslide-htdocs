@@ -48,7 +48,7 @@ function connectWS() {
 					}
 					break;
 				case "sendSms":
-					console.log(msg_data.data);
+					updateConversationBubble(msg_data.data);
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;

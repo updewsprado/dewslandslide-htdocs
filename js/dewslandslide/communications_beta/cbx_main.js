@@ -257,6 +257,7 @@ function displayConversationPanel(msg_data, full_data) {
 	$("#main-container").removeClass("hidden");
 	message_container = [];
 	recipient_container = [];
+	msg_data.reverse();
 	msg_data.forEach(function(data) {
 		displayUpdatedMessages(data);
 	});
@@ -265,7 +266,7 @@ function displayConversationPanel(msg_data, full_data) {
 function displayUpdatedMessages(data) {
 	if (recipient_container.includes(data.mobile_id) != true) {recipient_container.push(data.mobile_id);}
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
-	message_container.push(data);
+	message_container.unshift(data);
 	messages_html = messages_template_both({'messages': message_container});
 	let html_string = $('#messages').html();
 	$('#messages').html(html_string+messages_html);
@@ -273,7 +274,6 @@ function displayUpdatedMessages(data) {
 	message_container = [];
 }
 
-<<<<<<< HEAD
 function displayAddEmployeeContactMessage (msg_data) {
 	console.log(msg_data);
 	if(msg_data.status === true) {
@@ -292,7 +292,6 @@ function displayAddEmployeeContactMessage (msg_data) {
 	}else {
 		$.notify(msg_data, "warn");
 	}
-	
 }
 
 function displayAddCommunityContactMessage (msg_data) {
@@ -379,4 +378,8 @@ function sendSms(recipients, message) {
 		console.log(err);
 		// Add PMS here
 	}	
+}
+
+function updateConversationBubble(msg_response) {
+	console.log(msg_response);
 }
