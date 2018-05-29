@@ -173,6 +173,63 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 	$('#emp-response-contact-container').prop('hidden',false);
 }
 
+function displaySiteSelection (sites) {
+	console.log(sites);
+	var column_count = 12; // 12 rows 
+	$('#new-site').remove();
+	for (var counter = 0; counter < column_count; counter++) {
+		$('#sitenames-cc-'+counter).empty();
+	}
+	
+	for (var i = 0; i < sites.length; i++) {
+		var modIndex = i % 12;
+		var site = sites[i];
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		// for (var counter = 0; counter < user_sites.length; counter++) {
+		// 	// TODO : OPTIMIZE BETTER LOGIC FOR THIS.
+		// 	if (user_sites[counter].org_psgc_source.length < 9) {
+		// 		user_sites[counter].org_psgc_source = "0"+user_sites[counter].org_psgc_source;
+		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
+		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(1);
+		// 		var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
+		// 		for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+		// 			user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
+		// 		}
+		// 	} else {
+		// 		var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
+		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
+		// 		for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+		// 			user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
+		// 		}
+		// 	}
+		// 	if (user_sites[counter].org_psgc_source == site.psgc_source) {
+		// 		$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc_source).prop('checked',true);
+		// 	}
+		// }
+	}
+	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not on the list?</a></div>').appendTo('#site-accord .panel-body');
+}
+
+function displayOrganizationSelection (orgs,user_orgs = []) {
+	var column_count = 7;
+	$('#new-org').remove();
+	for (var counter = 0; counter < column_count; counter++) {
+		$('#orgs-cc-'+counter).empty();
+	}
+
+	for (var i = 0; i < orgs.length; i++) {
+		var modIndex = i % 7;
+		var org = orgs[i];
+		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+		for (var counter = 0; counter < user_orgs.length; counter++) {
+			if (user_orgs[counter].org_name.toUpperCase() == org.org_name.toUpperCase()) {
+				$("#orgs-cc-"+modIndex).find(".checkbox").find("#id_"+org.org_name).prop('checked',true);
+			}
+		}
+	}
+	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not on the list?</a></div>').appendTo('#organization-selection-div');
+}
+
 let employee_input_count = 1;
 let community_input_count = 1;
 function addNewMobileForEmployee () {
@@ -272,7 +329,6 @@ function displayUpdatedMessages(data) {
 	message_container = [];
 }
 
-<<<<<<< HEAD
 function displayAddEmployeeContactMessage (msg_data) {
 	console.log(msg_data);
 	if(msg_data.status === true) {
@@ -365,12 +421,4 @@ function siteConversation(){
 		// Add PMS here.
 	}
 
-
-	// displayGroupTagsForThread(tagOrgs,tagSitenames);
-
-	// $('#user').val('You');
-	// $('#messages').html('');
-	// messages = [];
-	// contactInfo = "groups";
-	// $('#main-container').removeClass('hidden');
 }

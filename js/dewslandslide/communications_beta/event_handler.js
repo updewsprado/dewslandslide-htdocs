@@ -68,6 +68,21 @@ $(document).ready(function() {
 				$('#comm-response-contact-container_wrapper').prop('hidden',true);
 				$('#community-contact-wrapper').prop('hidden', true);
 				$('#employee-contact-wrapper').prop('hidden', false);
+				$("#user_id_ec").val(0);
+				$("#salutation_ec").val("");
+				$("#firstname_ec").val("");
+				$("#middlename_ec").val("");
+				$("#lastname_ec").val("");
+				$("#nickname_ec").val("");
+				$("#birthdate_ec").val("");
+				$("#gender_ec").val("");
+				$("#active_status_ec").val(1);
+				$("#mobile-div").empty();
+				$('#email_ec').tagsinput('removeAll');
+				$('#team_ec').tagsinput('removeAll');
+				employee_input_count = 1;
+				$("#emp-settings-cmd").show();
+				$("#update-contact-container").hide();
 			} else if ($('#settings-cmd').val() == "updatecontact") {
 				$('#employee-contact-wrapper').prop('hidden', true);
 				$('#community-contact-wrapper').prop('hidden', true);
@@ -81,10 +96,14 @@ $(document).ready(function() {
 				$('#comm-response-contact-container_wrapper').prop('hidden',true);
 				$('#employee-contact-wrapper').prop('hidden', true);
 				$('#community-contact-wrapper').prop('hidden', false);
+				getSiteSelection();
+				getOrganizationSelection();
 			} else if ($('#settings-cmd').val() == "updatecontact") {	
 				$('#employee-contact-wrapper').prop('hidden', true);
 				$('#community-contact-wrapper').prop('hidden', true);
 				getCommunityContact();
+				getSiteSelection();
+				getOrganizationSelection();
 			} else {
 				console.log('Invalid Request');
 			}

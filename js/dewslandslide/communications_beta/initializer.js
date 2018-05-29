@@ -127,6 +127,7 @@ function getEmployeeContactGroups () {
 							for (var raw_counter = 0; raw_counter < raw_grouptags.length; raw_counter++) {
 								if ($.inArray(raw_grouptags[raw_counter],group_tag) == -1) {
 									group_tag.push(raw_grouptags[raw_counter]);
+						
 								}
 							}
 						}
