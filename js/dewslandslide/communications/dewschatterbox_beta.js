@@ -2493,12 +2493,12 @@ function reset_cc() {
 	$('#organization-selection-div').find(".checkbox").find("input").prop('checked', false);
 
 	$('#accordion .panel-collapse').collapse('toggle');
-
+	// for site selection
 	var msg = {
 		'type': 'getAllSitesConSet'
 	};
 	conn.send(JSON.stringify(msg));
-
+	// for org selection
 	var msg = {
 		'type': 'getAllOrgsConSet'
 	};

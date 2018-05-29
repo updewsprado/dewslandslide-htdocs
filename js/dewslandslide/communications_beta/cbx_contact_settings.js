@@ -93,6 +93,19 @@ function onSubmitCommunityContactForm () {
 	});
 }
 
-function getGroupTags () {
+function getSiteSelection () {
+	// for site selection
+	var msg = {
+		'type': 'getAllSitesConSet'
+	};
+	wss_connect.send(JSON.stringify(msg));
+	
+}
 
+function getOrganizationSelection () {
+	// for org selection
+	var msg = {
+		'type': 'getAllOrgsConSet'
+	};
+	wss_connect.send(JSON.stringify(msg));
 }

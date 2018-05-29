@@ -60,7 +60,13 @@ function connectWS() {
 					break;
 				case "updateCommunityContact":
 					displayUpdateCommunityDetails(msg_data.data);
-					break;	
+					break;
+				case "conSetAllSites":
+					displaySiteSelection(msg_data.data);
+					break;
+				case "conSetAllOrgs":
+					displayOrganizationSelection(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
