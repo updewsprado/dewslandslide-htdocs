@@ -16,7 +16,6 @@ function connectWS() {
 		};
 
 		wssConnection.onmessage = function(e) {
-			// console.log(e.data);
 			let msg_data = JSON.parse(e.data);
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
@@ -38,7 +37,7 @@ function connectWS() {
 					displayDataTableEmployeeContacts(msg_data.data);
 					break;
 				case "loadSmsConversation":
-					displayConversationPanel(msg_data.data,msg_data.full_name);
+					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients);
 					break;
 				case "updatedDwslContact":
 					if (msg.status == true) {
@@ -48,7 +47,7 @@ function connectWS() {
 					}
 					break;
 				case "sendSms":
-					updateConversationBubble(msg_data.data);
+					updateConversationBubble(msg_data);
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;

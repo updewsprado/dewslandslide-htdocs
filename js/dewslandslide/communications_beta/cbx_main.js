@@ -308,12 +308,15 @@ function addNewMobileForCommunity () {
 	});
 } 
 
-function displayConversationPanel(msg_data, full_data) {
+function displayConversationPanel(msg_data, full_data, recipients) {
 	$('#messages').empty();
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
 	message_container = [];
 	recipient_container = [];
+	recipients.forEach(function(mobile_data){
+		if (recipient_container.includes(mobile_data.mobile_id) != true) {recipient_container.push(mobile_data.mobile_id);}
+	});
 	msg_data.reverse();
 	msg_data.forEach(function(data) {
 		displayUpdatedMessages(data);
@@ -321,7 +324,6 @@ function displayConversationPanel(msg_data, full_data) {
 }
 
 function displayUpdatedMessages(data) {
-	if (recipient_container.includes(data.mobile_id) != true) {recipient_container.push(data.mobile_id);}
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
 	message_container.unshift(data);
 	messages_html = messages_template_both({'messages': message_container});
@@ -332,7 +334,6 @@ function displayUpdatedMessages(data) {
 }
 
 function displayAddEmployeeContactMessage (msg_data) {
-	console.log(msg_data);
 	if(msg_data.status === true) {
 		$.notify(msg_data.return_msg, "success");
 		$("#user_id_ec").val(0);
@@ -384,7 +385,6 @@ function displayTeamsForEmployee () {
 
 }
 function loadSiteConversation(){
-	console.log("GO HERE");
 	if (quick_group_selection_flag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
@@ -439,5 +439,9 @@ function sendSms(recipients, message) {
 }
 
 function updateConversationBubble(msg_response) {
+	message_container = [];
 	console.log(msg_response);
+	displayUpdatedMessages(msg_response);
+	$("#msg").val("");
+	$("#msg").text("");
 }
