@@ -16,9 +16,18 @@ $(document).ready(function() {
 	});
 
 	$("body").on("click","#quick-inbox-display li",function(){
+		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
+		let firstname = raw_name[1].trim();
+		let lastname = raw_name[0].split("-")[1].trim();
+		let office = raw_name[0].split(" ")[1].trim();
+		let site = raw_name[0].split(" ")[0].trim();
 		let conversation_details = {
 			full_name: $(this).closest('li').find("input[type='text']").val(),
-			number: $(this).closest('li').find("input[type='text']").attr("id").replace(/'/g, "")
+			firstname: firstname,
+			lastname: lastname,
+			office: office,
+			site: site,
+			number: "N/A"
 		}
 		startConversation(conversation_details);
 	});
@@ -122,8 +131,17 @@ $(document).ready(function() {
 
 
 	$("#go-chat").click(function() {
+		let raw_name = $("#contact-suggestion").val().split(",");
+		let firstname = raw_name[1].trim();
+		let lastname = raw_name[0].split("-")[1].trim();
+		let office = raw_name[0].split(" ")[1].trim();
+		let site = raw_name[0].split(" ")[0].trim();
 		let conversation_details = {
 			full_name: $("#contact-suggestion").val(),
+			firstname: firstname,
+			lastname: lastname,
+			office: office,
+			site: site,
 			number: "N/A"
 		}
 		startConversation(conversation_details);
