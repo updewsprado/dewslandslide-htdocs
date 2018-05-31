@@ -1,36 +1,27 @@
+
 $(document).ready(() => {
-    initializePlottedCharts();
     initializeDownloadChartsButton();
+    initializeFinalDownloadButton();
 });
 
 function initializeDownloadChartsButton () {
     $("body").on("click", "#download-charts", ({ currentTarget }) => {
         $("#chart-options").modal({ backdrop: "static", keyboard: false });
-        $(".download_chart_checkbox").prop("checked", false);
+        $(".download-chart-checkbox").prop("checked", false);
         $("#select-chart-message").hide();
-        initializePlottedCharts();
-        downloadSelectedCharts();
+        toggleChartDownloadCheckboxes();
     });
 }
 
-function initializePlottedCharts () {
-    $(".download_chart_checkbox").prop("disabled", true);
-    chart_plots.forEach((plotted) => {
-        switch (plotted) {
-            case plotted:
-                $(`#${plotted}`).prop("disabled", false);
-                break;
-            default:
-                break;
-        }
+function toggleChartDownloadCheckboxes () {
+    const $cbox_group = $(".download-chart-checkbox");
+    $cbox_group.prop("disabled", true);
+    CHART_PLOTS.forEach((plotted) => {
+        $cbox_group.filter(`[value=${plotted}]`).prop("disabled", false);
     });
 }
 
-function createSVG (plot_type, site_detail) {
-    // debugger;
-    // let svg = null;
-    $(".highcharts-root").removeAttr("xmlns").removeAttr("version");
-    // console.log(plot_type);
+function createSVG (plot_type) {
     switch (plot_type) {
         case "rainfall":
             createRainfallSVG();
@@ -38,36 +29,25 @@ function createSVG (plot_type, site_detail) {
         case "surficial":
             createSurficialSVG();
             break;
-        case "node_health":
-            createColumnSummarySVG(plot_type);
-            break;
-        case "data_presence":
-            createColumnSummarySVG(plot_type);
-            break;
-        case "communication_health":
-            createColumnSummarySVG(plot_type);
-            break;
-        case "subsurface_column":
-            createSubsurfaceSVG();
-            break;
+        case "node-health": // fall through
+        case "data-presence":
+        case "communication-health":
         case "x-accelerometer":
-            createNodeSVG(plot_type);
-            break;
         case "y-accelerometer":
-            createNodeSVG(plot_type);
-            break;
-        case "z-accelerometer":
-            createNodeSVG(plot_type);
-            break;
+        case "z-accelerometer": // fall through
         case "battery":
-            createNodeSVG(plot_type);
+            createColumnSummaryAndNodeSVG(plot_type);
+            break;
+        case "subsurface-column":
+            createSubsurfaceSVG();
             break;
         default: break;
     }
 }
 
 function createRainfallSVG () {
-    $("#rainfall_svg").empty();
+    const $container = $("#rainfall-svg");
+    $container.empty();
     const tag = "rainfall-chart";
     const charts = Highcharts.charts.filter((x) => {
         if (typeof x !== "undefined") return $(x.renderTo).hasClass(tag);
@@ -75,53 +55,53 @@ function createRainfallSVG () {
     });
     charts.forEach((chart) => {
         const rain_svg = chart.getSVG();
-        $("#rainfall_svg").append(rain_svg);
+        $container.append(rain_svg);
     });
     delegateChartSVGPosition("rainfall");
 }
 
 function createSurficialSVG () {
-    $("#surficial_svg").empty();
+    const $container = $("#surficial-chart");
+    $container.empty();
     const tag = "surficial-plot-container";
     const [chart] = Highcharts.charts.filter((x) => {
         if (typeof x !== "undefined") return $(x.renderTo).hasClass(tag);
         return false;
     });
     const get_svg = chart.getSVG();
-    $("#surficial_svg").append(get_svg);
+    $container.append(get_svg);
 }
 
-function createColumnSummarySVG (type) {
-    let chart_id = null;
-    let chart_append_id = null;
+function createColumnSummaryAndNodeSVG (type) {
+    let chart_id = type;
+    const $container = $(`#${type}-chart`);
+    $container.empty();
+
     switch (type) {
-        case "node_health":
-            chart_id = "node-health-summary";
-            chart_append_id = "#node_health_svg";
+        case "node-health":
+            chart_id = `${chart_id}-summary`;
             break;
-        case "data_presence":
-            chart_id = "data-presence";
-            chart_append_id = "#data_presence_svg";
-            break;
-        case "communication_health":
-            chart_id = "communication-health";
-            chart_append_id = "#communication_health_svg";
-            break;
-        default:
-            break;
+        case "x-accelerometer":
+        case "y-accelerometer":
+        case "z-accelerometer":
+        case "battery":
+            chart_id = `${chart_id}-graph`;
+            // fall through
+        default: break;
     }
-    const charts = Highcharts.charts.filter((x) => {
+
+    const [chart] = Highcharts.charts.filter((x) => {
         if (typeof x !== "undefined") return $(x.renderTo).prop("id") === chart_id;
         return false;
     });
-    charts.forEach((chart) => {
-        const column_summary_svg = chart.getSVG();
-        $(chart_append_id).append(column_summary_svg);
-    });
+
+    const chart_svg = chart.getSVG();
+    $container.append(chart_svg);
 }
 
 function createSubsurfaceSVG () {
-    $("#subsurface_svg").empty();
+    const $container = $("#subsurface-svg");
+    $container.empty();
     const subsurface_charts = [
         "column-position-downslope",
         "column-position-across_slope",
@@ -137,52 +117,9 @@ function createSubsurfaceSVG () {
             return false;
         });
         const subsurface_svg = chart.getSVG();
-        $("#subsurface_svg").append(subsurface_svg);
+        $container.append(subsurface_svg);
     });
     delegateChartSVGPosition("subsurface");
-}
-
-function createNodeSVG (type) {
-    let chart_append_id = null;
-    let chart_id = null;
-    switch (type) {
-        case "x-accelerometer":
-            $("#x_accelerometer_svg").empty();
-            chart_append_id = "#x_accelerometer_svg";
-            chart_id = "x-accelerometer-graph";
-            break;
-        case "y-accelerometer":
-            $("#y_accelerometer_svg").empty();
-            chart_append_id = "#y_accelerometer_svg";
-            chart_id = "y-accelerometer-graph";
-            break;
-        case "z-accelerometer":
-            $("#z_accelerometer_svg").empty();
-            chart_append_id = "#z_accelerometer_svg";
-            chart_id = "z-accelerometer-graph";
-            break;
-        case "battery":
-            $("#battery_svg").empty();
-            chart_append_id = "#battery_svg";
-            chart_id = "battery-graph";
-            break;
-        default:
-            break;
-    }
-    const charts = Highcharts.charts.filter((x) => {
-        if (typeof x !== "undefined") return $(x.renderTo).prop("id") === chart_id;
-        return false;
-    });
-    charts.forEach((chart) => {
-        const node_svg = chart.getSVG();
-        $(chart_append_id).append(node_svg);
-    });
-}
-
-function deleteAllChartPlotted () {
-    chart_plots.forEach((plotted) => {
-        chart_plots.delete(plotted);
-    });
 }
 
 function delegateChartSVGPosition (type) {
@@ -194,7 +131,7 @@ function delegateChartSVGPosition (type) {
     else if (type === "subsurface") chart_count = 6;
 
     for (let counter = 1; counter <= chart_count; counter += 1) {
-        const tag = `#${type}_svg svg:nth-child(${counter})`;
+        const tag = `#${type}-svg svg:nth-child(${counter})`;
         if (counter % 2 === 0) {
             $(tag).attr({
                 x: 600,
@@ -216,30 +153,37 @@ function returnYaxisValue (type) {
     return 800;
 }
 
-function downloadSelectedCharts () {
+function initializeFinalDownloadButton () {
     $("body").on("click", "#download-charts-selected", ({ currentTarget }) => {
-        const chart_checked = [];
         const charts_svg = [];
-        $("#chart_checkboxes input:checked").each(function () {
-            const chart_name = $(this).attr("value");
-            chart_checked.push(`${chart_name}_chart`);
-            charts_svg.push($(`#${chart_name}_chart`).html());
+        $(".download-chart-checkbox:checked").each((i, cbox) => {
+            const chart_name = $(cbox).attr("value");
+            charts_svg.push($(`#${chart_name}-chart`).html());
         });
 
         if (charts_svg.length < 1 || charts_svg === undefined) {
             $("#select-chart-message").show(300);
         } else {
+            $("#chart-options").modal("hide");
+            $("#loading .progress-bar").text("Rendering and downloading charts...");
+            $("#loading").modal("show");
+
             renderSelectedChartsOnSiteAnalysis(charts_svg)
             .done((data) => {
-                console.log("done");
                 if (data === "Finished") {
-                    //download compiled pdf code here
+                    const data_ts = $("#data_timestamp").val();
+                    const site_code = $("#site_code").val();
+                    const filename = `${site_code.toUpperCase()}_${moment(data_ts).format("DDMMMYYYY_HH_mm")}`;
+
+                    $("#loading").modal("hide");
+                    $(".download-chart-checkbox").prop("checked", false);
+                    window.location.href = `/../../chart_export/viewPDF/${filename}.pdf`;
                 } else {
-                    //error downloading code here
+                    showErrorModal(x, "rendering and downloading charts");
                 }
             })
             .catch((x) => {
-                // showErrorModal(x, "rendering and downloading charts");
+                showErrorModal(x, "rendering and downloading charts");
             });
         }
     });
