@@ -2,7 +2,7 @@ let pms_data = {};
 let page = "";
 
 const instance = PMS_MODAL.create({
-    modal_id: "chatterbox-accuracy-1";
+    modal_id: "chatterbox-accuracy-1"
 });
 
 $(document).ready(() => {
