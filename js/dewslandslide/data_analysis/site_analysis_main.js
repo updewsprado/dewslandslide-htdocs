@@ -156,6 +156,10 @@ function initializeForm () {
             $container.slideDown();
             $container.data("site-loaded", site_code);
 
+            $("html, body").animate({
+                scrollTop: $container.offset().top - 70
+            });
+
             hideSections(site_code);
         }
     });
