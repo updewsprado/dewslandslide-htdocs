@@ -330,6 +330,15 @@ function resizeCharts () {
     window.dispatchEvent(new Event("resize"));
 }
 
+function destroyCharts (container) {
+    $(container).each((index, elem) => {
+        const chart = $(`#${elem.id}`).highcharts();
+        if (typeof chart !== "undefined") {
+            chart.destroy();
+        }
+    });
+}
+
 function getStartDate (plot_type) {
     let start_date = "";
     const end_date = moment($("#data_timestamp").val());
@@ -339,6 +348,8 @@ function getStartDate (plot_type) {
     if (value !== "All") {
         start_date = moment(end_date).subtract(value, duration)
         .format("YYYY-MM-DDTHH:mm:ss");
+    } else {
+        start_date = "2010-01-01T00:00:00";
     }
 
     return start_date;
@@ -362,16 +373,6 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
     } else if (data_type === "surficial") {
         if (sub_type === "marker") {
             createMarkerTabs(source_table);
-        }
-    } else if (data_type === "subsurface") {
-        if (sub_type === "column-position") {
-            ["downslope", "across-slope"].forEach((x) => {
-                $(`#${source_table}`)
-                .append($("<div>", {
-                    class: "col-sm-6 column-position-chart",
-                    id: `${source_table}-${x}`
-                }));
-            });
         }
     }
 }

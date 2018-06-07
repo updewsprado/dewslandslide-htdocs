@@ -23,6 +23,7 @@ $(document).ready(() => {
 });
 
 function plotSurficialCharts () {
+    destroyCharts("#surficial-plots .plot-container");
     $("#surficial-plots .plot-container").remove();
     $("#surficial-plot-options").show();
     $surficial_btn_group = $("#surficial-markers-btn-group");
