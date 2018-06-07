@@ -42,8 +42,8 @@ function initializeTimestamps () {
 }
 
 function loadDefaultSite () {
-    // $("#data_timestamp").val(moment().format("YYYY-MM-DD HH:mm:ss"));
-    $("#data_timestamp").val("2017-11-11 00:00:00");
+    $("#data_timestamp").val(moment().format("YYYY-MM-DD HH:mm:ss"));
+    // $("#data_timestamp").val("2017-11-11 00:00:00");
     $("#site_code").val("agb").trigger("change");
     $("#plot-site-level").trigger("click");
 }
