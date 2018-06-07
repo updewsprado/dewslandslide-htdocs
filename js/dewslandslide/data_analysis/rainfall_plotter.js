@@ -91,7 +91,9 @@ function initializeRainfallDurationDropdownOnClick () {
 }
 
 function plotRainfallCharts (site_code) {
+    destroyCharts("#rainfall-plots .rainfall-chart");
     $("#rainfall-plots .plot-container").remove();
+
     getRainDataSourcesPerSite(site_code)
     .done((sources) => {
         createRainSourcesButton(sources);
@@ -194,8 +196,10 @@ function createCumulativeRainfallChart (data, temp, source) {
         distance, max_72h, max_rain_2year, source_table
     } = source;
 
+    const container = `#${source_table}-cumulative`;
+
     Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
-    $(`#${source_table}-cumulative`).highcharts({
+    $(container).highcharts({
         series: data,
         chart: {
             type: "line",
@@ -281,7 +285,9 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         distance, max_rval, source_table
     } = source;
 
-    $(`#${source_table}-instantaneous`).highcharts({
+    const container = `#${source_table}-instantaneous`;
+
+    $(container).highcharts({
         series: data,
         chart: {
             type: "column",
@@ -346,9 +352,14 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
  */
 function syncExtremes (e) {
     const thisChart = this.chart;
+    const tag = "rainfall-chart";
+    const charts = Highcharts.charts.filter((x) => {
+        if (typeof x !== "undefined") return $(x.renderTo).hasClass(tag);
+        return false;
+    });
 
     if (e.trigger !== "syncExtremes") { // Prevent feedback loop
-        Highcharts.each(Highcharts.charts, (chart) => {
+        Highcharts.each(charts, (chart) => {
             if (chart !== thisChart) {
                 if (chart.xAxis[0].setExtremes) { // It is null while updating
                     chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: "syncExtremes" });
