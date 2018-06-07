@@ -1,13 +1,12 @@
 
 /****
- *
  *  Created by Kevin Dhale dela Cruz
  *  JS file for Accomplishment Report Filing Form -
  *  End-of-Shift Report Tab [reports/accomplishment_report.php]
  *  [host]/reports/accomplishment/form
- *
 ****/
 
+const current_user_id = $("#current_user_id").attr("value");
 let releases_per_event,
     shift_timestamps,
     validation_message,
@@ -26,73 +25,23 @@ const basis_to_raise = {
     m: ["significant movement observed as manifestation", "Manifestation"],
     M: ["critical movement observed as manifestation", "Manifestation"]
 };
-const current_user_id = $("#current_user_id").attr("value");
+let $site_modal,
+    $okay;
 
 $(document).ready(() => {
     reposition("#site-selection-modal");
+    $site_modal = $("#site-selection-modal");
+    $okay = $site_modal.find("#okay");
 
     initializeTimestamps();
     initializeFormValidator();
-    initializeGraphRelatedInputs();
+    initializeGraphCheckboxesOnClick();
     initializeFileUploading();
-
-    $(document).on("click", ".submit_buttons", ({ currentTarget }) => {
-        const site_code = $(currentTarget).attr("data-site");
-        const event_id = $(currentTarget).attr("data-event");
-        const internal_alert = $(currentTarget).attr("data-alert");
-        const btn_id = $(currentTarget).attr("id");
-
-        switch (btn_id) {
-            case "send": sendReport(site_code, event_id); break;
-            case "refresh-narratives": refreshNarrativesTextArea(event_id, internal_alert, site_code); break;
-            case "download-charts": downloadCharts(site_code); break;
-            default: break;
-        }
-    });
-
-    const $site_modal = $("#site-selection-modal");
-    const $okay = $site_modal.find("#okay");
-
-    $site_modal.find(".modal-checker").click(({ currentTarget }) => {
-        const { id } = currentTarget;
-        const $checkboxes = $site_modal.find("input");
-        if (id === "modal-check-all") {
-            $checkboxes.prop("checked", true);
-        } else {
-            $checkboxes.prop("checked", false);
-        }
-        $checkboxes.trigger("change");
-    });
-
-    $(document).on("change", "#site-selection-modal input", () => {
-        const $checkboxes = $site_modal.find("input:checked");
-        if ($checkboxes.length === 0) $okay.prop("disabled", true);
-        else $okay.prop("disabled", false);
-    });
-
-    $okay.click(() => {
-        sites_to_do = [];
-        const $checkboxes = $site_modal.find("input:checked");
-        $checkboxes.each((index, elem) => {
-            const { value, site: site_name, event: event_id } = $(elem).data();
-            const site_id = value.toString(10);
-            sites_to_do.push({ site_id, site_name, event_id });
-        });
-
-        getShiftTriggers(all_release_and_event_ids).then(prepareReportDataAndHTML)
-        .then(delegateReportsToTextAreas)
-        .then((x) => {
-            auto_save_interval = createAutoSaveDataAnalysisInterval();
-            $("#loading").modal("hide");
-        });
-    });
+    intializeSubmitButtons();
+    initializeSiteSelectionModalAndCheckboxes();
+    initializeSiteSelectionModalOkayButton();
 });
 
-/*************************************************
- *
- *              Initialize Timestamps
- *
-*************************************************/
 function initializeTimestamps () {
     $(() => {
         $(".timestamp").datetimepicker({
@@ -103,6 +52,7 @@ function initializeTimestamps () {
                 vertical: "bottom"
             }
         });
+
         $(".shift_start").datetimepicker({
             format: "YYYY-MM-DD HH:30:00",
             enabledHours: [7, 19],
@@ -112,6 +62,7 @@ function initializeTimestamps () {
                 vertical: "bottom"
             }
         });
+
         $(".shift_end").datetimepicker({
             format: "YYYY-MM-DD HH:30:00",
             allowInputToggle: true,
@@ -121,35 +72,13 @@ function initializeTimestamps () {
             },
             useCurrent: false // Important! See issue #1075
         });
+
         $(".shift_start").on("dp.change", (e) => {
             $(".shift_end").data("DateTimePicker").minDate(e.date);
         });
+
         $(".shift_end").on("dp.change", (e) => {
             $(".shift_start").data("DateTimePicker").maxDate(e.date);
-        });
-
-        $(".shift_start_others").datetimepicker({
-            format: "YYYY-MM-DD HH:mm:00",
-            allowInputToggle: true,
-            widgetPositioning: {
-                horizontal: "right",
-                vertical: "bottom"
-            }
-        });
-        $(".shift_end_others").datetimepicker({
-            format: "YYYY-MM-DD HH:mm:00",
-            allowInputToggle: true,
-            widgetPositioning: {
-                horizontal: "right",
-                vertical: "bottom"
-            },
-            useCurrent: false // Important! See issue #1075
-        });
-        $(".shift_start_others").on("dp.change", (e) => {
-            $(".shift_end_others").data("DateTimePicker").minDate(e.date);
-        });
-        $(".shift_end+others").on("dp.change", (e) => {
-            $(".shift_start_others").data("DateTimePicker").maxDate(e.date);
         });
     });
 
@@ -159,39 +88,6 @@ function initializeTimestamps () {
     });
 }
 
-/*************************************************
- *
- *      Function for timestamp validation
- *
-*************************************************/
-function checkTimestamp (value, { id }) {
-    const hour = moment(value).hour();
-    const minute = moment(value).minute();
-    let message;
-
-    if (id === "shift_start") {
-        const $shift_end = $("#shift_end");
-        message = "Acceptable times of shift start are 07:30 and 19:30 only.";
-        const temp = moment(value).add(13, "hours");
-        $shift_end.val(moment(temp).format("YYYY-MM-DD HH:mm:ss"));
-        $("#shift_end").prop("readonly", true).trigger("focus");
-        setTimeout(() => {
-            $("#shift_end").trigger("focusout");
-        }, 500);
-        return (hour === 7 || hour === 19) && minute === 30;
-    } else if (id === "shift_end") {
-        message = "Acceptable times of shift end are 08:30 and 20:30 only.";
-        return ((hour === 8 || hour === 20) && minute === 30);
-    }
-}
-
-/*************************************************
- *
- *           Initialize form validators
- *   Contains main functions for report creation
- *             located on submit area
- *
-*************************************************/
 function initializeFormValidator () {
     jQuery.validator.addMethod("TimestampTest", (value, element) => checkTimestamp(value, element), () => validation_message);
 
@@ -255,122 +151,148 @@ function initializeFormValidator () {
             $("#loading .progress-bar").text("Generating end-of-shift report...");
             $("#loading").modal("show");
 
-            // getShiftReleases(shift_timestamps).then(getShiftTriggers).then(prepareReportDataAndHTML)
-            // .then(delegateReportsToTextAreas)
-            // .then((x) => { $("#loading").modal("hide"); });
-
             getShiftReleases(shift_timestamps)
+            .then(processShiftReleases)
             .then(processSiteSelectionModal);
         }
     });
 }
 
-/*************************************************
- *
- *          Initialize mail recipients
- *
-*************************************************/
-function initializeMailRecipients () {
-    $("#mail_recipients_row .bootstrap-tagsinput").css("width", "100%");
-    const $recipients = $("#recipients_span");
-    if (window.location.hostname === "www.dewslandslide.com") {
-        const emails = ["rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com"];
-        emails.forEach((x) => { $("#recipients").tagsinput("add", x); });
-    } else if ($recipients.html().length === 0) {
-        $recipients.append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & ASD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
+function checkTimestamp (value, { id }) {
+    const hour = moment(value).hour();
+    const minute = moment(value).minute();
+    let message,
+        bool;
+
+    if (id === "shift_start") {
+        const $shift_end = $("#shift_end");
+        message = "Acceptable times of shift start are 07:30 and 19:30 only.";
+        const temp = moment(value).add(13, "hours");
+        $shift_end.val(moment(temp).format("YYYY-MM-DD HH:mm:ss"));
+        $("#shift_end").prop("readonly", true).trigger("focus");
+        setTimeout(() => {
+            $("#shift_end").trigger("focusout");
+        }, 500);
+        bool = (hour === 7 || hour === 19) && minute === 30;
+    } else {
+        message = "Acceptable times of shift end are 08:30 and 20:30 only.";
+        bool = ((hour === 8 || hour === 20) && minute === 30);
     }
+
+    return bool;
 }
 
-/*************************************************
- *
- *                Group by function
- *
-*************************************************/
-function groupBy (collection, property, type) {
-    let i = 0;
-    const values = [];
-    let result = [];
-    let val,
-        index;
+function intializeSubmitButtons () {
+    $(document).on("click", ".submit_buttons", ({ currentTarget }) => {
+        const site_code = $(currentTarget).attr("data-site");
+        const event_id = $(currentTarget).attr("data-event");
+        const internal_alert = $(currentTarget).attr("data-alert");
+        const btn_id = $(currentTarget).attr("id");
 
-    for (; i < collection.length; i += 1) {
-        val = collection[i][property];
-        index = values.indexOf(val);
-        if (index > -1) { result[index].push(collection[i]); } else {
-            values.push(val);
-            result.push([collection[i]]);
+        switch (btn_id) {
+            case "send": sendReport(site_code, event_id); break;
+            case "refresh-narratives": refreshNarrativesTextArea(event_id, internal_alert, site_code); break;
+            case "download-charts": downloadCharts(site_code); break;
+            default: break;
         }
-    }
-
-    // Remove extended monitoring releases
-    if (type === "releases") {
-        const start = $("#shift_start").val();
-        const end = $("#shift_end").val();
-        result = result.filter(([x]) => {
-            const { status, validity } = x;
-            return (status === "extended" && moment(validity).isAfter(moment(start).add(30, "minutes")) &&
-            moment(validity).isSameOrBefore(moment(end).subtract(30, "minutes"))) ||
-            status === "on-going";
-        });
-    }
-
-    return result;
+    });
 }
 
-/*************************************************
- *
- *     Function for getting alert releases
- *
-*************************************************/
+function initializeSiteSelectionModalAndCheckboxes () {
+    $site_modal.find(".modal-checker").click(({ currentTarget }) => {
+        const { id } = currentTarget;
+        const $checkboxes = $site_modal.find("input");
+        if (id === "modal-check-all") {
+            $checkboxes.prop("checked", true);
+        } else {
+            $checkboxes.prop("checked", false);
+        }
+        $checkboxes.trigger("change");
+    });
+
+    $(document).on("change", "#site-selection-modal input", () => {
+        const $checkboxes = $site_modal.find("input:checked");
+        if ($checkboxes.length === 0) $okay.prop("disabled", true);
+        else $okay.prop("disabled", false);
+    });
+}
+
+function initializeSiteSelectionModalOkayButton () {
+    $okay.click(() => {
+        sites_to_do = [];
+        const $checkboxes = $site_modal.find("input:checked");
+        $checkboxes.each((index, elem) => {
+            const { value, site: site_code, event: event_id } = $(elem).data();
+            const site_id = value.toString(10);
+            sites_to_do.push({ site_id, site_code, event_id });
+        });
+
+        getShiftTriggers(all_release_and_event_ids)
+        .then(processShiftTriggers)
+        .then(prepareReportDataAndHTML)
+        .then(delegateReportsToTextAreas)
+        .then((x) => {
+            auto_save_interval = createAutoSaveDataAnalysisInterval();
+            $("#loading").modal("hide");
+        })
+        .catch(({ responseText, status: conn_status, statusText }) => {
+            console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        });
+    });
+}
 
 function getShiftReleases (shift_ts) {
     return $.getJSON("/../../accomplishment/getShiftReleases", shift_ts)
-    .fail((xhr, status, error) => {
-        alert(`(${xhr.responseText})`);
-    })
-    .then((releases) => {
-        // Clear all generated reports if there's any
-        // before loading another set of reports
-        $(".reports_nav_list, .reports_field_list").each((index, obj) => {
-            if (obj.id !== "reports_nav_sample" && obj.id !== "reports_field_sample") $(obj).remove();
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
+}
+
+function processShiftReleases (releases) {
+    const $recipients_row = $("#mail_recipients_row");
+
+    // Clear all generated reports if there's any
+    // before loading another set of reports
+    $(".reports_nav_list, .reports_field_list").each((index, obj) => {
+        const { id } = obj;
+        if (!id.includes("sample")) $(obj).remove();
+    });
+
+    if (releases.length !== 0) {
+        $recipients_row.show();
+        initializeMailRecipients();
+        releases_per_event = groupBy(releases, "event_id", "releases");
+
+        const obj = {
+            release_ids: [], event_ids: [], sites: []
+        };
+
+        releases.forEach((release) => {
+            const {
+                release_id, event_id, name: site_name, site_id
+            } = release;
+
+            obj.release_ids.push(release_id);
+
+            // Check if not duplicate
+            if (!obj.event_ids.includes(event_id)) {
+                obj.event_ids.push(event_id);
+                obj.sites.push({ site_id, site_name, event_id });
+            }
         });
 
-        if (releases.length !== 0) {
-            $("#mail_recipients_row").show();
-            initializeMailRecipients();
-            releases_per_event = groupBy(releases, "event_id", "releases");
+        all_release_and_event_ids = { ...obj };
+        return obj;
+    }
 
-            const obj = {
-                release_ids: [],
-                event_ids: [],
-                sites: []
-            };
-
-            releases.forEach((release) => {
-                const {
-                    release_id, event_id, name: site_name, site_id
-                } = release;
-
-                obj.release_ids.push(release_id);
-
-                if (!obj.event_ids.includes(event_id)) {
-                    obj.event_ids.push(event_id);
-                    obj.sites.push({ site_id, site_name, event_id });
-                }
-            });
-
-            all_release_and_event_ids = { ...obj };
-            return obj;
-        }
-
-        sites_to_do = [];
-        clearInterval(auto_save_interval);
-        $("#loading").modal("hide");
-        $("#reports_nav_sample").attr("style", "").addClass("active");
-        $("#reports_field_sample").attr("hidden", false).addClass("in active");
-        $("#mail_recipients_row").hide();
-        return null;
-    });
+    sites_to_do = [];
+    clearInterval(auto_save_interval);
+    $("#reports_nav_sample").attr("style", "").addClass("active");
+    $("#reports_field_sample").attr("hidden", false).addClass("in active");
+    $recipients_row.hide();
+    $("#loading").modal("hide");
+    return null;
 }
 
 function processSiteSelectionModal (obj) {
@@ -399,52 +321,114 @@ function processSiteSelectionModal (obj) {
     }
 }
 
-/*************************************************
- *
- *        Function for getting alert triggers
- *
-*************************************************/
-function getShiftTriggers ({ release_ids, event_ids }) {
-    return $.getJSON("/../../accomplishment/getShiftTriggers", { releases: release_ids, events: event_ids })
-    .fail((x) => {
-        alert(`(${xhr.responseText})`);
-    })
-    .then((triggers) => {
-        // Shift triggers and All triggers contain
-        // all of the triggers REGARDLESS of event
-        const shift_triggers = triggers.shiftTriggers;
-        const all_triggers = triggers.allTriggers;
-
-        // Grouped_triggers(_x) contains all triggers
-        // grouped by event id per array
-        const grouped_triggers = groupBy(shift_triggers, "event_id", "triggers");
-        const grouped_triggers_x = groupBy(all_triggers, "event_id", "triggers");
-
-        return [grouped_triggers, grouped_triggers_x];
-    });
+function initializeMailRecipients () {
+    $("#mail_recipients_row .bootstrap-tagsinput").css("width", "100%");
+    const $recipients = $("#recipients_span");
+    if (window.location.hostname === "www.dewslandslide.com") {
+        const emails = ["rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com"];
+        emails.forEach((x) => { $("#recipients").tagsinput("add", x); });
+    } else if ($recipients.html().length === 0) {
+        $recipients.append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & ASD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
+    }
 }
 
 /*************************************************
- *
- *   Function that iterates array containing
- *   array of releases grouped by event id
- *
+ * A function that group by elements of an
+ * assorted array into array of arrays with
+ * additional parameter for filtering extended
+ * releases
+*************************************************/
+function groupBy (collection, property, type) {
+    const values = [];
+    let result = [];
+    let val,
+        index;
+
+    for (let i = 0; i < collection.length; i += 1) {
+        val = collection[i][property];
+        index = values.indexOf(val);
+        if (index > -1) {
+            result[index].push(collection[i]);
+        } else {
+            values.push(val);
+            result.push([collection[i]]);
+        }
+    }
+
+    // Remove extended monitoring releases
+    if (type === "releases") {
+        const start = $("#shift_start").val();
+        const end = $("#shift_end").val();
+        result = result.filter(([x]) => {
+            const { status, validity } = x;
+            return (status === "extended" && moment(validity).isAfter(moment(start).add(30, "minutes")) &&
+            moment(validity).isSameOrBefore(moment(end).subtract(30, "minutes"))) ||
+            status === "on-going";
+        });
+    }
+
+    return result;
+}
+
+function getShiftTriggers ({ release_ids, event_ids }) {
+    return $.getJSON("/../../accomplishment/getShiftTriggers", { releases: release_ids, events: event_ids })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
+}
+
+function processShiftTriggers (triggers) {
+    // Shift triggers and All triggers contain
+    // all of the triggers REGARDLESS of event
+    const {
+        shiftTriggers: shift_triggers,
+        allTriggers: all_triggers
+    } = triggers;
+
+    // Grouped_triggers(_x) contains all triggers
+    // grouped by event id per array
+    const grouped_triggers = groupBy(shift_triggers, "event_id", "triggers");
+    const grouped_triggers_x = groupBy(all_triggers, "event_id", "triggers");
+
+    return [grouped_triggers, grouped_triggers_x];
+}
+
+/*************************************************
+ * Function that iterates array containing
+ * array of releases grouped by event id
 *************************************************/
 function prepareReportDataAndHTML ([shift_triggers, all_triggers]) {
     const backbone_data_per_report = [];
+    let hasActiveTabAlready = false;
     releases_per_event.forEach((event_releases, index) => {
         // Check if site_id is NOT included on the sites_to_do array
         // return quickly if true
-        const [{ site_id: s_id, event_id }] = event_releases;
+        const [{ site_id: s_id, event_id, name: site_code }] = event_releases;
         const is_present = sites_to_do.some(({ site_id }) => site_id === s_id);
         if (!is_present) return;
 
         const report_data = getReportBackboneData(event_releases, shift_triggers, all_triggers);
-        buildEndOfShiftReportSiteTabs(report_data, index);
+        buildEndOfShiftReportSiteTabs(report_data, hasActiveTabAlready);
+        hasActiveTabAlready = true;
 
-        const summary_promises = makeSummary(report_data);
-        const narrative_promises = makeNarratives(report_data);
-        const analysis_promises = getDataAnalysisReport(event_id);
+        const summary_promises = makeShiftSummaryReport(report_data);
+        const narrative_promises = makeNarrativeReport(report_data);
+
+        const subsurface_promise = getSubsurfaceColumns(site_code);
+        const surficial_promise = getSurficialData(site_code);
+        const analysis_promises = $.when(subsurface_promise, surficial_promise)
+        .then(([columns], [surficial]) => {
+            if (!surficial.hasSentSurficialData) {
+                $(`#graph_checkbox_${site_code} .surficial_checkbox`).parent("label")
+                .html(`<input class="surficial_checkbox" type="checkbox" value="surficial_${site_code}">Surficial (No Data)`);
+            }
+            const obj = {
+                event_id, columns, surficial, report_data
+            };
+            processSubsurfaceColumnDropdown(columns, site_code);
+            return getDataAnalysisReport(obj);
+        });
 
         const report = $.when(summary_promises, narrative_promises, analysis_promises)
         .then((summary, narratives, analysis) => ({
@@ -462,10 +446,8 @@ function prepareReportDataAndHTML ([shift_triggers, all_triggers]) {
 }
 
 /*************************************************
- *
- *         Function for getting the data
- *           needed for report creation
- *
+ * Function for getting the data needed for
+ * report creation
 *************************************************/
 function getReportBackboneData ([event_release], shift_triggers, all_triggers) {
     const {
@@ -506,17 +488,15 @@ function getReportBackboneData ([event_release], shift_triggers, all_triggers) {
     // Get last trigger/s from previous shifts
     index = all_triggers.map(([{ event_id: id }]) => id).indexOf(event_id);
     const all_event_triggers = all_triggers[index];
-    data.most_recent = getMostRecentTriggersBeforeShift(all_event_triggers, triggers_in_shift, alert_triggers);
+    const obj = { all_event_triggers, triggers_in_shift, alert_triggers };
+    data.most_recent = getMostRecentTriggersBeforeShift(obj);
 
     return data;
 }
 
 /*************************************************
- *
- *  Get inshift triggers: contains most recent
- *        triggers alerted on the shift
- *      (one entry per trigger type only)
- *
+ *  Returns most recent triggers alerted on the
+ *  shift (one entry per trigger type only)
 *************************************************/
 function getInshiftTriggers (triggers_in_shift, alert_triggers) {
     if (triggers_in_shift != null) {
@@ -544,12 +524,12 @@ function getInshiftTriggers (triggers_in_shift, alert_triggers) {
 }
 
 /*************************************************
- *
- *           Get most recent triggers
- *          that occurred before shift
- *
+ * Returns most recent triggers that occurred
+ * before shift
 *************************************************/
-function getMostRecentTriggersBeforeShift (all_event_triggers, triggers_in_shift, alert_triggers) {
+function getMostRecentTriggersBeforeShift ({
+    all_event_triggers, triggers_in_shift, alert_triggers
+}) {
     const most_recent_before = [];
     if (alert_triggers != null) {
         for (let z = alert_triggers.length; z >= 0; z -= 1) {
@@ -599,22 +579,15 @@ function getMostRecentTriggersBeforeShift (all_event_triggers, triggers_in_shift
     return most_recent_before;
 }
 
-/*************************************************
- *
- *  Function that creates site tabs separating
- *             reports from each sites
- *
-*************************************************/
-function buildEndOfShiftReportSiteTabs (data, index) {
+function buildEndOfShiftReportSiteTabs (data, hasActiveTabAlready) {
     const site_code = data.site;
-    const { event_id, internal_alert_level: alert } = data;
+    const { event_id, internal_alert_level: alert, validity } = data;
     const nav_id = `report_nav_${site_code}`;
     const field_id = `report_field_${site_code}`;
 
     const $nav_sample = $("#reports_nav_sample");
     $nav_sample.clone().attr({
-        id: `${nav_id}`,
-        style: ""
+        id: `${nav_id}`, style: ""
     })
     .appendTo("#reports_nav");
     $nav_sample.attr("style", "display:none;").removeClass("active");
@@ -624,8 +597,7 @@ function buildEndOfShiftReportSiteTabs (data, index) {
 
     const $field_sample = $("#reports_field_sample");
     $field_sample.clone().attr({
-        id: `${field_id}`,
-        hidden: false
+        id: `${field_id}`, hidden: false
     })
     .removeClass("in active").appendTo("#reports_field");
     $field_sample.attr("hidden", true).removeClass("in active");
@@ -644,9 +616,12 @@ function buildEndOfShiftReportSiteTabs (data, index) {
     const checkbox_id = `graph_checkbox_${site_code}`;
     $("#graph_checkbox_sample").clone().attr({
         id: `${checkbox_id}`,
-        hidden: false
+        hidden: false,
+        "data-validity": validity
     })
+    .addClass("graph_checkbox_panel")
     .appendTo(`#${field_id} .graphs-div`);
+
     const div = `#${checkbox_id}`;
     $(`${div} .rainfall_checkbox`).attr("value", `rain_${site_code}`);
     $(`${div} .surficial_checkbox`).attr("value", `surficial_${site_code}`);
@@ -659,56 +634,49 @@ function buildEndOfShiftReportSiteTabs (data, index) {
     $(`${div} .bootstrap-tagsinput`).css({ "min-height": "34px", width: "100%" });
     $(`${div} .bootstrap-tagsinput > input`).prop("readonly", true);
 
-    if (index === 0) {
+    if (hasActiveTabAlready === false) {
         $(`#${nav_id}`).addClass("active");
         $(`#${field_id}`).addClass("in active");
     }
-
-    getSensorColumns(site_code);
 }
 
-/*************************************************
- *
- *  Get sensor columns for graph checkbox options
- *
-*************************************************/
-function getSensorColumns (site_code) {
-    $.get(`/../../accomplishment/getSensorColumns/${site_code}`, (data) => {
-        data.forEach((column) => {
-            $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${column.name}`, style: "" })
-            .appendTo(`#graph_checkbox_${site_code} .subsurface_options`);
-            $(`#subsurface_option_${column.name} a`)
-            .html(`<input type='checkbox' class='subsurface_checkbox' value='subsurface_${column.name}'>&emsp;${column.name.toUpperCase()}`);
-            $(".dropdown-toggle").dropdown();
-        });
-    }, "json");
+function getSubsurfaceColumns (site_code) {
+    return $.getJSON(`/../../accomplishment/getSubsurfaceColumns/${site_code}/${shift_timestamps.end}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
 }
 
-/*************************************************
- *
- *  Get all narratives included within shift
- *  (narrative timestamp must within shift
- *  timestamp); if A0, include narratives beyond
- *  shift
- *
-*************************************************/
-function getShiftNarratives (data) {
-    const timestamps = $.extend(true, {}, shift_timestamps);
-    timestamps.event_id = data.event_id;
-    timestamps.start = moment(timestamps.start).add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
-    if (data.internal_alert_level === "A0") timestamps.end = null;
+function processSubsurfaceColumnDropdown (columns, site_code) {
+    columns.forEach(({ column_name, status }) => {
+        $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${column_name}`, style: "" })
+        .appendTo(`#graph_checkbox_${site_code} .subsurface_options`);
 
-    return $.getJSON("/../../accomplishment/getNarrativesForShift", timestamps)
-    .then(x => x);
+        let attr = "";
+        let label = "";
+        if (status === "deactivated") {
+            attr = "disabled=\"disabled\"";
+            label = " (Deactivated)";
+        } else if (status === "no_data") label = " (No Data)";
+
+        const html_string = "<input type='checkbox' class='subsurface_checkbox' " +
+        `value='subsurface_${column_name}' ${attr}>&emsp;${column_name.toUpperCase() + label}`;
+
+        $(`#subsurface_option_${column_name} a`).html(html_string);
+        $(".dropdown-toggle").dropdown();
+    });
 }
 
-/*************************************************
- *
- *     Creates report narratives that will be
- *           entered on textbox inputs
- *
-*************************************************/
-function makeNarratives (report_data) {
+function getSurficialData (site_code) {
+    return $.getJSON(`/../../accomplishment/getSurficialData/${site_code}/${shift_timestamps.end}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
+}
+
+function makeNarrativeReport (report_data) {
     const data = { ...report_data };
 
     return getShiftNarratives(data).then((narratives) => {
@@ -721,13 +689,17 @@ function makeNarratives (report_data) {
     });
 }
 
-/*************************************************
- *
- *  Creates report format that will be entered
- *              on textbox inputs
- *
-*************************************************/
-function makeSummary (report_data) {
+function getShiftNarratives (data) {
+    const timestamps = $.extend(true, {}, shift_timestamps);
+    timestamps.event_id = data.event_id;
+    timestamps.start = moment(timestamps.start).add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
+    if (data.internal_alert_level === "A0") timestamps.end = null;
+
+    return $.getJSON("/../../accomplishment/getNarrativesForShift", timestamps)
+    .then(x => x);
+}
+
+function makeShiftSummaryReport (report_data) {
     let report = null;
     const {
         mt, ct, event_start, most_recent,
@@ -783,29 +755,98 @@ function makeSummary (report_data) {
     return report;
 }
 
-/*************************************************
- *
- *      Gets data analysis on database
- *
-*************************************************/
-function getDataAnalysisReport (event_id) {
+function getDataAnalysisReport (obj) {
+    const {
+        event_id, columns, surficial, report_data: { internal_alert_level }
+    } = obj;
+
     return $.getJSON("/../../accomplishment/getEndOfShiftDataAnalysis", { shift_start: shift_timestamps.start, event_id })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        alert(`Status ${conn_status}: ${statusText}`);
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    })
     .then((result) => {
         let { analysis } = result;
         if (analysis === null) {
-            analysis = "<b>DATA ANALYSIS:</b><br/>- <i>Subsurface data: </i><br/>- <i>Surficial data: </i><br/>- <i>Rainfall data: </i>";
+            const subsurface = createInitialSubsurfaceAnalysis(columns);
+            const ground = createInitialSurficialAnalysis(surficial);
+            const additional = checkForAdditionalTriggersForAnalysis(internal_alert_level);
+
+            analysis = "<b>DATA ANALYSIS:</b><br/>- " +
+            `<i>Subsurface data: ${subsurface}</i>` +
+            `<br/>- <i>Surficial data: ${ground}</i>` +
+            `<br/>- <i>Rainfall data: </i> ${additional}`;
         }
+
         return $.Deferred().resolve(analysis);
-    })
-    .fail((x) => { console.log(x.responseText); });
+    });
 }
 
-/*************************************************
- *
- *  Creates report format that will be entered
- *              on textbox inputs
- *
-*************************************************/
+function createInitialSubsurfaceAnalysis (columns) {
+    let report = "";
+    let connector = "is";
+    let cols = "";
+
+    const inactive = columns.filter(x => x.status === "deactivated");
+    const { length: in_len } = inactive;
+    if (in_len > 0) {
+        if (in_len > 1) connector = "are";
+        cols = inactive.map(x => x.column_name.toUpperCase());
+        cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
+        report += `<b>${cols}</b> ${connector} already deactivated. `;
+    }
+
+    const no_data = columns.filter(x => x.status === "no_data");
+    const { length: no_len } = no_data;
+    if (no_len > 0) {
+        cols = no_data.map(x => x.column_name.toUpperCase());
+        cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
+        report += `No available data from <b>${cols}</b> all throughout the shift. `;
+    }
+
+    const with_data = columns.filter(x => x.status === "with_data");
+    with_data.forEach(({ column_name }) => {
+        report += `<b>${column_name.toUpperCase()}</b> - [write analysis here]. `;
+    });
+
+    return report;
+}
+
+function createInitialSurficialAnalysis ({ hasSentSurficialData, surficial_data }) {
+    let report = "No surficial data received from LEWC";
+
+    if (hasSentSurficialData) {
+        const { latest, second_latest, markers } = surficial_data;
+        report = `Latest data received last <b>${moment(latest).format("MMMM DD, YYYY, hh:mm A")}</b>. `;
+        report += `Diplacement of marker(s) from last data sending <b>(${moment(second_latest).format("MMMM DD, YYYY, hh:mm A")}):</b> `;
+
+        markers.forEach(({ marker_id, displacement }, index) => {
+            let comma = ", ";
+            if (index === markers.length - 1) comma = ". ";
+            report += `<b>${marker_id} - ${displacement}</b>${comma}`;
+        });
+    }
+
+    return report;
+}
+
+function checkForAdditionalTriggersForAnalysis (internal_alert_level) {
+    const triggers = [
+        { trigger: "m", head: "Manifestation data:" },
+        { trigger: "E", head: "Earthquake data:" }
+    ];
+
+    let report = "";
+    triggers.forEach(({ trigger, head }) => {
+        const regex = new RegExp(trigger, "i");
+        if (regex.test(internal_alert_level)) {
+            report += `<br/>- <i>${head}<i>`;
+        }
+    });
+
+    return report;
+}
+
 function delegateReportsToTextAreas (reports) {
     reports.forEach((report) => {
         const { data: { site } } = report;
@@ -821,12 +862,7 @@ function delegateReportsToTextAreas (reports) {
     });
 }
 
-/*************************************************
- *
- *        Initialize graph related inputs
- *
-*************************************************/
-function initializeGraphRelatedInputs () {
+function initializeGraphCheckboxesOnClick () {
     $(document).on("click", ".subsurface_options a", ({ currentTarget }) => {
         $(currentTarget).children("input").trigger("click");
     });
@@ -836,16 +872,19 @@ function initializeGraphRelatedInputs () {
             const [type, site] = $(currentTarget).val().split("_");
             const shift_start = $("#shift_start").val();
             const shift_end = $("#shift_end").val();
-            window.open(`${window.location.origin}/analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${shift_end}`, "_blank");
+            let validity = $(currentTarget).parents(".graph_checkbox_panel").data("validity");
+
+            // Add thirty minutes to the validity since shift_end is always
+            // 30 minutes ahead from last validity possible for the shift
+            validity = moment(validity).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss");
+
+            let end_ts = shift_end;
+            if (moment(validity).isBefore(shift_end)) end_ts = validity;
+            window.open(`${window.location.origin}/analysis/eos_charts/${current_user_id}/${type}/${site}/${shift_start}/${end_ts}`, "_blank");
         }
     });
 }
 
-/*************************************************
- *
- *        Initialize file uploading
- *
-*************************************************/
 function initializeFileUploading () {
     reposition("#resultModal");
     reposition("#loading");
@@ -878,32 +917,24 @@ function initializeFileUploading () {
     });
 }
 
-/*************************************************
- *
- *              Send report function
- *
-*************************************************/
-function sendReport (site, event_id) {
+function sendReport (site_code, event_id) {
     // Get all three values on textarea reports
     // Get files attached
     // Send
     // Save data analysis/expert opinion part
 
-    $("#loading .progress-bar").text("Sending end-of-shift report...");
-    $("#loading").modal("show");
-
     let final_report = "";
     let analysis_report;
     const recipients = $("#recipients").tagsinput("items");
     const form_data = new FormData();
-    const file_data = typeof upload_files[site] !== "undefined" ? upload_files[site] : [];
+    const file_data = typeof upload_files[site_code] !== "undefined" ? upload_files[site_code] : [];
     const form = {
         event_id,
-        site,
+        site_code,
         recipients: JSON.stringify(recipients)
     };
 
-    $(`#report_field_${site} textarea`).each((index, id) => {
+    $(`#report_field_${site_code} textarea`).each((index, id) => {
         const textarea_id = $(id).attr("id");
         const report = CKEDITOR.instances[textarea_id].getData();
         if (textarea_id.includes("analysis")) analysis_report = report;
@@ -917,26 +948,32 @@ function sendReport (site, event_id) {
         form_data.append("file[]", file_data[i]);
     }
 
-    for (const key in form) {
-        if (form.hasOwnProperty(key)) form_data.append(key, form[key]);
-    }
+    renderCharts(site_code)
+    .then(
+        () => {
+            form.toAttachRender = true;
+            form.filename = `${site_code.toUpperCase()}_${moment(shift_timestamps.end).format("DDMMMYYYY_hA")}`;
+        },
+        () => {
+            form.toAttachRender = false;
+            $.Deferred().resolve();
+        }
+    )
+    .then(() => {
+        for (const key in form) {
+            if (form.hasOwnProperty(key)) form_data.append(key, form[key]);
+        }
+        $("#loading .progress-bar").text("Sending end-of-shift report...");
 
-    $.ajax({
-        type: "POST",
-        url: "/../../accomplishment/mail",
-        cache: false,
-        data: form_data,
-        processData: false,
-        contentType: false
+        saveExpertOpinion(event_id, analysis_report, shift_timestamps.start);
     })
-    .done((x) => {
+    .then(() => mailReport(form_data))
+    .then((x) => {
         $("#loading").modal("hide");
-
+        sites_to_do = sites_to_do.filter(y => y.site_code !== site_code);
         if (x === "Sent.") {
             console.log("Email sent.");
-            $(`#report_nav_${site} a`).attr("style", "background-color: lightgreen !important");
-            saveExpertOpinion(event_id, analysis_report, shift_timestamps.start);
-            removeSiteFromSitesToDo(event_id);
+            $(`#report_nav_${site_code} a`).attr("style", "background-color: lightgreen !important");
             $("#resultModal .modal-body").html("<strong>SUCCESS:</strong>&ensp;End-of-shift report sent!");
             $("#resultModal").modal("show");
         } else {
@@ -944,26 +981,31 @@ function sendReport (site, event_id) {
             $("#resultModal .modal-body").html(`<strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!<br/><br/><i>${x}</i>`);
             $("#resultModal").modal("show");
         }
-    })
-    .fail((x) => { console.log(x.responseText); });
+    });
 }
 
-/*************************************************
- *
- *       Refresh narratives and get latest
- *  narratives without refreshing the whole page
- *
-*************************************************/
+function mailReport (form_data) {
+    return $.ajax({
+        type: "POST",
+        url: "/../../accomplishment/mail",
+        cache: false,
+        data: form_data,
+        processData: false,
+        contentType: false
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
+}
+
 function refreshNarrativesTextArea (event_id, internal_alert, site) {
-    makeNarratives({ event_id, internal_alert_level: internal_alert })
+    makeNarrativeReport({ event_id, internal_alert_level: internal_alert })
     .then(x => $.Deferred().resolve([{ narratives: x, data: { site } }]))
     .then((x) => { delegateReportsToTextAreas(x, false); });
 }
 
 /*************************************************
- *
- *       Save Expert Opinion Function
- *
+ * Save Expert Opinion Function
 *************************************************/
 function saveExpertOpinion (event_id, analysis, shift_start) {
     const form = { event_id, analysis, shift_start };
@@ -973,8 +1015,8 @@ function saveExpertOpinion (event_id, analysis, shift_start) {
 
 function saveAllDataAnalysisAutomatically () {
     sites_to_do.forEach((obj) => {
-        const { site_name, event_id } = obj;
-        const analysis = CKEDITOR.instances[`shift_analysis_${site_name}`].getData();
+        const { site_code, event_id } = obj;
+        const analysis = CKEDITOR.instances[`shift_analysis_${site_code}`].getData();
         saveExpertOpinion(event_id, analysis, shift_timestamps.start);
     });
 
@@ -987,41 +1029,54 @@ function createAutoSaveDataAnalysisInterval () {
     }, 60000);
 }
 
-function removeSiteFromSitesToDo (event_id) {
-    const temp = sites_to_do;
-    sites_to_do = temp.filter(({ event_id: id }) => id !== event_id);
+function downloadCharts (site_code) {
+    renderCharts(site_code)
+    .done((data) => {
+        $("#loading").modal("hide");
+        if (data === "Finished") {
+            const filename = `${site_code.toUpperCase()}_${moment(shift_timestamps.end).format("DDMMMYYYY_hA")}`;
+            window.location.href = `/../../chart_export/viewPDF/${filename}.pdf`;
+        } else {
+            $("#resultModal .modal-body").html("<strong>ERROR:</strong>&ensp;Charts Rendering and Download<br/><br/><i></i>");
+            $("#resultModal").modal("show");
+        }
+    })
+    .fail((response) => {
+        $("#loading").modal("hide");
+        $("#resultModal .modal-body").html(`<strong>ERROR:</strong>&ensp;Charts Rendering and Download<br/><br/><i>${response}</i>`);
+        $("#resultModal").modal("show");
+    })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
 }
 
-/*************************************************
- *
- *        Function for downloading charts
- *
-*************************************************/
-function downloadCharts (site) {
+function renderCharts (site_code) {
+    const shouldRender = checkIfThereIsChartToRender(site_code);
+    if (shouldRender === false) return $.Deferred().reject("No selected charts to download");
+    const svg = shouldRender;
+
+    $("#loading .progress-bar").text("Rendering end-of-shift charts...");
+    $("#loading").modal("show");
+
+    return $.post("/../../chart_export/renderCharts", { site_code, svg, connection_id: current_user_id })
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+    });
+}
+
+function checkIfThereIsChartToRender (site_code) {
     const svg = [];
-    $(`#graph_checkbox_${site}`).find("input[type=checkbox]:checked")
+    $(`#graph_checkbox_${site_code}`).find("input[type=checkbox]:checked")
     .each((index, cbox) => {
         let val = $(cbox).val();
         if (val.search("subsurface") === -1) {
             const x = val.search("_");
             val = val.slice(0, x);
-            console.log(val);
         }
         svg.push(val);
     });
-    console.log(site);
-    console.log(svg);
-    console.log(current_user_id);
-    $("#loading .progress-bar").text("Rendering end-of-shift charts...");
-    $("#loading").modal("show");
-    $.post("/../../chart_export/renderCharts", { site, svg, connection_id: current_user_id })
-    .done((data) => {
-        if (data === "Finished") {
-            $("#loading").modal("hide");
-            window.location.href = `/../../chart_export/viewPDF/Graph Attachment for ${site.toUpperCase()}.pdf`;
-        }
-    })
-    .fail((jqXHR, textStatus, errorThrown) => {
-        console.log(textStatus);
-    });
+
+    if (svg.length === 0) return false;
+    return svg;
 }

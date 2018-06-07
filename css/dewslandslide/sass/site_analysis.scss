@@ -1,0 +1,81 @@
+
+/****
+ *
+ *	Created by Kevin Dhale dela Cruz
+ *	CSS file for Individual Site Pages
+ *	
+****/
+
+@import "variables";
+
+.fa-angle-double-left, .fa-angle-double-right {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.breadcrumb {
+    font-weight: 600;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.section-subtitle {
+    font-size: 18px;
+}
+
+.section {
+    & > .row > hr {
+        border: 0;
+        margin-top: 10px;
+        background-color: #999999 !important;
+        height: 1px;
+    }
+}
+
+.plot-title {
+    h4 {
+        font-weight: 600;
+        text-indent: 2em;
+    }
+}
+
+.plot-title-hr {
+    margin-top: 10px;
+    margin-left: 20px;
+    border-color: #cccccc;
+}
+
+#options-bar {
+    padding-left: 0;
+    padding-right: 20px;
+}
+
+.options-section-title {
+    font-weight: 600;
+
+    hr {
+        margin-top: 30px;
+    }
+}
+
+hr.options-divider {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+// For surficial data
+// marker analysis chart tabs
+.no-click {
+    pointer-events: none;
+}
+
+.marker-chart-tab-group {
+    padding-left: 36px;
+}
+
+.tab-content > .tab-pane {
+    padding-top: 20px;
+}

@@ -2478,7 +2478,6 @@ function columnPosition(data_result,site) {
 		var listId = [] , listDate = [];
 		var fdatadown= [] , fnum= [] ,fAlldown =[] ,fseries=[] ;
 		var fseries2=[] , fdatalat= [],fAlllat =[] ;
-
 		for(var i = 0; i < data.length; i++){
 			AlllistId.push(data[i].id);
 		}
@@ -2501,7 +2500,7 @@ function columnPosition(data_result,site) {
 		for(var i = 0; i < listDate.length; i++){
 			for(var a = 0; a < data.length; a++){
 				if(listDate[i] == data[a].ts){
-					fdatadown.push({x:data[a].downslope, y:data[a].depth})
+					fdatadown.push({x:data[a].downslope,y:data[a].depth})
 					fdatalat.push({x:data[a].latslope,y:data[a].depth})
 					all_col_data.push(data[a].latslope)
 					all_col_data.push(data[a].downslope)
@@ -3933,7 +3932,7 @@ function accel1filtered(data,list){
 			if(data.version == 2){
 				var ms_id = '33';
 			}else{
-				var ms_id = '12';
+				var ms_id = '12'
 			}
 			
 			accel2filtered(data,series_data,ms_id,list)
@@ -4698,5 +4697,7 @@ function zoomEvent(id_chart,zmRange,xMin,xMax,category) {
 	
 
 }
+
+
 
 
