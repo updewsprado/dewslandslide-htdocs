@@ -175,6 +175,9 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
                 const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
                 return tooltip;
             }
+        },
+        credits: {
+            enabled: false
         }
     });
 }
@@ -260,6 +263,9 @@ function createDataPresenceChart (data_presence, form) {
                 }
                 return `Timestamp: <b>${moment(this.point.id).format("DD MMM YYYY, HH:mm")}</b><br/>Status: <b>${status}</b>`;
             }
+        },
+        credits: {
+            enabled: false
         }
     });
 }
@@ -467,9 +473,6 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
             labelFormatter () {
                 return `${moment(this.name).format("DD MMM YYYY, HH:mm")}`;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
@@ -525,9 +528,6 @@ function createDisplacementChart (column_data, subsurface_column) {
             enabled: false
         },
         legend: {
-            enabled: false
-        },
-        credits: {
             enabled: false
         }
     });
@@ -593,9 +593,6 @@ function createVelocityAlertsChart (orientation, data, subsurface_column) {
                     radius: 2
                 }
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
