@@ -69,6 +69,7 @@ function initializeColumnSummaryDurationDropdownOnClick () {
  */
 
 function plotColumnSummaryCharts (form, include_node_health = true) {
+    destroyCharts("#subsurface-column-summary-plots .column-summary-chart");
     $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
@@ -99,6 +100,7 @@ function delegateColumnSummaryDataForPlotting (column_summary, form) {
 
 function plotNodeHealthSummary (series, { subsurface_column }) {
     createNodeHealthSummaryChart(series, subsurface_column);
+    createSVG("node-health", subsurface_column);
 }
 
 function createNodeHealthSummaryChart (series, subsurface_column) {
@@ -174,12 +176,16 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
                 const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
                 return tooltip;
             }
+        },
+        credits: {
+            enabled: false
         }
     });
 }
 
 function plotDataPresence (data, form) {
     createDataPresenceChart(data, form);
+    createSVG("data-presence", form.subsurface_column);
 }
 
 function createDataPresenceChart (data_presence, form) {
@@ -258,12 +264,16 @@ function createDataPresenceChart (data_presence, form) {
                 }
                 return `Timestamp: <b>${moment(this.point.id).format("DD MMM YYYY, HH:mm")}</b><br/>Status: <b>${status}</b>`;
             }
+        },
+        credits: {
+            enabled: false
         }
     });
 }
 
 function plotCommunicationHealth (data, form) {
     createCommunicationHealthChart(data, form);
+    createSVG("communication-health", form.subsurface_column);
 }
 
 function createCommunicationHealthChart (communication_health, form) {
@@ -313,6 +323,7 @@ function createCommunicationHealthChart (communication_health, form) {
  */
 
 function plotSubsurfaceAnalysisCharts (form) {
+    destroyCharts("#subsurface-plots .subsurface-analysis-chart");
     $("#subsurface-plots .loading-bar").show();
     getPlotDataForSubsurface(form)
     .done((subsurface_data) => {
@@ -325,7 +336,6 @@ function plotSubsurfaceAnalysisCharts (form) {
 }
 
 function getPlotDataForSubsurface (args, isEOS = false) {
-    console.log(args);
     const {
         subsurface_column, start_date, end_date
     } = args;
@@ -341,6 +351,7 @@ function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
         else if (type === "displacement") plotDisplacement(data, form);
         else if (type === "velocity_alerts") plotVelocityAlerts(data, form);
     });
+    createSVG("subsurface-column", form.subsurface_column);
 }
 
 function plotColumnPosition (column_data, { subsurface_column }) {
@@ -464,9 +475,6 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
             labelFormatter () {
                 return `${moment(this.name).format("DD MMM YYYY, HH:mm")}`;
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }
@@ -522,9 +530,6 @@ function createDisplacementChart (column_data, subsurface_column) {
             enabled: false
         },
         legend: {
-            enabled: false
-        },
-        credits: {
             enabled: false
         }
     });
@@ -590,9 +595,6 @@ function createVelocityAlertsChart (orientation, data, subsurface_column) {
                     radius: 2
                 }
             }
-        },
-        credits: {
-            enabled: false
         }
     });
 }

@@ -10,7 +10,7 @@
 let this_event_status = "new";
 let validity_global = null;
 let heightened_features_table = null;
-let heightened_features = null;
+let heightened_features = [];
 let toExtendND = false;
 let trigger_list = [];
 let current_event = {};
@@ -635,7 +635,7 @@ function disableDivsOnNoDataClick (trigger) {
     const $triggers_div = $(triggers_div_temp);
     if (trigger.checked) {
         $triggers_div.prop("checked", false).prop("disabled", true);
-        if ($(trigger_letter).val().toUpperCase() === "M") {
+        if (trigger_letter.toUpperCase() === "M") {
             $triggers_div.parent().next().children("input")
             .prop("disabled", true)
             .val("");
