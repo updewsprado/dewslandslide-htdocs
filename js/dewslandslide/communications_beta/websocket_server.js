@@ -17,6 +17,7 @@ function connectWS() {
 
 		wssConnection.onmessage = function(e) {
 			let msg_data = JSON.parse(e.data);
+			console.log(msg_data);
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
 					getContactSuggestion(msg_data);
@@ -66,6 +67,8 @@ function connectWS() {
 				case "conSetAllOrgs":
 					displayOrganizationSelection(msg_data.data);
 					break;
+				case "newSmsInbox":
+					console.log(msg_data);
 				default:
 					console.log("No request to load.");
 					break;
