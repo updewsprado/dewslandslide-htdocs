@@ -529,7 +529,6 @@ function showModalTriggers (row, latest) {
             retrigger_letters_arr.push(y[2]);
         });
     }
-
     return retrigger_letters_arr;
 }
 
