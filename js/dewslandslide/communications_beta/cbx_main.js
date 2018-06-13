@@ -6,6 +6,11 @@ let chatterbox_user = "You";
 let message_container = [];
 let current_user_id = $("#current_user_id").val();
 
+let employee_input_count = 1;
+let employee_input_count_landline = 1;
+let community_input_count = 1;
+let community_input_count_landline = 1;
+
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
@@ -184,7 +189,7 @@ function displaySiteSelection (sites) {
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
-		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group site-checkbox" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 		// for (var counter = 0; counter < user_sites.length; counter++) {
 		// 	// TODO : OPTIMIZE BETTER LOGIC FOR THIS.
 		// 	if (user_sites[counter].org_psgc_source.length < 9) {
@@ -220,7 +225,7 @@ function displayOrganizationSelection (orgs,user_orgs = []) {
 	for (var i = 0; i < orgs.length; i++) {
 		var modIndex = i % 7;
 		var org = orgs[i];
-		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
+		$("#orgs-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+org.org_name+'" name="orgs" class="form-group organization-checkbox" value="'+org.org_name+'">'+org.org_name.toUpperCase()+'</label></div>');
 		for (var counter = 0; counter < user_orgs.length; counter++) {
 			if (user_orgs[counter].org_name.toUpperCase() == org.org_name.toUpperCase()) {
 				$("#orgs-cc-"+modIndex).find(".checkbox").find("#id_"+org.org_name).prop('checked',true);
@@ -229,84 +234,6 @@ function displayOrganizationSelection (orgs,user_orgs = []) {
 	}
 	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not on the list?</a></div>').appendTo('#organization-selection-div');
 }
-
-let employee_input_count = 1;
-let community_input_count = 1;
-function addNewMobileForEmployee () {
-	$("#employee-add-number").click(function(){
-		if (employee_input_count <= 4) {
-			$("#mobile-div").append(
-			"<div class='row'>"+
-		    "<div class='col-md-4'>"+
-			"<label>Mobile #:</label>"+
-			"<input type='number' class='form-control employee_mobile_number' id='employee_mobile_number_"+employee_input_count+"'' name='employee_mobile_number' value='' required>"+
-			"</div>"+
-			"<div class='col-md-4' hidden>"+
-			"<label>Mobile ID #:</label>"+
-			"<input type='text' id='employee_mobile_id_"+employee_input_count+"'' class='form-control employee_mobile_id' value='' disabled>"+
-			"</div>"+
-			"<div class='col-md-4'>"+
-			"<label>Mobile # Status:</label>"+
-			"<select class='form-control' id='employee_mobile_status_"+employee_input_count+"'' class='form-control employee_mobile_status' value=''>"+
-			"<option value='1'>Active</option>"+
-			"<option value='0'>Inactive</option>"+
-			"</select>"+
-			"</div>"+
-			"<div class='col-md-4'>"+
-			"<label>Mobile # Priority:</label>"+
-			"<select class='form-control' id='employee_mobile_priority_"+employee_input_count+"'' class='form-control employee_mobile_priority' value=''>"+
-			"<option value=''>--------</option>"+
-			"<option value='1'>1</option>"+
-			"<option value='2'>2</option>"+
-			"<option value='3'>3</option>"+
-			"</select>"+
-			"</div>"+
-			"</div>");
-			employee_input_count +=1;
-		} else {
-			$.notify("Reach the maximum entry for mobile number", "warn");
-		}
-		
-	});
-} 
-
-function addNewMobileForCommunity () {
-	$("#community-add-number").click(function(){
-		if (community_input_count <= 4) {
-			$("#mobile-div-cc").append(
-			"<div class='row'>"+
-		    "<div class='col-md-4'>"+
-			"<label>Mobile #:</label>"+
-			"<input type='number' class='form-control community_mobile_number' id='community_mobile_number_"+community_input_count+"' name='community_mobile_number' value='' required>"+
-			"</div>"+
-			"<div class='col-md-4' hidden>"+
-			"<label>Mobile ID #:</label>"+
-			"<input type='text' id='community_mobile_id_"+community_input_count+"' class='form-control community_mobile_id' value='' disabled>"+
-			"</div>"+
-			"<div class='col-md-4'>"+
-			"<label>Mobile # Status:</label>"+
-			"<select class='form-control' id='community_mobile_status_"+community_input_count+"' class='form-control community_mobile_status' value=''>"+
-			"<option value='1'>Active</option>"+
-			"<option value='0'>Inactive</option>"+
-			"</select>"+
-			"</div>"+
-			"<div class='col-md-4'>"+
-			"<label>Mobile # Priority:</label>"+
-			"<select class='form-control' id='community_mobile_priority_"+community_input_count+"' class='form-control community_mobile_priority' value=''>"+
-			"<option value=''>--------</option>"+
-			"<option value='1'>1</option>"+
-			"<option value='2'>2</option>"+
-			"<option value='3'>3</option>"+
-			"</select>"+
-			"</div>"+
-			"</div>");
-			community_input_count +=1;
-		} else {
-			$.notify("Reach the maximum entry for mobile number", "warn");
-		}
-		
-	});
-} 
 
 function displayConversationPanel(msg_data, full_data, recipients) {
 	$('#messages').empty();
@@ -346,7 +273,9 @@ function displayAddEmployeeContactMessage (msg_data) {
 		$("#gender_ec").val("");
 		$("#active_status_ec").val(1);
 		$("#mobile-div").empty();
+		$("#landline-div").empty();
 		employee_input_count = 1;
+		employee_input_count_landline = 1;
 	}else {
 		$.notify(msg_data, "warn");
 	}
@@ -377,13 +306,27 @@ function displayUpdateEmployeeDetails (employee_data) {
 	}
 }
 
-function displayUpdateCommunityDetails (msg_data) {
-	
+function displayUpdateCommunityDetails (community_data) {
+	$("#user_id_cc").val(community_data.contact_info.id);
+	$("#salutation_cc").val(community_data.contact_info.salutation);
+	$("#firstname_cc").val(community_data.contact_info.firstname);
+	$("#middlename_cc").val(community_data.contact_info.middlename);
+	$("#lastname_cc").val(community_data.contact_info.lastname);
+	$("#nickname_cc").val(community_data.contact_info.nickname);
+	$("#birthdate_cc").val(community_data.contact_info.birthday);
+	$("#gender_cc").val(community_data.contact_info.gender);
+	$("#active_status_cc").val(community_data.contact_info.contact_active_status);
+	if (community_data.ewi_data[0].ewi_status === "Active") {
+		$("#ewirecipient_cc").val(1);
+	}else {
+		$("#ewirecipient_cc").val(0);
+	}
 }
 
 function displayTeamsForEmployee () {
 
 }
+
 function loadSiteConversation(){
 	if (quick_group_selection_flag == true) {
 		$("#modal-select-sitenames").find(".checkbox").find("input").prop('checked', false);

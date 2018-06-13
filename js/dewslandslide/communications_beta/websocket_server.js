@@ -5,8 +5,8 @@ let wss_connect= connectWS();
 
 function connectWS() {
 		console.log("trying to connect to web socket server");
-		var wssConnection = new WebSocket("ws://"+window.location.host+":5050");
-
+		var wssConnection = new WebSocket("ws://192.168.150.132:5050");
+		
 		wssConnection.onopen = function(e) {
 			console.log("Connection established!");
 			connection_status = true;
@@ -40,11 +40,7 @@ function connectWS() {
 					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients);
 					break;
 				case "updatedDwslContact":
-					if (msg.status == true) {
-						$.notify(msg.return_msg,'success');
-					} else {
-						$.notify(msg.return_msg,'failed');
-					}
+					contactSettingsFeedback(msg_data);
 					break;
 				case "sendSms":
 					updateConversationBubble(msg_data);
@@ -54,6 +50,9 @@ function connectWS() {
 				case "fetchedSelectedDwslContact":
 					displayUpdateEmployeeDetails(msg_data.data);
 					break;
+				case "fetchedSelectedCmmtyContact":
+					displayUpdateCommunityDetails(msg_data.data);
+					break;	
 				case "newCommunityContact":
 					displayAddCommunityContactMessage(msg_data.data);
 					break;

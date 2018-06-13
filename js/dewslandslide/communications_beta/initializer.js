@@ -2,15 +2,18 @@ let recipient_container = [];
 $(document).ready(function() {
 	initializeContactSuggestion($("#contact-suggestion").val());
 	initializeQuickInboxMessages();
-	onSubmitEmployeeContactForm();
 	onSubmitCommunityContactForm();
 	initializeOnClickUpdateEmployeeContact();
+	initializeOnClickUpdateCommunityContact();
+	getSiteSelection();
+	getOrganizationSelection();
 	$(".birthdate").datetimepicker({
 		locale: "en",
 		format: "YYYY-MM-DD"
 	});
 
 	getEmployeeContactGroups();
+	initializeOnSubmitEmployeeContactForm();
 
 });
 
@@ -108,7 +111,19 @@ function initializeOnClickUpdateEmployeeContact () {
 }
 
 function initializeOnClickUpdateCommunityContact () {
-	
+	$('#comm-response-contact-container').on('click', 'tr:has(td)', function(){
+		$('#comm-response-contact-container_wrapper').hide();
+		$("#update-comm-contact-container").show(300);
+		$("#community-contact-wrapper").show(300);
+		$("#comm-settings-cmd").hide();
+		var table = $('#comm-response-contact-container').DataTable();
+		var data = table.row(this).data();
+		var msg = {
+			'type': 'loadCommunityContact',
+			'data': data.user_id
+		};	
+		wss_connect.send(JSON.stringify(msg));
+	});
 }
 
 function getEmployeeContactGroups () {
