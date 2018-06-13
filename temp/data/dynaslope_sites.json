@@ -2,7 +2,7 @@
   {
     "id": "1",
     "name": "agb",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Agbatuan",
     "municipality": "Dumarao",
     "province": "Capiz",
@@ -15,7 +15,7 @@
   {
     "id": "2",
     "name": "bak",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Poblacion",
     "municipality": "Bakun",
     "province": "Benguet",
@@ -28,7 +28,7 @@
   {
     "id": "3",
     "name": "ban",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Banlasan",
     "municipality": "Calape",
     "province": "Bohol",
@@ -41,7 +41,7 @@
   {
     "id": "4",
     "name": "bar",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Baras",
     "municipality": "Tarangnan",
     "province": "Samar",
@@ -54,7 +54,7 @@
   {
     "id": "5",
     "name": "bay",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Bayabas",
     "municipality": "Labo",
     "province": "Camarines Norte",
@@ -67,7 +67,7 @@
   {
     "id": "6",
     "name": "blc",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Boloc",
     "municipality": "Tubungan",
     "province": "Iloilo",
@@ -93,7 +93,7 @@
   {
     "id": "8",
     "name": "bto",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Bato",
     "municipality": "Sibonga",
     "province": "Cebu",
@@ -106,7 +106,7 @@
   {
     "id": "9",
     "name": "car",
-    "sitio": null,
+    "sitio": "",
     "barangay": "San Carlos",
     "municipality": "Dapa",
     "province": "Surigao del Norte",
@@ -145,7 +145,7 @@
   {
     "id": "12",
     "name": "gaa",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Gaas",
     "municipality": "Balamban",
     "province": "Cebu",
@@ -158,7 +158,7 @@
   {
     "id": "13",
     "name": "gam",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Gamut",
     "municipality": "Tago",
     "province": "Surigao del Sur",
@@ -171,7 +171,7 @@
   {
     "id": "14",
     "name": "hin",
-    "sitio": null,
+    "sitio": "",
     "barangay": "1 & 2",
     "municipality": "Hinabangan",
     "province": "Samar",
@@ -184,7 +184,7 @@
   {
     "id": "15",
     "name": "hum",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Humayhumay",
     "municipality": "Guihulngan City",
     "province": "Negros Oriental",
@@ -197,7 +197,7 @@
   {
     "id": "16",
     "name": "ime",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Imelda",
     "municipality": "Tarangnan",
     "province": "Samar",
@@ -210,7 +210,7 @@
   {
     "id": "17",
     "name": "imu",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Immuli",
     "municipality": "Pidigan",
     "province": "Abra",
@@ -236,7 +236,7 @@
   {
     "id": "19",
     "name": "jor",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Poblacion 1",
     "municipality": "San Jorge",
     "province": "Samar",
@@ -262,7 +262,7 @@
   {
     "id": "21",
     "name": "lay",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Laygayon",
     "municipality": "Pinabacdao",
     "province": "Samar",
@@ -301,7 +301,7 @@
   {
     "id": "24",
     "name": "lpa",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Lipata",
     "municipality": "Paranas",
     "province": "Samar",
@@ -314,7 +314,7 @@
   {
     "id": "25",
     "name": "lte",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Literon",
     "municipality": "Calbiga",
     "province": "Samar",
@@ -366,7 +366,7 @@
   {
     "id": "29",
     "name": "mar",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Marirong",
     "municipality": "Leon",
     "province": "Iloilo",
@@ -379,7 +379,7 @@
   {
     "id": "30",
     "name": "mca",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Mac-Arthur",
     "municipality": "Esperanza",
     "province": "Agusan del Sur",
@@ -444,7 +444,7 @@
   {
     "id": "35",
     "name": "nur",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Nurcia",
     "municipality": "Lanuza ",
     "province": "Surigao del Sur",
@@ -457,7 +457,7 @@
   {
     "id": "36",
     "name": "osl",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Oslao",
     "municipality": "San Francisco",
     "province": "Surigao del Norte",
@@ -470,7 +470,7 @@
   {
     "id": "37",
     "name": "par",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Parasanon",
     "municipality": "Pinabacdao",
     "province": "Samar",
@@ -496,7 +496,7 @@
   {
     "id": "39",
     "name": "pin",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Pinagkamaligan",
     "municipality": "Calauag",
     "province": "Quezon",
@@ -522,7 +522,7 @@
   {
     "id": "41",
     "name": "png",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Pange",
     "municipality": "Matnog",
     "province": "Sorsogon",
@@ -548,7 +548,7 @@
   {
     "id": "43",
     "name": "sag",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Antadao",
     "municipality": "Sagada",
     "province": "Mt. Province",
@@ -561,7 +561,7 @@
   {
     "id": "44",
     "name": "sib",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Sibajay",
     "municipality": "Boston",
     "province": "Davao Oriental",
@@ -587,7 +587,7 @@
   {
     "id": "46",
     "name": "sum",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Sumalsag",
     "municipality": "Malitbog",
     "province": "Bukidnon",
@@ -600,7 +600,7 @@
   {
     "id": "47",
     "name": "tal",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Talahid",
     "municipality": "Almeria",
     "province": "Biliran",
@@ -613,7 +613,7 @@
   {
     "id": "48",
     "name": "tga",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Taga",
     "municipality": "Pinukpuk",
     "province": "Kalinga",
@@ -626,7 +626,7 @@
   {
     "id": "49",
     "name": "tue",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Tue",
     "municipality": "Tadian",
     "province": "Mt. Province",
@@ -639,7 +639,7 @@
   {
     "id": "50",
     "name": "umi",
-    "sitio": null,
+    "sitio": "",
     "barangay": "Umingan",
     "municipality": "Alimodian",
     "province": "Iloilo",
