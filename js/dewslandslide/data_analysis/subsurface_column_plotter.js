@@ -69,6 +69,7 @@ function initializeColumnSummaryDurationDropdownOnClick () {
  */
 
 function plotColumnSummaryCharts (form, include_node_health = true) {
+    destroyCharts("#subsurface-column-summary-plots .column-summary-chart");
     $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
@@ -322,6 +323,7 @@ function createCommunicationHealthChart (communication_health, form) {
  */
 
 function plotSubsurfaceAnalysisCharts (form) {
+    destroyCharts("#subsurface-plots .subsurface-analysis-chart");
     $("#subsurface-plots .loading-bar").show();
     getPlotDataForSubsurface(form)
     .done((subsurface_data) => {

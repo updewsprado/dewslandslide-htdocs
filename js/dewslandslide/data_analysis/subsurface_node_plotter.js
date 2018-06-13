@@ -99,6 +99,7 @@ function initializeNodeSummaryDurationDropdownOnClick () {
 }
 
 function plotNodeLevelCharts (input) {
+    destroyCharts("#subsurface-node-plots .node-chart");
     $("#subsurface-node-plots .loading-bar").show();
     getPlotDataForNode(input)
     .done((subsurface_node_data) => {
