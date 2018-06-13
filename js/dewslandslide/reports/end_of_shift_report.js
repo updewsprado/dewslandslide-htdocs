@@ -818,7 +818,7 @@ function createInitialSurficialAnalysis ({ hasSentSurficialData, surficial_data 
     if (hasSentSurficialData) {
         const { latest, second_latest, markers } = surficial_data;
         report = `Latest data received last <b>${moment(latest).format("MMMM DD, YYYY, hh:mm A")}</b>. `;
-        report += `Diplacement of marker(s) from last data sending <b>(${moment(second_latest).format("MMMM DD, YYYY, hh:mm A")}):</b> `;
+        report += `Displacement of marker(s) from last data sending <b>(${moment(second_latest).format("MMMM DD, YYYY, hh:mm A")}):</b> `;
 
         markers.forEach(({ marker_id, displacement }, index) => {
             let comma = ", ";
@@ -863,8 +863,8 @@ function delegateReportsToTextAreas (reports) {
 }
 
 function initializeGraphCheckboxesOnClick () {
-    $(document).on("click", ".subsurface_options a", ({ currentTarget }) => {
-        $(currentTarget).children("input").trigger("click");
+    $(document).on("click", ".subsurface_options a", ({ target }) => {
+        $(target).children("input").trigger("click");
     });
 
     $(document).on("click", ".rainfall_checkbox, .surficial_checkbox, .subsurface_checkbox", ({ currentTarget }) => {
