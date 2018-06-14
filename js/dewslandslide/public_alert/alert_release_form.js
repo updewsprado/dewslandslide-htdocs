@@ -312,7 +312,17 @@ function onSiteChange () {
         })
         .catch(({ responseText, status: conn_status, statusText }) => {
             alert(`Status ${conn_status}: ${statusText}`);
-            alert(responseText);
+            const pms_error_log = {
+                metric_name: "error_logs_alert_release_form",
+                module_name: "alert_release_form",
+                report_message: responseText,
+                limit: "specific",
+                type: "error_rate"
+            };
+            $.post("http://dewslpms.com/api/insertReport", {pms_error_log})
+            .done((response) => {
+                console.log(response);
+            });
         });
     });
 }
