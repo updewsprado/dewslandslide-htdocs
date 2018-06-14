@@ -69,7 +69,11 @@ function initializeColumnSummaryDurationDropdownOnClick () {
  */
 
 function plotColumnSummaryCharts (form, include_node_health = true) {
-    destroyCharts("#subsurface-column-summary-plots .column-summary-chart");
+    const div = "#subsurface-column-summary-plots";
+    let charts = `${div}, .column-summary-chart`;
+    if (include_node_health === 0) { charts = `${div} #data-presence, ${div} #communication-health`; }
+    destroyCharts(charts);
+
     $("#subsurface-column-summary-plots .loading-bar").show();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
@@ -192,6 +196,10 @@ function createDataPresenceChart (data_presence, form) {
     const { subsurface_column, end_date } = form;
     const { data_presence: series, min_date, is_capped } = data_presence;
     const divisor = Math.floor(series.length / 20);
+
+    let subtitle = `Range: <b>${moment(min_date).format("D MMM YYYY")} - ${moment(end_date).format("D MMM YYYY")}</b>`;
+    if (is_capped) subtitle += "<br/><b>Note:</b> Data Presence capped to 1 week max";
+
     $("#data-presence").highcharts({
         series: [{
             name: "Timestamps",
@@ -215,12 +223,14 @@ function createDataPresenceChart (data_presence, form) {
             height: 90 + (divisor * 20)
         },
         title: {
-            text: `<b>Data Presence Chart of ${subsurface_column.toUpperCase()} (${moment(min_date).format("M/D/YYYY")} - ${moment(end_date).format("M/D/YYYY")})</b>`,
-            style: { fontSize: "14px" }
+            text: `<b>Data Presence Chart of ${subsurface_column.toUpperCase()}</b>`,
+            style: { fontSize: "14px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: (is_capped) ? "<b>Note:</b> Data Presence capped to 1 week max" : "",
-            style: { fontSize: "10px" }
+            text: subtitle,
+            style: { fontSize: "12px" }
         },
         xAxis: {
             visible: false,
@@ -285,8 +295,14 @@ function createCommunicationHealthChart (communication_health, form) {
             height: 300
         },
         title: {
-            text: `<b>Communication Health Chart of ${subsurface_column.toUpperCase()} (${moment(start_date).format("M/D/YYYY H:mm")} - ${moment(end_date).format("M/D/YYYY H:mm")})</b>`,
-            style: { fontSize: "14px" }
+            text: `<b>Communication Health Chart of ${subsurface_column.toUpperCase()}</b>`,
+            style: { fontSize: "14px" },
+            margin: 20,
+            y: 16
+        },
+        subtitle: {
+            text: `Range: <b>${moment(start_date).format("D MMM YYYY, HH:mm")} - ${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "12px" }
         },
         xAxis: {
             min: 1,
@@ -364,7 +380,7 @@ function plotColumnPosition (column_data, { subsurface_column }) {
     });
 }
 
-function plotDisplacement (column_data, { subsurface_column }) {
+function plotDisplacement (column_data, form) {
     column_data.forEach((data, index) => {
         const { data: series_list, annotations } = data;
 
@@ -382,11 +398,11 @@ function plotDisplacement (column_data, { subsurface_column }) {
             annotations
         };
 
-        createDisplacementChart(col_data, subsurface_column);
+        createDisplacementChart(col_data, form);
     });
 }
 
-function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, { subsurface_column }) {
+function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, form) {
     const processed_data = assignColorToEachSeries(timestamps_per_node);
     velocity_alerts.forEach(({ orientation, data }) => {
         const alerts = data;
@@ -409,7 +425,7 @@ function plotVelocityAlerts ({ velocity_alerts, timestamps_per_node }, { subsurf
             };
             colored_data.push(series);
         });
-        createVelocityAlertsChart(orientation, colored_data, subsurface_column);
+        createVelocityAlertsChart(orientation, colored_data, form);
     });
 }
 
@@ -425,12 +441,8 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
             height: 800
         },
         title: {
-            text: "<b>Column Position Plot</b>",
+            text: `<b>Column Position Plot of ${subsurface_column.toUpperCase()}</b>`,
             style: { fontSize: "14px" }
-        },
-        subtitle: {
-            text: `<b>Source: ${subsurface_column.toUpperCase()}</b>`,
-            style: { fontSize: "12px" }
         },
         plotOptions: {
             series: {
@@ -479,8 +491,9 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
     });
 }
 
-function createDisplacementChart (column_data, subsurface_column) {
+function createDisplacementChart (column_data, form) {
     const { orientation, data, annotations } = column_data;
+    const { subsurface_column, end_date } = form;
     const xAxisTitle = orientation === "across_slope" ? "Across Slope" : "Downslope";
 
     $(`#subsurface-displacement-${orientation}`).highcharts({
@@ -493,12 +506,14 @@ function createDisplacementChart (column_data, subsurface_column) {
             height: 800
         },
         title: {
-            text: `<b>Displacement Plot, ${xAxisTitle}</b>`,
-            style: { fontSize: "14px" }
+            text: `<b>Displacement Plot, ${xAxisTitle} of ${(subsurface_column).toUpperCase()}</b>`,
+            style: { fontSize: "14px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `<b>Source: ${(subsurface_column).toUpperCase()}</b><br><br><b>Note: </b> + - consistently increasing/decreasing trend`,
-            style: { fontSize: "12px" }
+            text: `As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b><br><br><b>Note: </b> (+/-) consistently increasing/decreasing trend`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             type: "datetime",
@@ -535,8 +550,9 @@ function createDisplacementChart (column_data, subsurface_column) {
     });
 }
 
-function createVelocityAlertsChart (orientation, data, subsurface_column) {
+function createVelocityAlertsChart (orientation, data, form) {
     const category = data.map(x => x.name).unshift();
+    const { subsurface_column, end_date } = form;
     const xAxisTitle = orientation === "across_slope" ? "Across Slope" : "Downslope";
     $(`#velocity-alerts-${orientation}`).highcharts({
         series: data,
@@ -548,12 +564,14 @@ function createVelocityAlertsChart (orientation, data, subsurface_column) {
             height: 800
         },
         title: {
-            text: `<b>Velocity Alerts Plot, ${xAxisTitle}</b>`,
-            style: { fontSize: "14px" }
+            text: `<b>Velocity Alerts Plot, ${xAxisTitle} of ${subsurface_column.toUpperCase()}</b>`,
+            style: { fontSize: "14px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `<b>Source: ${subsurface_column.toUpperCase()}</b>`,
-            style: { fontSize: "12px" }
+            text: `As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         credits: {
             enabled: false
