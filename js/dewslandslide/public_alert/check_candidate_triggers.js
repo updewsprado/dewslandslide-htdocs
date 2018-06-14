@@ -330,9 +330,11 @@ function prepareSitesForRoutineRelease (no_alerts, excluded_index, invalid_entri
     let matrix = null;
     const return_arr = [];
     const routine_list = [];
-
-    if (weekday === 3) matrix = dry;
-    else if (weekday === 2 || weekday === 5) matrix = wet;
+    
+    if (datetime.format("HH:mm") === "11:30") {
+        if (weekday === 3) matrix = dry;
+        else if (weekday === 2 || weekday === 5) matrix = wet;
+    }
 
     if (matrix !== null) {
         const merged = [...no_alerts, ...invalid_entries];
