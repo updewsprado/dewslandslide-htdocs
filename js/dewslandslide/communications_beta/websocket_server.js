@@ -5,7 +5,8 @@ let wss_connect= connectWS();
 
 function connectWS() {
 		console.log("trying to connect to web socket server");
-		var wssConnection = new WebSocket("ws://192.168.150.132:5050");
+		// var wssConnection = new WebSocket("ws://192.168.150.132:5050");
+		var wssConnection = new WebSocket(`ws://${window.location.host}:5050`);
 		
 		wssConnection.onopen = function(e) {
 			console.log("Connection established!");
@@ -16,7 +17,9 @@ function connectWS() {
 		};
 
 		wssConnection.onmessage = function(e) {
+			console.log(e);
 			let msg_data = JSON.parse(e.data);
+
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
 					getContactSuggestion(msg_data);

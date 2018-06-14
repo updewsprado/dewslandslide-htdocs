@@ -23,16 +23,16 @@ function initializeGetQuickGroupSelection () {
 
 function initializeContactSettingsButton () {
 	$('#btn-contact-settings').click(function(){
-		if (connection_status === false){
-			console.log("NO CONNECTION");
-		} else {
+		// if (connection_status === false){
+		// 	console.log("NO CONNECTION");
+		// } else {
 			$('#contact-settings').modal("toggle");
 			displayContactSettingsMenu();
 			addNewMobileForEmployee();
 			addNewMobileForCommunity();
 			$("#contact-category").val("default").change();
 			$("#settings-cmd").prop('disabled', true);
-		}
+		// }
 	});
 }
 

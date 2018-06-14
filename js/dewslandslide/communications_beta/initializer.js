@@ -2,7 +2,6 @@ let recipient_container = [];
 $(document).ready(function() {
 	initializeContactSuggestion($("#contact-suggestion").val());
 	initializeQuickInboxMessages();
-	onSubmitCommunityContactForm();
 	initializeOnClickUpdateEmployeeContact();
 	initializeOnClickUpdateCommunityContact();
 	getSiteSelection();
@@ -14,6 +13,7 @@ $(document).ready(function() {
 
 	getEmployeeContactGroups();
 	initializeOnSubmitEmployeeContactForm();
+	initializeOnSubmitCommunityContactForm();
 
 });
 

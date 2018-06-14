@@ -307,6 +307,7 @@ function displayUpdateEmployeeDetails (employee_data) {
 }
 
 function displayUpdateCommunityDetails (community_data) {
+	console.log(community_data);
 	$("#user_id_cc").val(community_data.contact_info.id);
 	$("#salutation_cc").val(community_data.contact_info.salutation);
 	$("#firstname_cc").val(community_data.contact_info.firstname);
@@ -316,11 +317,11 @@ function displayUpdateCommunityDetails (community_data) {
 	$("#birthdate_cc").val(community_data.contact_info.birthday);
 	$("#gender_cc").val(community_data.contact_info.gender);
 	$("#active_status_cc").val(community_data.contact_info.contact_active_status);
-	if (community_data.ewi_data[0].ewi_status === "Active") {
-		$("#ewirecipient_cc").val(1);
-	}else {
-		$("#ewirecipient_cc").val(0);
-	}
+	// if (community_data.ewi_data[0].ewi_status === "Active") {
+	// 	$("#ewirecipient_cc").val(1);
+	// }else {
+	// 	$("#ewirecipient_cc").val(0);
+	// }
 }
 
 function displayTeamsForEmployee () {
