@@ -209,12 +209,14 @@ function createCumulativeRainfallChart (data, temp, source) {
             height: 400
         },
         title: {
-            text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: { fontSize: "12px" }
+            text: `<b>Cumulative Rainfall Chart of ${site_code.toUpperCase()}</b>`,
+            style: { fontSize: "13px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: { fontSize: "10px" }
+            text: `Source: <b>${createRainPlotSubtitle(distance, source_table)}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -222,7 +224,7 @@ function createCumulativeRainfallChart (data, temp, source) {
             type: "datetime",
             dateTimeLabelFormats: {
                 month: "%e %b %Y",
-                year: "%b"
+                year: "%Y"
             },
             title: {
                 text: "<b>Date</b>"
@@ -296,12 +298,14 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             height: 400
         },
         title: {
-            text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: { fontSize: "12px" }
+            text: `<b>Instantaneous Rainfall Chart of ${site_code.toUpperCase()}</b>`,
+            style: { fontSize: "13px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: { fontSize: "10px" }
+            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -310,7 +314,7 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             type: "datetime",
             dateTimeLabelFormats: {
                 month: "%e %b %Y",
-                year: "%b"
+                year: "%Y"
             },
             title: {
                 text: "<b>Date</b>"
