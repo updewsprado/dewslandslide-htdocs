@@ -749,7 +749,7 @@ function initializeReleaseModalForm () {
                         final.previous_event_id = entry.previous_event_id;
                     }
                 } else if (entry.status === "extended") {
-                    final.current_event_id = event_id;
+                    final.current_event_id = entry.event_id;
                 } else if (entry.status === "on-going") {
                     const { trigger_list: list, event_id, previous_validity } = entry;
 
