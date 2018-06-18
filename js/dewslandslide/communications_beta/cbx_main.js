@@ -10,6 +10,7 @@ let employee_input_count = 1;
 let employee_input_count_landline = 1;
 let community_input_count = 1;
 let community_input_count_landline = 1;
+let latest_conversation_timestamp = "";
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -190,27 +191,6 @@ function displaySiteSelection (sites) {
 		var modIndex = i % 12;
 		var site = sites[i];
 		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group site-checkbox" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
-		// for (var counter = 0; counter < user_sites.length; counter++) {
-		// 	// TODO : OPTIMIZE BETTER LOGIC FOR THIS.
-		// 	if (user_sites[counter].org_psgc_source.length < 9) {
-		// 		user_sites[counter].org_psgc_source = "0"+user_sites[counter].org_psgc_source;
-		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
-		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(1);
-		// 		var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
-		// 		for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
-		// 			user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
-		// 		}
-		// 	} else {
-		// 		var flagger = parseInt(8 - user_sites[counter].org_psgc_source.length);
-		// 		user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source.substring(0,user_sites[counter].org_psgc_source.length - psgc_scope_filter[parseInt(user_sites[counter].org_scope)]);
-		// 		for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
-		// 			user_sites[counter].org_psgc_source = user_sites[counter].org_psgc_source+"0";
-		// 		}
-		// 	}
-		// 	if (user_sites[counter].org_psgc_source == site.psgc_source) {
-		// 		$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc_source).prop('checked',true);
-		// 	}
-		// }
 	}
 	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not on the list?</a></div>').appendTo('#site-accord .panel-body');
 }
@@ -251,6 +231,8 @@ function displayConversationPanel(msg_data, full_data, recipients) {
 }
 
 function displayUpdatedMessages(data) {
+	console.log(data);
+	latest_conversation_timestamp = data.ts_written;
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
 	message_container.unshift(data);
 	messages_html = messages_template_both({'messages': message_container});
@@ -389,15 +371,32 @@ function updateConversationBubble(msg_response) {
 	$("#msg").text("");
 }
 
-
-function updateSmsInbox() {
-
+function updateSmsInbox(data) {
+	data[0].isunknown = 0;
+	displayQuickInboxMain(data);
 }
 
-function updateSmsConversationBubble() {
-
+function updateSmsConversationBubble(data) {
+	let msg_container = {
+		user: data[0].full_name,
+		convo_id: data[0].sms_id,
+		gsm_id: data[0].gsm_id,
+		isYou: 0,
+		mobile_id: data[0].mobile_id,
+		read_status: 0,
+		send_status: null,
+		sms_msg: data[0].msg,
+		timestamp: data[0].ts_received,
+		ts_received: data[0].ts_received,
+		ts_sent: null,
+		web_status: null
+	};
+	displayUpdatedMessages(msg_container);
 }
 
-function updateSmsoutboxConversationBubble() {
-
+function updateSmsoutboxConversationBubble(data) {
+	console.log($("#messages li:last #chat-user").text());
+	if ($("#messages li:last #chat-user").text() == "You" && $("#messages li:last #timestamp-written").text() == latest_conversation_timestamp) {
+		$("#messages li:last #timestamp-sent").html(data.ts_sent);
+	}
 }

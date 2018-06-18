@@ -1,11 +1,16 @@
 let recipient_container = [];
 $(document).ready(function() {
-	initializeContactSuggestion($("#contact-suggestion").val());
-	initializeQuickInboxMessages();
-	initializeOnClickUpdateEmployeeContact();
-	initializeOnClickUpdateCommunityContact();
-	getSiteSelection();
-	getOrganizationSelection();
+
+	setTimeout(function(){
+		initializeContactSuggestion($("#contact-suggestion").val());
+		initializeQuickInboxMessages();
+		onSubmitCommunityContactForm();
+		initializeOnClickUpdateEmployeeContact();
+		initializeOnClickUpdateCommunityContact();
+		getSiteSelection();
+		getOrganizationSelection();
+	}, 3000);
+
 	$(".birthdate").datetimepicker({
 		locale: "en",
 		format: "YYYY-MM-DD"
