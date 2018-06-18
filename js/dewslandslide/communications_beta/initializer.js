@@ -4,7 +4,6 @@ $(document).ready(function() {
 	setTimeout(function(){
 		initializeContactSuggestion($("#contact-suggestion").val());
 		initializeQuickInboxMessages();
-		onSubmitCommunityContactForm();
 		initializeOnClickUpdateEmployeeContact();
 		initializeOnClickUpdateCommunityContact();
 		getSiteSelection();

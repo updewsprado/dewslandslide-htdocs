@@ -4,6 +4,7 @@ let quick_inbox_event = [];
 let quick_inbox_data_logger = [];
 let chatterbox_user = "You";
 let message_container = [];
+let conversation_recipients = [];
 let current_user_id = $("#current_user_id").val();
 
 let employee_input_count = 1;
@@ -216,6 +217,10 @@ function displayOrganizationSelection (orgs,user_orgs = []) {
 }
 
 function displayConversationPanel(msg_data, full_data, recipients) {
+	conversation_recipients = [];
+	recipients.forEach(function(user){
+		conversation_recipients.push(user.user_id);
+	});
 	$('#messages').empty();
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
@@ -377,21 +382,23 @@ function updateSmsInbox(data) {
 }
 
 function updateSmsConversationBubble(data) {
-	let msg_container = {
-		user: data[0].full_name,
-		convo_id: data[0].sms_id,
-		gsm_id: data[0].gsm_id,
-		isYou: 0,
-		mobile_id: data[0].mobile_id,
-		read_status: 0,
-		send_status: null,
-		sms_msg: data[0].msg,
-		timestamp: data[0].ts_received,
-		ts_received: data[0].ts_received,
-		ts_sent: null,
-		web_status: null
-	};
-	displayUpdatedMessages(msg_container);
+	if ($.inArray(data[0].user_id,conversation_recipients) != -1 ) {
+		let msg_container = {
+			user: data[0].full_name,
+			convo_id: data[0].sms_id,
+			gsm_id: data[0].gsm_id,
+			isYou: 0,
+			mobile_id: data[0].mobile_id,
+			read_status: 0,
+			send_status: null,
+			sms_msg: data[0].msg,
+			timestamp: data[0].ts_received,
+			ts_received: data[0].ts_received,
+			ts_sent: null,
+			web_status: null
+		};
+		displayUpdatedMessages(msg_container);		
+	} 
 }
 
 function updateSmsoutboxConversationBubble(data) {
