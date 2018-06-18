@@ -319,7 +319,7 @@ function onSiteChange () {
                 limit: "specific",
                 type: "error_rate"
             };
-            $.post("http://dewslpms.com/api/insertReport", {pms_error_log})
+            $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
             .done((response) => {
                 console.log(response);
             });
@@ -329,17 +329,53 @@ function onSiteChange () {
 
 function getLastSiteEvent (site_id) {
     return $.getJSON(`../pubrelease/getLastSiteEvent/${site_id}`)
-    .catch(err => err);
+    .catch(({ err }) => {
+        const pms_error_log = {
+            metric_name: "error_logs_alert_release_form",
+            module_name: "alert_release_form",
+            report_message: err,
+            limit: "specific",
+            type: "error_rate"
+        };
+        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
+        .done((response) => {
+            console.log(response);
+        });
+    });
 }
 
 function getLastRelease ({ event_id }) {
     return $.getJSON(`../pubrelease/getLastRelease/${event_id}`)
-    .catch(err => err);
+    .catch(({ err }) => {
+        const pms_error_log = {
+            metric_name: "error_logs_alert_release_form",
+            module_name: "alert_release_form",
+            report_message: err,
+            limit: "specific",
+            type: "error_rate"
+        };
+        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
+        .done((response) => {
+            console.log(response);
+        });
+    });
 }
 
 function getAllEventTriggers ({ event_id }) {
     return $.getJSON(`../pubrelease/getAllEventTriggers/${event_id}`)
-    .catch(err => err);
+    .catch(({ err }) => {
+        const pms_error_log = {
+            metric_name: "error_logs_alert_release_form",
+            module_name: "alert_release_form",
+            report_message: err,
+            limit: "specific",
+            type: "error_rate"
+        };
+        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
+        .done((response) => {
+            console.log(response);
+        });
+    });
 }
 
 // Remove 0 from trigger list (if internal alert has no data)
