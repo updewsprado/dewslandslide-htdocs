@@ -384,8 +384,20 @@ function sendSms(recipients, message) {
 
 function updateConversationBubble(msg_response) {
 	message_container = [];
-	console.log(msg_response);
 	displayUpdatedMessages(msg_response);
 	$("#msg").val("");
 	$("#msg").text("");
+}
+
+
+function updateSmsInbox() {
+
+}
+
+function updateSmsConversationBubble() {
+
+}
+
+function updateSmsoutboxConversationBubble() {
+
 }
