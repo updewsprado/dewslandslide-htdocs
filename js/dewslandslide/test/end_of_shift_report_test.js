@@ -1,27 +1,5 @@
 const { expect } = chai;
 
-// function appendInput (type, selector, name, value) {
-//     const temp = { [selector]: name, type, value };
-//     $("body").append($("<input>", temp));
-// }
-
-// describe("clearZeroAndXFromTrigger", () => {
-//     it("G0 should be G", () => {
-//         const trigger = clearZeroAndXFromTrigger("G0");
-//         expect(trigger).to.equal("G");
-//     });
-
-//     it("Rx should be R", () => {
-//         const trigger = clearZeroAndXFromTrigger("Rx");
-//         expect(trigger).to.equal("R");
-//     });
-
-//     it("s should remain s", () => {
-//         const trigger = clearZeroAndXFromTrigger("s");
-//         expect(trigger).to.equal("s");
-//     });
-// });
-
 describe("createInitialSubsurfaceAnalysis", () => {
     it("creates report correctly if data present", () => {
         const columns = [{ column_name: "agbta", status: "with_data" }];
@@ -40,7 +18,7 @@ describe("createInitialSubsurfaceAnalysis", () => {
         const trigger = createInitialSubsurfaceAnalysis(columns);
         expect(trigger).to.equal("<b>PNGTA</b> is already deactivated. ");
     });
-
+    
     it("creates report correctly if multiple columns already deactivated", () => {
         const columns = [
             { column_name: "agbsb", status: "deactivated" },

@@ -38,6 +38,7 @@ function initializeRainSourcesButton () {
                 $(target).data("loaded", true);
                 $(target).addClass("active");
                 $loading_rain.hide();
+                createSVG("rainfall", input.site_code);
             })
             .catch((x) => {
                 showErrorModal(x, "rainfall charts");
@@ -90,7 +91,9 @@ function initializeRainfallDurationDropdownOnClick () {
 }
 
 function plotRainfallCharts (site_code) {
+    destroyCharts("#rainfall-plots .rainfall-chart");
     $("#rainfall-plots .plot-container").remove();
+
     getRainDataSourcesPerSite(site_code)
     .done((sources) => {
         createRainSourcesButton(sources);
@@ -193,8 +196,10 @@ function createCumulativeRainfallChart (data, temp, source) {
         distance, max_72h, max_rain_2year, source_table
     } = source;
 
+    const container = `#${source_table}-cumulative`;
+
     Highcharts.setOptions({ global: { timezoneOffset: -8 * 60 } });
-    $(`#${source_table}-cumulative`).highcharts({
+    $(container).highcharts({
         series: data,
         chart: {
             type: "line",
@@ -204,12 +209,14 @@ function createCumulativeRainfallChart (data, temp, source) {
             height: 400
         },
         title: {
-            text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: { fontSize: "12px" }
+            text: `<b>Cumulative Rainfall Chart of ${site_code.toUpperCase()}</b>`,
+            style: { fontSize: "13px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: { fontSize: "10px" }
+            text: `Source: <b>${createRainPlotSubtitle(distance, source_table)}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -217,7 +224,7 @@ function createCumulativeRainfallChart (data, temp, source) {
             type: "datetime",
             dateTimeLabelFormats: {
                 month: "%e %b %Y",
-                year: "%b"
+                year: "%Y"
             },
             title: {
                 text: "<b>Date</b>"
@@ -280,7 +287,9 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
         distance, max_rval, source_table
     } = source;
 
-    $(`#${source_table}-instantaneous`).highcharts({
+    const container = `#${source_table}-instantaneous`;
+
+    $(container).highcharts({
         series: data,
         chart: {
             type: "column",
@@ -289,12 +298,14 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             height: 400
         },
         title: {
-            text: `<b>Rainfall Data of ${site_code.toUpperCase()} (${moment(end_date).format("MM/DD/YYYY HH:mm")})</b>`,
-            style: { fontSize: "12px" }
+            text: `<b>Instantaneous Rainfall Chart of ${site_code.toUpperCase()}</b>`,
+            style: { fontSize: "13px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b>`,
-            style: { fontSize: "10px" }
+            text: `Source : <b>${createRainPlotSubtitle(distance, source_table)}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             min: Date.parse(start_date),
@@ -303,7 +314,7 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             type: "datetime",
             dateTimeLabelFormats: {
                 month: "%e %b %Y",
-                year: "%b"
+                year: "%Y"
             },
             title: {
                 text: "<b>Date</b>"
@@ -345,9 +356,14 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
  */
 function syncExtremes (e) {
     const thisChart = this.chart;
+    const tag = "rainfall-chart";
+    const charts = Highcharts.charts.filter((x) => {
+        if (typeof x !== "undefined") return $(x.renderTo).hasClass(tag);
+        return false;
+    });
 
     if (e.trigger !== "syncExtremes") { // Prevent feedback loop
-        Highcharts.each(Highcharts.charts, (chart) => {
+        Highcharts.each(charts, (chart) => {
             if (chart !== thisChart) {
                 if (chart.xAxis[0].setExtremes) { // It is null while updating
                     chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: "syncExtremes" });

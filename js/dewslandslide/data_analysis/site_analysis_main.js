@@ -1,5 +1,7 @@
 
 let validator = null;
+let CHART_PLOTS = new Set();
+
 $(document).ready(() => {
     const paths = window.location.pathname.split("/");
     reposition("#error-modal");
@@ -40,8 +42,8 @@ function initializeTimestamps () {
 }
 
 function loadDefaultSite () {
-    // $("#data_timestamp").val(moment().format("YYYY-MM-DD HH:mm:ss"));
-    $("#data_timestamp").val("2017-11-11 00:00:00");
+    $("#data_timestamp").val(moment().format("YYYY-MM-DD HH:mm:ss"));
+    // $("#data_timestamp").val("2017-11-11 00:00:00");
     $("#site_code").val("agb").trigger("change");
     $("#plot-site-level").trigger("click");
 }
@@ -103,8 +105,6 @@ function initializeForm () {
             } else $(element).next("span").addClass("glyphicon-ok").removeClass("glyphicon-remove");
         },
         submitHandler (form) {
-            $("#loading").modal("show");
-
             const data = $("#site-analysis-form").serializeArray();
             let input = {};
             data.forEach(({ name, value }) => { input[name] = value === "" ? null : value; });
@@ -113,6 +113,8 @@ function initializeForm () {
                 ...input,
                 end_date: moment(input.data_timestamp).format("YYYY-MM-DDTHH:mm")
             };
+
+            const { site_code } = input;
 
             let $container;
 
@@ -123,7 +125,7 @@ function initializeForm () {
 
                 $container = $("#site-plots-container");
 
-                plotRainfallCharts(input.site_code);
+                plotRainfallCharts(site_code);
                 plotSurficialCharts();
             } else if (submit_btn_id === "plot-column-level") {
                 const column_name = $("#subsurface_column option:selected").text();
@@ -152,12 +154,13 @@ function initializeForm () {
             }
 
             $container.slideDown();
-            $container.data("site-loaded", input.site_code);
+            $container.data("site-loaded", site_code);
 
-            hideSections(input.site_code);
+            $("html, body").animate({
+                scrollTop: $container.offset().top - 70
+            });
 
-            $("#loading").modal("hide");
-            console.log(input);
+            hideSections(site_code);
         }
     });
 
@@ -176,14 +179,25 @@ function validateForm (form) {
         $("#subsurface_column").rules("remove");
         $("#nodes").rules("remove");
 
+        CHART_PLOTS = new Set();
         switch (submit_btn_id) {
             case "plot-node-level":
+                ["x-accelerometer", "y-accelerometer", "z-accelerometer", "battery"].forEach((plotted) => {
+                    CHART_PLOTS.add(plotted);
+                });
                 $("#nodes").rules("add", { required: true });
                 // fallthrough
             case "plot-column-level":
+                ["node-health", "data-presence", "communication-health", "subsurface"].forEach((plotted) => {
+                    CHART_PLOTS.add(plotted);
+                });
                 $("#subsurface_column").rules("add", { required: true });
                 // fallthrough
-            case "plot-site-level": // fallthrough
+            case "plot-site-level":
+                ["rainfall", "surficial"].forEach((plotted) => {
+                    CHART_PLOTS.add(plotted);
+                });
+                break;
             default:
                 $("#site_code").rules("add", { required: true });
                 break;
@@ -316,6 +330,15 @@ function resizeCharts () {
     window.dispatchEvent(new Event("resize"));
 }
 
+function destroyCharts (container) {
+    $(container).each((index, elem) => {
+        const chart = $(`#${elem.id}`).highcharts();
+        if (typeof chart !== "undefined") {
+            chart.destroy();
+        }
+    });
+}
+
 function getStartDate (plot_type) {
     let start_date = "";
     const end_date = moment($("#data_timestamp").val());
@@ -325,6 +348,8 @@ function getStartDate (plot_type) {
     if (value !== "All") {
         start_date = moment(end_date).subtract(value, duration)
         .format("YYYY-MM-DDTHH:mm:ss");
+    } else {
+        start_date = "2010-01-01T00:00:00";
     }
 
     return start_date;
@@ -348,16 +373,6 @@ function createPlotContainer (data_type, source_table, sub_type = null) {
     } else if (data_type === "surficial") {
         if (sub_type === "marker") {
             createMarkerTabs(source_table);
-        }
-    } else if (data_type === "subsurface") {
-        if (sub_type === "column-position") {
-            ["downslope", "across-slope"].forEach((x) => {
-                $(`#${source_table}`)
-                .append($("<div>", {
-                    class: "col-sm-6 column-position-chart",
-                    id: `${source_table}-${x}`
-                }));
-            });
         }
     }
 }

@@ -23,6 +23,7 @@ $(document).ready(() => {
 });
 
 function plotSurficialCharts () {
+    destroyCharts("#surficial-plots .plot-container");
     $("#surficial-plots .plot-container").remove();
     $("#surficial-plot-options").show();
     $surficial_btn_group = $("#surficial-markers-btn-group");
@@ -78,6 +79,7 @@ function initializeSurficialMarkersButton () {
                     plotSurficial(series, input);
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
+                    createSVG("surficial", input.site_code);
                 })
                 .catch((x) => {
                     showErrorModal(x, "surficial chart");
@@ -184,7 +186,12 @@ function createSurficialChart (data, input) {
             height: 400
         },
         title: {
-            text: `<b>Surficial Data of ${site_code.toUpperCase()} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+            text: `<b>Surficial Data History Chart of ${site_code.toUpperCase()}</b>`,
+            y: 22
+        },
+        subtitle: {
+            text: `As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "13px" }
         },
         yAxis: {
             title: {
@@ -307,10 +314,12 @@ function createMarkerAccelerationChart (data, input) {
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
-            text: `<b>Velocity Acceleration of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+            text: `<b>Velocity Acceleration Chart of ${(site_code).toUpperCase()}</b>`,
+            y: 22
         },
         subtitle: {
-            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+            text: `Source: <b>Marker ${marker_name}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "13px" }
         },
         xAxis: {
             title: {
@@ -352,10 +361,12 @@ function createMarkerInterpolationChart (data, input) {
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
-            text: `<b>Displacement Interpolation of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+            text: `<b>Displacement Interpolation Chart of ${(site_code).toUpperCase()}</b>`,
+            y: 22
         },
         subtitle: {
-            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+            text: `Source: <b>Marker ${marker_name}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "13px" }
         },
         xAxis: {
             type: "datetime",
@@ -405,10 +416,12 @@ function createMarkerAccelerationVsTimeChart (data, input) {
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
-            text: `<b>Velocity & Acceleration vs Time Chart of Marker ${marker_name} as of ${moment(end_date).format("MM/DD/YYYY HH:mm")}</b>`
+            text: `<b>Velocity & Acceleration vs Time Chart of ${(site_code).toUpperCase()}</b>`,
+            y: 22
         },
         subtitle: {
-            text: `<b>Source: ${(site_code).toUpperCase()}</b>`
+            text: `Source: <b>Marker ${marker_name}</b><br/>As of: <b>${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "13px" }
         },
         xAxis: {
             type: "datetime",
