@@ -11,11 +11,8 @@ let employee_input_count = 1;
 let employee_input_count_landline = 1;
 let community_input_count = 1;
 let community_input_count_landline = 1;
-<<<<<<< Updated upstream
 let latest_conversation_timestamp = "";
-=======
 let psgc_scope_filter = [0,0,6,4,2];
->>>>>>> Stashed changes
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
