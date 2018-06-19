@@ -78,7 +78,7 @@ function connectWS() {
 				case "smsoutboxStatusUpdate":
 					updateSmsoutboxConversationBubble(msg_data.data)
 					break;
-				case "getImportantTags":
+				case "fetchedImportantTags":
 					console.log(msg_data.data);
 					break;
 				default:
