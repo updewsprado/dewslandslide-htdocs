@@ -2,13 +2,20 @@ let recipient_container = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false})  
 	setTimeout(function(){
-		initializeContactSuggestion($("#contact-suggestion").val());
-		initializeQuickInboxMessages();
-		initializeOnClickUpdateEmployeeContact();
-		initializeOnClickUpdateCommunityContact();
-		getSiteSelection();
-		getOrganizationSelection();
-		$("#chatterbox-loader-modal").modal("hide");
+		try {
+			initializeContactSuggestion($("#contact-suggestion").val());
+			initializeQuickInboxMessages();
+			initializeOnClickUpdateEmployeeContact();
+			initializeOnClickUpdateCommunityContact();
+			getSiteSelection();
+			getOrganizationSelection();
+			$("#chatterbox-loader-modal").modal("hide");
+		} catch (err) {
+			$("#chatterbox-loader-modal").modal("hide");
+			console.log(err.message);
+			// Add PMS HERE.
+		}
+		
 	}, 5000);
 
 	$(".birthdate").datetimepicker({

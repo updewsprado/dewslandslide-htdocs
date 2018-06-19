@@ -78,6 +78,9 @@ function connectWS() {
 				case "smsoutboxStatusUpdate":
 					updateSmsoutboxConversationBubble(msg_data.data)
 					break;
+				case "getImportantTags":
+					console.log(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
