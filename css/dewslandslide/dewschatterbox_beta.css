@@ -409,3 +409,16 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none; 
   margin: 0; 
 }
+
+.ml2 {
+  font-weight: 900;
+  font-size: 3.5em;
+  color: white;
+  margin-top: 20%;
+  text-align: center;
+}
+
+.ml2 .letter {
+  display: inline-block;
+  line-height: 1em;
+}

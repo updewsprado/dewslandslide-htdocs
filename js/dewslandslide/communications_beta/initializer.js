@@ -1,6 +1,6 @@
 let recipient_container = [];
 $(document).ready(function() {
-
+	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false})  
 	setTimeout(function(){
 		initializeContactSuggestion($("#contact-suggestion").val());
 		initializeQuickInboxMessages();
@@ -8,7 +8,8 @@ $(document).ready(function() {
 		initializeOnClickUpdateCommunityContact();
 		getSiteSelection();
 		getOrganizationSelection();
-	}, 3000);
+		$("#chatterbox-loader-modal").modal("hide");
+	}, 5000);
 
 	$(".birthdate").datetimepicker({
 		locale: "en",
@@ -18,7 +19,6 @@ $(document).ready(function() {
 	getEmployeeContactGroups();
 	initializeOnSubmitEmployeeContactForm();
 	initializeOnSubmitCommunityContactForm();
-
 });
 
 
