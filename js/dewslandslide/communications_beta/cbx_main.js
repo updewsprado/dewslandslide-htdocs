@@ -11,7 +11,11 @@ let employee_input_count = 1;
 let employee_input_count_landline = 1;
 let community_input_count = 1;
 let community_input_count_landline = 1;
+<<<<<<< Updated upstream
 let latest_conversation_timestamp = "";
+=======
+let psgc_scope_filter = [0,0,6,4,2];
+>>>>>>> Stashed changes
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -180,18 +184,40 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 	$('#emp-response-contact-container').prop('hidden',false);
 }
 
-function displaySiteSelection (sites) {
+function displaySiteSelection (sites,psgc_source = []) {
 	console.log(sites);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
 		$('#sitenames-cc-'+counter).empty();
 	}
-	
+	// console.log(psgc_source[1].psgc);
 	for (var i = 0; i < sites.length; i++) {
 		var modIndex = i % 12;
 		var site = sites[i];
 		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group site-checkbox" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
+
+		for (var counter = 0; counter < psgc_source.length; counter++) {
+			// TODO : OPTIMIZE BETTER LOGIC FOR THIS.
+			if (psgc_source[counter].org_psgc_source.length < 9) {
+				psgc_source[counter].org_psgc_source = "0"+psgc_source[counter].org_psgc_source;
+				psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source.substring(0,psgc_source[counter].org_psgc_source.length - psgc_scope_filter[parseInt(psgc_source[counter].org_scope)]);
+				psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source.substring(1);
+				var flagger = parseInt(8 - psgc_source[counter].org_psgc_source.length);
+				for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+					psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source+"0";
+				}
+			} else {
+				var flagger = parseInt(8 - psgc_source[counter].org_psgc_source.length);
+				psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source.substring(0,psgc_source[counter].org_psgc_source.length - psgc_scope_filter[parseInt(psgc_source[counter].org_scope)]);
+				for (var psgc_filter_counter = 0; psgc_filter_counter < flagger;psgc_filter_counter++) {
+					psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source+"0";
+				}
+			}
+			if (psgc_source[counter].org_psgc_source == site.psgc_source) {
+				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc_source).prop('checked',true);
+			}
+		}
 	}
 	$('<div id="new-site" class="col-md-12"><a href="#" id="add-site"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Site not on the list?</a></div>').appendTo('#site-accord .panel-body');
 }
@@ -295,6 +321,7 @@ function displayUpdateEmployeeDetails (employee_data) {
 
 function displayUpdateCommunityDetails (community_data) {
 	console.log(community_data);
+	let user_orgs = [];
 	$("#user_id_cc").val(community_data.contact_info.id);
 	$("#salutation_cc").val(community_data.contact_info.salutation);
 	$("#firstname_cc").val(community_data.contact_info.firstname);
@@ -309,6 +336,9 @@ function displayUpdateCommunityDetails (community_data) {
 	// }else {
 	// 	$("#ewirecipient_cc").val(0);
 	// }
+
+	displaySiteSelection(community_data.list_of_sites, community_data.org_data);
+	displayOrganizationSelection(community_data.list_of_orgs, community_data.org_data);
 }
 
 function displayTeamsForEmployee () {
@@ -321,7 +351,7 @@ function loadSiteConversation(){
 		$("#modal-select-offices").find(".checkbox").find("input").prop('checked', false);
 		// loadGroupsEmployee();
 	} else  if (quick_group_selection_flag == false) {
-		$("#modal-select-grp-tags").find(".checkbox").find("input").prop('checked', false);
+		$("#modal-select-grp-tags").find(".checkbox").find("value").prop('checked', false);
 		siteConversation();
 	} else {
 		alert('Something went wrong, Please contact the Administrator');

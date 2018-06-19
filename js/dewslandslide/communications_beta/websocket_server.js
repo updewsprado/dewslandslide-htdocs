@@ -45,6 +45,9 @@ function connectWS() {
 				case "updatedDwslContact":
 					contactSettingsFeedback(msg_data);
 					break;
+				case "updatedCmmtyContact":
+					contactSettingsFeedback(msg_data);
+					break;	
 				case "sendSms":
 					updateConversationBubble(msg_data);
 				case "newAddedDwslContact":
