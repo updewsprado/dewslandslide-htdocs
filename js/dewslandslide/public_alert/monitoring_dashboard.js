@@ -770,7 +770,7 @@ function initializeReleaseModalForm () {
                         }
                     });
 
-                    final.trigger_list = list.length === 0 ? null : list;
+                    const list = final.trigger_list;
 
                     if (list != null) {
                         if (list.indexOf("D") > -1) {
