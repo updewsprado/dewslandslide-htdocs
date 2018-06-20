@@ -1,6 +1,8 @@
 let WSS_CONNECTION_STATUS = -1;
 let connection_status = false;
 let reconnection_delay = 10000;
+let routine_site = [];
+let routine_template = [];
 let wss_connect= connectWS();
 
 function connectWS() {
@@ -17,9 +19,7 @@ function connectWS() {
 		};
 
 		wssConnection.onmessage = function(e) {
-			console.log(e);
 			let msg_data = JSON.parse(e.data);
-
 			switch (msg_data.type) {
 				case "loadnamesuggestions":
 					getContactSuggestion(msg_data);
@@ -82,10 +82,12 @@ function connectWS() {
 					displayImportantTags(msg_data.data, true);
 					break;
 				case "fetchSitesForRoutine":
-					console.log(msg_data.data);
+					routine_site = msg_data.data;
+					// routine-actual-option
 					break;
 				case "fetchRoutineTemplate":
-					console.log(msg_data.data);
+					routine_template = msg_data.data;
+					displayRoutineReminder(routine_site);
 					break;
 				default:
 					console.log("No request to load.");

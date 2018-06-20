@@ -182,7 +182,6 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function displaySiteSelection (sites,psgc_source = []) {
-	console.log(sites);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
