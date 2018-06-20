@@ -79,7 +79,7 @@ function connectWS() {
 					updateSmsoutboxConversationBubble(msg_data.data)
 					break;
 				case "fetchedImportantTags":
-					console.log(msg_data.data);
+					displayImportantTags(msg_data.data, true);
 					break;
 				case "fetchSitesForRoutine":
 					console.log(msg_data.data);

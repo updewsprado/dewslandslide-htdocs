@@ -161,6 +161,13 @@ function initializeContactSuggestion(name_query) {
 	wss_connect.send(JSON.stringify(msg));
 }
 
+function getImportantTags () {
+	let msg = {
+		type: 'getImportantTags'
+	}
+	wss_connect.send(JSON.stringify(msg));
+}
+
 function getEmployeeContactGroups () {
 	$('#team_ec').tagsinput({
 		typeahead: {

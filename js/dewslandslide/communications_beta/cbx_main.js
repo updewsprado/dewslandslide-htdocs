@@ -434,3 +434,22 @@ function updateSmsoutboxConversationBubble(data) {
 		$("#messages li:last #timestamp-sent").html(data.ts_sent);
 	}
 }
+
+function displayImportantTags (data , is_loaded = false) {
+	if(is_loaded === true) {
+		data.join(", ");
+		$("#important_tags").empty();
+		$("#important_tags").append(data.join(", "));
+
+		$('#gintag_selected').tagsinput({
+			typeahead: {
+				displayKey: 'text',
+				afterSelect: function (val) { this.$element.val(""); },
+				source: function (query) {
+					return data;
+				}
+			} 
+		});
+	}
+	
+}

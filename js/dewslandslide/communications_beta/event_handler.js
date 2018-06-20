@@ -15,7 +15,7 @@ $(document).ready(function() {
 	initializeGoChatOnClick();
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
-
+	initializeOnAvatarClickForTagging();
 });
 
 function initializeGetQuickGroupSelection () {
@@ -520,4 +520,22 @@ function contactSettingsFeedback (status) {
 	} else {
 		$.notify(msg.return_msg,'failed');
 	}
+}
+
+function initializeOnAvatarClickForTagging() {
+	$(document).on("click","#messages .user-avatar",function(){
+		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
+		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
+
+		const details_object = {
+			"user_id": message_details[1],
+			"convo_id": message_details[0],
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"account_id": current_user_id
+		};
+
+		console.log(details_object);
+
+	});
 }
