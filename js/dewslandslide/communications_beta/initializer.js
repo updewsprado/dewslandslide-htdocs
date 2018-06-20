@@ -498,7 +498,9 @@ function getRoutineTemplate() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
-function displayRoutineTemplate(sites,template) {
+function displayRoutineReminder(sites) {
+	console.log(sites);
+	console.log(template);
 	let day = moment().format("dddd");
     let month = moment().month();
     month += 1;
@@ -513,9 +515,9 @@ function displayRoutineTemplate(sites,template) {
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
             routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
-            for (var counter = 0; counter < sites_for_routine.length; counter++) {
-                if (wet[sites_for_routine[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites_for_routine[counter].site);
+            for (var counter = 0; counter < sites.length; counter++) {
+                if (wet[sites[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites[counter].site);
                 }
             }
 
@@ -533,9 +535,9 @@ function displayRoutineTemplate(sites,template) {
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
             routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
-            for (var counter = 0; counter < sites_for_routine.length; counter++) {
-                if (wet[sites_for_routine[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites_for_routine[counter].site);
+            for (var counter = 0; counter < sites.length; counter++) {
+                if (wet[sites[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites[counter].site);
                 }
             }
 
@@ -553,9 +555,9 @@ function displayRoutineTemplate(sites,template) {
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
             routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
-            for (var counter = 0; counter < sites_for_routine.length; counter++) {
-                if (dry[sites_for_routine[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites_for_routine[counter].site);
+            for (var counter = 0; counter < sites.length; counter++) {
+                if (dry[sites[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites[counter].site);
                 }
             }
 
