@@ -9,6 +9,7 @@ $(document).ready(function() {
         recentActivityInitializer();
         getRoutineSites();
         getRoutineTemplate();
+        getImportantTags();
     	setTimeout(function(){
 			try {
 				initializeContactSuggestion($("#contact-suggestion").val());

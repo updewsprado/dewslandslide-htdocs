@@ -535,7 +535,29 @@ function initializeOnAvatarClickForTagging() {
 			"account_id": current_user_id
 		};
 
-		console.log(details_object);
+		OnClickConfirmTagging();
 
 	});
 }
+function OnClickConfirmTagging () {
+	$("#confirm-tagging").click(function(){
+		$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
+		// $("#gintag-modal").hide();
+		const gintag_selected = $("#gintag_selected").tagsinput("items");
+		//for each
+			//filter
+		const important = [];
+		const new_tag = [];
+		gintag_selected.forEach(function(selected) {
+			const [result] = important_tags.filter(tags => tags === selected);
+			if(typeof result === "undefined") {
+				new_tag.push(selected);
+			}else {
+				important.push(result);
+			}
+		});
+		console.log(important);
+		console.log(new_tag);
+	});
+}
+
