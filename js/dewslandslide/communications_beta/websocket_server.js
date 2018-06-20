@@ -83,11 +83,13 @@ function connectWS() {
 					break;
 				case "fetchSitesForRoutine":
 					routine_site = msg_data.data;
-					// routine-actual-option
+					break;
+				case "fetchRoutineReminder":
+					routine_template = msg_data.data;
+					displayRoutineReminder(routine_site,routine_template);
 					break;
 				case "fetchRoutineTemplate":
-					routine_template = msg_data.data;
-					displayRoutineReminder(routine_site);
+					displayRoutineTemplate(msg_data.data);
 					break;
 				default:
 					console.log("No request to load.");

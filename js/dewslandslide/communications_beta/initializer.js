@@ -8,6 +8,7 @@ $(document).ready(function() {
 		getRecentActivity();
         recentActivityInitializer();
         getRoutineSites();
+        getRoutineReminder();
         getRoutineTemplate();
     	setTimeout(function(){
 			try {
@@ -490,14 +491,23 @@ function getRoutineSites() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
-function getRoutineTemplate() {
+function getRoutineReminder() {
 	let msg = {
-		type: 'getRoutineTemplate'
+		type: 'getRoutineReminder'
 	};
 	wss_connect.send(JSON.stringify(msg));
 }
 
-function displayRoutineReminder(sites) {
+function getRoutineTemplate() {
+	$("#routine-actual-option").on("click",function() {
+		let msg = {
+			type: 'getRoutineTemplate'
+		};
+		wss_connect.send(JSON.stringify(msg));
+	});
+}
+
+function displayRoutineReminder(sites,template) {
 	console.log(sites);
 	console.log(template);
 	let day = moment().format("dddd");
@@ -513,7 +523,6 @@ function displayRoutineReminder(sites) {
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -527,13 +536,12 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         case "Tuesday":
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -547,13 +555,12 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         case "Wednesday":
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (dry[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -567,12 +574,16 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         default:
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
+}
+
+function displayRoutineTemplate(template) {
+	$("#routine-msg").val(template[0].template);
 }
 
 function addSitesActivity (sites) {
