@@ -1,22 +1,30 @@
 let recipient_container = [];
+let recent_contacts_collection = [];
+let recent_sites_collection = [];
 $(document).ready(function() {
-	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false})  
-	setTimeout(function(){
-		try {
-			initializeContactSuggestion($("#contact-suggestion").val());
-			initializeQuickInboxMessages();
-			initializeOnClickUpdateEmployeeContact();
-			initializeOnClickUpdateCommunityContact();
-			getSiteSelection();
-			getOrganizationSelection();
-			$("#chatterbox-loader-modal").modal("hide");
-		} catch (err) {
-			$("#chatterbox-loader-modal").modal("hide");
-			console.log(err.message);
-			// Add PMS HERE.
-		}
-		
-	}, 5000);
+	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
+	setTimeout(function() {
+		initializeQuickInboxMessages();
+		getRecentActivity();
+        recentActivityInitializer();
+        getRoutineSites();
+        getRoutineTemplate();
+    	setTimeout(function(){
+			try {
+				initializeContactSuggestion($("#contact-suggestion").val());
+				initializeOnClickUpdateEmployeeContact();
+				initializeOnClickUpdateCommunityContact();
+				getSiteSelection();
+				getOrganizationSelection();
+				$("#chatterbox-loader-modal").modal("hide");
+			} catch (err) {
+				$("#chatterbox-loader-modal").modal("hide");
+				console.log(err.message);
+				// Add PMS HERE.
+			}
+			
+		}, 3000);
+	},3000);
 
 	$(".birthdate").datetimepicker({
 		locale: "en",
@@ -349,4 +357,241 @@ function communityContactFormValidation () {
             
         }
     });
+}
+
+
+function recentActivityInitializer() {
+$("#routine-actual-option").on("click", function () {
+        $("#routine-reminder-option").removeClass("active");
+        $("#routine-msg").val("");
+        $(this).addClass("active");
+        $("#def-recipients").text("Default recipients: LEWC, BLGU, MLGU");
+        $.get("../communications/getRoutine", (data) => {
+            var routine_template = JSON.parse(data);
+            $("#routine-msg").val(routine_template[0].template);
+        });
+    });
+
+    $("#routine-reminder-option").on("click", function () {
+        $("#routine-actual-option").removeClass("active");
+        $("#def-recipients").text("Default recipients: LEWC");
+        $("#routine-msg").val("");
+        $("#routine-msg").val(routine_reminder_msg);
+        $(this).addClass("active");
+    });
+
+    $(".rv_contacts a").on("click", function () {
+        $(".recent_activities").hide();
+        var index = $(this).closest("div").find("input[name='rc_index']").val();
+        index = index.replace("activity_contacts_index_", "");
+        var data = recent_contacts_collection[parseInt(index)];
+        $(".dropdown-input").val(data.name[0].fullname);
+        $("#go-chat").trigger("click");
+    });
+
+    $(".rv_sites a").on("click", function () {
+        $(".recent_activities").hide();
+        $("input[name=\"sitenames\"]").prop("checked", false);
+        $("input[name=\"offices\"]").prop("checked", false);
+
+        var index = $(this).closest("div").find("input[name='rs_index']").val();
+        index = index.replace("activity_sites_index_", "");
+        var data = recent_sites_collection[parseInt(index)];
+
+        for (var counter = 0; counter < data.offices.length; counter++) {
+            $("input[name=\"offices\"]:unchecked").each(function () {
+                if (data.offices[counter] == $(this).val()) {
+                    $(this).prop("checked", true);
+                }
+            });
+        }
+
+        for (var counter = 0; counter < data.sitenames.length; counter++) {
+            $("input[name=\"sitenames\"]:unchecked").each(function () {
+                if (data.sitenames[counter] == $(this).val()) {
+                    $(this).prop("checked", true);
+                }
+            });
+        }
+
+        $("#go-load-groups").trigger("click");
+    });
+
+    $(".rv_searched div.recent_searched").on("click", function () {
+        $(".recent_activities").hide();
+        wss_connect.send(JSON.stringify(recent_searched_collection[$(this).index()]));
+    });
+}
+
+function getRecentActivity () {
+    var division = 1;
+
+    if (localStorage.getItem("rv_searched") != null) {
+        recent_searched_collection = JSON.parse(localStorage.rv_searched);
+    }
+
+    if (localStorage.getItem("rv_sites") != null) {
+        recent_sites_collection = JSON.parse(localStorage.rv_sites);
+    }
+
+    if (localStorage.getItem("rv_contacts") != null) {
+        recent_contacts_collection = JSON.parse(localStorage.rv_contacts);
+    }
+
+    if (recent_contacts_collection.length != 0) {
+        division = 12 / recent_contacts_collection.length;
+        for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
+            $(".rv_contacts").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_contacts'><input name='rc_index' value = 'activity_contacts_index_${counter}' hidden><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>${recent_contacts_collection[counter].name[0].fullname}</strong></div></a></div>`);
+        }
+    } else {
+        $(".rv_contacts").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+    }
+
+    if (recent_sites_collection.length != 0) {
+        division = 12 / recent_sites_collection.length;
+        var rv_quick_sites = "";
+        var rv_quick_offices = "";
+        for (var counter = 0; counter < recent_sites_collection.length; counter++) {
+            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].offices.length; sub_counter++) {
+                if (sub_counter == 0) {
+                    rv_quick_offices = recent_sites_collection[counter].offices[sub_counter];
+                } else {
+                    rv_quick_offices = `${rv_quick_offices}, ${recent_sites_collection[counter].offices[sub_counter]}`;
+                }
+            }
+
+            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length; sub_counter++) {
+                if (sub_counter == 0) {
+                    rv_quick_sites = recent_sites_collection[counter].sitenames[sub_counter];
+                } else {
+                    rv_quick_sites = `${rv_quick_sites}, ${recent_sites_collection[counter].sitenames[sub_counter]}`;
+                }
+            }
+
+            $(".rv_sites").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_sites'><input name='rs_index' value = 'activity_sites_index_${counter}' hidden><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: ${rv_quick_sites}</strong><div class='last-message text-muted'>Offices: ${rv_quick_offices}</div></div></a></div>`);
+        }
+    } else {
+        $(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+    }
+}
+
+
+function getRoutineSites() {
+	let msg = {
+		type: 'getRoutineSites'
+	};
+	wss_connect.send(JSON.stringify(msg));
+}
+
+function getRoutineTemplate() {
+	let msg = {
+		type: 'getRoutineTemplate'
+	};
+	wss_connect.send(JSON.stringify(msg));
+}
+
+function displayRoutineTemplate(sites,template) {
+	let day = moment().format("dddd");
+    let month = moment().month();
+    month += 1;
+
+    let wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
+    let dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
+    let routine_sites = [];
+
+    switch (day) {
+        case "Friday":
+            $("#def-recipients").css("display", "inline-block");
+            $(".routine-options-container").css("display", "flex");
+            $("#send-routine-msg").css("display", "inline");
+            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
+            for (var counter = 0; counter < sites_for_routine.length; counter++) {
+                if (wet[sites_for_routine[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites_for_routine[counter].site);
+                }
+            }
+
+            $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+            for (var counter = 0; counter < routine_sites.length; counter++) {
+                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
+            }
+
+            $(".routine_section").append("<div class='routine-msg-container'></div>");
+            $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+            $("#routine-msg").val(routine_reminder_msg);
+            break;
+        case "Tuesday":
+            $("#def-recipients").css("display", "inline-block");
+            $(".routine-options-container").css("display", "flex");
+            $("#send-routine-msg").css("display", "inline");
+            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
+            for (var counter = 0; counter < sites_for_routine.length; counter++) {
+                if (wet[sites_for_routine[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites_for_routine[counter].site);
+                }
+            }
+
+            $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+            for (var counter = 0; counter < routine_sites.length; counter++) {
+                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
+            }
+
+            $(".routine_section").append("<div class='routine-msg-container'></div>");
+            $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+            $("#routine-msg").val(routine_reminder_msg);
+            break;
+        case "Wednesday":
+            $("#def-recipients").css("display", "inline-block");
+            $(".routine-options-container").css("display", "flex");
+            $("#send-routine-msg").css("display", "inline");
+            routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
+            for (var counter = 0; counter < sites_for_routine.length; counter++) {
+                if (dry[sites_for_routine[counter].season - 1].includes(month)) {
+                    routine_sites.push(sites_for_routine[counter].site);
+                }
+            }
+
+            $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+            for (var counter = 0; counter < routine_sites.length; counter++) {
+                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
+            }
+
+            $(".routine_section").append("<div class='routine-msg-container'></div>");
+            $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+            $("#routine-msg").val(routine_reminder_msg);
+            break;
+        default:
+            $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
+            break;
+    }
+}
+
+function addSitesActivity (sites) {
+    $(".recent_activities").hide();
+
+    for (var counter = 0; counter < recent_sites_collection.length; counter++) {
+        if (recent_sites_collection[counter].sitenames[0] == sites.sitenames[0]) {
+            return 1;
+        }
+    }
+
+    if (recent_sites_collection.length == 6) {
+        recent_sites_collection.shift();
+    }
+    recent_sites_collection.push(sites);
+    localStorage.rv_sites = JSON.stringify(recent_sites_collection);
+}
+
+function addContactsActivity (contacts) {
+    for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
+        if (recent_contacts_collection[counter].number[0] == contacts.number[0]) {
+            return 1;
+        }
+    }
+
+    if (recent_contacts_collection.length == 6) {
+        recent_contacts_collection.shift();
+    }
+    recent_contacts_collection.push(contacts);
+    localStorage.rv_contacts = JSON.stringify(recent_contacts_collection);
 }

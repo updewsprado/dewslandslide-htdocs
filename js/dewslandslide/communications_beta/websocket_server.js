@@ -81,6 +81,12 @@ function connectWS() {
 				case "fetchedImportantTags":
 					console.log(msg_data.data);
 					break;
+				case "fetchSitesForRoutine":
+					console.log(msg_data.data);
+					break;
+				case "fetchRoutineTemplate":
+					console.log(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
