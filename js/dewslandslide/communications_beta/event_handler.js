@@ -549,7 +549,7 @@ function OnClickConfirmTagging (message_details) {
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
 		const important = [];
 		const new_tag = [];
-
+		console.log(message_details);
 		if (gintag_selected.length === 0 ) {
 			$("#gintag_warning_message").show(300).effect("shake");
 		} else {
@@ -588,6 +588,7 @@ function OnClickConfirmTagging (message_details) {
 				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
+
 				onClickConfirmNarrative(message_details);
 			}
 		}
@@ -596,6 +597,13 @@ function OnClickConfirmTagging (message_details) {
 }
 
 function onClickConfirmNarrative (message_details) {
+	$("#narrative_message").empty();
+	$("#narrative_message").append(
+		"Contact(s) to be tagged: " + "&#013;&#010;"+ 
+		"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
+		message_details[4] + "&#013;&#010;"
+	);
+
 	$("#save-narrative").click(function(){
 		const details_data = {
 			"user_id": message_details[1],
@@ -606,6 +614,7 @@ function onClickConfirmNarrative (message_details) {
 			"account_id": current_user_id,
 			"tag_important": false
 		};
+
 		console.log(details_data);
 		const message = {
 			type: "gintaggedMessage",
