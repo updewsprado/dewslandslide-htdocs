@@ -13,6 +13,7 @@ let community_input_count = 1;
 let community_input_count_landline = 1;
 let latest_conversation_timestamp = "";
 let psgc_scope_filter = [0,0,6,4,2];
+let important_tags = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -436,6 +437,8 @@ function updateSmsoutboxConversationBubble(data) {
 
 function displayImportantTags (data , is_loaded = false) {
 	if(is_loaded === true) {
+		console.log(data);
+		important_tags = data;
 		data.join(", ");
 		$("#important_tags").empty();
 		$("#important_tags").append(data.join(", "));
@@ -447,8 +450,9 @@ function displayImportantTags (data , is_loaded = false) {
 				source: function (query) {
 					return data;
 				}
-			} 
+			}
 		});
 	}
 	
 }
+

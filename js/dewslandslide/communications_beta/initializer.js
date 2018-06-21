@@ -10,6 +10,7 @@ $(document).ready(function() {
         getRoutineSites();
         getRoutineReminder();
         getRoutineTemplate();
+        getImportantTags();
     	setTimeout(function(){
 			try {
 				initializeContactSuggestion($("#contact-suggestion").val());
