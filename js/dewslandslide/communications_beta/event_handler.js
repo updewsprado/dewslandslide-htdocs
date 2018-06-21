@@ -588,25 +588,31 @@ function OnClickConfirmTagging (message_details) {
 				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
-				const details_data = {
-					"user_id": message_details[1],
-					"sms_id": message_details[0],
-					"tag": important,
-					"full_name": message_details[2],
-					"ts": message_details[3],
-					"account_id": current_user_id,
-					"tag_important": false
-				};
-				console.log(details_data);
-				const message = {
-					type: "gintaggedMessage",
-					data: details_data
-				}
-
-				wss_connect.send(JSON.stringify(message));
+				onClickConfirmNarrative(message_details);
 			}
 		}
 		
+	});
+}
+
+function onClickConfirmNarrative (message_details) {
+	$("#save-narrative").click(function(){
+		const details_data = {
+			"user_id": message_details[1],
+			"sms_id": message_details[0],
+			"tag": important,
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"account_id": current_user_id,
+			"tag_important": false
+		};
+		console.log(details_data);
+		const message = {
+			type: "gintaggedMessage",
+			data: details_data
+		}
+
+		wss_connect.send(JSON.stringify(message));
 	});
 }
 
