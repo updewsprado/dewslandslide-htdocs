@@ -552,13 +552,13 @@ function OnClickConfirmTagging (message_details) {
 				}
 			});
 
-			if (important.length > 0){
+			if (new_tag.length > 0){
 				console.log("success tagging");
 				$("#gintag-modal").modal("hide");
 				const details_data = {
 					"user_id": message_details[1],
 					"sms_id": message_details[0],
-					"tag": important,
+					"tag": new_tag,
 					"full_name": message_details[2],
 					"ts": message_details[3],
 					"account_id": current_user_id,
@@ -573,14 +573,14 @@ function OnClickConfirmTagging (message_details) {
 				wss_connect.send(JSON.stringify(message));
 			}
 
-			if(new_tag.length > 0){
+			if(important.length > 0){
 				console.log("new tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
 				const details_data = {
 					"user_id": message_details[1],
 					"sms_id": message_details[0],
-					"tag": new_tag,
+					"tag": important,
 					"full_name": message_details[2],
 					"ts": message_details[3],
 					"account_id": current_user_id,
