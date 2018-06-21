@@ -99,6 +99,7 @@ function startConversation(details) {
 			type: 'loadSmsConversation',
 			data: details
 		};
+		addContactsActivity(convo_details);
 		wss_connect.send(JSON.stringify(convo_details));
 	} catch(err) {
 		console.log(err);
@@ -374,6 +375,7 @@ function siteConversation(){
 			'sitenames': tag_sites
 		};
 
+		addSitesActivity(convo_request);
 		wss_connect.send(JSON.stringify(convo_request));
 	} catch(err) {
 		console.log(err);
@@ -456,3 +458,38 @@ function displayImportantTags (data , is_loaded = false) {
 	
 }
 
+function displayRoutineTemplate(template) {
+	$("#routine-msg").val(template[0].template);
+}
+
+function addSitesActivity (sites) {
+    $(".recent_activities").hide();
+
+    for (var counter = 0; counter < recent_sites_collection.length; counter++) {
+        if (recent_sites_collection[counter].sitenames[0] == sites.sitenames[0]) {
+            return 1;
+        }
+    }
+
+    if (recent_sites_collection.length == 6) {
+        recent_sites_collection.shift();
+    }
+    recent_sites_collection.push(sites);
+    localStorage.rv_sites = JSON.stringify(recent_sites_collection);
+}
+
+function addContactsActivity (contacts) {
+	console.log(recent_contacts_collection);
+	console.log(contacts);
+    for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
+        if (recent_contacts_collection[counter].data.full_name == contacts.data.full_name) {
+            return 1;
+        }
+    }
+
+    if (recent_contacts_collection.length == 6) {
+        recent_contacts_collection.shift();
+    }
+    recent_contacts_collection.push(contacts);
+    localStorage.rv_contacts = JSON.stringify(recent_contacts_collection);
+}

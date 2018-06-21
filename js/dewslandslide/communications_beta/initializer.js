@@ -8,6 +8,7 @@ $(document).ready(function() {
 		getRecentActivity();
         recentActivityInitializer();
         getRoutineSites();
+        getRoutineReminder();
         getRoutineTemplate();
         getImportantTags();
     	setTimeout(function(){
@@ -374,10 +375,6 @@ $("#routine-actual-option").on("click", function () {
         $("#routine-msg").val("");
         $(this).addClass("active");
         $("#def-recipients").text("Default recipients: LEWC, BLGU, MLGU");
-        $.get("../communications/getRoutine", (data) => {
-            var routine_template = JSON.parse(data);
-            $("#routine-msg").val(routine_template[0].template);
-        });
     });
 
     $("#routine-reminder-option").on("click", function () {
@@ -440,16 +437,18 @@ function getRecentActivity () {
 
     if (localStorage.getItem("rv_sites") != null) {
         recent_sites_collection = JSON.parse(localStorage.rv_sites);
+        console.log(recent_sites_collection);
     }
 
     if (localStorage.getItem("rv_contacts") != null) {
         recent_contacts_collection = JSON.parse(localStorage.rv_contacts);
+        console.log(recent_contacts_collection);
     }
 
     if (recent_contacts_collection.length != 0) {
         division = 12 / recent_contacts_collection.length;
         for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
-            $(".rv_contacts").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_contacts'><input name='rc_index' value = 'activity_contacts_index_${counter}' hidden><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>${recent_contacts_collection[counter].name[0].fullname}</strong></div></a></div>`);
+            $(".rv_contacts").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_contacts'><input name='rc_index' value = 'activity_contacts_index_${counter}' hidden><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>${recent_contacts_collection[counter].data.full_name}</strong></div></a></div>`);
         }
     } else {
         $(".rv_contacts").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
@@ -460,11 +459,11 @@ function getRecentActivity () {
         var rv_quick_sites = "";
         var rv_quick_offices = "";
         for (var counter = 0; counter < recent_sites_collection.length; counter++) {
-            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].offices.length; sub_counter++) {
+            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].organizations.length; sub_counter++) {
                 if (sub_counter == 0) {
-                    rv_quick_offices = recent_sites_collection[counter].offices[sub_counter];
+                    rv_quick_offices = recent_sites_collection[counter].organizations[sub_counter];
                 } else {
-                    rv_quick_offices = `${rv_quick_offices}, ${recent_sites_collection[counter].offices[sub_counter]}`;
+                    rv_quick_offices = `${rv_quick_offices}, ${recent_sites_collection[counter].organizations[sub_counter]}`;
                 }
             }
 
@@ -491,14 +490,23 @@ function getRoutineSites() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
-function getRoutineTemplate() {
+function getRoutineReminder() {
 	let msg = {
-		type: 'getRoutineTemplate'
+		type: 'getRoutineReminder'
 	};
 	wss_connect.send(JSON.stringify(msg));
 }
 
-function displayRoutineReminder(sites) {
+function getRoutineTemplate() {
+	$("#routine-actual-option").on("click",function() {
+		let msg = {
+			type: 'getRoutineTemplate'
+		};
+		wss_connect.send(JSON.stringify(msg));
+	});
+}
+
+function displayRoutineReminder(sites,template) {
 	console.log(sites);
 	console.log(template);
 	let day = moment().format("dddd");
@@ -514,7 +522,6 @@ function displayRoutineReminder(sites) {
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -528,13 +535,12 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         case "Tuesday":
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga po.\n\nInaasahan namin ang pagpapadala ng LEWC ng ground data bago mag-11:30 AM para sa wet season routine monitoring.\nTiyakin ang kaligtasan sa pagpunta sa site.\n\nSalamat.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -548,13 +554,12 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         case "Wednesday":
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
-            routine_reminder_msg = "Magandang umaga.\n\nInaasahan na magpadala ng ground data ang LEWC bago mag-11:30AM para sa ating DRY SEASON routine monitoring. Para sa mga nakapagpadala na ng sukat, salamat po.\nTiyakin ang kaligtasan kung pupunta sa site. Magsabi po lamang kung hindi makakapagsukat.\n\nSalamat at ingat kayo.";
             for (var counter = 0; counter < sites.length; counter++) {
                 if (dry[sites[counter].season - 1].includes(month)) {
                     routine_sites.push(sites[counter].site);
@@ -568,40 +573,10 @@ function displayRoutineReminder(sites) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(routine_reminder_msg);
+            $("#routine-msg").val(template[0].template);
             break;
         default:
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
-}
-
-function addSitesActivity (sites) {
-    $(".recent_activities").hide();
-
-    for (var counter = 0; counter < recent_sites_collection.length; counter++) {
-        if (recent_sites_collection[counter].sitenames[0] == sites.sitenames[0]) {
-            return 1;
-        }
-    }
-
-    if (recent_sites_collection.length == 6) {
-        recent_sites_collection.shift();
-    }
-    recent_sites_collection.push(sites);
-    localStorage.rv_sites = JSON.stringify(recent_sites_collection);
-}
-
-function addContactsActivity (contacts) {
-    for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
-        if (recent_contacts_collection[counter].number[0] == contacts.number[0]) {
-            return 1;
-        }
-    }
-
-    if (recent_contacts_collection.length == 6) {
-        recent_contacts_collection.shift();
-    }
-    recent_contacts_collection.push(contacts);
-    localStorage.rv_contacts = JSON.stringify(recent_contacts_collection);
 }
