@@ -526,38 +526,76 @@ function initializeOnAvatarClickForTagging() {
 	$(document).on("click","#messages .user-avatar",function(){
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
+		const gintag_selected = $("#gintag_selected").tagsinput("items");
 
-		const details_object = {
-			"user_id": message_details[1],
-			"convo_id": message_details[0],
-			"full_name": message_details[2],
-			"ts": message_details[3],
-			"account_id": current_user_id
-		};
-
-		OnClickConfirmTagging();
-
+		OnClickConfirmTagging(message_details);
 	});
 }
-function OnClickConfirmTagging () {
+function OnClickConfirmTagging (message_details) {
 	$("#confirm-tagging").click(function(){
-		$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
+		// $("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 		// $("#gintag-modal").hide();
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
-		//for each
-			//filter
 		const important = [];
 		const new_tag = [];
-		gintag_selected.forEach(function(selected) {
-			const [result] = important_tags.filter(tags => tags === selected);
-			if(typeof result === "undefined") {
-				new_tag.push(selected);
-			}else {
-				important.push(result);
+
+		if (gintag_selected.length === 0 ) {
+			$("#gintag_warning_message").show(300).effect("shake");
+		} else {
+			$("#gintag_warning_message").hide(300);
+			gintag_selected.forEach(function(selected) {
+				const [result] = important_tags.filter(tags => tags === selected);
+				if(typeof result === "undefined") {
+					new_tag.push(selected);
+				}else {
+					important.push(result);
+				}
+			});
+
+			if (important.length > 0){
+				console.log("success tagging");
+				$("#gintag-modal").modal("hide");
+				const details_data = {
+					"user_id": message_details[1],
+					"sms_id": message_details[0],
+					"tag": important,
+					"full_name": message_details[2],
+					"ts": message_details[3],
+					"account_id": current_user_id,
+					"tag_important": true
+				};
+
+				const message = {
+					type: "gintaggedMessage",
+					data: details_data
+				}
+
+				wss_connect.send(JSON.stringify(message));
 			}
-		});
-		console.log(important);
-		console.log(new_tag);
+
+			if(new_tag.length > 0){
+				console.log("new tag and open narrative modal");
+				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
+				$("#gintag-modal").modal("hide");
+				const details_data = {
+					"user_id": message_details[1],
+					"sms_id": message_details[0],
+					"tag": new_tag,
+					"full_name": message_details[2],
+					"ts": message_details[3],
+					"account_id": current_user_id,
+					"tag_important": false
+				};
+
+				const message = {
+					type: "gintaggedMessage",
+					data: details_data
+				}
+
+				wss_connect.send(JSON.stringify(message));
+			}
+		}
+		
 	});
 }
 

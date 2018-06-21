@@ -450,7 +450,7 @@ function displayImportantTags (data , is_loaded = false) {
 				source: function (query) {
 					return data;
 				}
-			} 
+			}
 		});
 	}
 	
