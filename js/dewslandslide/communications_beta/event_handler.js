@@ -530,7 +530,17 @@ function initializeOnAvatarClickForTagging() {
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
 
 		OnClickConfirmTagging(message_details);
+		getSmsTags(message_details[0]);
 	});
+}
+
+function getSmsTags (sms_id) {
+	const message = {
+		type: "getSmsTags",
+		data: sms_id
+	}
+
+	wss_connect.send(JSON.stringify(message));
 }
 function OnClickConfirmTagging (message_details) {
 	$("#confirm-tagging").click(function(){
