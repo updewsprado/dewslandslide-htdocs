@@ -524,6 +524,7 @@ function contactSettingsFeedback (status) {
 
 function initializeOnAvatarClickForTagging() {
 	$(document).on("click","#messages .user-avatar",function(){
+		$("#gintag_selected").tagsinput('removeAll');
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
@@ -553,7 +554,7 @@ function OnClickConfirmTagging (message_details) {
 			});
 
 			if (new_tag.length > 0){
-				console.log("success tagging");
+				console.log("success tagging new tagg");
 				$("#gintag-modal").modal("hide");
 				const details_data = {
 					"user_id": message_details[1],
@@ -564,7 +565,7 @@ function OnClickConfirmTagging (message_details) {
 					"account_id": current_user_id,
 					"tag_important": true
 				};
-
+				console.log(details_data);
 				const message = {
 					type: "gintaggedMessage",
 					data: details_data
@@ -574,7 +575,7 @@ function OnClickConfirmTagging (message_details) {
 			}
 
 			if(important.length > 0){
-				console.log("new tag and open narrative modal");
+				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
 				const details_data = {
@@ -586,7 +587,7 @@ function OnClickConfirmTagging (message_details) {
 					"account_id": current_user_id,
 					"tag_important": false
 				};
-
+				console.log(details_data);
 				const message = {
 					type: "gintaggedMessage",
 					data: details_data
