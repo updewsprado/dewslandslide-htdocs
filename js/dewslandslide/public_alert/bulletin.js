@@ -14,24 +14,14 @@ let event_id = null;
 let original_field_values = [];
 let bulletin_timestamp = null;
 
-const pms_instances = [];
-
 $(document).ready(() => {
+    reposition("#bulletinLoadingModal");
+    reposition("#resultModal");
+
     $("#edit-bulletin").click(() => {
         on_edit = on_edit !== true;
         edit(on_edit);
     });
-
-    // Commented out if bulletin still needs modal for PMS
-    /* $("body").on("click", ".report", () => {
-        const instance = pms_instances[`s${release_id}`];
-        instance.set({
-            reference_id: release_id,
-            reference_table: "public_alert_release"
-        });
-        instance.show();
-        instance.print();
-    }); */
 });
 
 function loadBulletin (id1, id2) {
@@ -47,20 +37,16 @@ function loadBulletin (id1, id2) {
 
         addMailRecipients(is_onset);
 
-        // Commented out if bulletin still needs modal for PMS
-        // setPerformanceMonitoringModal(bulletin_div);
-
         $("#bulletinModal").modal({ backdrop: "static", keyboard: false, show: true });
     })
-    .catch(({ responseText, status: conn_status, statusText }) => {
-        alert(`Status ${conn_status}: ${statusText}`);
-        alert(responseText);
+    .catch((x) => {
+        sendBulletinError(`error loading bulletin\n${x.responseText}`);
+        showErrorModal(x, "loading bulletin");
     });
 }
 
 function postBulletinModal (release_id) {
-    return $.post(`/../../bulletin/main/${release_id}/0`)
-    .catch(err => err);
+    return $.post(`/../../bulletin/main/${release_id}/0`);
 }
 
 function processBulletinModal (modal_html, bulletin_div) {
@@ -86,8 +72,7 @@ function processBulletinModal (modal_html, bulletin_div) {
 }
 
 function getFirstEventRelease (event_id) {
-    return $.getJSON(`/../../monitoring/getFirstEventRelease/${event_id}`)
-    .catch(err => err);
+    return $.getJSON(`/../../monitoring/getFirstEventRelease/${event_id}`);
 }
 
 function addOnsetMessageIfApplicable (release, release_id, obj) {
@@ -118,7 +103,8 @@ function addOnsetMessageIfApplicable (release, release_id, obj) {
 }
 
 function addMailRecipients (is_onset) {
-    if (location.hostname === "www.dewslandslide.com") {
+    const $recipients = $("#recipients_span");
+    if (window.location.hostname === "www.dewslandslide.com") {
         const recipients = ["rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com"];
 
         if (is_onset) {
@@ -126,38 +112,18 @@ function addMailRecipients (is_onset) {
         }
 
         recipients.forEach((x) => { $("#recipients").tagsinput("add", x); });
-    } else if ($("#recipients_span").html().length === 0) {
-        $("#recipients_span").append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
+    } else if ($recipients.html().length === 0) {
+        $recipients.append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & AGD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
     }
 }
 
-// Commented out if bulletin still needs modal for PMS
-/* function setPerformanceMonitoringModal (bulletin_div) {
-    $(bulletin_div)
-    .prepend($("<div class='row'>" +
-        "<div class='col-sm-12 text-right'>" +
-        "<span class='report'><span class='fa fa-exclamation-circle'></span> <strong>Report</strong>&emsp;</span>" +
-        "</div></div><hr/>"));
-
-    const instance = PMS_MODAL.create({
-        modal_id: `bulletin-accuracy-${release_id}`,
-        metric_name: "bulletin_accuracy",
-        module_name: "Bulletin",
-        type: "accuracy"
-    });
-
-    if (!instance.is_attached) { setTimeout(null, 300); }
-    pms_instances[`s${release_id}`] = instance;
-} */
-
 function renderPDF (id) {
-    console.log("ID", id, "on_edit", on_edit);
-    const isEdited = on_edit === true ? 1 : 0;
+    const is_edited = on_edit === true ? 1 : 0;
     const edits = [];
     const edited_field_values = [];
 
-    if (isEdited) {
-        $(".editable").each(function (i) {
+    if (is_edited) {
+        $(".editable").each((i) => {
             edited_field_values.push([$(this).prop("id"), $(this).val()]);
             const temp = encodeURIComponent($(this).val());
             edits.push(temp);
@@ -168,15 +134,13 @@ function renderPDF (id) {
         sendBulletinAccuracyReport(release_id, edited_field_values, original_field_values);
 
         // GINTAGS implementation
-        // tagBulletin(release_id, edited_field_values, original_field_values);
+        tagBulletin(release_id, edited_field_values, original_field_values);
     }
 
     $("#bulletinModal").modal("hide");
-
     $("#bulletinLoadingModal .progress-bar").text("Rendering Bulletin PDF...");
-    reposition("#bulletinLoadingModal");
     $("#bulletinLoadingModal").modal({ backdrop: "static", show: "true" });
-    const address = `/../../bulletin/run_script/${id}/${isEdited}`; // + "/" + edits.join("|");
+    const address = `/../../bulletin/run_script/${id}/${is_edited}`;
 
     edit(false);
 
@@ -189,8 +153,9 @@ function renderPDF (id) {
     .done((response) => {
         if (response === "Success.") { console.log("PDF RENDERED"); } else console.log(response);
     })
-    .fail((a) => {
-        console.log("Error rendering:", a);
+    .catch((x) => {
+        sendBulletinError(`error rendering PDF\n${x.responseText}`);
+        showErrorModal(x, "rendering PDF");
     });
 }
 
@@ -217,7 +182,7 @@ function sendBulletinAccuracyReport (release_id, edited_field_values, original_f
 }
 
 // GINTAGS implementation
-/* function tagBulletin (release_id, edited_field_values, original_field_values) {
+function tagBulletin (release_id, edited_field_values, original_field_values) {
     $.get(
         `/../../gintagshelper/getGinTagsViaTableElement/${release_id}`,
         (x) => {
@@ -248,7 +213,7 @@ function sendBulletinAccuracyReport (release_id, edited_field_values, original_f
             }
         }, "json"
     );
-} */
+}
 
 function sendMail (text, subject, filename, recipients) {
     $("#bulletinLoadingModal .progress-bar").text("Sending EWI and Bulletin...");
@@ -256,73 +221,88 @@ function sendMail (text, subject, filename, recipients) {
     const form = {
         text,
         subject,
-        filename,
-        recipients
+        filename
     };
 
-    console.log("Sent", text, subject, filename);
+    console.log(text, subject, filename);
 
-    $.ajax({
-        url: "/../../bulletin/mail/",
-        type: "POST",
-        data: form,
-        success (data) {
-            $("#bulletinLoadingModal").modal("hide");
-            $("#resultModal .modal-header").html(`<h4>Early Warning Information for ${subject.slice(0, 3)}</h4>`);
-            reposition("#resultModal");
+    mailBulletin(form)
+    .then((data) => {
+        $("#bulletinLoadingModal").modal("hide");
+        $("#resultModal .modal-header").html(`<h4>Early Warning Information for ${subject.slice(0, 3)}</h4>`);
 
-            setTimeout(() => {
-                if (data == "Sent.") {
-                    console.log("Email sent");
+        if (data === "Sent.") {
+            console.log("Email sent");
 
-                    const report = {
-                        type: "timeliness",
-                        metric_name: "bulletin_accuracy",
-                        module_name: "Bulletin",
-                        report_message: remarks_str,
-                        execution_time: ""
-                    };
+            const baseline = bulletin_timestamp.add(20, "minutes");
+            const exec_time = moment().diff(bulletin_timestamp);
+            const report = {
+                type: "timeliness",
+                metric_name: "bulletin_timeliness",
+                module_name: "Bulletin",
+                execution_time: exec_time
+            };
 
-                    PMS.send(report);
+            PMS.send(report);
 
-                    const people = recipients.map((x) => {
-                        if (x == "rusolidum@phivolcs.dost.gov.ph") return x = "RUS";
-                        else if (x == "asdaag48@gmail.com") return x = "ASD";
-                        else if (x == "hyunbin_vince@yahoo.com") return x = "KDDC";
-                        return x;
-                    });
+            $(`#${release_id}`).css("color", "red").attr("data-sent", 1);
 
-                    let x = moment(bulletin_timestamp).hour() % 4 == 0 && moment(bulletin_timestamp).minute() == 0 ? moment(bulletin_timestamp).format("hh:mm A") : `${moment(bulletin_timestamp).format("hh:mm A")} onset`;
-                    if (/12:\d{2} PM/g.test(x)) x = x.replace("PM", "NN"); else if (/12:\d{2} AM/g.test(x)) x = x.replace("AM", "MN");
-                    const message = `Sent ${x} EWI Bulletin to ${people.join(", ")}`;
+            insertNarrative();
 
-                    const narratives = [{
-                        event_id,
-                        timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
-                        narrative: message
-                    }];
-
-                    $(`#${release_id}`).css("color", "red").attr("data-sent", 1);
-
-                    $.post("/../../accomplishment/insertNarratives", { narratives: JSON.stringify(narratives) })
-                    .fail((x, y) => {
-                        console.log(y);
-                    });
-
-                    $("#resultModal .modal-body").html("<strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!");
-                    $("#resultModal").modal("show");
-                } else {
-                    console.log("EMAIL SENDING FAILED", data);
-                    $("#resultModal .modal-body").html(`<strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!<br/><br/><i>${data}</i>`);
-                    $("#resultModal").modal("show");
-                }
-            }, 500);
-        },
-        error (xhr, status, error) {
-            const err = eval(`(${xhr.responseText})`);
-            alert(err.Message);
+            $("#resultModal .modal-body").html("<strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!");
+            $("#resultModal").modal("show");
+        } else {
+            $("#resultModal .modal-body").html(`<strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!<br/><br/><i>${data}</i>`);
+            $("#resultModal").modal("show");
+            return $.Deferred().reject();
         }
+    })
+    .catch((x) => {
+        sendBulletinError(`error sending bulletin\n${x.responseText}`);
+        showErrorModal(x, "sending bulletin");
     });
+}
+
+function mailBulletin (form) {
+    return $.post("/../../bulletin/mail/", form);
+}
+
+function insertNarrative () {
+    const people = recipients.map((x) => {
+        if (x === "rusolidum@phivolcs.dost.gov.ph") return "RUS";
+        if (x === "asdaag48@gmail.com") return "ASD";
+        if (x === "hyunbin_vince@yahoo.com") return "KDDC";
+        return x;
+    });
+
+    let ts = bulletin_timestamp.format("hh:mm A");
+    if (bulletin_timestamp.hour() % 4 !== 0 || bulletin_timestamp.minute() !== 0) {
+        ts = `${bulletin_timestamp.format("hh:mm A")} onset`;
+    }
+    const formatted_ts = ts.replace(/(12:\d{2}) ([AP])M/g, (match, time, meridian) => {
+        if (meridian === "P") return `${time} NN`;
+        return `${time} MN`;
+    });
+    const message = `Sent ${formatted_ts} EWI Bulletin to ${people.join(", ")}`;
+
+    const narratives = [{
+        event_id,
+        timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
+        narrative: message
+    }];
+
+    return $.post("/../../accomplishment/insertNarratives", { narratives: JSON.stringify(narratives) });
+}
+
+function sendBulletinError (message) {
+    const report = {
+        type: "error_logs",
+        metric_name: "bulletin_error_logs",
+        module_name: "Bulletin",
+        report_message: message
+    };
+
+    PMS.send(report);
 }
 
 function edit (on_edit) {
@@ -341,7 +321,7 @@ function edit (on_edit) {
             $(this).replaceWith(`<input class='editable ${isLonger}' id='${$(this).prop("id")}' value='${$(this).text()}'>`);
         });
 
-        const url = $(location).attr("href");
+        const url = $(window.location).attr("href");
         let content = "Edit this part by changing the <strong>[content]</strong> of the release";
         if (url.includes("home") || url.includes("dashboard")) { content += ` on the <strong><a href='../../monitoring/events/${event_id}/${release_id}'>event page</a></strong>`; }
         $("#datetime.edit-event-page").popover({
