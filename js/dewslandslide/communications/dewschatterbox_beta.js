@@ -122,8 +122,16 @@ function sendViaAlertMonitor (dashboard_data) {
     $("#site-abbr").val(dashboard_data.name);
 }
 
+let on_edit = null;
+let pms_reference_id = null;
+const pms_instances = [];
+
 $(document).ready(() => {
 
+    $(".report").click(function() {
+
+    });
+    
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
     }
@@ -1282,6 +1290,8 @@ $(document).ready(() => {
     });
 
     $("#btn-contact-settings").click(() => {
+        pms_module_indicator = "contact_settigns";
+
         $("#employee-contact-wrapper").prop("hidden", true);
         $("#community-contact-wrapper").prop("hidden", true);
         $("#response-contact-container_wrapper").prop("hidden", true);
@@ -1645,6 +1655,7 @@ $(document).ready(() => {
     });
 
     $("#btn-gbl-search").click(() => {
+        pms_module_indicator = "quick_search";
         if (connection_status == false) {
             console.log("NO CONNECTION");
         } else {
@@ -1667,6 +1678,7 @@ $(document).ready(() => {
     });
 
     $("#btn-advanced-search").click(() => {
+        pms_module_indicator = "quick_group_selection";
         if (connection_status == false) {
             console.log("NO CONNECTION");
         } else {
