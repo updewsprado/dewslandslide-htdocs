@@ -6,7 +6,11 @@ const instance = PMS_MODAL.create({
 });
 
 $(document).ready(() => {
-
+	pms_data = {
+		"metric_indicator": "registered_inbox",
+		"table_source": "smsinbox"
+	};
+		
     setTimeout(() => {
         if (instance.is_attached) {
             pms_instances['12'] = instance;
@@ -100,14 +104,14 @@ $(document).ready(() => {
 });
 
 function cbx_report_submit(pms_data) {
-    console.log(pms_data.metric_indicator);
+    console.log(pms_data);
     instance.set({
         reference_id: 0,
         reference_table: "communitycontacts",
         metric_name: pms_data.metric_indicator,
         module_name: "chatterbox"
     });
-
+    
     instance.show();
     instance.print();
     console.log(instance);
