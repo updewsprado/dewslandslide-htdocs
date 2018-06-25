@@ -950,7 +950,7 @@ function sendReport (site_code, event_id) {
 
     renderCharts(site_code)
     .then(
-        () => {
+        (x) => {
             form.toAttachRender = true;
             form.filename = `${site_code.toUpperCase()}_${moment(shift_timestamps.end).format("DDMMMYYYY_hA")}`;
         },
@@ -977,9 +977,10 @@ function sendReport (site_code, event_id) {
             $("#resultModal .modal-body").html("<strong>SUCCESS:</strong>&ensp;End-of-shift report sent!");
             $("#resultModal").modal("show");
         } else {
-            console.log("Email sending failed.");
+            console.log(`%c► EOS ${x}`, "background: rgba(255,127,80,0.3); color: black");
             $("#resultModal .modal-body").html(`<strong>ERROR:</strong>&ensp;Early warning information and bulletin sending failed!<br/><br/><i>${x}</i>`);
             $("#resultModal").modal("show");
+            sendEosErrorLog(`error sending end-of-shift report ${x}`);
         }
     });
 }
@@ -994,7 +995,7 @@ function mailReport (form_data) {
         contentType: false
     })
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        return $.Deferred().resolve(responseText);
     });
 }
 
@@ -1010,7 +1011,10 @@ function refreshNarrativesTextArea (event_id, internal_alert, site) {
 function saveExpertOpinion (event_id, analysis, shift_start) {
     const form = { event_id, analysis, shift_start };
     $.post("/../../accomplishment/saveExpertOpinion", form)
-    .fail((x) => { console.log(x.responseText); });
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendEosErrorLog(`error saving expert opinion ${responseText}`);
+    });
 }
 
 function saveAllDataAnalysisAutomatically () {
@@ -1062,6 +1066,7 @@ function renderCharts (site_code) {
     return $.post("/../../chart_export/renderCharts", { site_code, svg, connection_id: current_user_id })
     .catch(({ responseText, status: conn_status, statusText }) => {
         console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
     });
 }
 
@@ -1079,4 +1084,17 @@ function checkIfThereIsChartToRender (site_code) {
 
     if (svg.length === 0) return false;
     return svg;
+}
+
+function sendEosErrorLog (x, is_chart = false) {
+    let metric_name = "eos_error_logs";
+    if (is_chart) metric_name = "eos_charts_error_logs";
+    const report = {
+        type: "error_logs",
+        metric_name,
+        module_name: "End-of-shift Report",
+        report_message: x
+    };
+
+    PMS.send(report);
 }

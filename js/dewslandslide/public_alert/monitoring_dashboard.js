@@ -742,12 +742,12 @@ function initializeReleaseModalForm () {
                     public_alert_level: temp === "ND" ? "A1" : temp,
                     reporter_1: $("#reporter_1").attr("value-id")
                 };
-                
+
                 if (entry.status === "extended") {
                     final.current_event_id = entry.event_id;
                 } else {
                     const { trigger_list: list } = entry;
-                    final.trigger_list = list.length === 0 ? null : list; 
+                    final.trigger_list = list.length === 0 ? null : list;
                 }
 
                 if (entry.status === "new") {
@@ -806,10 +806,22 @@ function initializeReleaseModalForm () {
 }
 
 function insertEventRelease (data) {
-    $.post("../pubrelease/insert", data)
+    $.post("../pubrelease/inset", data)
     .done((result, textStatus, jqXHR) => {
         console.log(result);
         doSend("updateDashboardTables");
+
+        const { timestamp_entry } = data;
+        const baseline = timestamp_entry.add(30, "minutes");
+        const exec_time = moment().diff(baseline);
+        const report = {
+            type: "timeliness",
+            metric_name: "web_ewi_timeliness",
+            module_name: "Web EWI Release",
+            execution_time: exec_time
+        };
+
+        PMS.send(report);
 
         const $modal = $("#resultModal");
         $modal.find(".modal-header").html("<h4>Early Warning Information Release</h4>");
@@ -818,6 +830,14 @@ function insertEventRelease (data) {
     })
     .catch((x) => {
         showErrorModal(x, "inserting release");
+        const report = {
+            type: "error_logs",
+            metric_name: "web_ewi_error_logs",
+            module_name: "Web EWI Release",
+            report_message: `error inserting release ${x.responseText}`
+        };
+
+        PMS.send(report);
     })
     .always(() => { $("#loading").modal("hide"); });
 }
