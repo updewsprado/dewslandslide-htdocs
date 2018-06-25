@@ -1003,9 +1003,6 @@ function chartProcessRain2(series_data ,id , data_source ,site ,max ,negative,da
 
 }
 
-
-
-
 function surficialGraph(dataTableSubmit) {  
 	console.log("/api/GroundDataFromLEWSInRange/"+dataTableSubmit.site+"/"+dataTableSubmit.fdate+"/"+dataTableSubmit.tdate)
 	$.ajax({ 

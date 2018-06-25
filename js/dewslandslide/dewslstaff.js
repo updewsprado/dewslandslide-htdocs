@@ -14,8 +14,6 @@ function loadAllStaff() {
 			var flag = 0;
 
 			for (var counter = 0; counter < staff_data.length; counter++) {
-				console.log(staff_data[counter]);
-				debugger;
 				if (temp == "") {
 					temp = staff_data[counter].team_name;
 					if (temp == staff_data[counter].team_name) {

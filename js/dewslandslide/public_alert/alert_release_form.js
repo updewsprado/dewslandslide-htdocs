@@ -198,6 +198,10 @@ function onSiteChange () {
                 .find("option")
                 .prop("disabled", false);
             }
+
+            // TO-DO: Break out of promise chain if status is finished or invalid
+            // return $.Deferred().reject(); else return event
+            // change this chain from done -> then
         })
         .then(getLastRelease)
         .done((release) => {
@@ -1290,7 +1294,10 @@ function initializeFormValidator () {
 
             if (this_event_status === "new") {
                 if (temp.public_alert_level === "A0") {
-                    temp.routine_list = [temp.site];
+                    temp.routine_list = [{
+                        site_id: temp.site,
+                        internal_alert_level: temp.internal_alert_level
+                    }];
                     temp.status = "routine";
                 }
             } else if (this_event_status === "on-going") {
@@ -1315,8 +1322,14 @@ function initializeFormValidator () {
                 temp.current_event_id = current_event.event_id;
             } else if (this_event_status === "routine") {
                 temp.routine_list = [];
-                $("input[name='routine_sites[]']:checked").each(function () {
-                    if (!this.disabled) { temp.routine_list.push(this.value); }
+                $("input[name='routine_sites[]']:checked").each((i, elem) => {
+                    if ($(elem).is(":disabled")) {
+                        const obj = {
+                            site_id: elem.value,
+                            internal_alert_level: temp.internal_alert_level
+                        };
+                        temp.routine_list.push(obj);
+                    }
                 });
             } else if (this_event_status === "extended") {
                 // Status is either "extended" or "finished"
