@@ -93,6 +93,7 @@ function connectWS() {
 					break;
 				case "fetchedSmsTags":
 					console.log(msg_data.data);
+					displayConversationTags(msg_data.data);
 					break;
 				default:
 					console.log("No request to load.");

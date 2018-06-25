@@ -16,6 +16,7 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
+	$(".collapse").collapse("show");
 });
 
 function initializeGetQuickGroupSelection () {
@@ -564,24 +565,7 @@ function OnClickConfirmTagging (message_details) {
 			});
 
 			if (new_tag.length > 0){
-				console.log("success tagging new tagg");
-				$("#gintag-modal").modal("hide");
-				const details_data = {
-					"user_id": message_details[1],
-					"sms_id": message_details[0],
-					"tag": new_tag,
-					"full_name": message_details[2],
-					"ts": message_details[3],
-					"account_id": current_user_id,
-					"tag_important": true
-				};
-				console.log(details_data);
-				const message = {
-					type: "gintaggedMessage",
-					data: details_data
-				}
-
-				wss_connect.send(JSON.stringify(message));
+				addNewTags(message_details, new_tag);
 			}
 
 			if(important.length > 0){
@@ -594,6 +578,27 @@ function OnClickConfirmTagging (message_details) {
 		}
 		
 	});
+}
+
+function addNewTags (message_details, new_tag) {
+	console.log("success tagging new tagg");
+	$("#gintag-modal").modal("hide");
+	const details_data = {
+		"user_id": message_details[1],
+		"sms_id": message_details[0],
+		"tag": new_tag,
+		"full_name": message_details[2],
+		"ts": message_details[3],
+		"account_id": current_user_id,
+		"tag_important": true
+	};
+	console.log(details_data);
+	const message = {
+		type: "gintaggedMessage",
+		data: details_data
+	}
+
+	wss_connect.send(JSON.stringify(message));
 }
 
 function onClickConfirmNarrative (message_details) {
@@ -624,4 +629,24 @@ function onClickConfirmNarrative (message_details) {
 		wss_connect.send(JSON.stringify(message));
 	});
 }
+
+function displayConversationTags (conversation_tags) {
+	
+	if(conversation_tags.length > 0){
+		$("#gintag_selected").tagsinput('removeAll');
+		$(".bootstrap-tagsinput").keypress(function(){
+			console.log("pressed");
+			conversation_tags.forEach(function(tag) {
+				$("#gintag_selected").tagsinput("add", tag);
+			});
+			console.log($("#gintag_selected").val());
+		});
+	}else {
+		$("#gintag_selected").tagsinput('removeAll');
+		conversation_tags.forEach(function(tag) {
+			$("#gintag_selected").tagsinput("add", tag);
+		});
+	}
+}
+
 
