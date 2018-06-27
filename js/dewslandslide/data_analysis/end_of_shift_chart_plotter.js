@@ -26,14 +26,19 @@ function initializeChartData () {
     if (category === "subsurface") column_name = site_detail;
     else site_code = site_detail;
 
-    let title = `${site_detail.toUpperCase()} - Rainfall`;
-    if (category === "surficial") title = `${site_code.toUpperCase()} - Surficial`;
-    else if (category === "subsurface") title = column_name.toUpperCase();
+    let title = site_detail.toUpperCase();
+    if (category === "subsurface") {
+        $("#column-name").text(column_name.toUpperCase());
+        site_code = column_name; // for the sake of uniformity on obj plotting
+        title = column_name.toUpperCase();
+    } else {
+        $("#site-name").text(site_code.toUpperCase());
+        const addendum = category === "surficial" ? "Surficial" : "Rainfall";
+        title += ` - ${addendum}`;
+    }
+
     const tab_title = `EOS : ${title}`;
-
     $("head title", window.parent.document).text(tab_title);
-
-    if (category === "subsurface") site_code = column_name;
     const obj = {
         site_code, start, end, user_id
     };

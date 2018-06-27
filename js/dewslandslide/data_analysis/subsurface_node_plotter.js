@@ -136,15 +136,13 @@ function createGeneralNodeChart ({ series_name, data }, input) {
         },
         title: {
             text: `<b>${title} Plot of ${subsurface_column.toUpperCase()}</b>`,
-            style: {
-                fontSize: "16px"
-            }
+            style: { fontSize: "14px" },
+            margin: 20,
+            y: 16
         },
         subtitle: {
-            text: `<b>(${moment(start_date).format("M/D/YYYY")} - ${moment(end_date).format("M/D/YYYY")})</b>`,
-            style: {
-                fontSize: "13px"
-            }
+            text: `Range: <b>${moment(start_date).format("D MMM YYYY, HH:mm")} - ${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            style: { fontSize: "11px" }
         },
         xAxis: {
             type: "datetime",
@@ -153,12 +151,12 @@ function createGeneralNodeChart ({ series_name, data }, input) {
                 year: "%Y"
             },
             title: {
-                text: "Date"
+                text: "<b>Date</b>"
             }
         },
         yAxis: {
             title: {
-                text: "Value"
+                text: "<b>Value</b>"
             }
         },
         tooltip: {

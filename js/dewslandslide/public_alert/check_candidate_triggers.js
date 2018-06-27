@@ -1,280 +1,383 @@
 
-fs = require('fs');
-var moment = require('moment');
+const moment = require("moment");
+const { readFileSync } = require("fs");
 
-let json = null;
-let alerts = null;
+const { argv: args } = process;
 
-json = fs.readFileSync(process.argv[2]);
-alerts = fs.readFileSync(process.argv[3]);
+const json = readFileSync(args[2]);
+const alerts = readFileSync(args[3]);
+const sites = readFileSync(args[4], "utf8");
+let sent_routine = [];
 
-json = JSON.parse(json); // Note that PublicAlert.json is really wrapped in an array
-alerts = JSON.parse(alerts);
-
-let response = {};
-
-try {
-	response.candidate = checkCandidateTriggers(json[0], alerts);
-} catch (err) {
-	response.candidate = null;
-	response.error = err;
-	console.log(err);
+if (typeof args[5] !== "undefined") {
+    sent_routine = JSON.parse(readFileSync(args[5]));
 }
 
-console.log( JSON.stringify(response) );
+const [json_parsed] = JSON.parse(json); // Note that PublicAlert.json is really wrapped in an array
+const db_alerts = JSON.parse(alerts);
+const dynaslope_sites = JSON.parse(sites);
 
-function checkCandidateTriggers(cache, ongoing) {
+const response = {};
 
-	var all_alerts = cache.alerts,
-		invalids = cache.invalids,
-		alerts = [],
-		no_alerts = [],
-		final = [];
+try {
+    response.candidate = checkCandidateTriggers(json_parsed, db_alerts);
+} catch (err) {
+    response.candidate = null;
+    response.error = err;
+    console.log(err);
+}
 
-	// Separate all sites with A0 to higher ones
-	all_alerts.forEach( function (x) {
-		if( x.alert == "A0" ) no_alerts.push(x);
-		else alerts.push(x);
-	});
+console.log(JSON.stringify(response));
 
-	// Get all the latest and overdue releases on site
-	let merged_arr = ongoing.latest.concat(ongoing.overdue);
-	let merged_arr_sites = merged_arr.map(x => x.name);
+function checkCandidateTriggers (cache, ongoing) {
+    const { alerts: all_alerts, invalids } = cache;
+    const { latest, overdue, extended } = ongoing;
+    const final = [];
 
-	alerts.forEach( function (alert) {
+    const [with_alerts, no_alerts] = separateWithAlertsToNoAlertsOnJSON(all_alerts);
 
-		let retriggers = alert.retriggerTS;
-		alert.invalid_list = []; //initialize list of invalid triggers for dashboard showing
+    // Get all the latest and overdue releases on site
+    const merged_arr = latest.concat(overdue);
 
-		// Check sites if it is in invalid list 
-		// yet have legitimate alerts
-		function getAllInvalids(arr, val) {
-		    var site_invalids = [], i;
-		    for(i = 0; i < arr.length; i++)
-		        if (arr[i].site === val)
-		            site_invalids.push(arr[i]);
-		    site_invalids.sort(function(a,b) {return (a.alert > b.alert) ? -1 : ((b.alert > a.alert) ? 1 : 0);} );
-		    return site_invalids;
-		}
+    let return_arr = processEntriesWithAlerts(with_alerts, merged_arr, invalids);
+    const invalid_entries = return_arr.filter(x => x.status === "invalid");
+    final.push(...return_arr);
 
-		alert.status = "valid"; // Set trigger/alert status to valid
-		                        // if seen invalid, or partially invalid, overwrite it
-		let site_invalids = getAllInvalids(invalids, alert.site);
+    return_arr = tagSitesForLowering(merged_arr, no_alerts);
+    const [lowering_return, lowering_index] = return_arr;
+    final.push(...lowering_return);
 
-		let isInvalid = false;
-		let isValidButNeedsManual = false;
-		site_invalids.forEach(function (invalid)
-		{
-			//console.log("INVALID", invalid);
-			
-			let alertIndexIfReleased = merged_arr_sites.indexOf(invalid.site);
+    return_arr = prepareSitesForExtendedRelease(extended, no_alerts);
+    const [extended_return, extended_index] = return_arr;
+    final.push(...extended_return);
 
-			// Get alerts sources from the alerts array and invalids array
-			let invalid_source = invalid.source;
-			let alerts_source = alert.source.split(",");
+    const excluded_index = [...lowering_index, ...extended_index];
+    return_arr = prepareSitesForRoutineRelease(no_alerts, excluded_index, invalid_entries);
+    final.push(...return_arr);
 
-			alerts_source.forEach(function (source) {
-				if (source == invalid_source)
-				{
-					function getRetriggerIndex (trigger) {
-						let temp = retriggers.map(x => x.retrigger).indexOf(trigger);
-						return temp;
-					};
+    return final;
+}
 
-					function setAsInvalid( trigger ) {
-						let trig = {};
-						for ( var key in trigger ) {
-							trig[key] = trigger[key];
-						}
-						trig['invalid'] = true;
-						return trig;
-					}
-					
-					// Bind this invalid trigger and source on alert
-					alert.invalid_list.push(invalid);
+function separateWithAlertsToNoAlertsOnJSON (alerts_arr) {
+    const no_alerts = [];
+    const with_alerts = [];
+    alerts_arr.forEach((x) => {
+        if (x.alert === "A0") no_alerts.push(x);
+        else with_alerts.push(x);
+    });
+    return [with_alerts, no_alerts];
+}
 
-					// Check if alert exists on database
-					// Mark isInvalid TRUE to prevent being pushed to final
-					// if alert is really invalid and has no active alert
-					if( alertIndexIfReleased == -1 && alerts_source.length == 1 )
-					{ alert.status = "invalid"; /*isInvalid = true;*/ }
-					else { alert.status = "partial"; }
+function processEntriesWithAlerts (with_alerts, merged_arr, invalids) {
+    const return_arr = [];
+    with_alerts.forEach((alert) => {
+        let entry = alert;
+        const { site: site_code, source: entry_source } = entry;
 
-					let trigger_letter = null;
-					switch(source) {
-						case "sensor": trigger_letter = "S"; break;
-						case "rain": trigger_letter = "R"; break;
-						default: trigger_letter = 'Z'; break;
-					}
+        // Set trigger/alert status to valid
+        // if seen invalid, or partially invalid, overwrite it
+        entry.status = "valid"; // Set trigger/alert status to valid
+        entry.invalid_list = []; // initialize list of invalid triggers for dashboard showing
 
-					let temp = new RegExp(trigger_letter, "i");
-					if( alertIndexIfReleased == -1 || (alertIndexIfReleased > -1 && merged_arr[alertIndexIfReleased].internal_alert_level.search(temp) == -1) ) 
-					{
-						if (source == "sensor") {
-							let isL2Available = retriggers.map(x => x.retrigger).indexOf("L2");
-							if(isL2Available > -1 && invalid.alert == "A3") {
-								alert.alert =  "A2";
-								alert.internal_alert = alert.internal_alert.replace(/S0*/g, "s").replace("A3", "A2");
-								
-								// alert.retriggerTS.splice(getRetriggerIndex("L3"), 1);
-								let index = getRetriggerIndex("L3");
-								alert.retriggerTS[index] = setAsInvalid( alert.retriggerTS[index] );
-							} else {
-								alert.alert =  "A1";
-								alert.internal_alert = alert.internal_alert.replace(/[sS]0*/g, "");
+        const site_invalids = getAllInvalidTriggersForSite(invalids, site_code);
 
-								let hasSensorData = alert.sensor_alert.filter( x => x.alert != "ND" );
-								if ( hasSensorData == 0 && alert.ground_alert == "g0" ) alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "ND");
-								else alert.internal_alert = alert.internal_alert.replace(/A[1-3]/g, "A1");
+        let isValidButNeedsManual = false;
+        site_invalids.forEach((invalid_entry) => {
+            const alertIndex = merged_arr.findIndex(elem => elem.name === invalid_entry.site);
+            const { alert: public_alert } = invalid_entry;
 
-								// alert.retriggerTS.splice(getRetriggerIndex("L2"), 1);
-								let index = getRetriggerIndex("L2");
-								alert.retriggerTS[index] = setAsInvalid( alert.retriggerTS[index] );
-							}
-						}
-						else if(source == "rain")
-						{
-							// Check if alert exists on database already
-							if( alertIndexIfReleased > -1 
-								&& merged_arr[alertIndexIfReleased].internal_alert_level.includes("R") == true )
-							{
-								// If already exist and it has rain that became invalid,
-								// recommend manual input
-								isValidButNeedsManual = true;
-							}
-							else {
-								// Rain trigger is plain invalid
-								alert.internal_alert = alert.internal_alert.replace(/R0*/g, "");
-								// alert.retriggerTS.splice(getRetriggerIndex("r1"), 1);
-								let index = getRetriggerIndex("r1");
-								alert.retriggerTS[index] = setAsInvalid( alert.retriggerTS[index] );
-							}
-						}
-					}
-					// }
-				}
-			});
-		});	
+            // Get alerts sources from the alerts array and invalids array
+            const invalid_trigger = invalid_entry.source;
+            const alerts_source = entry_source.split(",");
 
-		if(alert.internal_alert.length <= 3) { alert.status = "invalid"; /*isInvalid = true;*/ }
-		
-		let forUpdating = true;
-		retriggers = alert.retriggerTS;
+            alerts_source.forEach((source) => {
+                if (source === invalid_trigger) {
+                    // Bind this invalid trigger and source on alert
+                    entry.invalid_list.push(invalid_entry);
 
-		if( !isValidButNeedsManual && !isInvalid )
-		{
-			// let maxDate = moment( Math.max.apply(null, retriggers.map(x => new Date(x.timestamp)))).format("YYYY-MM-DD HH:mm:ss");
-			// let max = null;
-			// for (let i = 0; i < retriggers.length; i++) {
-			// 	if(retriggers[i].timestamp === maxDate) { max = retriggers[i]; break; }
-			// }
+                    // Check if alert exists on database
+                    if (alertIndex === -1 && alerts_source.length === 1) {
+                        entry.status = "invalid";
+                    } else { entry.status = "partial"; }
 
-			let max = null;
-			for (let i = 0; i < retriggers.length; i++) {
-				if( max == null || moment(max.timestamp).isBefore(retriggers[i].timestamp) )
-				{
+                    let trigger_letter = null;
+                    switch (source) {
+                        case "sensor": trigger_letter = "S"; break;
+                        case "rain": trigger_letter = "R"; break;
+                        default: trigger_letter = "Z"; break;
+                    }
 
+                    let isPresentOnInternalAlert = false;
+                    let isRpresent = false;
+                    if (alertIndex > -1) {
+                        const { internal_alert_level } = merged_arr[alertIndex];
+                        const temp = new RegExp(trigger_letter, "i");
+                        isPresentOnInternalAlert = internal_alert_level.search(temp);
+                        isRpresent = internal_alert_level.includes("R");
+                    }
 
-					max = retriggers[i];
+                    if (alertIndex === -1 || isPresentOnInternalAlert) {
+                        let return_obj = null;
+                        if (source === "sensor") {
+                            return_obj = adjustAlertLevelIfInvalidSensor(public_alert, entry);
+                        } else if (source === "rain") {
+                            // Check if alert exists on database already
+                            if (isRpresent) {
+                                // If already exist and it has rain that became invalid,
+                                // recommend manual input
+                                isValidButNeedsManual = true;
+                            } else {
+                                return_obj = adjustAlertLevelIfInvalidRain(entry);
+                            }
+                        }
 
-					// if ( typeof retriggers[i].invalid == "undefined" ) {
-					// 	max = retriggers[i];
-					// } else {
-					// 	if ( alert.status == "invalid" ) {
-					// 		max = retriggers[i];
-					// 	}
-					// }
-				}
-			}
+                        if (return_obj !== null) {
+                            const { invalid_index } = return_obj;
+                            entry = Object.assign({}, entry, return_obj);
+                            entry.retriggerTS[invalid_index].invalid = true;
+                        }
+                    }
+                }
+            });
+        });
 
-			//console.log(max, retriggers);
-			alert.latest_trigger_timestamp = max.timestamp;
-			alert.trigger = max.retrigger;
-		}
+        if (entry.internal_alert.length <= 3) entry.status = "invalid";
 
-		// Check if alert entry is already updated on latest/overdue table
-		for (let i = 0; i < merged_arr.length; i++) 
-		{
-			//console.log(merged_arr[i]);
-			if( merged_arr[i].name == alert.site )
-			{
-				// Tag the site on merged_arr as cleared
-				// else if not, it is candidate for lowering already
-				merged_arr[i].forRelease = true;
+        if (!isValidButNeedsManual) {
+            const return_obj = getLatestTrigger(entry);
+            entry = Object.assign({}, entry, return_obj);
+        }
 
-				if( moment(merged_arr[i].data_timestamp).isSame(alert.timestamp) )
-				{
-					forUpdating = false; break;
-				}
+        let forUpdating = true;
+        // Check if alert entry is already updated on latest/overdue table
+        const index = merged_arr.findIndex(elem => elem.name === entry.site);
 
-				if ( moment(merged_arr[i].trigger_timestamp).isSameOrAfter(alert.latest_trigger_timestamp) )
-				{
+        if (index !== -1) {
+            // Tag the site on merged_arr as cleared
+            // else if not, it is candidate for lowering already
+            merged_arr[index].forRelease = true;
 
-					// alert.status = "valid";
-					alert.latest_trigger_timestamp = "end";
-					alert.trigger = "No new triggers";
-				}
+            const { data_timestamp, trigger_timestamp } = merged_arr[index];
+            const { latest_trigger_timestamp, timestamp } = entry;
 
-				if(isValidButNeedsManual) 
-				{
-					alert.latest_trigger_timestamp = "manual";
-					alert.trigger = "manual";
-					alert.validity = "manual";
-					alert.isManual = true;
-				}
-			}
-		}
+            if (moment(data_timestamp).isSame(timestamp)) {
+                forUpdating = false;
+            }
 
-		//if(forUpdating && !isInvalid) final.push(alert);
-		if(forUpdating) final.push(alert);
+            if (moment(trigger_timestamp).isSameOrAfter(latest_trigger_timestamp)) {
+                entry.latest_trigger_timestamp = "end";
+                entry.trigger = "No new triggers";
+            }
 
-	});
+            if (isValidButNeedsManual) {
+                entry.latest_trigger_timestamp = "manual";
+                entry.trigger = "manual";
+                entry.validity = "manual";
+                entry.isManual = true;
+            }
+        }
 
-	let no_alerts_map = no_alerts.map( x => x.site );
+        if (forUpdating) return_arr.push(entry);
+    });
+    return return_arr;
+}
 
-	// Tag a site as candidate for lowering if it has alert
-	// on site but already A0 on json
-	merged_arr.forEach(function (a) {
-		if ( typeof a.forRelease == "undefined" )
-		{
-			let index = no_alerts_map.indexOf(a.name);
-			let x = no_alerts[index];
-			//console.log(a);
-			
-			// Check if alert for site is A0 and not yet released
-			if( !moment(a.data_timestamp).isSame( x.timestamp ) && a.internal_alert_level != "A0" && a.internal_alert_level != "ND" )
-			{
-				x.status = "valid";
-				x.latest_trigger_timestamp = "end";
-				x.trigger = "No new triggers";
-				x.validity = "end";
-				final.push(x);
-			}
-		}
-	});
+function getAllInvalidTriggersForSite (invalid_arr, site_code) {
+    const site_invalids = [];
+    for (let i = 0; i < invalid_arr.length; i += 1) {
+        if (invalid_arr[i].site === site_code) { site_invalids.push(invalid_arr[i]); }
+    }
+    site_invalids.sort((a, b) => {
+        if (a.alert > b.alert) return -1;
+        return ((b.alert > a.alert) ? 1 : 0);
+    });
+    return site_invalids;
+}
 
-	// Prepare releases for extended sites if it is 11:30 for data timestamp
-	let extended_sites = ongoing.extended;
-	extended_sites.forEach( function (site) 
-	{
-		let index = no_alerts_map.indexOf(site.name);
-		if( index > -1 ) 
-		{
-			let x = no_alerts[index];
+function adjustAlertLevelIfInvalidSensor (public_alert, entry) {
+    const {
+        internal_alert, sensor_alert, ground_alert,
+        retriggerTS: retriggers
+    } = entry;
+    let public_alert_level,
+        internal_alert_level,
+        invalid_index;
 
-			// Check if alert for site is not yet released and not Day 0
-			if( !moment(site.data_timestamp).isSame( x.timestamp ) && site.day > 0 ) {
-				// Check if JSON entry data timestamp is 11:30 for release
-				if( moment(x.timestamp).hour() == "11" && moment(x.timestamp).minute() == "30"  ) {
-					x.status = "extended";
-					x.latest_trigger_timestamp = "extended";
-					x.trigger = "extended";
-					x.validity = "extended";
-					final.push(x);
-				}
-			}
-		}
-	});
+    const isL2Available = getRetriggerIndex(retriggers, "L2");
+    if (isL2Available > -1 && public_alert === "A3") {
+        public_alert_level = "A2";
+        internal_alert_level = internal_alert.replace(/S0*/g, "s").replace("A3", "A2");
 
-	return final;
+        invalid_index = getRetriggerIndex(retriggers, "L3");
+    } else {
+        public_alert_level = "A1";
+        internal_alert_level = internal_alert.replace(/[sS]0*/g, "");
+
+        const hasSensorData = sensor_alert.filter(x => x.alert !== "ND");
+        if (hasSensorData === 0 && ground_alert === "g0") internal_alert_level = internal_alert_level.replace(/A[1-3]/g, "ND");
+        else internal_alert_level = internal_alert_level.replace(/A[1-3]/g, "A1");
+
+        invalid_index = getRetriggerIndex(retriggers, "L2");
+    }
+
+    const obj = {
+        alert: public_alert_level,
+        internal_alert: internal_alert_level,
+        invalid_index
+    };
+
+    return obj;
+}
+
+function getRetriggerIndex (retriggers, trigger) {
+    const temp = retriggers.map(x => x.retrigger).indexOf(trigger);
+    return temp;
+}
+
+function adjustAlertLevelIfInvalidRain (entry) {
+    const { internal_alert, retriggerTS: retriggers } = entry;
+
+    // Rain trigger is plain invalid
+    const internal_alert_level = internal_alert.replace(/R0*/g, "");
+    const invalid_index = getRetriggerIndex(retriggers, "r1");
+
+    const obj = {
+        internal_alert: internal_alert_level,
+        invalid_index
+    };
+    return obj;
+}
+
+function getLatestTrigger (entry) {
+    const retriggers = entry.retriggerTS;
+    let max = null;
+    for (let i = 0; i < retriggers.length; i += 1) {
+        if (max == null || moment(max.timestamp).isBefore(retriggers[i].timestamp)) {
+            max = retriggers[i];
+        }
+    }
+    return {
+        latest_trigger_timestamp: max.timestamp,
+        trigger: max.retrigger
+    };
+}
+
+function tagSitesForLowering (merged_arr, no_alerts) {
+    const return_arr = [];
+    const lowering_index = [];
+    // Tag a site as candidate for lowering if it has alert
+    // on site but already A0 on json
+    merged_arr.forEach((site) => {
+        if (typeof site.forRelease === "undefined") {
+            const index = no_alerts.findIndex(elem => elem.site === site.name);
+            let x = no_alerts[index];
+            lowering_index.push(index);
+
+            const { data_timestamp, internal_alert_level } = site;
+            // Check if alert for site is A0 and not yet released
+            if (!moment(data_timestamp).isSame(x.timestamp) && internal_alert_level !== "A0" && internal_alert_level !== "ND") {
+                x = Object.assign({}, x, {
+                    status: "valid",
+                    latest_trigger_timestamp: "end",
+                    trigger: "No new triggers",
+                    validity: "end"
+                });
+                return_arr.push(x);
+            }
+        }
+    });
+    return [return_arr, lowering_index];
+}
+
+function prepareSitesForExtendedRelease (extended_sites, no_alerts) {
+    const return_arr = [];
+    const extended_index = [];
+    extended_sites.forEach((site) => {
+        const index = no_alerts.findIndex(elem => elem.site === site.name);
+        if (index > -1) {
+            let x = no_alerts[index];
+            extended_index.push(index);
+
+            const { data_timestamp, day } = site;
+            const { timestamp } = x;
+            // Check if alert for site is not yet released and not Day 0
+            if (!moment(data_timestamp).isSame(timestamp) && day > 0) {
+                // Check if JSON entry data timestamp is 11:30 for release
+                if (moment(timestamp).hour() === 11 && moment(timestamp).minute() === 30) {
+                    x = Object.assign({}, x, {
+                        status: "extended",
+                        latest_trigger_timestamp: "extended",
+                        trigger: "extended",
+                        validity: "extended"
+                    });
+                    return_arr.push(x);
+                }
+            }
+        }
+    });
+    return [return_arr, extended_index];
+}
+
+function prepareSitesForRoutineRelease (no_alerts, excluded_index, invalid_entries) {
+    // Outside array pertains to season group [season 1, season 2]
+    // Inside arrays contains months (0 - January, 11 - December)
+    const wet = [[0, 1, 5, 6, 7, 8, 9, 10, 11], [4, 5, 6, 7, 8, 9]];
+    const dry = [[2, 3, 4], [0, 1, 2, 3, 10, 11]];
+
+    const { timestamp: data_timestamp } = no_alerts[0];
+    const datetime = moment(data_timestamp);
+    const weekday = datetime.isoWeekday(); // 1 - Monday, 7 - Sunday
+    let matrix = null;
+    const return_arr = [];
+    const routine_list = [];
+    
+    if (datetime.format("HH:mm") === "11:30") {
+        if (weekday === 3) matrix = dry;
+        else if (weekday === 2 || weekday === 5) matrix = wet;
+    }
+
+    if (matrix !== null) {
+        const merged = [...no_alerts, ...invalid_entries];
+        merged.forEach((entry, index) => {
+            const { site: site_code, timestamp } = entry;
+            const month = moment(timestamp).month();
+            const { season } = dynaslope_sites.find(site => site.name === site_code);
+
+            if (matrix[season - 1].includes(month)) {
+                const is_sent = sent_routine.some(x => x.site_code === entry.site);
+                let is_invalid = false;
+                if (typeof entry.status !== "undefined" && entry.status === "invalid") is_invalid = true;
+                let is_excluded = false;
+
+                if (!is_sent) {
+                    if (is_invalid) {
+                        const { ground_alert, sensor_alert } = entry;
+                        let internal_alert = "A0";
+                        if (sensor_alert.length === 0) {
+                            if (ground_alert === "g0") internal_alert = "ND";
+                        }
+                        entry.internal_alert = internal_alert;
+                    } else {
+                        is_excluded = excluded_index.includes(index);
+                    }
+
+                    if (!is_excluded) {
+                        routine_list.push(entry);
+                    }
+                }
+            }
+        });
+
+        if (routine_list.length !== 0) {
+            return_arr.push({
+                site: "routine",
+                timestamp: routine_list[0].timestamp,
+                latest_trigger_timestamp: "routine",
+                trigger: "routine",
+                validity: "routine",
+                routine_list
+            });
+        }
+    }
+    return return_arr;
 }
