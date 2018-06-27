@@ -812,7 +812,7 @@ function insertEventRelease (data) {
         doSend("updateDashboardTables");
 
         const { timestamp_entry } = data;
-        const baseline = timestamp_entry.add(30, "minutes");
+        const baseline = moment(timestamp_entry).add(30, "minutes");
         const exec_time = moment().diff(baseline);
         const report = {
             type: "timeliness",
