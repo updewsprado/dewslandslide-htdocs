@@ -234,7 +234,7 @@ function sendMail (text, subject, filename, recipients) {
         if (data === "Sent.") {
             console.log("Email sent");
 
-            const baseline = bulletin_timestamp.add(20, "minutes");
+            const baseline = moment(bulletin_timestamp).add(20, "minutes");
             const exec_time = moment().diff(bulletin_timestamp);
             const report = {
                 type: "timeliness",
