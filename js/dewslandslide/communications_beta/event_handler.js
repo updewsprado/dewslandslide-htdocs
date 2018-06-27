@@ -225,7 +225,7 @@ function addNewMobileForEmployee () {
 			"</div>"+
 			"<div class='col-md-4' hidden>"+
 			"<label>Mobile ID #:</label>"+
-			"<input type='text' id='employee_mobile_id_"+employee_input_count+"' class='form-control employee_mobile_id' value='' disabled>"+
+			"<input type='text' id='employee_mobile_id_"+employee_input_count+"' class='form-control employee_mobile_id' disabled>"+
 			"</div>"+
 			"<div class='col-md-4'>"+
 			"<div class='form-group hideable'>"+
@@ -262,7 +262,7 @@ function addNewMobileForEmployee () {
 		    "<div class='col-md-6'>"+
 			"<div class='form-group hideable'>"+
 	        "<label class='control-label' for='employee_landline_number_"+employee_input_count_landline+"'>Landline #</label>"+
-			"<input type='number' class='form-control' id='employee_landline_number_"+employee_input_count_landline+"' name='employee_landline_number_"+employee_input_count+"' required/>"+
+			"<input type='number' class='form-control' id='employee_landline_number_"+employee_input_count_landline+"' name='employee_landline_number_"+employee_input_count_landline+"' required/>"+
 			"</div>"+
 			"</div>"+
 			"<div class='col-md-4' hidden>"+
@@ -448,7 +448,6 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		};
 		landline_numbers.push(landline_number_raw);
 	}
-
 
 	contact_data = {
 		"user_id": $("#user_id_cc").val(),

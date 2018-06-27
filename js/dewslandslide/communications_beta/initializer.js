@@ -351,7 +351,7 @@ function communityContactFormValidation () {
 			    organization_selected.push($(this).attr('value'));
 			});
 
-			$("#org-and-site-alert").show(300);
+			$("#org-and-site-alert").hide(300);
 			if (site_selected.length === 0 && organization_selected.length === 0) {
 				$("#selection-feedback").text("site and organization selection");
 			} else if (site_selected.length === 0) {

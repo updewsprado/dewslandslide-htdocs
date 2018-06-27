@@ -308,15 +308,37 @@ function displayUpdateEmployeeDetails (employee_data) {
 	$("#gender_ec").val(employee_data.contact_info.gender);
 	$("#active_status_ec").val(employee_data.contact_info.contact_active_status);
 
-	for (var counter = 0; counter < employee_data.email_data.length; counter++) {
+	for (let counter = 0; counter < employee_data.email_data.length; counter++) {
 		$('#email_ec').tagsinput('add',employee_data.email_data[counter].email);
 	}
 
-	for (var counter = 0; counter < employee_data.team_data.length; counter+=1) {
+	for (let counter = 0; counter < employee_data.team_data.length; counter+=1) {
 		$('#team_ec').tagsinput('add',employee_data.team_data[counter].team_name);
 	}
-}
 
+	for (let counter = 0; counter < employee_data.mobile_data.length; counter+=1) {
+		if(employee_data.mobile_data[counter].number != null){
+			$("#employee-add-number").click();
+			const number_count = employee_input_count - 1;
+			$("#employee_mobile_number_"+number_count).val(employee_data.mobile_data[counter].number);
+			$("#employee_mobile_status_"+number_count).val(employee_data.mobile_data[counter].number_status);
+			$("#employee_mobile_priority_"+number_count).val(employee_data.mobile_data[counter].priority);
+			$("#employee_mobile_id_"+number_count).val(employee_data.mobile_data[counter].number_id);
+		}
+		
+	}
+
+	for (let counter = 0; counter < employee_data.landline_data.length; counter+=1) {
+		if(employee_data.landline_data[counter].landline_number != null){
+			$("#employee-add-landlie").click();
+			const number_count = employee_input_count - 1;
+			$("#employee_landline_number_"+number_count).val(employee_data.landline_data[counter].landline_number);
+			$("#employee_landline_remarks_"+number_count).val(employee_data.landline_data[counter].landline_remarks);
+			$("#employee_mobile_id_"+number_count).val(employee_data.landline_data[counter].landline_id);
+		}
+	}
+}
+  
 function displayUpdateCommunityDetails (community_data) {
 	console.log(community_data);
 	let user_orgs = [];
@@ -329,18 +351,36 @@ function displayUpdateCommunityDetails (community_data) {
 	$("#birthdate_cc").val(community_data.contact_info.birthday);
 	$("#gender_cc").val(community_data.contact_info.gender);
 	$("#active_status_cc").val(community_data.contact_info.contact_active_status);
-	// if (community_data.ewi_data[0].ewi_status === "Active") {
-	// 	$("#ewirecipient_cc").val(1);
-	// }else {
-	// 	$("#ewirecipient_cc").val(0);
-	// }
+	if (community_data.ewi_data[0].ewi_status === "Active") {
+		$("#ewirecipient_cc").val(1);
+	}else {
+		$("#ewirecipient_cc").val(0);
+	}
+
+	for (let counter = 0; counter < community_data.mobile_data.length; counter+=1) {
+		if(community_data.mobile_data[counter].number != null){
+			$("#community-add-number").click();
+			const number_count = community_input_count - 1;
+			$("#community_mobile_number_"+number_count).val(community_data.mobile_data[counter].number);
+			$("#community_mobile_status_"+number_count).val(community_data.mobile_data[counter].number_status);
+			$("#community_mobile_priority_"+number_count).val(community_data.mobile_data[counter].priority);
+			$("#community_mobile_id_"+number_count).val(community_data.mobile_data[counter].number_id);
+		}
+		
+	}
+
+	for (let counter = 0; counter < community_data.landline_data.length; counter+=1) {
+		if(community_data.landline_data[counter].landline_number != null){
+			$("#community-add-landlie").click();
+			const number_count = employee_input_count - 1;
+			$("#community_landline_number_"+number_count).val(community_data.landline_data[counter].landline_number);
+			$("#community_landline_remarks_"+number_count).val(community_data.landline_data[counter].landline_remarks);
+			$("#community_mobile_id_"+number_count).val(community_data.landline_data[counter].landline_id);
+		}
+	}
 
 	displaySiteSelection(community_data.list_of_sites, community_data.org_data);
 	displayOrganizationSelection(community_data.list_of_orgs, community_data.org_data);
-}
-
-function displayTeamsForEmployee () {
-
 }
 
 function loadSiteConversation(){
