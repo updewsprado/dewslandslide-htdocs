@@ -95,6 +95,9 @@ function connectWS() {
 					console.log(msg_data.data);
 					displayConversationTags(msg_data.data);
 					break;
+				case "fetchAlertStatus":
+					displayEWITemplateOptions(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;

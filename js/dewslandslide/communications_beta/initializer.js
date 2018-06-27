@@ -5,6 +5,7 @@ $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	setTimeout(function() {
 		initializeQuickInboxMessages();
+        initializeDatepickers();
 		getRecentActivity();
         recentActivityInitializer();
         getRoutineSites();
@@ -82,18 +83,6 @@ function getRecentActivity () {
 	getRecentlyViewedContacts();
 	getRecentlyViewedSites();
 	getOnRoutineSites();
-}
-
-function getRecentlyViewedContacts () {
-
-}
-
-function getRecentlyViewedSites () {
-
-}
-
-function getOnRoutineSites () {
-
 }
 
 function getQuickAcces () {
@@ -507,8 +496,6 @@ function getRoutineTemplate() {
 }
 
 function displayRoutineReminder(sites,template) {
-	console.log(sites);
-	console.log(template);
 	let day = moment().format("dddd");
     let month = moment().month();
     month += 1;
@@ -579,4 +566,11 @@ function displayRoutineReminder(sites,template) {
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
+}
+
+function initializeDatepickers() {
+    $("#ewi-date-picker").datetimepicker({
+        locale: "en",
+        format: "YYYY-MM-DD HH:mm:ss"
+    });
 }

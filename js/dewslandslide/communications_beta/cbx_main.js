@@ -533,3 +533,21 @@ function addContactsActivity (contacts) {
     recent_contacts_collection.push(contacts);
     localStorage.rv_contacts = JSON.stringify(recent_contacts_collection);
 }
+
+function displayEWITemplateOptions(data) {
+    for (let counter = 0; counter < data.alert_status.length; counter++) {
+        $("#alert_status").append($("<option>", {
+            value: data.alert_status[counter].alert_status,
+            text: data.alert_status[counter].alert_status
+        }));
+    }
+
+    for (let counter = 0; counter < data.site_code.length; counter ++) {
+        $("#sites").append($("<option>", {
+            value: data.site_code[counter].site_code,
+            text: data.site_code[counter].site_code
+        }));
+    }
+
+    $("#early-warning-modal").modal("toggle");
+}

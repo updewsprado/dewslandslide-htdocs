@@ -3,7 +3,6 @@ let site_selected = [];
 let organization_selected = [];
 
 $(document).ready(function() {
-
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
 	initializeOnClickQuickInbox();
@@ -16,7 +15,12 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
+<<<<<<< Updated upstream
 	$(".collapse").collapse("show");
+=======
+	initializeAlertStatusOnChange();
+	initializeEWITemplateModal();
+>>>>>>> Stashed changes
 });
 
 function initializeGetQuickGroupSelection () {
@@ -542,6 +546,27 @@ function getSmsTags (sms_id) {
 
 	wss_connect.send(JSON.stringify(message));
 }
+
+function initializeEWITemplateModal() {
+	$("#btn-ewi").click(function() {
+		$("#alert-lvl").empty();
+        $("#sites").empty();
+        $("#alert_status").empty();
+        $("#alert_lvl").empty();
+        $("#internal_alert").empty();
+
+        $("#alert_status").append($("<option>", {
+            value: "------------",
+            text: "------------"
+        }));
+
+        const alert_status = {
+        	type: "getAlertStatus"
+        };
+        wss_connect.send(JSON.stringify(alert_status));
+	});
+}
+
 function OnClickConfirmTagging (message_details) {
 	$("#confirm-tagging").click(function(){
 		// $("#narrative-modal").modal({backdrop: 'static', keyboard: false});
@@ -648,4 +673,6 @@ function displayConversationTags (conversation_tags) {
 	}
 }
 
-
+function initializeAlertStatusOnChange() {
+	
+}
