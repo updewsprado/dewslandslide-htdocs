@@ -806,7 +806,7 @@ function initializeReleaseModalForm () {
 }
 
 function insertEventRelease (data) {
-    $.post("../pubrelease/inset", data)
+    $.post("../pubrelease/insert", data)
     .done((result, textStatus, jqXHR) => {
         console.log(result);
         doSend("updateDashboardTables");
