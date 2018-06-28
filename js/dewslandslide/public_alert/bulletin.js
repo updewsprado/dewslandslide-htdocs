@@ -221,7 +221,8 @@ function sendMail (text, subject, filename, recipients) {
     const form = {
         text,
         subject,
-        filename
+        filename,
+        recipients
     };
 
     console.log(text, subject, filename);
@@ -247,7 +248,7 @@ function sendMail (text, subject, filename, recipients) {
 
             $(`#${release_id}`).css("color", "red").attr("data-sent", 1);
 
-            insertNarrative();
+            insertNarrative(recipients);
 
             $("#resultModal .modal-body").html("<strong>SUCCESS:</strong>&ensp;Early warning information and bulletin successfully sent through mail!");
             $("#resultModal").modal("show");
@@ -267,7 +268,7 @@ function mailBulletin (form) {
     return $.post("/../../bulletin/mail/", form);
 }
 
-function insertNarrative () {
+function insertNarrative (recipients) {
     const people = recipients.map((x) => {
         if (x === "rusolidum@phivolcs.dost.gov.ph") return "RUS";
         if (x === "asdaag48@gmail.com") return "ASD";
