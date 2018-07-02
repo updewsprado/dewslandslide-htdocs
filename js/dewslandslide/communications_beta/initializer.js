@@ -426,12 +426,10 @@ function getRecentActivity () {
 
     if (localStorage.getItem("rv_sites") != null) {
         recent_sites_collection = JSON.parse(localStorage.rv_sites);
-        console.log(recent_sites_collection);
     }
 
     if (localStorage.getItem("rv_contacts") != null) {
         recent_contacts_collection = JSON.parse(localStorage.rv_contacts);
-        console.log(recent_contacts_collection);
     }
 
     if (recent_contacts_collection.length != 0) {

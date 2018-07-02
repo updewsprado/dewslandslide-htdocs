@@ -98,6 +98,9 @@ function connectWS() {
 				case "fetchAlertStatus":
 					displayEWITemplateOptions(msg_data.data);
 					break;
+				case "fetchEWISettings":
+					displayEWIAlertLvlInternalLvl(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;

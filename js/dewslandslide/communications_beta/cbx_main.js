@@ -260,7 +260,6 @@ function displayConversationPanel(msg_data, full_data, recipients) {
 }
 
 function displayUpdatedMessages(data) {
-	console.log(data);
 	latest_conversation_timestamp = data.ts_written;
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
 	message_container.unshift(data);
@@ -479,7 +478,6 @@ function updateSmsoutboxConversationBubble(data) {
 
 function displayImportantTags (data , is_loaded = false) {
 	if(is_loaded === true) {
-		console.log(data);
 		important_tags = data;
 		data.join(", ");
 		$("#important_tags").empty();
@@ -519,8 +517,6 @@ function addSitesActivity (sites) {
 }
 
 function addContactsActivity (contacts) {
-	console.log(recent_contacts_collection);
-	console.log(contacts);
     for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
         if (recent_contacts_collection[counter].data.full_name == contacts.data.full_name) {
             return 1;
@@ -545,9 +541,37 @@ function displayEWITemplateOptions(data) {
     for (let counter = 0; counter < data.site_code.length; counter ++) {
         $("#sites").append($("<option>", {
             value: data.site_code[counter].site_code,
-            text: data.site_code[counter].site_code
+            text: data.site_code[counter].site_code.toUpperCase()
         }));
     }
-
     $("#early-warning-modal").modal("toggle");
+}
+
+function displayEWIAlertLvlInternalLvl(data) {
+    $("#alert-lvl").empty();
+    $("#internal-alert").empty();
+
+    $("#alert-lvl").append($("<option>", {
+        value: "------------",
+        text: "------------"
+    }));
+
+    $("#internal-alert").append($("<option>", {
+        value: "------------",
+        text: "------------"
+    }));
+
+    for (var counter = 0; counter < data.length; counter++) {
+        if (data[counter].alert_symbol_level.toLowerCase().indexOf("alert") > -1) {
+            $("#alert-lvl").append($("<option>", {
+                value: data[counter].alert_symbol_level,
+                text: data[counter].alert_symbol_level
+            }));
+        } else {
+            $("#internal-alert").append($("<option>", {
+                value: data[counter].alert_symbol_level,
+                text: data[counter].alert_symbol_level
+            }));
+        }
+    }
 }
