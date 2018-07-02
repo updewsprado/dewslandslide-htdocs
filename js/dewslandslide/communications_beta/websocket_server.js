@@ -101,6 +101,9 @@ function connectWS() {
 				case "fetchEWISettings":
 					displayEWIAlertLvlInternalLvl(msg_data.data);
 					break;
+				case "searchMessageGlobal":
+					console.log(msg_data.data);
+					break;	
 				default:
 					console.log("No request to load.");
 					break;

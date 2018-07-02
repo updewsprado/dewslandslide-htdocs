@@ -15,10 +15,16 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
+<<<<<<< Updated upstream
 	initializeAlertStatusOnChange();
 	initializeEWITemplateModal();
 	initializeConfirmEWITemplateViaChatterbox();
 	// $(".collapse").collapse("show"); -- change
+=======
+	initializeQuickSearchModal();
+	initializeQuickSearchMessages();
+	initializeClearQuickSearchInputs();
+>>>>>>> Stashed changes
 });
 
 function initializeGetQuickGroupSelection () {
@@ -29,16 +35,17 @@ function initializeGetQuickGroupSelection () {
 
 function initializeContactSettingsButton () {
 	$('#btn-contact-settings').click(function(){
-		// if (connection_status === false){
-		// 	console.log("NO CONNECTION");
-		// } else {
+		if (connection_status === false){
+			console.log("NO CONNECTION");
+		} else {
 			$('#contact-settings').modal("toggle");
 			displayContactSettingsMenu();
 			addNewMobileForEmployee();
 			addNewMobileForCommunity();
 			$("#contact-category").val("default").change();
 			$("#settings-cmd").prop('disabled', true);
-		// }
+			$(".collapse").collapse("show");
+		}
 	});
 }
 
@@ -679,6 +686,60 @@ function initializeAlertStatusOnChange() {
         }
         wss_connect.send(JSON.stringify(alert_request));
     });
+}
+function initializeQuickSearchModal () {
+	$('#btn-gbl-search').click(function(){
+		$("#quick-search-modal").modal({backdrop: 'static', keyboard: false});
+	});
+}
+
+function initializeQuickSearchMessages () {
+	$('#submit-search').click(function(){
+		const search_via = $("#search-via").val();
+		const search_key = $("#search-keyword").val();
+		let request = null;
+		switch(search_via) {
+			case "messages":
+				request = {
+					type: "searchMessageGlobal",
+					searchKey: search_key
+				}
+				break;
+			case "gintags":
+				request = {
+					type: "searchGintagMessages",
+					searchKey: search_key
+				}
+				break;
+			case "ts_sent":
+				request = {
+					type: "searchGintagMessages",
+					searchKey: search_key
+				}
+				break;
+			case "ts_written":
+				request = {
+					type: "searchGintagMessages",
+					searchKey: search_key
+				}
+				break;
+			case "unknown":
+				request = {
+					type: "searchGintagMessages",
+					searchKey: search_key
+				}
+				break;
+		}
+		console.log(request);
+		wss_connect.send(JSON.stringify(request));
+	});
+}
+
+function initializeClearQuickSearchInputs () {
+	$('#clear-search').click(function(){
+		$("#search-limit").val("");
+		$("#search-keyword").val("");
+	});
 }
 
 function initializeConfirmEWITemplateViaChatterbox() {
