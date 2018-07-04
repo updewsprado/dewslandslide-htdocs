@@ -95,6 +95,7 @@ function displaySitesSelection(data) {
 }
 
 function startConversation(details) {
+	$("#conversation-details").empty();
 	try {
 		let convo_details = {
 			type: 'loadSmsConversation',
@@ -242,13 +243,15 @@ function displayOrganizationSelection (orgs,user_orgs = []) {
 }
 
 function displayConversationPanel(msg_data, full_data, recipients) {
+	$("#messages").empty();
+	$(".recent_activities").addClass("hidden");
+	$("#main-container").removeClass("hidden");
+
+	$("#conversation-details").append(full_data);
 	conversation_recipients = [];
 	recipients.forEach(function(user){
 		conversation_recipients.push(user.user_id);
 	});
-	$('#messages').empty();
-	$(".recent_activities").addClass("hidden");
-	$("#main-container").removeClass("hidden");
 	message_container = [];
 	recipient_container = [];
 	recipients.forEach(function(mobile_data){
@@ -587,5 +590,9 @@ function displaySearchedKey(data) {
 		let html_string = $('#search-global-result').html();
 		$('#search-global-result').html(html_string+messages_html);
 		search_key_container = [];
-	});
+});
+
+function displayTemplateInChatbox (data) {
+	$("#msg").val("");
+	$("#msg").val(data);
 }

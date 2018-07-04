@@ -48,6 +48,7 @@ function initializeContactSettingsButton () {
 
 function initializeOnClickQuickInbox () {
 	$("body").on("click","#quick-inbox-display li",function(){
+		$("#msg").val("");
 		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
 		let firstname = raw_name[1].trim();
 		let lastname = raw_name[0].split("-")[1].trim();
@@ -209,8 +210,23 @@ function initializeGoChatOnClick () {
 function initializeGoLoadOnClick () {
 	$("#go-load-groups").click(function() {
 		loadSiteConversation();
+		const offices_selected = [];
+		const sites_selected = [];
+		$("#conversation-details").empty();
+		$("#modal-select-sitenames input:checked").each(function() {
+		    sites_selected.push($(this).closest('label').text());
+		});
+		$("#modal-select-offices input:checked").each(function() {
+		    offices_selected.push($(this).attr('value'));
+		});
+
+		const sites = sites_selected.join(", ");
+		const offices = offices_selected.join(", ");
+		console.log("Site(s): "+sites+" | Office(s): "+offices+"");
+		$("#conversation-details").append("Site(s): "+sites+" | Office(s): "+offices+"");
 	});
 }
+
 
 function initializeSendMessageOnClick () {
 	$("#send-msg").click(function() {
@@ -796,13 +812,14 @@ function initializeConfirmEWITemplateViaChatterbox() {
                 internal_alert: $("#internal-alert").val() == "------------" ? "N/A" : $("#internal-alert").val(),
                 alert_level: $("#alert-lvl").val() == "------------" ? "N/A" : $("#alert-lvl").val(),
                 alert_status: $("#alert_status").val() == "------------" ? "N/A" : $("#alert_status").val(),
+                formatted_data_timestamp: moment($("#ewi-date-picker input").val()).format('MMMM D, YYYY h:mm A'),
                 data_timestamp: $("#ewi-date-picker input").val()
         	};
-        	
             let template_request = {
             	type: "fetchTemplateViaLoadTemplateCbx",
                 data: template_container
             };
+            console.log(template_request);
             wss_connect.send(JSON.stringify(template_request));
         }
     });
