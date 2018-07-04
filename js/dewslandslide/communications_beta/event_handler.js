@@ -61,6 +61,8 @@ function initializeOnClickQuickInbox () {
 			site: site,
 			number: "N/A"
 		}
+		$("#conversation-details").empty();
+		$("#conversation-details").append(site+" "+office+" - "+firstname+" "+lastname);
 		startConversation(conversation_details);
 	});
 }
@@ -202,12 +204,28 @@ function initializeGoChatOnClick () {
 			site: site,
 			number: "N/A"
 		}
+		$("#conversation-details").empty();
+		$("#conversation-details").append(site+" "+office+" - "+firstname+" "+lastname);
 		startConversation(conversation_details);
 	});
 }
 
 function initializeGoLoadOnClick () {
 	$("#go-load-groups").click(function() {
+		const offices_selected = [];
+		const sites_selected = [];
+		$("#conversation-details").empty();
+		$("#modal-select-sitenames input:checked").each(function() {
+		    sites_selected.push($(this).closest('label').text());
+		});
+		$("#modal-select-offices input:checked").each(function() {
+		    offices_selected.push($(this).attr('value'));
+		});
+
+		const sites = sites_selected.join(", ");
+		const offices = offices_selected.join(", ");
+		console.log("Site(s): "+sites+" | Office(s): "+offices+"");
+		$("#conversation-details").append("Site(s): "+sites+" | Office(s): "+offices+"");
 		loadSiteConversation();
 	});
 }
