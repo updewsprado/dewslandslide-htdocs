@@ -15,16 +15,13 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
-<<<<<<< Updated upstream
 	initializeAlertStatusOnChange();
 	initializeEWITemplateModal();
 	initializeConfirmEWITemplateViaChatterbox();
-	// $(".collapse").collapse("show"); -- change
-=======
 	initializeQuickSearchModal();
 	initializeQuickSearchMessages();
 	initializeClearQuickSearchInputs();
->>>>>>> Stashed changes
+	initializeLoadSearchedKeyMessage();
 });
 
 function initializeGetQuickGroupSelection () {
@@ -695,38 +692,45 @@ function initializeQuickSearchModal () {
 
 function initializeQuickSearchMessages () {
 	$('#submit-search').click(function(){
+		$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 		const search_via = $("#search-via").val();
 		const search_key = $("#search-keyword").val();
+		const search_limit = $("#search-limit").val();
 		let request = null;
 		switch(search_via) {
 			case "messages":
 				request = {
 					type: "searchMessageGlobal",
-					searchKey: search_key
+					searchKey: search_key,
+					searchLimit: search_limit
 				}
 				break;
 			case "gintags":
 				request = {
 					type: "searchGintagMessages",
-					searchKey: search_key
+					searchKey: search_key,
+					searchLimit: search_limit
 				}
 				break;
 			case "ts_sent":
 				request = {
 					type: "searchGintagMessages",
-					searchKey: search_key
+					searchKey: search_key,
+					searchLimit: search_limit
 				}
 				break;
 			case "ts_written":
 				request = {
 					type: "searchGintagMessages",
-					searchKey: search_key
+					searchKey: search_key,
+					searchLimit: search_limit
 				}
 				break;
 			case "unknown":
 				request = {
 					type: "searchGintagMessages",
-					searchKey: search_key
+					searchKey: search_key,
+					searchLimit: search_limit
 				}
 				break;
 		}
@@ -801,5 +805,24 @@ function initializeConfirmEWITemplateViaChatterbox() {
             };
             wss_connect.send(JSON.stringify(template_request));
         }
+    });
+}
+
+function initializeLoadSearchedKeyMessage() {
+	$(document).on("click", "#search-global-result li", function () {
+        let data = ($(this).closest("li")).find("input[id='msg_details']").val().split("<split>");
+        let msg_data = {
+        	sms_id: data[0],
+        	sms_msg: data[1],
+        	ts: data[2],
+        	mobile_id: data[4],
+        	table_source: data[3]
+        };
+        const search_request = {
+        	type: "loadSearchedMessageKey",
+        	data: msg_data
+        };
+        wss_connect.send(JSON.stringify(search_request));
+        $(".recent_activities").hide();
     });
 }

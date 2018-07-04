@@ -101,8 +101,9 @@ function connectWS() {
 				case "fetchEWISettings":
 					displayEWIAlertLvlInternalLvl(msg_data.data);
 					break;
-				case "searchMessageGlobal":
-					console.log(msg_data.data);
+				case "fetchedSearchKeyViaGlobalMessage":
+					$('#chatterbox-loader-modal').modal("hide");
+					displaySearchedKey(msg_data.data);
 					break;	
 				default:
 					console.log("No request to load.");

@@ -19,6 +19,7 @@ let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html())
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
+let search_key_template = Handlebars.compile($('#search-message-key-template').html());
 
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
@@ -574,4 +575,17 @@ function displayEWIAlertLvlInternalLvl(data) {
             }));
         }
     }
+}
+
+function displaySearchedKey(data) {
+	data.forEach(function(result_data) {
+		console.log(result_data);
+		let search_key_container = [];
+		result_data.user == "You" ? result_data.isYou = 1 : result_data.isYou = 0;
+		search_key_container.unshift(result_data);
+		messages_html = search_key_template({'search_messages': search_key_container});
+		let html_string = $('#search-global-result').html();
+		$('#search-global-result').html(html_string+messages_html);
+		search_key_container = [];
+	});
 }
