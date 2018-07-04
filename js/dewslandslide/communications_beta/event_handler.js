@@ -686,6 +686,7 @@ function initializeAlertStatusOnChange() {
 }
 function initializeQuickSearchModal () {
 	$('#btn-gbl-search').click(function(){
+		$("search-global-result").empty();
 		$("#quick-search-modal").modal({backdrop: 'static', keyboard: false});
 	});
 }
@@ -714,7 +715,7 @@ function initializeQuickSearchMessages () {
 				break;
 			case "ts_sent":
 				request = {
-					type: "searchGintagMessages",
+					type: "searchViaTsSent",
 					searchKey: search_key,
 					searchLimit: search_limit
 				}
@@ -734,7 +735,6 @@ function initializeQuickSearchMessages () {
 				}
 				break;
 		}
-		console.log(request);
 		wss_connect.send(JSON.stringify(request));
 	});
 }
@@ -824,5 +824,6 @@ function initializeLoadSearchedKeyMessage() {
         };
         wss_connect.send(JSON.stringify(search_request));
         $(".recent_activities").hide();
+        $("#quick-search-modal").modal("hide");
     });
 }
