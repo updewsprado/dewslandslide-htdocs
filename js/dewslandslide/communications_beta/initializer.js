@@ -400,23 +400,23 @@ $("#routine-actual-option").on("click", function () {
 
     $(".rv_sites a").on("click", function () {
         $(".recent_activities").hide();
-        $("input[name=\"sitenames\"]").prop("checked", false);
-        $("input[name=\"offices\"]").prop("checked", false);
+        $("input[name='sitenames']").prop("checked", false);
+        $("input[name='orgs']").prop("checked", false);
 
         var index = $(this).closest("div").find("input[name='rs_index']").val();
         index = index.replace("activity_sites_index_", "");
         var data = recent_sites_collection[parseInt(index)];
 
-        for (var counter = 0; counter < data.offices.length; counter++) {
-            $("input[name=\"offices\"]:unchecked").each(function () {
-                if (data.offices[counter] == $(this).val()) {
+        for (var counter = 0; counter < data.organizations.length; counter++) {
+            $("input[name='orgs']:unchecked").each(function () {
+                if (data.organizations[counter] == $(this).val()) {
                     $(this).prop("checked", true);
                 }
             });
         }
 
         for (var counter = 0; counter < data.sitenames.length; counter++) {
-            $("input[name=\"sitenames\"]:unchecked").each(function () {
+            $("input[name='sitenames']:unchecked").each(function () {
                 if (data.sitenames[counter] == $(this).val()) {
                     $(this).prop("checked", true);
                 }
@@ -470,13 +470,13 @@ function getRecentActivity () {
             }
 
             for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length; sub_counter++) {
+                console.log(recent_sites_collection[counter]);
                 if (sub_counter == 0) {
-                    rv_quick_sites = recent_sites_collection[counter].sitenames[sub_counter];
+                    rv_quick_sites = recent_sites_collection[counter].site_code[sub_counter];
                 } else {
-                    rv_quick_sites = `${rv_quick_sites}, ${recent_sites_collection[counter].sitenames[sub_counter]}`;
+                    rv_quick_sites = `${rv_quick_sites}, ${recent_sites_collection[counter].site_code[sub_counter]}`;
                 }
             }
-
             $(".rv_sites").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_sites'><input name='rs_index' value = 'activity_sites_index_${counter}' hidden><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: ${rv_quick_sites}</strong><div class='last-message text-muted'>Offices: ${rv_quick_offices}</div></div></a></div>`);
         }
     } else {

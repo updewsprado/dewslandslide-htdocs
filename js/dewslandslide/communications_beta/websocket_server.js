@@ -41,9 +41,6 @@ function connectWS() {
 					break;
 				case "loadSmsConversation":
 					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients);
-					console.log(msg_data.data);
-					console.log(msg_data.full_name);
-					console.log(msg_data.recipients);
 					break;
 				case "updatedDwslContact":
 					contactSettingsFeedback(msg_data);

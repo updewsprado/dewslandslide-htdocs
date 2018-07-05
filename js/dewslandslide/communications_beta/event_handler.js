@@ -23,11 +23,12 @@ $(document).ready(function() {
 	initializeClearQuickSearchInputs();
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
+	getQuickGroupSelection();
 });
 
 function initializeGetQuickGroupSelection () {
-	$('#btn-advanced-search').click(function(){
-		getQuickGroupSelection();
+	$("#btn-advanced-search").on("click",function() {
+		$('#advanced-search').modal("toggle");
 	});
 }
 
