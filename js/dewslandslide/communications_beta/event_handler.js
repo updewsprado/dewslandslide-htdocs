@@ -22,6 +22,7 @@ $(document).ready(function() {
 	initializeQuickSearchMessages();
 	initializeClearQuickSearchInputs();
 	initializeLoadSearchedKeyMessage();
+	initializeSearchViaOption();
 });
 
 function initializeGetQuickGroupSelection () {
@@ -61,8 +62,6 @@ function initializeOnClickQuickInbox () {
 			site: site,
 			number: "N/A"
 		}
-		$("#conversation-details").empty();
-		$("#conversation-details").append(site+" "+office+" - "+firstname+" "+lastname);
 		startConversation(conversation_details);
 	});
 }
@@ -204,28 +203,12 @@ function initializeGoChatOnClick () {
 			site: site,
 			number: "N/A"
 		}
-		$("#conversation-details").empty();
-		$("#conversation-details").append(site+" "+office+" - "+firstname+" "+lastname);
 		startConversation(conversation_details);
 	});
 }
 
 function initializeGoLoadOnClick () {
 	$("#go-load-groups").click(function() {
-		const offices_selected = [];
-		const sites_selected = [];
-		$("#conversation-details").empty();
-		$("#modal-select-sitenames input:checked").each(function() {
-		    sites_selected.push($(this).closest('label').text());
-		});
-		$("#modal-select-offices input:checked").each(function() {
-		    offices_selected.push($(this).attr('value'));
-		});
-
-		const sites = sites_selected.join(", ");
-		const offices = offices_selected.join(", ");
-		console.log("Site(s): "+sites+" | Office(s): "+offices+"");
-		$("#conversation-details").append("Site(s): "+sites+" | Office(s): "+offices+"");
 		loadSiteConversation();
 	});
 }
@@ -709,6 +692,26 @@ function initializeQuickSearchModal () {
 	});
 }
 
+
+function initializeSearchViaOption() {
+	$("#search-via").on("change",function() {
+		let search_via = $(this).val();
+		switch(search_via) {
+			case "messages":
+				$("#search-keyword").attr("placeholder", "E.g Magandang Umaga");
+				break;
+			case "gintags":
+				$("#search-keyword").attr("placeholder", "E.g #EwiResponse");
+				break;
+			case "unknown":
+				$("#search-keyword").attr("placeholder", "E.g 09999999999");
+				break;
+			default:
+				$("#search-keyword").attr("placeholder", "Select search type.");
+				break;
+		}
+	});
+}
 function initializeQuickSearchMessages () {
 	$('#submit-search').click(function(){
 		$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
@@ -740,14 +743,14 @@ function initializeQuickSearchMessages () {
 				break;
 			case "ts_written":
 				request = {
-					type: "searchGintagMessages",
+					type: "searchViaTsWritten",
 					searchKey: search_key,
 					searchLimit: search_limit
 				}
 				break;
 			case "unknown":
 				request = {
-					type: "searchGintagMessages",
+					type: "searchViaUnknownNumber",
 					searchKey: search_key,
 					searchLimit: search_limit
 				}

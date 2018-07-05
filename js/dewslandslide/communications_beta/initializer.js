@@ -379,7 +379,7 @@ $("#routine-actual-option").on("click", function () {
         var index = $(this).closest("div").find("input[name='rc_index']").val();
         index = index.replace("activity_contacts_index_", "");
         var data = recent_contacts_collection[parseInt(index)];
-        $(".dropdown-input").val(data.name[0].fullname);
+        $(".dropdown-input").val(data.data.full_name);
         $("#go-chat").trigger("click");
     });
 
@@ -391,8 +391,9 @@ $("#routine-actual-option").on("click", function () {
         var index = $(this).closest("div").find("input[name='rs_index']").val();
         index = index.replace("activity_sites_index_", "");
         var data = recent_sites_collection[parseInt(index)];
+        console.log(data);
 
-        for (var counter = 0; counter < data.offices.length; counter++) {
+        for (var counter = 0; counter < data.organizations.length; counter++) {
             $("input[name=\"offices\"]:unchecked").each(function () {
                 if (data.offices[counter] == $(this).val()) {
                     $(this).prop("checked", true);

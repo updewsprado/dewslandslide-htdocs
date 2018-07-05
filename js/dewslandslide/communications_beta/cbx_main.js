@@ -578,7 +578,8 @@ function displayEWIAlertLvlInternalLvl(data) {
 }
 
 function displaySearchedKey(data) {
-	data.forEach(function(result_data) {
+	if (data != null) {
+		data.forEach(function(result_data) {
 		console.log(result_data);
 		let search_key_container = [];
 		result_data.user == "You" ? result_data.isYou = 1 : result_data.isYou = 0;
@@ -588,6 +589,7 @@ function displaySearchedKey(data) {
 		$('#search-global-result').html(html_string+messages_html);
 		search_key_container = [];
 	});
+	}
 }
 
 function displayTemplateInChatbox (data) {
