@@ -47,24 +47,6 @@ function initializeContactSettingsButton () {
 	});
 }
 
-function initializeOnClickQuickInbox () {
-	$("body").on("click","#quick-inbox-display li",function(){
-		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
-		let firstname = raw_name[1].trim();
-		let lastname = raw_name[0].split("-")[1].trim();
-		let office = raw_name[0].split(" ")[1].trim();
-		let site = raw_name[0].split(" ")[0].trim();
-		let conversation_details = {
-			full_name: $(this).closest('li').find("input[type='text']").val(),
-			firstname: firstname,
-			lastname: lastname,
-			office: office,
-			site: site,
-			number: "N/A"
-		}
-		startConversation(conversation_details);
-	});
-}
 function initializeContactCategoryOnSelectDesign () {
 	$('#contact-category option').prop('selected', function() {
 		$('#contact-category').css("border-color", "#d6d6d6");
@@ -188,6 +170,28 @@ function initializeQuickSelectionGroupFlagOnClick () {
 	});
 }
 
+
+function initializeOnClickQuickInbox () {
+	$("body").on("click","#quick-inbox-display li",function(){
+		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
+		let firstname = raw_name[1].trim();
+		let lastname = raw_name[0].split("-")[1].trim();
+		let office = raw_name[0].split(" ")[1].trim();
+		let site = raw_name[0].split(" ")[0].trim();
+		let conversation_details = {
+			full_name: $(this).closest('li').find("input[type='text']").val(),
+			firstname: firstname,
+			lastname: lastname,
+			office: office,
+			site: site,
+			number: "N/A"
+		}
+
+		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+		startConversation(conversation_details);
+	});
+}
+
 function initializeGoChatOnClick () {
 	$("#go-chat").click(function() {
 		let raw_name = $("#contact-suggestion").val().split(",");
@@ -203,12 +207,26 @@ function initializeGoChatOnClick () {
 			site: site,
 			number: "N/A"
 		}
+
+		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
 		startConversation(conversation_details);
 	});
 }
 
 function initializeGoLoadOnClick () {
 	$("#go-load-groups").click(function() {
+		const offices_selected = [];
+		const sites_selected = [];
+		$("#modal-select-sitenames input:checked").each(function() {
+		    sites_selected.push($(this).closest('label').text());
+		});
+		$("#modal-select-offices input:checked").each(function() {
+		    offices_selected.push($(this).attr('value'));
+		});
+
+		const sites = sites_selected.join(", ");
+		const offices = offices_selected.join(", ");
+		conversation_details_label = "Site(s): "+sites.toUpperCase()+" | Office(s): "+offices.toUpperCase();
 		loadSiteConversation();
 	});
 }

@@ -43,14 +43,29 @@ $(document).ready(function() {
 
 function getContactSuggestion (name_suggestion) {
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
-	let awesomplete = new Awesomplete(contact_suggestion_input);
+	let awesomplete = new Awesomplete(contact_suggestion_input,{
+            filter (text, input) {
+                return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
+            },replace (text) {
+                var before = this.input.value.match(/^.+;\s*|/)[0];
+                this.input.value = `${before + text}; `;
+            },minChars: 3
+        });
 	let contact_suggestion_container = [];
 
 	name_suggestion.data.forEach(function(raw_names) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
-
+	// $("#contact-suggestion").tagsinput({
+	// 	typeahead: {
+	// 		displayKey: 'text',
+	// 		afterSelect: function (val) { this.$element.val(""); },
+	// 		source: contact_suggestion_container
+	// 	}
+	// });
 	awesomplete.list = contact_suggestion_container;
+
+
 }
 
 function initializeQuickInboxMessages () {
@@ -379,7 +394,7 @@ $("#routine-actual-option").on("click", function () {
         var index = $(this).closest("div").find("input[name='rc_index']").val();
         index = index.replace("activity_contacts_index_", "");
         var data = recent_contacts_collection[parseInt(index)];
-        $(".dropdown-input").val(data.data.full_name);
+        $(".dropdown-input").val(data.name[0].fullname);
         $("#go-chat").trigger("click");
     });
 
@@ -391,9 +406,8 @@ $("#routine-actual-option").on("click", function () {
         var index = $(this).closest("div").find("input[name='rs_index']").val();
         index = index.replace("activity_sites_index_", "");
         var data = recent_sites_collection[parseInt(index)];
-        console.log(data);
 
-        for (var counter = 0; counter < data.organizations.length; counter++) {
+        for (var counter = 0; counter < data.offices.length; counter++) {
             $("input[name=\"offices\"]:unchecked").each(function () {
                 if (data.offices[counter] == $(this).val()) {
                     $(this).prop("checked", true);

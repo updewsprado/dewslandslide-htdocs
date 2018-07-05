@@ -314,7 +314,12 @@ div.awesomplete > ul {
 }
 
 .bootstrap-tagsinput {
-  width: 100%;
+  /*width: 100% !important;*/
+  display: block;
+  border-bottom-right-radius: 0px !important;
+  border-top-right-radius: 0px !important;
+  line-height: 24px !important;
+  /*size: 40;*/
 }
 
 p {

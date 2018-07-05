@@ -14,6 +14,7 @@ let community_input_count_landline = 1;
 let latest_conversation_timestamp = "";
 let psgc_scope_filter = [0,0,6,4,2];
 let important_tags = null;
+let conversation_details_label = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
@@ -246,9 +247,11 @@ function displayConversationPanel(msg_data, full_data, recipients) {
 	recipients.forEach(function(user){
 		conversation_recipients.push(user.user_id);
 	});
-	$('#messages').empty();
+	$("#messages").empty();
+	$("#conversation-details").empty();
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
+	$("#conversation-details").append(conversation_details_label);
 	message_container = [];
 	recipient_container = [];
 	recipients.forEach(function(mobile_data){
