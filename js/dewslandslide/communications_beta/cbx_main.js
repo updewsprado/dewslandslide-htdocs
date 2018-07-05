@@ -23,7 +23,7 @@ let search_key_template = Handlebars.compile($('#search-message-key-template').h
 
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
-	getQuickEmployeeSelection();
+	// getQuickEmployeeSelection();
 }
 
 function getQuickCommunitySelection () {
@@ -38,7 +38,6 @@ function getQuickCommunitySelection () {
 
 		wss_connect.send(JSON.stringify(list_of_sites));
 		wss_connect.send(JSON.stringify(list_of_orgs));
-		$('#advanced-search').modal("toggle");
 	} catch(err) {
 		console.log(err);
 		// Add PMS here
@@ -90,7 +89,7 @@ function displaySitesSelection(data) {
 		sitename = sitenames[i].site_code;
 		site_id = sitenames[i].site_id;
 		psgc = sitenames[i].psgc;
-		$("#sitenames-"+modIndex).append('<div class="checkbox"><label><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+site_id+'">'+sitename.toUpperCase()+'</label></div>');
+		$("#sitenames-"+modIndex).append('<div class="checkbox"><label class="site_code"><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+site_id+'">'+sitename.toUpperCase()+'</label></div>');
 	}
 }
 
@@ -400,22 +399,26 @@ function siteConversation(){
 	try {
 		let tag_offices = [];
 		$('input[name="orgs"]:checked').each(function() {
-			tag_offices.push(this.value);
+			tag_offices.push($(this).val());
 		});
 
 		let tag_sites = [];
+		let site_code = [];
 		$('input[name="sitenames"]:checked').each(function() {
-			tag_sites.push(this.value);
+			tag_sites.push($(this).val());
+			site_code.push($(this).closest('label').text());
 		});
 		tag_sites.sort();
 
 		let convo_request = {
 			'type': 'loadSmsForSites',
 			'organizations': tag_offices,
-			'sitenames': tag_sites
+			'sitenames': tag_sites,
+			'site_code': site_code
 		};
 
 		addSitesActivity(convo_request);
+		console.log(convo_request);
 		wss_connect.send(JSON.stringify(convo_request));
 	} catch(err) {
 		console.log(err);
