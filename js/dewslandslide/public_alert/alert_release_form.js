@@ -317,7 +317,7 @@ function onSiteChange () {
         .catch(({ responseText, status: conn_status, statusText }) => {
             alert(`Status ${conn_status}: ${statusText}`);
 
-            // ERROR_LOG - LOUIE
+            // Error Log for PMS
             const report = {
                 type: "error_logs",
                 metric_name: "web_ewi_error_logs",
@@ -1330,7 +1330,7 @@ function initializeFormValidator () {
                     // Send to websocket to refresh all dashboards
                     doSend("updateDashboardTables");
 
-                    // TIMELINESS - LOUIE
+                    // Record Timeliness for PMS
                     const { timestamp_entry } = data;
                     const baseline = timestamp_entry.add(30, "minutes");
                     const exec_time = moment().diff(baseline);
@@ -1346,7 +1346,7 @@ function initializeFormValidator () {
                 error (xhr, status, error) {
                     const err = xhr.responseText;
                     alert(err);
-                    // ERROR_LOG - LOUIE
+                    // Error log for PMS
                     const report = {
                         type: "error_logs",
                         metric_name: "web_ewi_error_logs",
