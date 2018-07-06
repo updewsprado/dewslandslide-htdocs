@@ -250,7 +250,11 @@ function displayConversationPanel(msg_data, full_data, recipients) {
 	$("#conversation-details").empty();
 	$(".recent_activities").addClass("hidden");
 	$("#main-container").removeClass("hidden");
-	$("#conversation-details").append(conversation_details_label);
+	if(full_data === undefined){
+		$("#conversation-details").append(conversation_details_label);
+	}else {
+		$("#conversation-details").append(full_data);
+	}
 	message_container = [];
 	recipient_container = [];
 	recipients.forEach(function(mobile_data){

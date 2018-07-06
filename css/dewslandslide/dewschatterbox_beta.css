@@ -30,8 +30,8 @@
 }
 
 .division {
-  height: 100%;
-  margin-top: 5px;
+  /*height: 100%;
+  margin-top: 5px;*/
 }
 
 #convo-header div{
@@ -215,7 +215,7 @@ div.awesomplete > ul {
 }
 
 .panel-body {
-  padding-bottom: 0px;
+  padding: 0px;
 }
 
 .friend-list li img {

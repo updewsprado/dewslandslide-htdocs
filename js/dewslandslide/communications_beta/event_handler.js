@@ -895,6 +895,7 @@ function initializeLoadSearchedKeyMessage() {
         	mobile_id: data[4],
         	table_source: data[3]
         };
+        console.log(msg_data);
         const search_request = {
         	type: "loadSearchedMessageKey",
         	data: msg_data
