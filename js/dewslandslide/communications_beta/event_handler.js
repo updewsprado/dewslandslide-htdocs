@@ -220,7 +220,8 @@ function initializeGoChatOnClick () {
 					lastname: lastname,
 					office: office,
 					site: site,
-					number: number
+					number: number,
+					isMultiple: true
 				};
 
 				recipient_container.push(temp);
