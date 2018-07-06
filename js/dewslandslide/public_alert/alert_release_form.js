@@ -316,70 +316,33 @@ function onSiteChange () {
         })
         .catch(({ responseText, status: conn_status, statusText }) => {
             alert(`Status ${conn_status}: ${statusText}`);
-            const pms_error_log = {
-                metric_name: "error_logs_alert_release_form",
-                module_name: "alert_release_form",
-                report_message: responseText,
-                limit: "specific",
-                type: "error_rate"
+
+            // ERROR_LOG - LOUIE
+            const report = {
+                type: "error_logs",
+                metric_name: "web_ewi_error_logs",
+                module_name: "Web EWI Release",
+                report_message: `error onsite change inserting release ${responseText}`
             };
-            $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
-            .done((response) => {
-                console.log(response);
-            });
+
+            PMS.send(report);
         });
     });
 }
 
 function getLastSiteEvent (site_id) {
     return $.getJSON(`../pubrelease/getLastSiteEvent/${site_id}`)
-    .catch(({ err }) => {
-        const pms_error_log = {
-            metric_name: "error_logs_alert_release_form",
-            module_name: "alert_release_form",
-            report_message: err,
-            limit: "specific",
-            type: "error_rate"
-        };
-        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
-        .done((response) => {
-            console.log(response);
-        });
-    });
+    .catch(err => err);
 }
 
 function getLastRelease ({ event_id }) {
     return $.getJSON(`../pubrelease/getLastRelease/${event_id}`)
-    .catch(({ err }) => {
-        const pms_error_log = {
-            metric_name: "error_logs_alert_release_form",
-            module_name: "alert_release_form",
-            report_message: err,
-            limit: "specific",
-            type: "error_rate"
-        };
-        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
-        .done((response) => {
-            console.log(response);
-        });
-    });
+    .catch(err => err);
 }
 
 function getAllEventTriggers ({ event_id }) {
     return $.getJSON(`../pubrelease/getAllEventTriggers/${event_id}`)
-    .catch(({ err }) => {
-        const pms_error_log = {
-            metric_name: "error_logs_alert_release_form",
-            module_name: "alert_release_form",
-            report_message: err,
-            limit: "specific",
-            type: "error_rate"
-        };
-        $.post("http://dewslpms.com/api/insertReport", { pms_error_log })
-        .done((response) => {
-            console.log(response);
-        });
-    });
+    .catch(err => err);
 }
 
 // Remove 0 from trigger list (if internal alert has no data)
@@ -1366,10 +1329,32 @@ function initializeFormValidator () {
 
                     // Send to websocket to refresh all dashboards
                     doSend("updateDashboardTables");
+
+                    // TIMELINESS - LOUIE
+                    const { timestamp_entry } = data;
+                    const baseline = timestamp_entry.add(30, "minutes");
+                    const exec_time = moment().diff(baseline);
+                    const report = {
+                        type: "timeliness",
+                        metric_name: "web_ewi_timeliness",
+                        module_name: "Web EWI Release",
+                        execution_time: exec_time
+                    };
+
+                    PMS.send(report);
                 },
                 error (xhr, status, error) {
                     const err = xhr.responseText;
                     alert(err);
+                    // ERROR_LOG - LOUIE
+                    const report = {
+                        type: "error_logs",
+                        metric_name: "web_ewi_error_logs",
+                        module_name: "Web EWI Release",
+                        report_message: `error inserting release ${err}`
+                    };
+
+                    PMS.send(report);
                 }
             });
         }
