@@ -185,7 +185,8 @@ function initializeOnClickQuickInbox () {
 			lastname: lastname,
 			office: office,
 			site: site,
-			number: "N/A"
+			number: "N/A",
+			isMultiple: false
 		}
 
 		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
