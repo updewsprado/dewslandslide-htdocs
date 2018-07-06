@@ -394,7 +394,7 @@ $("#routine-actual-option").on("click", function () {
         var index = $(this).closest("div").find("input[name='rc_index']").val();
         index = index.replace("activity_contacts_index_", "");
         var data = recent_contacts_collection[parseInt(index)];
-        $(".dropdown-input").val(data.name[0].fullname);
+        $(".dropdown-input").val(data.data.full_name);
         $("#go-chat").trigger("click");
     });
 
