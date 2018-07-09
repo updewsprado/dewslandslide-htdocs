@@ -282,6 +282,11 @@ function connectWS () {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
                 let execution_time = moment(msg.timestamp_written).subtract(moment(msg.timestamp_sent));
+                console.log(msg.timestamp_sent);
+                console.log(msg.timestamp_written);
+                console.log("------------------------------");
+                console.log(moment(msg.timestamp_sent));
+                console.log(moment(msg.timestamp_written));
                 console.log(execution_time);
                 let timeliness_report = {
                     "type": "timeliness",
