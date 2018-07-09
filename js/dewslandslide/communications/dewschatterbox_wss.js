@@ -281,12 +281,12 @@ function connectWS () {
         } else {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
-                let execution_time = moment(msg.timestamp_written).subtract(moment(msg.timestamp_sent));
+                let execution_time = moment(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss")).subtract(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
                 console.log(msg.timestamp_sent);
                 console.log(msg.timestamp_written);
                 console.log("------------------------------");
-                console.log(moment(msg.timestamp_sent));
-                console.log(moment(msg.timestamp_written));
+                console.log(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
+                console.log(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss"));
                 console.log(execution_time);
                 let timeliness_report = {
                     "type": "timeliness",
