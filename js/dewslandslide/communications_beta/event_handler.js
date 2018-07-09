@@ -185,8 +185,7 @@ function initializeOnClickQuickInbox () {
 			lastname: lastname,
 			office: office,
 			site: site,
-			number: "N/A",
-			isMultiple: false
+			number: "N/A"
 		}
 
 		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
@@ -874,6 +873,7 @@ function initializeConfirmEWITemplateViaChatterbox() {
                 internal_alert: $("#internal-alert").val() == "------------" ? "N/A" : $("#internal-alert").val(),
                 alert_level: $("#alert-lvl").val() == "------------" ? "N/A" : $("#alert-lvl").val(),
                 alert_status: $("#alert_status").val() == "------------" ? "N/A" : $("#alert_status").val(),
+                formatted_data_timestamp: moment($("#ewi-date-picker input").val()).format('MMMM D, YYYY h:MM A'),
                 data_timestamp: $("#ewi-date-picker input").val()
         	};
         	

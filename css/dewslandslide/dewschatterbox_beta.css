@@ -219,6 +219,10 @@ div.awesomplete > ul {
   padding-right: 0px;
 }
 
+.has-padding {
+  padding: 15px;
+}
+
 .friend-list li img {
   width: 45px;
   height: 45px;
@@ -436,6 +440,11 @@ input[type=number]::-webkit-outer-spin-button {
 .scrollable-div {
   max-height: 300px;
     overflow-y: scroll;
+}
+
+.ground-meas-scrollable-div {
+  max-height: 400px;
+  overflow-y: scroll;
 }
 
 .loader {

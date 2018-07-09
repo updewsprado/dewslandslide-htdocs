@@ -3,6 +3,7 @@ let recent_contacts_collection = [];
 let recent_sites_collection = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
+	$('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
 	setTimeout(function() {
 		initializeQuickInboxMessages();
         initializeDatepickers();
