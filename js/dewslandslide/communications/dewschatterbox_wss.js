@@ -287,7 +287,7 @@ function connectWS () {
                 console.log("------------------------------");
                 console.log(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
                 console.log(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss"));
-                console.log(execution_time);
+                console.log(moment(execution_time).format("ss.SSS"));
                 let timeliness_report = {
                     "type": "timeliness",
                     "metric_name": "sms_execution_time",
