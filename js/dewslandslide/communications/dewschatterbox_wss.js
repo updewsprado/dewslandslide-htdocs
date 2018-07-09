@@ -282,6 +282,7 @@ function connectWS () {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
                 let execution_time = moment(msg.timestamp_written).subtract(moment(msg.timestamp_sent));
+                console.log(execution_time);
                 let timeliness_report = {
                     "type": "timeliness",
                     "metric_name": "sms_execution_time",
@@ -290,6 +291,7 @@ function connectWS () {
                     "reference_table": "smsoutbox",
                     "execution_time": execution_time
                 };
+                console.log(timeliness_report);
                 PMS.send(timeliness_report);
                 
                 $("#messages li:last #timestamp-sent").removeClass();
