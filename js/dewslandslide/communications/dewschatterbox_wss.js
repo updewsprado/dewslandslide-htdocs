@@ -282,21 +282,14 @@ function connectWS () {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
                 let execution_time = moment(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss")).subtract(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
-                console.log(msg.timestamp_sent);
-                console.log(msg.timestamp_written);
-                console.log("------------------------------");
-                console.log(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
-                console.log(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss"));
-                console.log(moment(execution_time).format("ss.SSS"));
                 let timeliness_report = {
                     "type": "timeliness",
                     "metric_name": "sms_execution_time",
                     "module_name": "chatterbox",
                     "reference_id": msg.sms_id,
                     "reference_table": "smsoutbox",
-                    "execution_time": execution_time
+                    "execution_time": moment(execution_time).format("X")
                 };
-                console.log(timeliness_report);
                 PMS.send(timeliness_report);
                 
                 $("#messages li:last #timestamp-sent").removeClass();
