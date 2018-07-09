@@ -301,7 +301,6 @@ function communityContactFormValidation () {
         },
         messages: { comments: "" },
         errorPlacement (error, element) {
-        	console.log("errorPlacement");
             const placement = $(element).closest(".form-group");
             if ($(element).hasClass("cbox_trigger_switch")) {
                 $("#errorLabel").append(error).show();
@@ -320,7 +319,6 @@ function communityContactFormValidation () {
             }
         },
         success (label, element) {
-        	console.log("success");
             // Add the span element, if doesn't exists, and apply the icon classes to it.
             if (!$(element).next("span")) {
                 $("<span class='glyphicon glyphicon-ok form-control-feedback' style='top:0px; right:37px;'></span>").insertAfter($(element));
@@ -329,7 +327,6 @@ function communityContactFormValidation () {
             $(element).closest(".form-group").children("label.error").remove();
         },
         highlight (element, errorClass, validClass) {
-        	console.log("highlight");
             $(element).parents(".form-group").addClass("has-error").removeClass("has-success");
             if ($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
                 $(element).nextAll("span.glyphicon").remove();
@@ -337,7 +334,6 @@ function communityContactFormValidation () {
             } else $(element).next("span").addClass("glyphicon-remove").removeClass("glyphicon-ok");
         },
         unhighlight (element, errorClass, validClass) {
-        	console.log("unhighlight");
             $(element).parents(".form-group").addClass("has-success").removeClass("has-error");
             if ($(element).parent().is(".datetime") || $(element).parent().is(".time")) {
                 $(element).nextAll("span.glyphicon").remove();
@@ -345,7 +341,6 @@ function communityContactFormValidation () {
             } else $(element).next("span").addClass("glyphicon-ok").removeClass("glyphicon-remove");
         },
         submitHandler (form) {
-        	console.log("submit");
         	site_selected = [];
 			organization_selected = [];
 			$('#site-selection-div input:checked').each(function() {

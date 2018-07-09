@@ -371,6 +371,7 @@ function displayUpdateCommunityDetails (community_data) {
 			$("#community_mobile_status_"+number_count).val(community_data.mobile_data[counter].number_status);
 			$("#community_mobile_priority_"+number_count).val(community_data.mobile_data[counter].priority);
 			$("#community_mobile_id_"+number_count).val(community_data.mobile_data[counter].number_id);
+			console.log("#community_mobile_id_"+number_count);
 		}
 		
 	}
