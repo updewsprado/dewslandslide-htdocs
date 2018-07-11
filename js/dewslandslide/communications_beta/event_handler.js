@@ -270,6 +270,7 @@ function initializeGoLoadOnClick () {
 }
 
 function initializeSendMessageOnClick () {
+	console.log(recipient_container);
 	$("#send-msg").click(function() {
 		sendSms(recipient_container,$("#msg").val());
 	});
@@ -578,10 +579,10 @@ function emptyCommunityContactForm () {
 }
 
 function contactSettingsFeedback (status) {
-	if (msg.status == true) {
-		$.notify(msg.return_msg,'success');
+	if (status.status == true) {
+		$.notify(status.return_msg,'success');
 	} else {
-		$.notify(msg.return_msg,'failed');
+		$.notify(status.return_msg,'warn');
 	}
 }
 
