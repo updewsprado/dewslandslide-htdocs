@@ -183,7 +183,13 @@ function createSurficialChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 400
+            height: 400,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Surficial Data History Chart of ${site_code.toUpperCase()}</b>`,
@@ -231,11 +237,6 @@ function createSurficialChart (data, input) {
 
                     }
                 }
-            }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
             }
         },
         credits: {
@@ -316,6 +317,12 @@ function createMarkerAccelerationChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
@@ -347,11 +354,6 @@ function createMarkerAccelerationChart (data, input) {
                     enabled: true
                 }
             }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
-            }
         },
         credits: {
             enabled: false
@@ -368,6 +370,12 @@ function createMarkerInterpolationChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
@@ -407,11 +415,6 @@ function createMarkerInterpolationChart (data, input) {
                     pointFormat: "Date/Time: <b>{point.x:%A, %e %b, %H:%M:%S}</b><br>Displacement: <b>{point.y:.2f}</b>"
                 }
             }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
-            }
         },
         credits: {
             enabled: false
@@ -428,6 +431,12 @@ function createMarkerAccelerationVsTimeChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
@@ -478,11 +487,6 @@ function createMarkerAccelerationVsTimeChart (data, input) {
                 marker: {
                     enabled: false
                 }
-            }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
             }
         },
         credits: {
