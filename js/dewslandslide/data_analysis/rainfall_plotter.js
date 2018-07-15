@@ -206,7 +206,13 @@ function createCumulativeRainfallChart (data, temp, source) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 400
+            height: 400,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Cumulative Rainfall Chart of ${site_code.toUpperCase()}</b>`,
@@ -271,11 +277,6 @@ function createCumulativeRainfallChart (data, temp, source) {
                 },
                 cursor: "pointer"
             }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
-            }
         },
         legend: {
             enabled: false
@@ -300,7 +301,13 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
             type: "column",
             zoomType: "x",
             panning: true,
-            height: 400
+            height: 400,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Instantaneous Rainfall Chart of ${site_code.toUpperCase()}</b>`,
@@ -345,11 +352,6 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
                     radius: 3
                 },
                 cursor: "pointer"
-            }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
             }
         },
         legend: {

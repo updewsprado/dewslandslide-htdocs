@@ -132,7 +132,13 @@ function createGeneralNodeChart ({ series_name, data }, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 400
+            height: 400,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>${title} Plot of ${subsurface_column.toUpperCase()}</b>`,
@@ -170,11 +176,6 @@ function createGeneralNodeChart ({ series_name, data }, input) {
                     radius: 3
                 },
                 cursor: "pointer"
-            }
-        },resetZoomButton: {
-            position: {
-                x: 0,
-                y: -30
             }
         },
         legend: {
