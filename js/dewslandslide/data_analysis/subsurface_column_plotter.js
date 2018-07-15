@@ -180,6 +180,11 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
                 const tooltip = `Node ID: <b>${id}</b><br/>Status: <b>${final_stat}</b><br/>${added_info}`;
                 return tooltip;
             }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         credits: {
             enabled: false
@@ -273,6 +278,11 @@ function createDataPresenceChart (data_presence, form) {
                     case 2: status = "Data present for unexpected timestamp"; break;
                 }
                 return `Timestamp: <b>${moment(this.point.id).format("DD MMM YYYY, HH:mm")}</b><br/>Status: <b>${status}</b>`;
+            }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
             }
         },
         credits: {
@@ -480,6 +490,11 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
         },
         credits: {
             enabled: false
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         legend: {
             enabled: true,
@@ -539,6 +554,11 @@ function createDisplacementChart (column_data, form) {
                 marker: {
                     enabled: true
                 }
+            }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
             }
         },
         credits: {
@@ -613,7 +633,12 @@ function createVelocityAlertsChart (orientation, data, form) {
                     radius: 2
                 }
             }
-        }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
+        },
     });
 }
 

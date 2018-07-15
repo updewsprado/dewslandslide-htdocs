@@ -232,6 +232,11 @@ function createSurficialChart (data, input) {
                     }
                 }
             }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         credits: {
             enabled: false
@@ -342,6 +347,11 @@ function createMarkerAccelerationChart (data, input) {
                     enabled: true
                 }
             }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         credits: {
             enabled: false
@@ -396,6 +406,11 @@ function createMarkerInterpolationChart (data, input) {
                 tooltip: {
                     pointFormat: "Date/Time: <b>{point.x:%A, %e %b, %H:%M:%S}</b><br>Displacement: <b>{point.y:.2f}</b>"
                 }
+            }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
             }
         },
         credits: {
@@ -463,6 +478,11 @@ function createMarkerAccelerationVsTimeChart (data, input) {
                 marker: {
                     enabled: false
                 }
+            }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
             }
         },
         credits: {

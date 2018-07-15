@@ -271,6 +271,11 @@ function createCumulativeRainfallChart (data, temp, source) {
                 },
                 cursor: "pointer"
             }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         legend: {
             enabled: false
@@ -340,6 +345,11 @@ function createInstantaneousRainfallChart (data, temp, source, null_processed) {
                     radius: 3
                 },
                 cursor: "pointer"
+            }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
             }
         },
         legend: {
