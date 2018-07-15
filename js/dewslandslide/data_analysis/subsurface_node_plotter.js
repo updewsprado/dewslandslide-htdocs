@@ -171,6 +171,11 @@ function createGeneralNodeChart ({ series_name, data }, input) {
                 },
                 cursor: "pointer"
             }
+        },resetZoomButton: {
+            position: {
+                x: 0,
+                y: -30
+            }
         },
         legend: {
             itemStyle: {
