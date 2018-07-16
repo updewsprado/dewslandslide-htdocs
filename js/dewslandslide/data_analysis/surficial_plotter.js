@@ -139,7 +139,11 @@ function getPlotDataForSurficial (args, isEOS = false) {
     let url = `/../site_analysis/getPlotDataForSurficial/${site_code}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
 
-    return $.getJSON(url);
+    return $.getJSON(url)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function createSurficialMarkersButton (series) {
@@ -246,7 +250,11 @@ function createSurficialChart (data, input) {
 }
 
 function getPlotDataForMarkerAcceleration ({ site_code, marker_name, end_date }) {
-    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`);
+    return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function plotMarkerTrendingAnalysis (trend_dataset, input) {

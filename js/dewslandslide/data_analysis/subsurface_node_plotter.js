@@ -25,7 +25,11 @@ function processNodeDropDown (subsurface_column) {
 }
 
 function getSiteColumnNodeCount (subsurface_column) {
-    return $.getJSON(`../site_analysis/getSiteColumnNodeCount/${subsurface_column}`);
+    return $.getJSON(`../site_analysis/getSiteColumnNodeCount/${subsurface_column}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function delegateNodeNumbersOnDropdown (node_count) {
@@ -118,7 +122,11 @@ function plotNodeLevelCharts (input) {
 function getPlotDataForNode ({
     subsurface_column, start_date, end_date, nodes
 }) {
-    return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${nodes}`);
+    return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${nodes}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function createGeneralNodeChart ({ series_name, data }, input) {

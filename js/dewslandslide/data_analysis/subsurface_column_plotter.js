@@ -24,7 +24,11 @@ function processSubsurfaceColumnDropDown (site_code) {
 }
 
 function getSiteSubsurfaceColumns (site_code) {
-    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`);
+    return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
@@ -88,7 +92,11 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
 
 function getPlotDataForColumnSummary (form, include_node_health) {
     const { subsurface_column, start_date, end_date } = form;
-    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`);
+    return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function delegateColumnSummaryDataForPlotting (column_summary, form) {
@@ -376,7 +384,11 @@ function getPlotDataForSubsurface (args, isEOS = false) {
     let url = `/../site_analysis/getPlotDataForSubsurface/${subsurface_column}/${start_date}/${end_date}`;
     url = isEOS ? `/../../../../../..${url}` : url;
 
-    return $.getJSON(url);
+    return $.getJSON(url)
+    .catch(({ responseText, status: conn_status, statusText }) => {
+        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+    });
 }
 
 function delegateSubsurfaceDataForPlotting (subsurface_data, form) {
