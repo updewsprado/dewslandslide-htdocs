@@ -14,7 +14,8 @@ function sendViaAlertMonitor (dashboard_data) {
             async: false,
             data: { trigger_type: dashboard_data.internal_alert },
             success (response) {
-                internal_alert = JSON.parse(response);
+                let raw_response = JSON.parse(response);
+                internal_alert = raw_response.key_input[0];
             }
         });
     }
@@ -74,7 +75,7 @@ function sendViaAlertMonitor (dashboard_data) {
 
     final_template = final_template.replace("(site_location)", formatSbmp);
     final_template = final_template.replace("(recommended_response)", recommended_response.key_input);
-    final_template = final_template.replace("(technical_info)", internal_alert.key_input);
+    final_template = final_template.replace("(technical_info)", internal_alert[0].key_input);
 
     const currentTime = moment().format("YYYY-MM-DD HH:mm");
     if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 00:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf()) {
