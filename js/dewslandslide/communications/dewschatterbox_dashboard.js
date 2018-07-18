@@ -291,6 +291,7 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                                     break;
                                 }
                             }
+
                             for (let counter = 0; counter < backboneMessage.length; counter += 1) {
                                if (backboneMessage[counter].alert_status.toLowerCase() === dashboard_data.status) {
                                     template = backboneMessage[counter].template;
@@ -311,6 +312,53 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                                             template = template.replace("(nth-day-extended)", "tatlong araw na routine");
                                             break;
                                     }
+
+                                    let next_gndmeas_template = "";
+                                    $.ajax({
+                                        type: "POST",
+                                        url: "../chatterbox/getRoutineSeason",
+                                        async: false,
+                                        data: { site_name: dashboard_data.name },
+                                        success (response) {
+                                            let list_of_sites = JSON.parse(response);
+                                            let next_routine_day = [];
+                                            let day = moment().format("dddd");
+                                            let month = moment().month();
+                                            let wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
+                                            let dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
+                                            month += 1;
+                                            for (let counter = 0; counter < list_of_sites.length; counter++) {
+                                                if (list_of_sites[counter].site == dashboard_data.name) {
+                                                    next_routine_day.push(dashboard_data);
+                                                }
+                                            }
+
+                                            if (wet[next_routine_day[0].season -1].includes(month)) {
+                                                if (day == "Wenesday") {
+                                                    next_gndmeas_template = "sa darating na biyernes";
+                                                } else {
+                                                    next_gndmeas_template = "sa darating na martes";
+                                                }
+                                                
+                                            } else {
+                                                next_gndmeas_template = "sa darating na huwebes";
+                                            }
+
+                                            switch (dashboard_data.day) {
+                                                case 0:
+                                                case 1:
+                                                case 2:
+                                                    template = template.replace("(next-gndmeas-submission)", "bukas bago mag-11:30 AM");
+                                                    break;
+                                                case 3:
+                                                    template = template.replace("(next-gndmeas-submission)", next_gndmeas_template);
+                                                    break;
+                                                default:
+                                                    template = template.replace("(next-gndmeas-submission)", "tatlong araw na routine");
+                                                    break;
+                                            }
+                                        }
+                                    });
                                 }
                             }
 

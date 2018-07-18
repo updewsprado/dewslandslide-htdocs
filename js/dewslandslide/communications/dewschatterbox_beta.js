@@ -1748,8 +1748,8 @@ $(document).ready(() => {
             month += 1;
 
             var wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
-	    var dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
-	    var routine_sites = [];
+    	    var dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
+    	    var routine_sites = [];
 
             switch (day) {
                 case "Friday":
