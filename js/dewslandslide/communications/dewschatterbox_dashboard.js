@@ -332,16 +332,18 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
                                                     next_routine_day.push(dashboard_data);
                                                 }
                                             }
+                                            // tues fri - wet
+                                            // wed - dry
 
                                             if (wet[next_routine_day[0].season -1].includes(month)) {
-                                                if (day == "Wenesday") {
+                                                if (day == "Wednesday") {
                                                     next_gndmeas_template = "sa darating na biyernes";
                                                 } else {
-                                                    next_gndmeas_template = "sa darating na martes";
+                                                    next_gndmeas_template = "sa darating na miyerkules";
                                                 }
                                                 
                                             } else {
-                                                next_gndmeas_template = "sa darating na huwebes";
+                                                next_gndmeas_template = "sa darating na martes";
                                             }
 
                                             switch (dashboard_data.day) {
