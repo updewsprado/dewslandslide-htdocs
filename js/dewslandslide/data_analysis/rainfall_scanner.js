@@ -114,13 +114,35 @@ function processRainfallData (result) {
         }
     });
 
-    createRainfallPercentagesPlot(filtered);
+    createRainfallPercentagesPlot(filtered)
+    .catch(({ responseText, status, statusText }) => {
+        console.log(`%c► Error Rainfall Scanner\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        // Error Log for PMS
+        const report = {
+            type: "error_logs",
+            metric_name: "rainfall_scanner_error_logs",
+            module_name: "Rainfall Scanner",
+            report_message: `error on creating plot ${responseText}`
+        };
+
+        PMS.send(report);         
+    });    
 }
 
 function getRainfallPercentages () {
     return $.getJSON("../../rainfall_scanner/getRainfallPercentages")
     .catch(({ responseText, status, statusText }) => {
         console.log(`%c► Error Rainfall Scanner\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        
+        // Error Log for PMS
+        const report = {
+            type: "error_logs",
+            metric_name: "rainfall_scanner_error_logs",
+            module_name: "Rainfall Scanner",
+            report_message: `error on getting Rainfall Percentages ${responseText}`
+        };
+
+        PMS.send(report);        
     });
 }
 
@@ -128,6 +150,15 @@ function getSitesWithRegions () {
     return $.getJSON("../../rainfall_scanner/getSitesWithRegions")
     .catch(({ responseText, status, statusText }) => {
         console.log(`%c► Error Rainfall Scanner\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        // Error Log for PMS
+        const report = {
+            type: "error_logs",
+            metric_name: "rainfall_scanner_error_logs",
+            module_name: "Rainfall Scanner",
+            report_message: `error on getting Sites with Region ${responseText}`
+        };
+
+        PMS.send(report);        
     });
 }
 
