@@ -60,6 +60,7 @@ function initializeSurficialMarkersButton () {
         } else {
             $loading_surficial = $("#surficial-plots .loading-bar");
             $loading_surficial.show();
+            const execution_start = window.performance.now();
             $(target).addClass("active");
 
             const input = {
@@ -73,12 +74,23 @@ function initializeSurficialMarkersButton () {
                 getPlotDataForSurficial(input)
                 .done((series) => {
                     console.log(series);
+                    const execution_end = window.performance.now();
                     createSurficialMarkersButton(series);
 
                     $(`#${input.site_code}-surficial`).show();
                     plotSurficial(series, input);
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
+
+                    const execution_time = execution_end - execution_start;
+                    const report = {
+                        type: "timeliness",
+                        metric_name: "surficial_plot_timeliness",
+                        module_name: "Site Analysis Page",
+                        execution_time
+                    };
+
+                    PMS.send(report);
                     createSVG("surficial", input.site_code);
                 })
                 .catch((x) => {
@@ -89,12 +101,25 @@ function initializeSurficialMarkersButton () {
                 delete input.start_date;
 
                 $(`#marker-${marker}`).remove();
+                const execution_start = window.performance.now();
                 getPlotDataForMarkerAcceleration(input)
                 .done((trend_dataset) => {
                     console.log(trend_dataset);
+                    const execution_end = window.performance.now();
+
                     plotMarkerTrendingAnalysis(trend_dataset, input);
                     $(target).data("loaded", true);
                     $loading_surficial.hide();
+
+                    const execution_time = execution_end - execution_start;
+                    const report = {
+                        type: "timeliness",
+                        metric_name: "marker_acceleration_plot_timeliness",
+                        module_name: "Site Analysis Page",
+                        execution_time
+                    };
+
+                    PMS.send(report);
                 })
                 .catch((x) => {
                     showErrorModal(x, "marker acceleration chart");
@@ -141,8 +166,8 @@ function getPlotDataForSurficial (args, isEOS = false) {
 
     return $.getJSON(url)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Surficial) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Surficial Data Plots ${responseText}`, "surficial_data_plots", "error_logs");
     });
 }
 
@@ -252,8 +277,8 @@ function createSurficialChart (data, input) {
 function getPlotDataForMarkerAcceleration ({ site_code, marker_name, end_date }) {
     return $.getJSON(`../site_analysis/getProcessedSurficialMarkerTrendingAnalysis/${site_code}/${marker_name}/${end_date}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Marker Acceleration) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Marker Acceleration Data Plots ${responseText}`, "marker_acceleration_data_plots", "error_logs");
     });
 }
 

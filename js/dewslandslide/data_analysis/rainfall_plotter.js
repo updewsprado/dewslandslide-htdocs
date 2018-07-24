@@ -30,14 +30,27 @@ function initializeRainSourcesButton () {
 
             $loading_rain = $("#rainfall-plots .loading-bar");
             $loading_rain.show();
+            const execution_start = window.performance.now();
             getPlotDataForRainfall(input)
             .done((datalist) => {
+                const execution_end = window.performance.now();
                 console.log(datalist);
                 $(`#${table}`).show();
                 plotRainfall(datalist, input);
                 $(target).data("loaded", true);
                 $(target).addClass("active");
                 $loading_rain.hide();
+
+                const execution_time = execution_end - execution_start;
+                const report = {
+                    type: "timeliness",
+                    metric_name: "rainfall_plot_timeliness",
+                    module_name: "Site Analysis Page",
+                    execution_time
+                };
+
+                PMS.send(report);
+                
                 createSVG("rainfall", input.site_code);
             })
             .catch((x) => {
@@ -50,7 +63,6 @@ function initializeRainSourcesButton () {
 function initializeRainfallDurationDropdownOnClick () {
     $("#rainfall-duration li").click(({ target }) => {
         const { value, duration } = $(target).data();
-
         $("#rainfall-duration li.active").removeClass("active");
         $(target).parent().addClass("active");
 
@@ -123,8 +135,8 @@ function plotRainfallCharts (site_code) {
 function getRainDataSourcesPerSite (site_code) {
     return $.getJSON(`../rainfall/getRainDataSourcesPerSite/${site_code}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Rain Sources) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Rain Data Source ${responseText}`, "rain_data_source_per_site", "error_logs");
     });
 }
 
@@ -155,8 +167,8 @@ function getPlotDataForRainfall (args, isEOS = false) {
 
     return $.getJSON(url)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Rainfall) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Rainfall Data Plots ${responseText}`, "rainfall_data_plots", "error_logs");
     });
 }
 

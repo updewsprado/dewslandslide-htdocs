@@ -16,8 +16,22 @@ function processSubsurfaceColumnDropDown (site_code) {
     $("#subsurface_column").val("")
     .find("option.appended-option").remove();
 
+    const execution_start = window.performance.now();
     getSiteSubsurfaceColumns(site_code)
-    .done(delegateSubsurfaceColumnsOnDropDown)
+    .done((column_list) => {
+        delegateSubsurfaceColumnsOnDropDown(column_list);
+        const execution_end = window.performance.now();
+        const execution_time = execution_end - execution_start;
+
+        const report = {
+            type: "timeliness",
+            metric_name: "subsurface_column_list_timeliness",
+            module_name: "Site Analysis Page",
+            execution_time
+        };
+
+        PMS.send(report);
+    })
     .catch((x) => {
         showErrorModal(x, "subsurface column dropdown");
     });
@@ -26,8 +40,8 @@ function processSubsurfaceColumnDropDown (site_code) {
 function getSiteSubsurfaceColumns (site_code) {
     return $.getJSON(`../subsurface_column/getSiteSubsurfaceColumns/${site_code}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Site Subsurface Column) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Site Subsurface Column ${responseText}`, "site_subsurface_column", "error_logs");
     });
 }
 
@@ -79,11 +93,24 @@ function plotColumnSummaryCharts (form, include_node_health = true) {
     destroyCharts(charts);
 
     $("#subsurface-column-summary-plots .loading-bar").show();
+    const execution_start = window.performance.now();
     getPlotDataForColumnSummary(form, include_node_health)
     .done((column_summary) => {
+        const execution_end = window.performance.now();
         console.log(column_summary);
         delegateColumnSummaryDataForPlotting(column_summary, form);
         $("#subsurface-column-summary-plots .loading-bar").hide();
+
+        const execution_time = execution_end - execution_start;
+
+        const report = {
+            type: "timeliness",
+            metric_name: "column_summary_plot_timeliness",
+            module_name: "Site Analysis Page",
+            execution_time
+        };
+
+        PMS.send(report);
     })
     .catch((x) => {
         showErrorModal(x, "column summary charts");
@@ -94,8 +121,8 @@ function getPlotDataForColumnSummary (form, include_node_health) {
     const { subsurface_column, start_date, end_date } = form;
     return $.getJSON(`../site_analysis/getPlotDataForColumnSummary/${subsurface_column}/${start_date}/${end_date}/${include_node_health}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Plot Data for Column Summary) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Plot Data for Column Summary ${responseText}`, "column_summary_data_plots", "error_logs");
     });
 }
 
@@ -367,10 +394,22 @@ function createCommunicationHealthChart (communication_health, form) {
 function plotSubsurfaceAnalysisCharts (form) {
     destroyCharts("#subsurface-plots .subsurface-analysis-chart");
     $("#subsurface-plots .loading-bar").show();
+    const execution_start = window.performance.now();
     getPlotDataForSubsurface(form)
     .done((subsurface_data) => {
+        const execution_end = window.performance.now();
         delegateSubsurfaceDataForPlotting(subsurface_data, form);
         $("#subsurface-plots .loading-bar").hide();
+        const execution_time = execution_end - execution_start;
+
+        const report = {
+            type: "timeliness",
+            metric_name: "subsurface_analysis_plot_timeliness",
+            module_name: "Site Analysis Page",
+            execution_time
+        };
+
+        PMS.send(report);
     })
     .catch((x) => {
         showErrorModal(x, "subsurface analysis charts");
@@ -386,8 +425,8 @@ function getPlotDataForSubsurface (args, isEOS = false) {
 
     return $.getJSON(url)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Plot Data for Subsurface) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Plot Data for Subsurface ${responseText}`, "subsurface_data_plots", "error_logs");
     });
 }
 

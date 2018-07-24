@@ -438,13 +438,11 @@ function showErrorModal (ajax, module) {
     console.log(`%c► Error ${module}\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
 }
 
-function sendSiteAnalysisErrorLog (x, is_chart = false) {
-    let metric_name = "site_analysis_error_logs";
-    if (is_chart) metric_name = "eos_charts_error_logs";
+function sendSiteAnalysisPMSLog (x, metric_name, type) {
     const report = {
-        type: "error_logs",
+        type,
         metric_name,
-        module_name: "End-of-shift Report",
+        module_name: "Site Analysis Page",
         report_message: x
     };
 

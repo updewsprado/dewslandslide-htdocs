@@ -16,9 +16,22 @@ $(document).ready(() => {
 
 function processNodeDropDown (subsurface_column) {
     clearSelectedNodes();
-
+    const execution_start = window.performance.now();
     getSiteColumnNodeCount(subsurface_column)
-    .done(delegateNodeNumbersOnDropdown)
+    .done((node_count) => {
+        delegateNodeNumbersOnDropdown(node_count);
+        const execution_end = window.performance.now();
+        const execution_time = execution_end - execution_start;
+
+        const report = {
+            type: "timeliness",
+            metric_name: "nodes_dropdown_timeliness",
+            module_name: "Site Analysis Page",
+            execution_time
+        };
+
+        PMS.send(report);
+    })
     .catch((x) => {
         showErrorModal(x, "node count dropdown");
     });
@@ -27,8 +40,8 @@ function processNodeDropDown (subsurface_column) {
 function getSiteColumnNodeCount (subsurface_column) {
     return $.getJSON(`../site_analysis/getSiteColumnNodeCount/${subsurface_column}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Site Column Node Count) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Site Column Node Count ${responseText}`, "site_column_node_count", "error_logs");
     });
 }
 
@@ -105,6 +118,7 @@ function initializeNodeSummaryDurationDropdownOnClick () {
 function plotNodeLevelCharts (input) {
     destroyCharts("#subsurface-node-plots .node-chart");
     $("#subsurface-node-plots .loading-bar").show();
+    const execution_start = window.performance.now();
     getPlotDataForNode(input)
     .done((subsurface_node_data) => {
         console.log(subsurface_node_data);
@@ -113,6 +127,17 @@ function plotNodeLevelCharts (input) {
             createSVG(series.series_name, input.subsurface_column);
         });
         $("#subsurface-node-plots .loading-bar").hide();
+        const execution_end = window.performance.now();
+        const execution_time = execution_end - execution_start;
+
+        const report = {
+            type: "timeliness",
+            metric_name: "node_plot_timeliness",
+            module_name: "Site Analysis Page",
+            execution_time
+        };
+
+        PMS.send(report);
     })
     .catch((x) => {
         showErrorModal(x, "node charts");
@@ -124,8 +149,8 @@ function getPlotDataForNode ({
 }) {
     return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${nodes}`)
     .catch(({ responseText, status: conn_status, statusText }) => {
-        console.log(`%c► EOS ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        //sendEosErrorLog(`error rendering EOS chart ${responseText}`, true);
+        console.log(`%c► Site Analysis Page (Plot Data for Node) ${responseText}`, "background: rgba(255,127,80,0.3); color: black");
+        sendSiteAnalysisPMSLog(`error getting JSON for Plot Data for Node ${responseText}`, "node_data_plots", "error_logs");
     });
 }
 
