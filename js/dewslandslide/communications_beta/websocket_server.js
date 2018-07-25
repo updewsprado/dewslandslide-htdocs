@@ -111,6 +111,13 @@ function connectWS() {
 				case "fetchedEWITemplateViaCbx":
 					displayTemplateInChatbox(msg_data.data);
 					break;
+				case "messageTaggingStatus":
+					if (msg_data.status == true) {
+						$.notify(msg_data.status_message, "success");
+						$(this).closest("li.clearfix").find("input[class='msg_details']").addClass("tagged");
+					} else {
+						$.notify(msg_data.status_message, "err");
+					}
 				default:
 					console.log("No request to load.");
 					break;
@@ -135,7 +142,6 @@ function connectWS() {
 		else if(event.code == 1006) {
 			reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 			// disableCommands();
-
 			// connection_status = false;
 			// $("#send-msg").addClass("disabled");
 			// waitForSocketConnection();

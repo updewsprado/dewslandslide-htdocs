@@ -3,7 +3,7 @@ let recent_contacts_collection = [];
 let recent_sites_collection = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
-	$('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
+	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
 	setTimeout(function() {
 		initializeQuickInboxMessages();
         initializeDatepickers();
@@ -466,7 +466,6 @@ function getRecentActivity () {
             }
 
             for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length; sub_counter++) {
-                console.log(recent_sites_collection[counter]);
                 if (sub_counter == 0) {
                     rv_quick_sites = recent_sites_collection[counter].site_code[sub_counter];
                 } else {
