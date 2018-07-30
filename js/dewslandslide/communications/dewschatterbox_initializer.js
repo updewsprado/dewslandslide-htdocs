@@ -650,31 +650,36 @@ function changeSemiAutomationSettings(category, data) {
     }
 }
 
-    let special_case_num = 0;
+let special_case_num = 0;
 
-    $( document ).ready(() => {
-        initializeAddSpecialCaseButtonOnClick();
-        removeInputField();
+$( document ).ready(() => {
+    initializeAddSpecialCaseButtonOnClick();
+    removeInputField();
+});
+
+function initializeAddSpecialCaseButtonOnClick () {
+    $("#add-special-case").click(() => {
+        // console.log("Clicked Add Special Case!");
+        addSpecialCase();
     });
+}
 
-    function initializeAddSpecialCaseButtonOnClick () {
-        $("#add-special-case").click(() => {
-            console.log("Clicked Add Special Case!");
-            addSpecialCase();
-        });
-    }
+function addSpecialCase () {
+    const case_name = `clone-special-case-${special_case_num}`;
+    const $clone = $("#special-case-template").clone().prop("hidden", false);
 
-    function addSpecialCase () {
-        const case_name = `special_case_${special_case_num}`;
-        const $clone = $("#special-case-template").clone().prop("hidden", false);
+    $clone.attr("id", case_name);
 
-        $("#special-case-container").append($clone);
-        special_case_num += 1;
-        console.log(ground_meas_reminder_data);
-    }
+    $("#special-case-container").append($clone);
 
-    function removeInputField () {
-        $(document).on("click", ".remove", ({ currentTarget }) => {
-            $(currentTarget).closest("div#special-case-template").remove();
-        });
-    }
+    special_case_num += 1;
+    // console.log("addSpecialCase");
+    // console.log($clone);
+    // console.log(case_name);
+}
+
+function removeInputField () {
+    $(document).on("click", ".remove", ({ currentTarget }) => {
+        $(currentTarget).closest("div#special-case-template").remove();
+    });
+}
