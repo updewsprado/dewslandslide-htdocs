@@ -619,7 +619,7 @@ function changeSemiAutomationSettings(category, data) {
     } else {
         template = template.replace("(greetings)", "tanghali");
     }
-    
+
     $('#reminder-message').text(template);
 
     $(".gndmeas-reminder-site").empty();
@@ -649,3 +649,32 @@ function changeSemiAutomationSettings(category, data) {
             break;
     }
 }
+
+    let special_case_num = 0;
+
+    $( document ).ready(() => {
+        initializeAddSpecialCaseButtonOnClick();
+        removeInputField();
+    });
+
+    function initializeAddSpecialCaseButtonOnClick () {
+        $("#add-special-case").click(() => {
+            console.log("Clicked Add Special Case!");
+            addSpecialCase();
+        });
+    }
+
+    function addSpecialCase () {
+        const case_name = `special_case_${special_case_num}`;
+        const $clone = $("#special-case-template").clone().prop("hidden", false);
+
+        $("#special-case-container").append($clone);
+        special_case_num += 1;
+        console.log(ground_meas_reminder_data);
+    }
+
+    function removeInputField () {
+        $(document).on("click", ".remove", ({ currentTarget }) => {
+            $(currentTarget).closest("div#special-case-template").remove();
+        });
+    }
