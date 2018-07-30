@@ -129,9 +129,12 @@ const pms_instances = [];
 
 $(document).ready(() => {
 
-    $(".report").click(function() {
-
-    });
+    $("#btn-automation-settings").on("click",function() {
+        var data = {
+            type: "getGroundMeasDefaultSettings"
+        };
+        wss_connect.send(JSON.stringify(data));
+    })
     
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
