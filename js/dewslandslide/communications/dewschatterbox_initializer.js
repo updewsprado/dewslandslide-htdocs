@@ -659,7 +659,6 @@ $( document ).ready(() => {
 
 function initializeAddSpecialCaseButtonOnClick () {
     $("#add-special-case").click(() => {
-        // console.log("Clicked Add Special Case!");
         addSpecialCase();
     });
 }
@@ -667,11 +666,9 @@ function initializeAddSpecialCaseButtonOnClick () {
 function addSpecialCase () {
     const case_name = `clone-special-case-${special_case_num}`;
     const $clone = $("#special-case-template").clone().prop("hidden", false);
-
     $clone.attr("id", case_name);
-
+    // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
     $("#special-case-container").append($clone);
-
     special_case_num += 1;
     // console.log("addSpecialCase");
     // console.log($clone);
