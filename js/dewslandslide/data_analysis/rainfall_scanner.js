@@ -114,19 +114,7 @@ function processRainfallData (result) {
         }
     });
 
-    createRainfallPercentagesPlot(filtered)
-    .catch(({ responseText, status, statusText }) => {
-        console.log(`%c► Error Rainfall Scanner\n► Status ${status}: ${statusText}\n\n${responseText}`, "background: rgba(255,127,80,0.3); color: black");
-        // Error Log for PMS
-        const report = {
-            type: "error_logs",
-            metric_name: "rainfall_scanner_error_logs",
-            module_name: "Rainfall Scanner",
-            report_message: `error on creating plot ${responseText}`
-        };
-
-        PMS.send(report);         
-    });    
+    createRainfallPercentagesPlot(filtered);    
 }
 
 function getRainfallPercentages () {
