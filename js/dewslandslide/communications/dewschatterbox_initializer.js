@@ -1,3 +1,4 @@
+let ground_meas_reminder_data = {};
 $(document).ready(function() {
     try {
         let remChars = 800 - $("#msg").val().length - footer.length;
@@ -569,3 +570,30 @@ function getInitialQuickInboxMessages () {
     };
     wss_connect.send(JSON.stringify(msg));
 }
+
+function displaySitesForGndMeasReminder(data) {
+    // for (var i = 0; i < offices.length; i++) {
+    //     var modIndex = i % 5;
+
+    //     office = offices[i];
+    //     $(`#offices-${modIndex}`).append(`<div class="checkbox"><label><input name="offices" type="checkbox" value="${office}">${office}</label></div>`);
+    // }
+    if (ground_meas_reminder_data == {}) {
+        ground_meas_reminder_data = data;
+    }
+
+    for (var i = 0; i < data.event_sites.length; i++) {
+        var modIndex = i % 6;
+        sitename = data.event_sites[i].name.toUpperCase();
+        $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+    }
+}
+
+function changeSemiAutomationSettings(category, data) {
+    console.log(category);
+    console.log(data);
+}
+
+$("#gnd-meas-category").on("change",function() {
+    changeSemiAutomationSettings($(this).val(), ground_meas_reminder_data);
+});
