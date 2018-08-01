@@ -679,6 +679,6 @@ function addSpecialCase () {
 
 function removeInputField () {
     $(document).on("click", ".remove", ({ currentTarget }) => {
-        $(currentTarget).closest("div#special-case-template").remove();
+        $(currentTarget).closest("div.special-case-template").remove();
     });
 }
