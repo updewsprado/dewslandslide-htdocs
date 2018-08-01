@@ -666,13 +666,15 @@ function initializeAddSpecialCaseButtonOnClick () {
 function addSpecialCase () {
     const case_name = `clone-special-case-${special_case_num}`;
     const $clone = $("#special-case-template").clone().prop("hidden", false);
+    const regular_reminder_msg = $("#reminder-message").val();
+    const $clone_sites = $(".gndmeas-reminder-site-container").children().clone();
     $clone.attr("id", case_name);
+    $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
+    $clone.find("#special-case-sites").append($clone_sites);
+
     // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
     $("#special-case-container").append($clone);
     special_case_num += 1;
-    // console.log("addSpecialCase");
-    // console.log($clone);
-    // console.log(case_name);
 }
 
 function removeInputField () {
