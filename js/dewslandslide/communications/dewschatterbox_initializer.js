@@ -1,4 +1,7 @@
 var ground_meas_reminder_data;
+let special_case_num = 0;
+let site_count = 0;
+
 $(document).ready(function() {
     try {
         let remChars = 800 - $("#msg").val().length - footer.length;
@@ -596,12 +599,66 @@ function displaySitesForGndMeasReminder(data) {
     }
 
     $("#reminder-message").text(template);
-
+    site_count = data.event_sites.length;
     for (var i = 0; i < data.event_sites.length; i++) {
         var modIndex = i % 6;
         sitename = data.event_sites[i].name.toUpperCase();
         $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
     }
+}
+
+function reconstructSavedSettingsForGndMeasReminder(settings,def_event, def_extended, def_routine) {
+    let event_sites = [];
+    let routine_sites = [];
+    let extended_sites = [];
+    let special_cases = 0;
+
+    for (let counter = 0; counter < settings.length; counter++) {
+        switch(settings[counter].type) {
+            case 'routine':
+                routine_sites.push(settings[counter]);
+                break;
+            case 'extended':
+                extended_sites.push(settings[counter]);
+                break;
+            case 'event':
+                event_sites.push(settings[counter]);
+                break;
+        }
+    }
+
+console.log(event_sites);
+console.log(extended_sites);
+console.log(routine_sites);
+
+    switch($("#gnd-meas-category").val()) {
+        case 'extended':
+            site_count = def_extended.length;
+            for (var i = 0; i < def_extended.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_extended[i].toUpperCase();
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+            }
+            break;
+        case 'event':
+            site_count = def_event.length;
+            console.log(site_count);
+            for (var i = 0; i < def_event.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_event[i].name.toUpperCase();
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+            }
+            break;
+        case 'routine':
+            site_count = def_routine.length;
+            for (var i = 0; i < data.def_routine.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_routine[i].toUpperCase();
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+            }
+            break;
+    }
+
 }
 
 function changeSemiAutomationSettings(category, data) {
@@ -627,6 +684,7 @@ function changeSemiAutomationSettings(category, data) {
 
     switch(category) {
         case 'extended':
+            site_count = data.extended_sites.length;
             for (var i = 0; i < data.extended_sites.length; i++) {
                 var modIndex = i % 6;
                 sitename = data.extended_sites[i].toUpperCase();
@@ -634,6 +692,8 @@ function changeSemiAutomationSettings(category, data) {
             }
             break;
         case 'event':
+            site_count = data.event_sites.length;
+            console.log(site_count);
             for (var i = 0; i < data.event_sites.length; i++) {
                 var modIndex = i % 6;
                 sitename = data.event_sites[i].name.toUpperCase();
@@ -641,6 +701,7 @@ function changeSemiAutomationSettings(category, data) {
             }
             break;
         case 'routine':
+            site_count = data.routine_sites.length;
             for (var i = 0; i < data.routine_sites.length; i++) {
                 var modIndex = i % 6;
                 sitename = data.routine_sites[i].toUpperCase();
@@ -649,8 +710,6 @@ function changeSemiAutomationSettings(category, data) {
             break;
     }
 }
-
-let special_case_num = 0;
 
 $( document ).ready(() => {
     initializeAddSpecialCaseButtonOnClick();
@@ -668,17 +727,26 @@ function addSpecialCase () {
     const $clone = $("#special-case-template").clone().prop("hidden", false);
     const regular_reminder_msg = $("#reminder-message").val();
     const $clone_sites = $(".gndmeas-reminder-site-container").children().clone();
-    $clone.attr("id", case_name);
-    $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
-    $clone.find("#special-case-sites").append($clone_sites);
+    console.log(site_count);
+    console.log(special_case_num);
+    if (site_count <= special_case_num) {
+        $("#add-special-case").prop('disabled',true);
+    } else {
+        $("#add-special-case").prop('disabled',false);
+        $clone.attr("id", case_name);
+        $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
+        $clone.find("#special-case-sites").append($clone_sites);
 
-    // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
-    $("#special-case-container").append($clone);
-    special_case_num += 1;
+        // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
+        $("#special-case-container").append($clone);
+        special_case_num += 1;
+    }
 }
 
 function removeInputField () {
     $(document).on("click", ".remove", ({ currentTarget }) => {
+        special_case_num = special_case_num-1;
+        $("#add-special-case").prop('disabled',false);
         $(currentTarget).closest("div.special-case-template").remove();
     });
 }
