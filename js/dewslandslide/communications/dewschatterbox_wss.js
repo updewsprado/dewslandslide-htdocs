@@ -63,6 +63,7 @@ function connectWS () {
             $("#ewi-recipient-update-modal").modal("toggle");
             loadGroups();
         } else if (msg.type == "fetchGndMeasReminderSettings") {
+            console.log(msg);
             if (msg.saved == true) {
                 reconstructSavedSettingsForGndMeasReminder(msg.save_settings,msg.event_sites, msg.extended_sites, msg.routine_sites);
             } else {

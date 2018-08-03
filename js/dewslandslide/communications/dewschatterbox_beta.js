@@ -146,24 +146,41 @@ $(document).ready(() => {
     $("#save-gnd-meas-settings-button").on("click",function() {
         let special_case_length = $(".special-case-template").length -1;
         let gnd_sitenames = [];
+        if (gnd_meas_overwrite == "new") {
+            $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+                gnd_sitenames.push(this.value);
+            });
 
-        $("input[name=\"gnd-sitenames\"]:checked").each(function () {
-            gnd_sitenames.push(this.value);
-        });
+            let gnd_meas_settings = {
+                type: "setGndMeasReminderSettings",
+                sites: gnd_sitenames,
+                category: $("#gnd-meas-category").val(),
+                template: $("#reminder-message").text()
+            };
 
-        let gnd_meas_settings = {
-            type: "setGndMeasReminderSettings",
-            sites: gnd_sitenames,
-            category: $("#gnd-meas-category").val(),
-            template: $("#reminder-message").text()
-        };
+            wss_connect.send(JSON.stringify(gnd_meas_settings));
 
-        wss_connect.send(JSON.stringify(gnd_meas_settings));
+            if (special_case_length > 0) {
+                for (let counter = 0; counter < special_case_length.length; counter++) {
+                    gnd_sitenames = [];
+                    $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                        gnd_sitenames.push(this.value);
+                    });
 
-        if (special_case_length > 0) {
-            for (let counter = 0; counter < special_case_length.length; counter++) {
-                gnd_sitenames = [];
-                $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                    let gnd_meas_settings = {
+                        type: "setGndMeasReminderSettings",
+                        sites: gnd_sitenames,
+                        category: $("#gnd-meas-category").val(),
+                        template: $("#special-case-message-"+counter).text(),
+                        overwrite: false
+                    };
+                    wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                }
+            }
+            $.notify('Ground measurement settings saved!','success');
+        } else {
+            if (confirm('You have a save template, are you sure you want to overwrite it?')){
+                $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                     gnd_sitenames.push(this.value);
                 });
 
@@ -171,10 +188,31 @@ $(document).ready(() => {
                     type: "setGndMeasReminderSettings",
                     sites: gnd_sitenames,
                     category: $("#gnd-meas-category").val(),
-                    template: $("#special-case-message-"+counter).text()
+                    template: $("#reminder-message").text(),
+                    overwrite: true
                 };
-                wss_connect.send(JSON.stringify(gnd_meas_settings));              
-            }
+
+                wss_connect.send(JSON.stringify(gnd_meas_settings));
+
+                if (special_case_length > 0) {
+                    for (let counter = 0; counter < special_case_length.length; counter++) {
+                        gnd_sitenames = [];
+                        $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                            gnd_sitenames.push(this.value);
+                        });
+
+                        let gnd_meas_settings = {
+                            type: "setGndMeasReminderSettings",
+                            sites: gnd_sitenames,
+                            category: $("#gnd-meas-category").val(),
+                            template: $("#special-case-message-"+counter).text(),
+                            overwrite: false
+                        };
+                        wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                    }
+                }
+                $.notify('Ground measurement settings saved!','success');
+            }      
         }
     });
 
