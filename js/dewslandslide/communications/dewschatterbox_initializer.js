@@ -740,9 +740,9 @@ function addSpecialCase () {
         $clone.find("textarea.special-case-message-container").attr('id', `special-case-message-${special_case_num}`);
         $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
         
-        // Set div-unique name for each checkbox
+        // Set name for each checkbox based on div-id
         $clone_sites.find("input").each((index, element) => {
-            let checkbox_name = `gnd-sitenames-${index}`;
+            let checkbox_name = `gnd-meas-${special_case_num}`;
             $(element).attr('name', checkbox_name);
         });
         
