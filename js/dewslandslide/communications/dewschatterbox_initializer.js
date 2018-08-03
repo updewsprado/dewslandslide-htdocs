@@ -642,6 +642,7 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
                 }
                 break;
             case 'event':
+
                 event_sites_full.push(settings[counter]);
                 event_sites.push(settings[counter].site);
                 if ($.inArray(settings[counter].msg, event_templates_container) == -1) {
@@ -760,6 +761,7 @@ function changeSemiAutomationSettings(category, data) {
 $( document ).ready(() => {
     initializeAddSpecialCaseButtonOnClick();
     removeInputField();
+    initializeResetSpecialCases();
 });
 
 function initializeAddSpecialCaseButtonOnClick () {
@@ -770,19 +772,28 @@ function initializeAddSpecialCaseButtonOnClick () {
 
 function addSpecialCase () {
     const case_name = `clone-special-case-${special_case_num}`;
+    const class_sites_div = `clone-sites-div-${special_case_num}`;
+    const class_msg_div = `clone-msg-div-${special_case_num}`; 
     const $clone = $("#special-case-template").clone().prop("hidden", false);
     const regular_reminder_msg = $("#reminder-message").val();
     const $clone_sites = $(".gndmeas-reminder-site-container").children().clone();
-    console.log(site_count);
-    console.log(special_case_num);
     if (site_count <= special_case_num) {
         $("#add-special-case").prop('disabled',true);
     } else {
         $("#add-special-case").prop('disabled',false);
         $clone.attr("id", case_name);
+        $clone.find("div#special-case-body .col-sm-6:first-child").addClass(class_sites_div);
+        $clone.find("div#special-case-body .col-sm-6:last-child").addClass(class_msg_div);
+        $clone.find("textarea.special-case-message-container").attr('id', `special-case-message-${special_case_num}`);
         $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
+        
+        // Set div-unique name for each checkbox
+        $clone_sites.find("input").each((index, element) => {
+            let checkbox_name = `gnd-sitenames-${index}`;
+            $(element).attr('name', checkbox_name);
+        });
+        
         $clone.find("#special-case-sites").append($clone_sites);
-
         // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
         $("#special-case-container").append($clone);
         special_case_num += 1;
@@ -795,4 +806,19 @@ function removeInputField () {
         $("#add-special-case").prop('disabled',false);
         $(currentTarget).closest("div.special-case-template").remove();
     });
+}
+
+function initializeResetSpecialCases () {
+    $("#reset-button").on("click",() => {
+        // Clear special cases
+        let special_case_length = $(".special-case-template").length;
+        special_case_num = 0;
+        for (let counter = special_case_length-1; counter >=0; counter--) {
+            $("#clone-special-case-"+counter).remove();
+        }
+        var data = {
+            type: "getGroundMeasDefaultSettings"
+        };
+        wss_connect.send(JSON.stringify(data));
+    });    
 }
