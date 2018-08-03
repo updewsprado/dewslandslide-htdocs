@@ -154,26 +154,28 @@ $(document).ready(() => {
             let gnd_meas_settings = {
                 type: "setGndMeasReminderSettings",
                 sites: gnd_sitenames,
+                altered: 0,
                 category: $("#gnd-meas-category").val(),
                 template: $("#reminder-message").text()
             };
 
             wss_connect.send(JSON.stringify(gnd_meas_settings));
-
+            
             if (special_case_length > 0) {
-                for (let counter = 0; counter < special_case_length.length; counter++) {
+                for (let counter = 0; counter < special_case_length; counter++) {
                     gnd_sitenames = [];
-                    $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                    $("input[name=\"gnd-meas-"+counter+"\"]:checked").each(function () {
                         gnd_sitenames.push(this.value);
                     });
-
                     let gnd_meas_settings = {
                         type: "setGndMeasReminderSettings",
                         sites: gnd_sitenames,
                         category: $("#gnd-meas-category").val(),
-                        template: $("#special-case-message-"+counter).text(),
+                        altered: 1,
+                        template: $("#special-case-message-"+counter).val(),
                         overwrite: false
                     };
+                    console.log(gnd_meas_settings);
                     wss_connect.send(JSON.stringify(gnd_meas_settings));              
                 }
             }
@@ -204,6 +206,7 @@ $(document).ready(() => {
                         let gnd_meas_settings = {
                             type: "setGndMeasReminderSettings",
                             sites: gnd_sitenames,
+                            altered: 1,
                             category: $("#gnd-meas-category").val(),
                             template: $("#special-case-message-"+counter).text(),
                             overwrite: false
