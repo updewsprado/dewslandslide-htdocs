@@ -622,7 +622,7 @@ function reconstructSavedSettingsForGndMeasReminder(settings,def_event, def_exte
                 extended_sites.push(settings[counter]);
                 break;
             case 'event':
-                event_sites.push(settings[counter].site);
+                event_sites.push(settings[counter]);
                 break;
         }
     }
@@ -637,11 +637,7 @@ console.log(routine_sites);
             for (var i = 0; i < def_extended.length; i++) {
                 var modIndex = i % 6;
                 sitename = def_extended[i].toUpperCase();
-                if ($.inArray(sitename, extended_sites)) {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
-                } else {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
-                }
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
             }
             break;
         case 'event':
@@ -650,11 +646,7 @@ console.log(routine_sites);
             for (var i = 0; i < def_event.length; i++) {
                 var modIndex = i % 6;
                 sitename = def_event[i].name.toUpperCase();
-                if ($.inArray(sitename, event_sites) == 0) {
-                  $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);  
-                } else {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
-                }
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
             }
             break;
         case 'routine':
@@ -662,12 +654,7 @@ console.log(routine_sites);
             for (var i = 0; i < data.def_routine.length; i++) {
                 var modIndex = i % 6;
                 sitename = def_routine[i].toUpperCase();
-                sitename = def_extended[i].toUpperCase();
-                if ($.inArray(sitename, extended_sites)) {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
-                } else {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
-                }
+                $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
             }
             break;
     }
