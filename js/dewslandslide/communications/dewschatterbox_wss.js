@@ -63,10 +63,6 @@ function connectWS () {
             $("#ewi-recipient-update-modal").modal("toggle");
             loadGroups();
         } else if (msg.type == "fetchGndMeasReminderSettings") {
-            console.log(msg.extended_sites);
-            console.log(msg.event_sites);
-            console.log(msg.routine_sites);
-            console.log(msg.template);
             displaySitesForGndMeasReminder(msg);
             $("#ground-meas-reminder-modal").modal("show");
         } else if (msg.type == "oldMessage") {

@@ -130,13 +130,33 @@ const pms_instances = [];
 $(document).ready(() => {
 
     $("#btn-automation-settings").on("click",function() {
-        // $("#ground-meas-reminder-modal").modal("show");
         var data = {
             type: "getGroundMeasDefaultSettings"
         };
         wss_connect.send(JSON.stringify(data));
     });
     
+    $("#save-gnd-meas-settings-button").on("click",function() {
+        let gnd_sitenames = [];
+
+        $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+            gnd_sitenames.push(this.value);
+        });
+
+        console.log($("#gnd-meas-category").val());
+        console.log(gnd_sitenames);
+        console.log($("#reminder-message").text());
+
+        let gnd_meas_settings = {
+            type: "setGndMeasReminderSettings",
+            sites: gnd_sitenames,
+            category: $("#gnd-meas-category").val(),
+            template: $("#reminder-message").text()
+        };
+
+        wss_connect.send(JSON.stringify(gnd_meas_settings));
+    });
+
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
     }
