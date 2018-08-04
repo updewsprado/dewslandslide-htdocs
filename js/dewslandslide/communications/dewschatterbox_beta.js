@@ -137,6 +137,7 @@ $(document).ready(() => {
             $("#clone-special-case-"+counter).remove();
 
         }
+
         var data = {
             type: "getGroundMeasDefaultSettings"
         };
@@ -144,19 +145,22 @@ $(document).ready(() => {
     });
     
     $("#save-gnd-meas-settings-button").on("click",function() {
-        let special_case_length = $(".special-case-template").length -1;
+        let special_case_length = $(".special-case-template").length-1;
         let gnd_sitenames = [];
+        console.log(gnd_meas_overwrite);
         if (gnd_meas_overwrite == "new") {
             $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                 gnd_sitenames.push(this.value);
             });
 
+            console.log(gnd_sitenames);
             let gnd_meas_settings = {
                 type: "setGndMeasReminderSettings",
                 sites: gnd_sitenames,
                 altered: 0,
                 category: $("#gnd-meas-category").val(),
-                template: $("#reminder-message").text()
+                template: $("#reminder-message").text(),
+                overwrite: false
             };
 
             wss_connect.send(JSON.stringify(gnd_meas_settings));
@@ -167,6 +171,7 @@ $(document).ready(() => {
                     $("input[name=\"gnd-meas-"+counter+"\"]:checked").each(function () {
                         gnd_sitenames.push(this.value);
                     });
+                    console.log(gnd_sitenames);
                     let gnd_meas_settings = {
                         type: "setGndMeasReminderSettings",
                         sites: gnd_sitenames,
@@ -209,7 +214,7 @@ $(document).ready(() => {
                             altered: 1,
                             category: $("#gnd-meas-category").val(),
                             template: $("#special-case-message-"+counter).text(),
-                            overwrite: false
+                            overwrite: true
                         };
                         wss_connect.send(JSON.stringify(gnd_meas_settings));              
                     }

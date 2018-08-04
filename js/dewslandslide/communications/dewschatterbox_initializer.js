@@ -599,8 +599,6 @@ function displaySitesForGndMeasReminder(data) {
         template = template.replace("(greetings)", "tanghali");
     }
 
-    console.log(template);
-
     $("#reminder-message").text(template);
     site_count = data.event_sites.length;
     for (var i = 0; i < data.event_sites.length; i++) {
@@ -611,16 +609,27 @@ function displaySitesForGndMeasReminder(data) {
 }
 
 function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_extended, def_routine) {
+
+    ground_meas_reminder_data = {
+        event: def_event,
+        extended: def_event,
+        routine: def_routine,
+        settings: settings
+    }
+
     gnd_meas_overwrite = "old";
     let event_sites = [];
     let event_sites_full = [];
     let event_templates_container = [];
+    let event_altered = [];
     let routine_sites = [];
     let routine_sites_full = [];
     let routine_templates_container = [];
+    let routine_altered = [];
     let extended_sites = [];
     let extended_sites_full = [];
     let extended_templates_container = [];
+    let extended_altered = [];
     let special_cases = 0;
     $(".gndmeas-reminder-site").empty();
     $(".gndmeas-reminder-office").empty();
@@ -632,13 +641,20 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
                 routine_sites.push(settings[counter].site);
                 if ($.inArray(settings[counter].msg, routine_templates_container) == -1) {
                     routine_templates_container.push(settings[counter].msg);
-                }          
+                }
+                if (settings[counter].altered_template == 1) {
+                    routine_altered.push(settings[counter]);
+                }
                 break;
             case 'extended':
                 extended_sites_full.push(settings[counter]);
                 extended_sites.push(settings[counter].site);
                 if ($.inArray(settings[counter].msg, extended_templates_container) == -1) {
                     extended_templates_container.push(settings[counter].msg); 
+                }
+
+                if (settings[counter].altered_template == 1) {
+                    extended_altered.push(settings[counter]);
                 }
                 break;
             case 'event':
@@ -648,9 +664,13 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
                 if ($.inArray(settings[counter].msg, event_templates_container) == -1) {
                    event_templates_container.push(settings[counter].msg); 
                 }
+                if (settings[counter].altered_template == 1) {
+                    event_altered.push(settings[counter]);
+                }
                 break;
         }
     }
+
 
     switch($("#gnd-meas-category").val()) {
         case 'extended':
@@ -665,22 +685,45 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
                 }
             }
             $("#reminder-message").text(extended_templates_container[0]);
+
+            for (let counter = 0; counter < routine_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (extended_altered[counter].site == this.value) {
+                        console.log("test");
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
             break;
         case 'event':
             site_count = def_event.length;
             for (var i = 0; i < def_event.length; i++) {
                 var modIndex = i % 6;
                 sitename = def_event[i].name.toUpperCase();
-                if ($.inArray(sitename, event_sites) != -1) {
+                if ($.inArray(sitename, event_sites) != -1 && $.inArray(event_sites_full[i], event_altered) == -1) {
                   $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+event_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');  
                 } else {
                     $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
                 }
             }
+
             $("#reminder-message").text(event_templates_container[0]);
+            for (let counter = 0; counter < event_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (event_altered[counter].site == this.value) {
+                        console.log("test");
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
             break;
         case 'routine':
-            console.log(routine_sites_full);
             site_count = def_routine.length;
             for (var i = 0; i < def_routine.length; i++) {
                 var modIndex = i % 6;
@@ -692,15 +735,18 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
                 }
             }
             $("#reminder-message").text(routine_templates_container[0]);
+            for (let counter = 0; counter < routine_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (routine_altered[counter].site == this.value) {
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
             break;
     }
-    ground_meas_reminder_data = {
-        event: def_event,
-        extended: def_event,
-        routine: def_routine,
-        settings: settings
-    }
-
 }
 
 function changeSemiAutomationSettings(category, data) {
@@ -753,7 +799,9 @@ function changeSemiAutomationSettings(category, data) {
                     $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
                 }
                 break;
-        }       
+        }
+
+
     }
 
 }
