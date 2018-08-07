@@ -1,5 +1,6 @@
 var ground_meas_reminder_data;
 let special_case_num = 0;
+let special_case_id = 0;
 let site_count = 0;
 var gnd_meas_overwrite;
 $(document).ready(function() {
@@ -762,8 +763,7 @@ function changeSemiAutomationSettings(category, data) {
     if (category != "routine" && category != "event" && category != "extended") {
         reconstructSavedSettingsForGndMeasReminder(data.settings, data.event, data.extended, data.routine);
     } else {
-        // Reset special cases on div change [for review]
-        resetSpecialCases();        
+        resetCaseDiv();
         console.log(data);
         const currentDate = new Date();
         const current_meridiem = currentDate.getHours();
@@ -842,7 +842,7 @@ function initializeAddSpecialCaseButtonOnClick () {
 }
 
 function addSpecialCase () {
-    const case_name = `clone-special-case-${special_case_num}`;
+    const case_name = `clone-special-case-${special_case_id}`;
     const class_sites_div = `clone-sites-div-${special_case_num}`;
     const class_msg_div = `clone-msg-div-${special_case_num}`; 
     const $clone = $("#special-case-template").clone().prop("hidden", false);
@@ -867,6 +867,7 @@ function addSpecialCase () {
         $clone.find("#special-case-sites").append($clone_sites);
         // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
         $("#special-case-container").append($clone);
+        special_case_id += 1;
         special_case_num += 1;
 
         // Disable add button if site_count is maxed out
@@ -890,13 +891,23 @@ function initializeResetSpecialCasesButtonOnCLick () {
 
 function resetSpecialCases () {
     // Clear special cases
+    $("#gnd-meas-category").val('event');
     let special_case_length = $(".special-case-template").length;
     special_case_num = 0;
     for (let counter = special_case_length-1; counter >=0; counter--) {
         $("#clone-special-case-"+counter).remove();
     }
+    resetCaseDiv();
     var data = {
         type: "getGroundMeasDefaultSettings"
     };
     wss_connect.send(JSON.stringify(data));    
+}
+
+function resetCaseDiv () {
+    $("#add-special-case").prop('disabled',false);
+    let case_div = $("#special-case-container");
+    case_div.empty();
+    special_case_num = 0;
+    special_case_id = 0;
 }
