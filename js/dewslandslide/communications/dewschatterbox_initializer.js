@@ -787,7 +787,8 @@ function changeSemiAutomationSettings(category, data) {
                 for (var i = 0; i < data.extended_sites.length; i++) {
                     var modIndex = i % 6;
                     sitename = data.extended_sites[i].toUpperCase();
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><<input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+                    console.log(sitename);
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
                 }
 
                 for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
