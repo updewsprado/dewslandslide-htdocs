@@ -72,6 +72,8 @@ $(document).ready(function() {
     }
 
     $("#gnd-meas-category").on("change",function() {
+        // Reset special cases on div change [for review]
+        // resetSpecialCases();
         changeSemiAutomationSettings($(this).val(), ground_meas_reminder_data);
     });
 
@@ -760,6 +762,8 @@ function changeSemiAutomationSettings(category, data) {
     if (category != "routine" && category != "event" && category != "extended") {
         reconstructSavedSettingsForGndMeasReminder(data.settings, data.event, data.extended, data.routine);
     } else {
+        // Reset special cases on div change [for review]
+        resetSpecialCases();        
         console.log(data);
         const currentDate = new Date();
         const current_meridiem = currentDate.getHours();
@@ -828,7 +832,7 @@ function changeSemiAutomationSettings(category, data) {
 $( document ).ready(() => {
     initializeAddSpecialCaseButtonOnClick();
     removeInputField();
-    initializeResetSpecialCases();
+    initializeResetSpecialCasesButtonOnCLick();
 });
 
 function initializeAddSpecialCaseButtonOnClick () {
@@ -864,6 +868,9 @@ function addSpecialCase () {
         // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
         $("#special-case-container").append($clone);
         special_case_num += 1;
+
+        // Disable add button if site_count is maxed out
+        if (site_count <= special_case_num) $("#add-special-case").prop('disabled',true); 
     }
 }
 
@@ -875,17 +882,21 @@ function removeInputField () {
     });
 }
 
-function initializeResetSpecialCases () {
+function initializeResetSpecialCasesButtonOnCLick () {
     $("#reset-button").on("click",() => {
-        // Clear special cases
-        let special_case_length = $(".special-case-template").length;
-        special_case_num = 0;
-        for (let counter = special_case_length-1; counter >=0; counter--) {
-            $("#clone-special-case-"+counter).remove();
-        }
-        var data = {
-            type: "getGroundMeasDefaultSettings"
-        };
-        wss_connect.send(JSON.stringify(data));
+        resetSpecialCases();
     });    
+}
+
+function resetSpecialCases () {
+    // Clear special cases
+    let special_case_length = $(".special-case-template").length;
+    special_case_num = 0;
+    for (let counter = special_case_length-1; counter >=0; counter--) {
+        $("#clone-special-case-"+counter).remove();
+    }
+    var data = {
+        type: "getGroundMeasDefaultSettings"
+    };
+    wss_connect.send(JSON.stringify(data));    
 }

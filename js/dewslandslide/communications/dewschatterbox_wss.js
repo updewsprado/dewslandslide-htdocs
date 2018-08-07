@@ -69,6 +69,7 @@ function connectWS () {
                 displaySitesForGndMeasReminder(msg);
             }
             $("#ground-meas-reminder-modal").modal("show");
+            $("#add-special-case").prop("disabled", false); // Re-enables the Add Special Case when modal is dismissed
         } else if (msg.type == "oldMessage") {
             loadOldMessages(msg);
             message_type = "smsload";
