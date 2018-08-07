@@ -62,6 +62,13 @@ function connectWS () {
         } else if (msg.type == "resumeLoading") {
             $("#ewi-recipient-update-modal").modal("toggle");
             loadGroups();
+        } else if (msg.type == "fetchGndMeasReminderSettings") {
+            if (msg.saved == true) {
+                reconstructSavedSettingsForGndMeasReminder(msg.save_settings,msg.event_sites, msg.extended_sites, msg.routine_sites);
+            } else {
+                displaySitesForGndMeasReminder(msg);
+            }
+            $("#ground-meas-reminder-modal").modal("show");
         } else if (msg.type == "oldMessage") {
             loadOldMessages(msg);
             message_type = "smsload";
@@ -281,7 +288,8 @@ function connectWS () {
         } else {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
-                let execution_time = moment(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss")).subtract(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"));
+                let execution_time = moment(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss")).diff(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"),'ms'); // to change to performance.now
+                console.log(execution_time);
                 let timeliness_report = {
                     "type": "timeliness",
                     "metric_name": "sms_execution_time",

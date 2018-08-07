@@ -692,7 +692,7 @@ function makeNarrativeReport (report_data) {
 function getShiftNarratives (data) {
     const timestamps = $.extend(true, {}, shift_timestamps);
     timestamps.event_id = data.event_id;
-    timestamps.start = moment(timestamps.start).add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
+    timestamps.start = moment(timestamps.start).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss");
     if (data.internal_alert_level === "A0") timestamps.end = null;
 
     return $.getJSON("/../../accomplishment/getNarrativesForShift", timestamps)

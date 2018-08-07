@@ -14,7 +14,8 @@ function sendViaAlertMonitor (dashboard_data) {
             async: false,
             data: { trigger_type: dashboard_data.internal_alert },
             success (response) {
-                internal_alert = JSON.parse(response);
+                let raw_response = JSON.parse(response);
+                internal_alert = raw_response.key_input[0];
             }
         });
     }
@@ -74,7 +75,7 @@ function sendViaAlertMonitor (dashboard_data) {
 
     final_template = final_template.replace("(site_location)", formatSbmp);
     final_template = final_template.replace("(recommended_response)", recommended_response.key_input);
-    final_template = final_template.replace("(technical_info)", internal_alert.key_input);
+    final_template = final_template.replace("(technical_info)", internal_alert[0].key_input);
 
     const currentTime = moment().format("YYYY-MM-DD HH:mm");
     if (moment(currentTime).valueOf() >= moment(`${moment().locale("en").format("YYYY-MM-DD")} 00:00`).valueOf() && moment(currentTime).valueOf() < moment(`${moment().locale("en").format("YYYY-MM-DD")} 04:00`).valueOf()) {
@@ -128,10 +129,101 @@ const pms_instances = [];
 
 $(document).ready(() => {
 
-    $(".report").click(function() {
+    $("#btn-automation-settings").on("click",function() {
+        // Clear special cases
+        let special_case_length = $(".special-case-template").length;
+        special_case_num = 0;
+        for (let counter = special_case_length-1; counter >=0; counter--) {
+            $("#clone-special-case-"+counter).remove();
 
+        }
+
+        var data = {
+            type: "getGroundMeasDefaultSettings"
+        };
+        wss_connect.send(JSON.stringify(data));
     });
     
+    $("#save-gnd-meas-settings-button").on("click",function() {
+        let special_case_length = $(".special-case-template").length-1;
+        let gnd_sitenames = [];
+        console.log(gnd_meas_overwrite);
+        if (gnd_meas_overwrite == "new") {
+            $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+                gnd_sitenames.push(this.value);
+            });
+
+            console.log(gnd_sitenames);
+            let gnd_meas_settings = {
+                type: "setGndMeasReminderSettings",
+                sites: gnd_sitenames,
+                altered: 0,
+                category: $("#gnd-meas-category").val(),
+                template: $("#reminder-message").text(),
+                overwrite: false
+            };
+
+            wss_connect.send(JSON.stringify(gnd_meas_settings));
+            
+            if (special_case_length > 0) {
+                for (let counter = 0; counter < special_case_length; counter++) {
+                    gnd_sitenames = [];
+                    $("input[name=\"gnd-meas-"+counter+"\"]:checked").each(function () {
+                        gnd_sitenames.push(this.value);
+                    });
+                    console.log(gnd_sitenames);
+                    let gnd_meas_settings = {
+                        type: "setGndMeasReminderSettings",
+                        sites: gnd_sitenames,
+                        category: $("#gnd-meas-category").val(),
+                        altered: 1,
+                        template: $("#special-case-message-"+counter).val(),
+                        overwrite: false
+                    };
+                    console.log(gnd_meas_settings);
+                    wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                }
+            }
+            $.notify('Ground measurement settings saved!','success');
+        } else {
+            if (confirm('You have a save template, are you sure you want to overwrite it?')){
+                $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+                    gnd_sitenames.push(this.value);
+                });
+
+                let gnd_meas_settings = {
+                    type: "setGndMeasReminderSettings",
+                    sites: gnd_sitenames,
+                    category: $("#gnd-meas-category").val(),
+                    template: $("#reminder-message").text(),
+                    overwrite: true
+                };
+
+                wss_connect.send(JSON.stringify(gnd_meas_settings));
+
+                if (special_case_length > 0) {
+                    for (let counter = 0; counter < special_case_length.length; counter++) {
+                        gnd_sitenames = [];
+                        $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                            gnd_sitenames.push(this.value);
+                        });
+
+                        let gnd_meas_settings = {
+                            type: "setGndMeasReminderSettings",
+                            sites: gnd_sitenames,
+                            altered: 1,
+                            category: $("#gnd-meas-category").val(),
+                            template: $("#special-case-message-"+counter).text(),
+                            overwrite: true
+                        };
+                        wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                    }
+                }
+                $.notify('Ground measurement settings saved!','success');
+            }      
+        }
+    });
+
     if (window.location.host !== "www.dewslandslide.com") {
         $.notify(`This is a test site: https://${window.location.host}`, { autoHideDelay: 100000000 });
     }
@@ -1747,8 +1839,8 @@ $(document).ready(() => {
             month += 1;
 
             var wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
-	    var dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
-	    var routine_sites = [];
+    	    var dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
+    	    var routine_sites = [];
 
             switch (day) {
                 case "Friday":
@@ -2651,4 +2743,5 @@ $(document).ready(() => {
             }
         });
     }
+
 });
