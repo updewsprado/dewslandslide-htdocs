@@ -62,6 +62,13 @@ function connectWS () {
         } else if (msg.type == "resumeLoading") {
             $("#ewi-recipient-update-modal").modal("toggle");
             loadGroups();
+        } else if (msg.type == "fetchGndMeasReminderSettings") {
+            if (msg.saved == true) {
+                reconstructSavedSettingsForGndMeasReminder(msg.save_settings,msg.event_sites, msg.extended_sites, msg.routine_sites);
+            } else {
+                displaySitesForGndMeasReminder(msg);
+            }
+            $("#ground-meas-reminder-modal").modal("show");
         } else if (msg.type == "oldMessage") {
             loadOldMessages(msg);
             message_type = "smsload";

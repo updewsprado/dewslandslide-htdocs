@@ -480,3 +480,9 @@ function chatterboxViaMonitoringDashboard (dashboard_data) {
         }
     });
 }
+
+// SCRIPTS FOR SEMI-AUTO GNDMEAS REMINDER
+
+function initializeActivityChangeOnClick() {
+    // some code here
+}
