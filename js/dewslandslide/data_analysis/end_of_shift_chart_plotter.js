@@ -78,7 +78,7 @@ function eosGetStartDate (category, end_date) {
         default: break;
     }
 
-    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").format("YYYY-MM-DDTHH:mm");
+    start_date = moment(end_date).subtract(value, duration).subtract(1, "hour").format("YYYY-MM-DDTHH:mm:ss");
     return start_date;
 }
 
