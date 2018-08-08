@@ -593,13 +593,13 @@ function displaySitesForGndMeasReminder(data) {
     if (current_meridiem >= 13 && current_meridiem <= 18) {
         template = template.replace("(greetings)", "hapon");
     } else if (current_meridiem >= 18 && current_meridiem <= 23) {
-        template = template.replace("(greetings)", "gabi");
+        template = template.replace("(greetings)", "hapon");
     } else if (current_meridiem >= 0 && current_meridiem <= 3) {
-        template = template.replace("(greetings)", "gabi");
+        template = template.replace("(greetings)", "umaga");
     } else if (current_meridiem >= 4 && current_meridiem <= 11) {
         template = template.replace("(greetings)", "umaga");
     } else {
-        template = template.replace("(greetings)", "tanghali");
+        template = template.replace("(greetings)", "hapon");
     }
 
     $("#reminder-message").text(template);
