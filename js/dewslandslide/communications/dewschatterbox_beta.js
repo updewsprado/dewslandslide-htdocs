@@ -152,15 +152,14 @@ $(document).ready(() => {
             $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                 gnd_sitenames.push(this.value);
             });
-
-            console.log(gnd_sitenames);
             let gnd_meas_settings = {
                 type: "setGndMeasReminderSettings",
                 sites: gnd_sitenames,
                 altered: 0,
                 category: $("#gnd-meas-category").val(),
                 template: $("#reminder-message").text(),
-                overwrite: false
+                overwrite: false,
+                modified: first_name
             };
 
             wss_connect.send(JSON.stringify(gnd_meas_settings));
@@ -178,7 +177,8 @@ $(document).ready(() => {
                         category: $("#gnd-meas-category").val(),
                         altered: 1,
                         template: $("#special-case-message-"+counter).val(),
-                        overwrite: false
+                        overwrite: false,
+                        modified: first_name
                     };
                     console.log(gnd_meas_settings);
                     wss_connect.send(JSON.stringify(gnd_meas_settings));              
@@ -196,7 +196,8 @@ $(document).ready(() => {
                     sites: gnd_sitenames,
                     category: $("#gnd-meas-category").val(),
                     template: $("#reminder-message").text(),
-                    overwrite: true
+                    overwrite: true,
+                    modified: first_name
                 };
 
                 wss_connect.send(JSON.stringify(gnd_meas_settings));
@@ -214,7 +215,8 @@ $(document).ready(() => {
                             altered: 1,
                             category: $("#gnd-meas-category").val(),
                             template: $("#special-case-message-"+counter).text(),
-                            overwrite: true
+                            overwrite: true,
+                            modified: first_name
                         };
                         wss_connect.send(JSON.stringify(gnd_meas_settings));              
                     }
