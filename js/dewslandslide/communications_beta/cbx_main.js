@@ -95,6 +95,7 @@ function displaySitesSelection(data) {
 }
 
 function startConversation(details) {
+	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	try {
 		let convo_details = {
 			type: 'loadSmsConversation',
@@ -241,7 +242,7 @@ function displayOrganizationSelection (orgs,user_orgs = []) {
 	$('<div id="new-org" class="col-md-12"><a href="#" id="add-org"><span class="glyphicon glyphicon-info-sign"></span>&nbsp;Organization not on the list?</a></div>').appendTo('#organization-selection-div');
 }
 
-function displayConversationPanel(msg_data, full_data, recipients) {
+function displayConversationPanel(msg_data, full_data, recipients, titles) {
 	conversation_recipients = [];
 	recipients.forEach(function(user){
 		conversation_recipients.push(user.user_id);
@@ -261,8 +262,16 @@ function displayConversationPanel(msg_data, full_data, recipients) {
 		if (recipient_container.includes(mobile_data.mobile_id) != true) {recipient_container.push(mobile_data.mobile_id);}
 	});
 	msg_data.reverse();
+	let counter = 0;
 	msg_data.forEach(function(data) {
+		// let title_container = titles[counter].split("<split>");
+		// let title_holder = "";
+		// for (let sub_counter = 0; sub_counter < title_container.length; sub_counter++) {
+		// 	title_holder = title_holder+title_container[sub_counter]+"\n";
+		// }
+		// data.title = title_holder;
 		displayUpdatedMessages(data);
+		counter++;
 	});
 }
 
@@ -404,6 +413,7 @@ function loadSiteConversation(){
 }
 
 function siteConversation(){
+	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	try {
 		let tag_offices = [];
 		$('input[name="orgs"]:checked').each(function() {

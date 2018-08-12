@@ -40,7 +40,8 @@ function connectWS() {
 					displayDataTableEmployeeContacts(msg_data.data);
 					break;
 				case "loadSmsConversation":
-					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients);
+					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
+					$('#chatterbox-loader-modal').modal("hide");
 					break;
 				case "updatedDwslContact":
 					contactSettingsFeedback(msg_data);
