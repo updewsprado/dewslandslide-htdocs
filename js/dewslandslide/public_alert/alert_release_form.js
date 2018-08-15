@@ -467,7 +467,6 @@ function onOperationalTriggersAndNoDataClick () {
     });
 
     $(".cbox_trigger, .cbox_trigger_nd").change(function () {
-        const cbox_checked_arr = $(".cbox_trigger:checked, .cbox_trigger_nd:checked");
         trigger_list = [];
         trigger_list = [...saved_triggers];
 
@@ -475,11 +474,13 @@ function onOperationalTriggersAndNoDataClick () {
         if (this.value.indexOf("0") >= 0) disableDivsOnNoDataClick(this);
         else {
             const isSpecificTriggerReleased = trigger_list.some(x => x === this.value);
-            const nd_trigger = `.cbox_trigger_nd[value=${this.value.toLowerCase()}0]`;
+            const temp_letter = this.value === "R" ? this.value : this.value.toLowerCase();
+            const nd_trigger = `.cbox_trigger_nd[value=${temp_letter}0]`;
 
             // if cbox trigger is checked, uncheck and disable corresponding ND
             if ($(`.cbox_trigger[value=${this.value}]`).is(":checked")) {
                 $(nd_trigger).prop({ disabled: true, checked: false });
+                $(nd_trigger).trigger("change");
 
             // if trigger already occurred or released, make ND button available
             } else if (isSpecificTriggerReleased) {
@@ -543,6 +544,7 @@ function onOperationalTriggersAndNoDataClick () {
             $(this).find(".feature_name").attr("readonly", true);
         });
 
+        const cbox_checked_arr = $(".cbox_trigger:checked, .cbox_trigger_nd:checked");
         for (let i = 0; i < cbox_checked_arr.length; i += 1) {
             const trigger = cbox_checked_arr[i].value;
             trigger_list.push(trigger);
@@ -634,11 +636,11 @@ function disableDivsOnNoDataClick (trigger) {
 
     const $triggers_div = $(triggers_div_temp);
     if (trigger.checked) {
-        $triggers_div.prop("checked", false).prop("disabled", true);
+        // $triggers_div.prop("checked", false).prop("disabled", true);
         if (trigger_letter.toUpperCase() === "M") {
-            $triggers_div.parent().next().children("input")
-            .prop("disabled", true)
-            .val("");
+            // $triggers_div.parent().next().children("input")
+            // .prop("disabled", true)
+            // .val("");
         }
 
         let $tech_info_div = null;
