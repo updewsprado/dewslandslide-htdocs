@@ -636,7 +636,7 @@ function disableDivsOnNoDataClick (trigger) {
 
     const $triggers_div = $(triggers_div_temp);
     if (trigger.checked) {
-        // $triggers_div.prop("checked", false).prop("disabled", true);
+        $triggers_div.prop("checked", false).prop("disabled", true);
         if (trigger_letter.toUpperCase() === "M") {
             // $triggers_div.parent().next().children("input")
             // .prop("disabled", true)
@@ -998,7 +998,7 @@ function initializeFormValidator () {
         const val = $(element).val();
         const triggers = $("#internal_alert_level").val().substr(3); // Trigger/s currently present on internal alert
         const A2_triggers = ["g", "s", "m"];
-        const A3_triggers = ["G", "S", "m"];
+        const A3_triggers = ["G", "S", "M"];
         const checker = checkInputIfChecked.trigger;
         msg = "New trigger timestamp required.";
 
