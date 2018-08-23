@@ -590,13 +590,20 @@ function onOperationalTriggersAndNoDataClick () {
 *******************************************/
 function removeTriggersFromSameGroup (triggers) {
     const x0_list = triggers.filter(trigger => trigger.includes("0"));
+    const capital_list = triggers.filter(trigger => /^[SMG]$/.test(trigger));
+    
     let trig_list = [...triggers];
     x0_list.forEach(([x0_trigger]) => {
-        const z = new RegExp(`${x0_trigger}[^0]?$`, "i");
+        const z = new RegExp(`${x0_trigger}[^0]?$`, "g");
         trig_list = trig_list.filter(trigger => !z.test(trigger));
+        
+        const x0_uc = x0_trigger.toUpperCase();
+        const index = trig_list.indexOf(x0_uc);
+        if (index > -1) {
+            trig_list[index] = `${x0_uc}0`;
+        }
     });
-
-    const capital_list = trig_list.filter(trigger => /^[SMG]$/.test(trigger));
+    
     capital_list.forEach(([capital_trigger]) => {
         const z = new RegExp(`${capital_trigger.toLowerCase()}`, "g");
         trig_list = trig_list.filter(trigger => !z.test(trigger));
