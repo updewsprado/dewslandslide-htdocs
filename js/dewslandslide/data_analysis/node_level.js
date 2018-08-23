@@ -1,13 +1,11 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
-
 
 $(document).ready(function(e) {
-
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
 	var values = window.location.href.split("/")
 	var current_site = values[5]
 	var currrent_node = values[6]
@@ -114,7 +112,6 @@ function Time(start,end){
 
 function submit(){
 	$('#searchtool input[id="submit"]').on('click',function(){
-		// console.log($("#sitegeneral").val() , $("#node").val() != "")
 		if($("#sitegeneral").val() != "" && $("#node").val() != "" ){
 			if( $("#node").val() <= 40){
 				$('.mini-alert-canvas div:first').remove(); 
@@ -136,7 +133,6 @@ function submit(){
 function submittedAccel(){
 	$('#tag_submit').click(function(){
 		var tag_name = $("#tag_ids").tagsinput("items");
-		// console.log(tag_name)
 		var tag_description = "node analysis";
 		var timestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 		var tagger = $("#current_user_id").val();
@@ -160,7 +156,6 @@ function submittedAccel(){
 		var host = window.location.host;
 		$.post("http://"+host+"/generalinformation/insertGinTags",{gintags: dataSubmit})
 		.done(function(data) {
-			// console.log(data);
 		})
 		var curSite = $("#sitegeneral").val();
 		var node = $ ("#node").val();
@@ -377,7 +372,7 @@ function accel2(data,series,msgid){
 				dataseries_batt.push({ name: series_name[i],data:batt_series[i] ,id: ids[i],visible:visibility[i]});
 			}
 			var color_series = ["#d48a3b","#fff"]
-			chartProcess(data.id[3],dataseries_batt,"Batt",color_series)
+			chartProcessBattery(data.id[3],dataseries_batt,"Batt",color_series)
 		}
 	});	
 }
@@ -478,7 +473,7 @@ function somsV2(data,mode){
 			for (i = 0; i < result.length; i++) {
 				var rawData=[] ;
 				var time = Date.parse(result[i].ts);
-				rawData.push(time,  parseFloat(result[i].mval1));
+				rawData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 				rawDataSeries.push(rawData);
 			}
 			var mode= "0";
@@ -504,7 +499,7 @@ function somsUnfiltered(data,soms_msgid,name,mode){
 			for (i = 0; i < result.length; i++) {
 				var somsData=[] ;
 				var time = Date.parse(result[i].timestamp);
-				somsData.push(time,  parseFloat(result[i].mval1));
+				somsData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 				somsDataSeries.push(somsData);
 			}
 
@@ -539,7 +534,7 @@ function somsfiltered(data,dataSoms,series){
 				for (i = 0; i < result.length; i++) {
 					var filterData=[];
 					var time =  Date.parse(result[i].ts);
-					filterData.push(time,  parseFloat(result[i].mval1));
+					filterData.push(time,  Math.round(parseFloat(result[i].mval1)*100)/100);
 					filterDataSeries.push(filterData);
 				}
 				series_data.push(series)
@@ -548,7 +543,6 @@ function somsfiltered(data,dataSoms,series){
 				var ids =["dt1","dt2"]
 				for (i = 0; i < series_data.length; i++) {
 					data_series.push({ name:dataSoms.name[i],data:series_data[i] ,id: ids[i],visible:visibility[i]});
-					// console.log({ name:dataSoms.name[i],data:series_data[i] ,id: 'dataseries',visible:visibility[i]})
 				}	
 				var color_series =["#00ff80" ,"#ffff00"];
 				chartProcess(dataSoms.id,data_series,dataSoms.id_name,color_series)
@@ -575,298 +569,457 @@ function chartProcess(id,data_series,name,color){
 	var date1 = moment(fdate);
 	var date2 = moment(tdate);
 	var duration = moment.duration(date2.diff(date1));
-	var list_id=["x1r","x2r","x1f","x2f","y1r","y2r","y1f","y2f","z1r","z2r","z1f","z2f","bt1","bt2",
-	"Cal","Caf","Raw","Raf","mva"];
-	var  list_dates =[];
-		for (var i = 1; i < duration.asDays(); i++) {
-			list_dates.push(((moment(fdate).add(i,'days').format('YYYY-MM-DD')).replace(/-/g, "")).slice(2,10))
-		}
-	
-	$.ajax({ 
-		dataType: "json",
-		url: "/node_level_page/getAllgintagsNodeTagID/"+site+"/"+fdate+"/"+moment(tdate).add(1,"days").format('YYYY-MM-DD')+"/"+node+"no",success: function(result) {
-			var data_value =[],xRaw1=[],xRaw2=[],xFil1=[],xFil2=[];
-			var yRaw1=[],yRaw2=[],yFil2=[],yFil1=[];
-			var zRaw1=[],zRaw2=[],zFil2=[],zFil1=[];
-			var batt1=[],batt2=[],cal=[],calFil=[],raw=[],rawFil=[],mval=[];
-			for (var i = 0; i < result.length; i++) {
-				var remarks_parse = (result[i].remarks).split("/")
-				for (var a = 0; a < list_dates.length; a++) {
-					if (result[i].table_element_id.slice(3,10) == list_dates[a]) {
-						if(result[i].table_element_id.slice(0,3) == "x1r"){
-							xRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "x2r"){
-							xRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "x1f"){
-							xFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "x2f"){
-							xFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "y1r"){
-							yRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "y2r"){
-							yRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "y1f"){
-							yFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "y2f"){
-							yFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "z1r"){
-							zRaw1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "z2r"){
-							zRaw2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "z1f"){
-							zFil1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "z2f"){
-							zFil2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "bt1"){
-							batt1.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "bt2"){
-							batt2.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "Cal"){
-							cal.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "Caf"){
-							calFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "Raw"){
-							raw.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "Raf"){
-							rawFil.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
-						}else if(result[i].table_element_id.slice(0,3) == "mva"){
-							mval.push({x:parseFloat(remarks_parse[2]),text:remarks_parse[3],title:result[i].tag_name})
+	Highcharts.setOptions({
+		global: {
+			timezoneOffset: -8 * 60
+		},
+		colors: color,
+	});
+
+	$("#"+id).highcharts({
+		chart: {
+			type: 'line',
+			zoomType: 'x',
+			height: 300,
+			backgroundColor: {
+				linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+				stops: [
+				[0, '#2a2a2b'],
+				[1, '#3e3e40']
+				]
+			},
+		},
+		title: {
+			text: name.toUpperCase(),
+			style: {
+				color: '#E0E0E3',
+				fontSize: '20px'
+			}
+		},
+		xAxis: {
+			type: 'datetime',
+			dateTimeLabelFormats: { 
+				month: '%e. %b %Y',
+				year: '%Y'
+			},
+			title: {
+				text: 'Date'
+			},
+			labels: {
+				style:{
+					color: 'white'
+				}
+
+			},
+			title: {
+				text: 'Date',
+				style:{
+					color: 'white'
+				}
+			},
+			events:{
+				afterSetExtremes:function(){
+					if (!this.chart.options.chart.isZoomed)
+					{                                         
+						var xMin = this.chart.xAxis[0].min;
+						var xMax = this.chart.xAxis[0].max;
+						var zmRange = computeTickInterval(xMin, xMax);
+						zoomEvent(id,zmRange,xMin,xMax)
+					}
+				}
+			}
+		},
+		tooltip: {
+			shared: true,
+			crosshairs: true
+		},
+
+		plotOptions: {
+			scatter: {
+				marker: {
+					radius: 5,
+					states: {
+						hover: {
+							enabled: true,
+							lineColor: 'rgb(100,100,100)'
+						}
+					}
+				},
+				states: {
+					hover: {
+						marker: {
+							enabled: false
 						}
 					}
 				}
-				
-				
-				
-			}
-			// console.log(name)
-			// console.log(result)
-			var data_x = [xRaw1,xRaw2,xFil1,xFil2];
-			var data_y = [yRaw1,yRaw2,yFil1,yFil2];
-			var data_z = [zRaw1,zRaw2,zFil1,zFil2];
-			var data_batt = [batt1,batt2];
-			var data_cal =[cal,calFil];
-			var data_raw =[raw,rawFil];
-			if(name.toLowerCase() == "xvalue"){
-				for (var i = 0; i < data_x.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_x[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name.toLowerCase() == "yvalue"){
-				for (var i = 0; i < data_y.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_y[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name.toLowerCase() == "zvalue"){
-				for (var i = 0; i < data_y.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_z[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name == "Batt"){
-				for (var i = 0; i < data_batt.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_batt[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name == "Soms(cal)"){
-				for (var i = 0; i < data_cal.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_cal[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name == "Soms(raw)"){
-				for (var i = 0; i < data_raw.length; i++) {
-					data_series.push({name:'Tag',type:'flags',data:data_raw[i],onSeries: 'dt'+[i+1],width: 100,showInLegend: false,visible:true})
-				}
-			}else if(name.toLowerCase() == "mvalue"){
-				data_series.push({name:'Tag',type:'flags',data:mval,onSeries: 'dt4',width: 100})
-			}
-			data_series.push({name:'Tag'})
-			// console.log(name)
-			// console.log(data_series)
-			Highcharts.setOptions({
-				global: {
-					timezoneOffset: -8 * 60
+			},
+			series: {
+				marker: {
+					radius: 3
 				},
-				colors: color,
-			});
-
-			$("#"+id).highcharts({
-				chart: {
-					type: 'line',
-					zoomType: 'x',
-					height: 300,
-					backgroundColor: {
-						linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-						stops: [
-						[0, '#2a2a2b'],
-						[1, '#3e3e40']
-						]
+				cursor: 'pointer',
+						// point: {
+						// 	events: {
+						// 		click: function () {
+						// 			$("#annModal").modal("show");
+						// 			$("#tag_value").hide();
+						// 			$("#tag_series").hide();
+						// 			$("#tag_version").hide();
+						// 			$('#tag_ids').tagsinput('removeAll');
+						// 			$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
+						// 			$("#tag_value").val(this.y)
+						// 				// console.log(this.series.name)
+						// 				if(this.series.name == "batt1" || this.series.name == "batt2"){
+						// 					var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
+						// 				}else if (this.series.name == "Cal" || this.series.name == "Raw") {
+						// 					var value_id = (this.series.name).slice(0,3)
+						// 				}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
+						// 					var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
+						// 				}else if (this.series.name == "mvalue") {
+						// 					var value_id = (this.series.name).slice(0,3)
+						// 				}else{
+						// 					var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
+						// 				}
+						// 				$("#tag_series").val(value_id)
+						// 				$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
+						// 			}
+						// 		}
+						// 	}
 					},
+					area: {
+						marker: {
+							lineWidth: 3,
+							lineColor: null 
+						}
+					}
+
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0,
+					itemStyle: {
+						color: '#E0E0E3'
+					},
+					itemHoverStyle: {
+						color: '#FFF'
+					},
+					itemHiddenStyle: {
+						color: '#606063'
+					}
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series	
+			}, function(chart) { 
+				syncronizeCrossHairs(chart,id);
+
+			});
+	var chart = $('#'+id).highcharts();
+	$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
+		var series4 = chart.series[(data_series.length-5)];
+		var series5 = chart.series[(data_series.length-4)];
+		var series6 = chart.series[(data_series.length-3)];
+		var series7 = chart.series[(data_series.length-2)];
+		var series = chart.series[(data_series.length-1)];
+		if($("#tag_version").val() == "1"){
+			if (series.visible) {
+				series4.update({
+					visible: true,
+				});
+				series5.update({
+					visible: true,
+				});
+			}else {
+				series4.update({
+					visible: false,
+				});
+				series5.update({
+					visible: false,
+				});
+
+			}
+		}else{
+			if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
+				if (series.visible) {
+
+					series6.update({
+						visible: true,
+					});
+					series7.update({
+						visible: true,
+					});
+				}else {
+
+					series6.update({
+						visible: false,
+					});
+					series7.update({
+						visible: false,
+					});
+				}
+			}else{
+				if (series.visible) {
+					series4.update({
+						visible: true,
+					});
+					series5.update({
+						visible: true,
+					});
+					series6.update({
+						visible: true,
+					});
+					series7.update({
+						visible: true,
+					});
+				}else {
+					series4.update({
+						visible: false,
+					});
+					series5.update({
+						visible: false,
+					});
+					series6.update({
+						visible: false,
+					});
+					series7.update({
+						visible: false,
+					});
+				}
+			}
+		}
+	});
+		// }
+	// });
+
+}
+
+function syncronizeCrossHairs(chart,id_chart) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	var container = $(chart.container),
+	offset = container.offset(),
+	x, y, isInside, report;
+	container.mousemove(function(evt) {
+
+		x = evt.clientX - chart.plotLeft - offset.left;
+		y = evt.clientY - chart.plotTop - offset.top;
+		var xAxis = chart.xAxis[0];
+
+		for (var i = 0; i < all_ids.length; i++) {
+			if($('#'+all_ids[i]).highcharts() != undefined){
+				var xAxis1 = $('#'+all_ids[i]).highcharts().xAxis[0];
+				xAxis1.removePlotLine("myPlotLineId");
+				xAxis1.addPlotLine({
+					value: chart.xAxis[0].translate(x, true),
+					width: 1,
+					color: 'red',                 
+					id: "myPlotLineId"
+				});
+			}
+		}
+
+	});
+}
+
+function computeTickInterval(xMin, xMax) {
+	var zoomRange = xMax - xMin;
+
+	if (zoomRange <= 2)
+		currentTickInterval = 0.5;
+	if (zoomRange < 20)
+		currentTickInterval = 1;
+	else if (zoomRange < 100)
+		currentTickInterval = 5;
+}
+
+function zoomEvent(id_chart,zmRange,xMin,xMax) {
+	var all_ids =["accel-1","accel-2","accel-3","accel-r","accel-c","accel-v"]
+	
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().xAxis[0].options.tickInterval =zmRange;
+			$('#'+all_ids[i]).highcharts().xAxis[0].isDirty = true;
+		}
+	}
+	
+	
+	removeSpecificArray(all_ids, id_chart)
+
+	for (var i = 0; i < all_ids.length; i++) {
+		if($('#'+all_ids[i]).highcharts() != undefined){
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = true;
+			$('#'+all_ids[i]).highcharts().options.chart.isZoomed = false;
+			$('#'+all_ids[i]).highcharts().xAxis[0].setExtremes(xMin, xMax, true);
+		}
+	}
+	
+}
+
+function removeSpecificArray(array, element) {
+	const index = array.indexOf(element);
+	array.splice(index, 1);
+}
+
+
+function chartProcessBattery(id,data_series,name,color){
+	var site = ($('#sitegeneral').val()).toLowerCase();
+	var node = $('#node').val();
+	// $.ajax({ 
+	// 	dataType: "json",
+	// 	url: "/api/AccelBatteryThreshold/"+site+"/"+node,success: function(result) {
+		Highcharts.setOptions({
+			global: {
+				timezoneOffset: -8 * 60
+			},
+			colors: color,
+		});
+
+		$("#"+id).highcharts({
+			chart: {
+				type: 'line',
+				zoomType: 'x',
+				height: 300,
+				backgroundColor: {
+					linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+					stops: [
+					[0, '#2a2a2b'],
+					[1, '#3e3e40']
+					]
+				},
+			},
+			title: {
+				text: name.toUpperCase(),
+				style: {
+					color: '#E0E0E3',
+					fontSize: '20px'
+				}
+			},
+			xAxis: {
+				type: 'datetime',
+				dateTimeLabelFormats: { 
+					month: '%e. %b %Y',
+					year: '%Y'
 				},
 				title: {
-					text: name.toUpperCase(),
-					style: {
-						color: '#E0E0E3',
-						fontSize: '20px'
-					}
+					text: 'Date'
 				},
-				xAxis: {
-					type: 'datetime',
-					dateTimeLabelFormats: { 
-						month: '%e. %b %Y',
-						year: '%Y'
-					},
-					title: {
-						text: 'Date'
-					},
-					labels: {
-						style:{
-							color: 'white'
-						}
+				labels: {
+					style:{
+						color: 'white'
+					}
 
-					},
-					title: {
-						text: 'Date',
-						style:{
-							color: 'white'
-						}
+				},
+				title: {
+					text: 'Date',
+					style:{
+						color: 'white'
 					}
 				},
+				events:{
+					afterSetExtremes:function(){
+						if (!this.chart.options.chart.isZoomed)
+						{                                         
+							var xMin = this.chart.xAxis[0].min;
+							var xMax = this.chart.xAxis[0].max;
+							var zmRange = computeTickInterval(xMin, xMax);
+							zoomEvent(id,zmRange,xMin,xMax)
+						}
+					}
+				}
+			},
+				// yAxis:{
+				// 	plotBands: [{
+				// 		value:  parseFloat(result[0].vmin),
+				// 		color: '#c2f9f3',
+				// 		dashStyle: 'dash',
+				// 		width: 2,
+				// 		zIndex: 0,
+				// 		label: {
+				// 			text: "Min Threshold "+parseFloat(result[0].vmin),
+				// 			style: {
+				// 				color: '#ffffff'
+				// 			}
+				// 		}
+				// 	},{
+				// 		value: parseFloat(result[0].vmax),
+				// 		color: '#c2f9f3',
+				// 		dashStyle: 'dash',
+				// 		width: 2,
+				// 		zIndex: 0,
+				// 		label: {
+				// 			text: "Max Threshold "+ parseFloat(result[0].vmax),
+				// 			style: {
+				// 				color: '#ffffff'
+				// 			}
+				// 		}
+				// 	}]
+
+				// },
 				tooltip: {
 					shared: true,
 					crosshairs: true
 				},
 
 				plotOptions: {
+					scatter: {
+						marker: {
+							radius: 5,
+							states: {
+								hover: {
+									enabled: true,
+									lineColor: 'rgb(100,100,100)'
+								}
+							}
+						},
+						states: {
+							hover: {
+								marker: {
+									enabled: false
+								}
+							}
+						}
+					},
 					series: {
 						marker: {
 							radius: 3
 						},
 						cursor: 'pointer',
-						point: {
-							events: {
-								click: function () {
-									$("#annModal").modal("show");
-									$("#tag_value").hide();
-									$("#tag_series").hide();
-									$("#tag_version").hide();
-									$('#tag_ids').tagsinput('removeAll');
-									$("#tag_time").val(moment(this.x).format('YYYY-MM-DD HH:mm:ss'))
-									$("#tag_value").val(this.y)
-										// console.log(this.series.name)
-										if(this.series.name == "batt1" || this.series.name == "batt2"){
-											var value_id = (this.series.name).slice(0,1)+(this.series.name).slice(3,5)
-										}else if (this.series.name == "Cal" || this.series.name == "Raw") {
-											var value_id = (this.series.name).slice(0,3)
-										}else if (this.series.name == "Cal(filtered)" || this.series.name == "Raw(filtered)") {
-											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(4,5)
-										}else if (this.series.name == "mvalue") {
-											var value_id = (this.series.name).slice(0,3)
-										}else{
-											var value_id = (this.series.name).slice(0,2)+(this.series.name).slice(3,4)
-										}
-										$("#tag_series").val(value_id)
-										$("#tsAnnotation").attr('value',moment(this.category).format('YYYY-MM-DD HH:mm:ss')); 
-									}
-								}
-							}
-						},
-						area: {
-							marker: {
-								lineWidth: 3,
-								lineColor: null 
-							}
-						}
-
 					},
-					legend: {
-						layout: 'vertical',
-						align: 'right',
-						verticalAlign: 'middle',
-						borderWidth: 0,
-						itemStyle: {
-							color: '#E0E0E3'
-						},
-						itemHoverStyle: {
-							color: '#FFF'
-						},
-						itemHiddenStyle: {
-							color: '#606063'
-						}
-					},
-					credits: {
-						enabled: false
-					},
-					series:data_series
-				});
-			var chart = $('#'+id).highcharts();
-			$( ".highcharts-series-"+(data_series.length-1) ).click(function() {
-				var series4 = chart.series[(data_series.length-5)];
-				var series5 = chart.series[(data_series.length-4)];
-				var series6 = chart.series[(data_series.length-3)];
-				var series7 = chart.series[(data_series.length-2)];
-				var series = chart.series[(data_series.length-1)];
-				if($("#tag_version").val() == "1"){
-					if (series.visible) {
-						series4.update({
-							visible: true,
-						});
-						series5.update({
-							visible: true,
-						});
-					}else {
-						series4.update({
-							visible: false,
-						});
-						series5.update({
-							visible: false,
-						});
-
-					}
-				}else{
-					if(name == "Batt" || name == "Soms(cal)" || name == "Soms(raw)" ){
-						if (series.visible) {
-
-							series6.update({
-								visible: true,
-							});
-							series7.update({
-								visible: true,
-							});
-						}else {
-
-							series6.update({
-								visible: false,
-							});
-							series7.update({
-								visible: false,
-							});
-						}
-					}else{
-						if (series.visible) {
-							series4.update({
-								visible: true,
-							});
-							series5.update({
-								visible: true,
-							});
-							series6.update({
-								visible: true,
-							});
-							series7.update({
-								visible: true,
-							});
-						}else {
-							series4.update({
-								visible: false,
-							});
-							series5.update({
-								visible: false,
-							});
-							series6.update({
-								visible: false,
-							});
-							series7.update({
-								visible: false,
-							});
+					area: {
+						marker: {
+							lineWidth: 3,
+							lineColor: null 
 						}
 					}
-				}
+
+				},
+				legend: {
+					layout: 'vertical',
+					align: 'right',
+					verticalAlign: 'middle',
+					borderWidth: 0,
+					itemStyle: {
+						color: '#E0E0E3'
+					},
+					itemHoverStyle: {
+						color: '#FFF'
+					},
+					itemHiddenStyle: {
+						color: '#606063'
+					}
+				},
+				credits: {
+					enabled: false
+				},
+				series:data_series	
+			}, function(chart) { 
+				syncronizeCrossHairs(chart,id);
+
 			});
-		}
-	});
+		// }
+	// });
 
 }
+

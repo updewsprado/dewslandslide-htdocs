@@ -1,11 +1,12 @@
-$(document).ajaxStart(function () {
-	$('#loading').modal('toggle');
-});
-$(document).ajaxStop(function () {
-	$('#loading').modal('toggle');
-});
+
 
 $(document).ready(function(e) {
+	$(document).ajaxStart(function () {
+		$('#loading').modal('toggle');
+	});
+	$(document).ajaxStop(function () {
+		$('#loading').modal('toggle');
+	});
 	var start = moment().subtract(7, 'days'); 
 	var end = moment().add(1, 'days');
 
@@ -76,10 +77,10 @@ $(document).ready(function(e) {
 				}
 				$.post("../node_level_page/getAllSingleAlert", {data : dataSubmit} ).done(function(data){
 					var result = JSON.parse(data);
-					 nodeAlertJSON = JSON.parse(result.nodeAlerts)
-					 maxNodesJSON = JSON.parse(result.siteMaxNodes)
-					 nodeStatusJSON = JSON.parse(result.nodeStatus)
-					 $( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas"></div>' );
+					nodeAlertJSON = JSON.parse(result.nodeAlerts)
+					maxNodesJSON = JSON.parse(result.siteMaxNodes)
+					nodeStatusJSON = JSON.parse(result.nodeStatus)
+					$( ".mini-alert-canvas" ).append('<div id="mini-alert-canvas"></div>' );
 					initAlertPlot(nodeAlertJSON,maxNodesJSON,nodeStatusJSON,"mini-alert-canvas")
 				});
 
@@ -194,9 +195,9 @@ $(document).ready(function(e) {
 				var dataseries=[]
 				for (i = 0; i < series_data.length; i++) {
 					var data_push = []
-					 data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
-					 data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
-					 dataseries.push(data_push)
+					data_push.push({ name: series_name_data[i] ,step: true, data:series_data[i] ,id: 'dataseries'})	
+					data_push.push({ name: series_name_id[i] ,step: true, data:series_id[i] ,id: 'dataseries'})	
+					dataseries.push(data_push)
 				}
 
 				var color_series = [["#5ff101","#fff"],["#3362ff","#fff"],["#ff4500","#fff"]]
