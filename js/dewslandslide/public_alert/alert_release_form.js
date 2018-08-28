@@ -467,7 +467,6 @@ function onOperationalTriggersAndNoDataClick () {
     });
 
     $(".cbox_trigger, .cbox_trigger_nd").change(function () {
-        const cbox_checked_arr = $(".cbox_trigger:checked, .cbox_trigger_nd:checked");
         trigger_list = [];
         trigger_list = [...saved_triggers];
 
@@ -475,11 +474,13 @@ function onOperationalTriggersAndNoDataClick () {
         if (this.value.indexOf("0") >= 0) disableDivsOnNoDataClick(this);
         else {
             const isSpecificTriggerReleased = trigger_list.some(x => x === this.value);
-            const nd_trigger = `.cbox_trigger_nd[value=${this.value.toLowerCase()}0]`;
+            const temp_letter = this.value === "R" ? this.value : this.value.toLowerCase();
+            const nd_trigger = `.cbox_trigger_nd[value=${temp_letter}0]`;
 
             // if cbox trigger is checked, uncheck and disable corresponding ND
             if ($(`.cbox_trigger[value=${this.value}]`).is(":checked")) {
                 $(nd_trigger).prop({ disabled: true, checked: false });
+                $(nd_trigger).trigger("change");
 
             // if trigger already occurred or released, make ND button available
             } else if (isSpecificTriggerReleased) {
@@ -543,6 +544,7 @@ function onOperationalTriggersAndNoDataClick () {
             $(this).find(".feature_name").attr("readonly", true);
         });
 
+        const cbox_checked_arr = $(".cbox_trigger:checked, .cbox_trigger_nd:checked");
         for (let i = 0; i < cbox_checked_arr.length; i += 1) {
             const trigger = cbox_checked_arr[i].value;
             trigger_list.push(trigger);
@@ -588,13 +590,20 @@ function onOperationalTriggersAndNoDataClick () {
 *******************************************/
 function removeTriggersFromSameGroup (triggers) {
     const x0_list = triggers.filter(trigger => trigger.includes("0"));
+    const capital_list = triggers.filter(trigger => /^[SMG]$/.test(trigger));
+    
     let trig_list = [...triggers];
     x0_list.forEach(([x0_trigger]) => {
-        const z = new RegExp(`${x0_trigger}[^0]?$`, "i");
+        const z = new RegExp(`${x0_trigger}[^0]?$`, "g");
         trig_list = trig_list.filter(trigger => !z.test(trigger));
+        
+        const x0_uc = x0_trigger.toUpperCase();
+        const index = trig_list.indexOf(x0_uc);
+        if (index > -1) {
+            trig_list[index] = `${x0_uc}0`;
+        }
     });
-
-    const capital_list = trig_list.filter(trigger => /^[SMG]$/.test(trigger));
+    
     capital_list.forEach(([capital_trigger]) => {
         const z = new RegExp(`${capital_trigger.toLowerCase()}`, "g");
         trig_list = trig_list.filter(trigger => !z.test(trigger));
@@ -636,9 +645,9 @@ function disableDivsOnNoDataClick (trigger) {
     if (trigger.checked) {
         $triggers_div.prop("checked", false).prop("disabled", true);
         if (trigger_letter.toUpperCase() === "M") {
-            $triggers_div.parent().next().children("input")
-            .prop("disabled", true)
-            .val("");
+            // $triggers_div.parent().next().children("input")
+            // .prop("disabled", true)
+            // .val("");
         }
 
         let $tech_info_div = null;
@@ -996,7 +1005,7 @@ function initializeFormValidator () {
         const val = $(element).val();
         const triggers = $("#internal_alert_level").val().substr(3); // Trigger/s currently present on internal alert
         const A2_triggers = ["g", "s", "m"];
-        const A3_triggers = ["G", "S", "m"];
+        const A3_triggers = ["G", "S", "M"];
         const checker = checkInputIfChecked.trigger;
         msg = "New trigger timestamp required.";
 

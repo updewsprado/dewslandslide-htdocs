@@ -1,3 +1,8 @@
+var ground_meas_reminder_data;
+let special_case_num = 0;
+let special_case_id = 0;
+let site_count = 0;
+var gnd_meas_overwrite;
 $(document).ready(function() {
     try {
         let remChars = 800 - $("#msg").val().length - footer.length;
@@ -66,6 +71,13 @@ $(document).ready(function() {
     } catch (err) {
         console.log(err.message);
     }
+
+    $("#gnd-meas-category").on("change",function() {
+        // Reset special cases on div change [for review]
+        // resetSpecialCases();
+        changeSemiAutomationSettings($(this).val(), ground_meas_reminder_data);
+    });
+
 });
 
 try {
@@ -551,7 +563,6 @@ function loadOfficesAndSites (msg) {
         sitename;
     for (var i = 0; i < offices.length; i++) {
         var modIndex = i % 5;
-
         office = offices[i];
         $(`#offices-${modIndex}`).append(`<div class="checkbox"><label><input name="offices" type="checkbox" value="${office}">${office}</label></div>`);
     }
@@ -568,4 +579,335 @@ function getInitialQuickInboxMessages () {
         type: "smsloadquickinboxrequest"
     };
     wss_connect.send(JSON.stringify(msg));
+}
+
+function displaySitesForGndMeasReminder(data) {
+    gnd_meas_overwrite = "new";
+    ground_meas_reminder_data = data;
+    const currentDate = new Date();
+    const current_meridiem = currentDate.getHours();
+    let template = ground_meas_reminder_data.template.template.replace("(monitoring_type)", $("#gnd-meas-category").val());
+    $(".gndmeas-reminder-site").empty();
+    $(".gndmeas-reminder-office").empty();
+
+    if (current_meridiem >= 13 && current_meridiem <= 18) {
+        template = template.replace("(greetings)", "hapon");
+    } else if (current_meridiem >= 18 && current_meridiem <= 23) {
+        template = template.replace("(greetings)", "hapon");
+    } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+        template = template.replace("(greetings)", "umaga");
+    } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+        template = template.replace("(greetings)", "umaga");
+    } else {
+        template = template.replace("(greetings)", "hapon");
+    }
+
+    $("#reminder-message").text(template);
+    site_count = data.event_sites.length;
+    for (var i = 0; i < data.event_sites.length; i++) {
+        var modIndex = i % 6;
+        sitename = data.event_sites[i].name.toUpperCase();
+        $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+    }
+
+    for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+        var modIndex = i % 6;
+        sitename = data.cant_send_gndmeas[i].toUpperCase();
+        $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+    }
+}
+
+function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_extended, def_routine) {
+
+    ground_meas_reminder_data = {
+        event: def_event,
+        extended: def_event,
+        routine: def_routine,
+        settings: settings
+    }
+
+    gnd_meas_overwrite = "old";
+    let event_sites = [];
+    let event_sites_full = [];
+    let event_templates_container = [];
+    let event_altered = [];
+    let routine_sites = [];
+    let routine_sites_full = [];
+    let routine_templates_container = [];
+    let routine_altered = [];
+    let extended_sites = [];
+    let extended_sites_full = [];
+    let extended_templates_container = [];
+    let extended_altered = [];
+    let special_cases = 0;
+    $(".gndmeas-reminder-site").empty();
+    $(".gndmeas-reminder-office").empty();
+
+    for (let counter = 0; counter < settings.length; counter++) {
+        switch(settings[counter].type) {
+            case 'routine':
+                routine_sites_full.push(settings[counter]);
+                routine_sites.push(settings[counter].site);
+                if ($.inArray(settings[counter].msg, routine_templates_container) == -1) {
+                    routine_templates_container.push(settings[counter].msg);
+                }
+                if (settings[counter].altered_template == 1) {
+                    routine_altered.push(settings[counter]);
+                }
+                break;
+            case 'extended':
+                extended_sites_full.push(settings[counter]);
+                extended_sites.push(settings[counter].site);
+                if ($.inArray(settings[counter].msg, extended_templates_container) == -1) {
+                    extended_templates_container.push(settings[counter].msg); 
+                }
+
+                if (settings[counter].altered_template == 1) {
+                    extended_altered.push(settings[counter]);
+                }
+                break;
+            case 'event':
+
+                event_sites_full.push(settings[counter]);
+                event_sites.push(settings[counter].site);
+                if ($.inArray(settings[counter].msg, event_templates_container) == -1) {
+                   event_templates_container.push(settings[counter].msg); 
+                }
+                if (settings[counter].altered_template == 1) {
+                    event_altered.push(settings[counter]);
+                }
+                break;
+        }
+    }
+
+
+    switch($("#gnd-meas-category").val()) {
+        case 'extended':
+            site_count = def_extended.length;
+            for (var i = 0; i < def_extended.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_extended[i].toUpperCase();
+                if ($.inArray(sitename, extended_sites) != -1) {
+                    $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+extended_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
+                } else {
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                }
+            }
+            $("#reminder-message").text(extended_templates_container[0]);
+
+            for (let counter = 0; counter < routine_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (extended_altered[counter].site == this.value) {
+                        console.log("test");
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
+            break;
+        case 'event':
+            site_count = def_event.length;
+            for (var i = 0; i < def_event.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_event[i].name.toUpperCase();
+                if ($.inArray(sitename, event_sites) != -1 && $.inArray(event_sites_full[i], event_altered) == -1) {
+                  $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+event_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');  
+                } else {
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                }
+
+            }
+
+            $("#reminder-message").text(event_templates_container[0]);
+            for (let counter = 0; counter < event_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (event_altered[counter].site == this.value) {
+                        console.log("test");
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
+            break;
+        case 'routine':
+            site_count = def_routine.length;
+            for (var i = 0; i < def_routine.length; i++) {
+                var modIndex = i % 6;
+                sitename = def_routine[i].toUpperCase();
+                if ($.inArray(sitename, routine_sites) != -1) {
+                    $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+routine_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
+                } else {
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input class="automation_distinction" type="text" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                }
+            }
+            $("#reminder-message").text(routine_templates_container[0]);
+            for (let counter = 0; counter < routine_altered.length; counter++){
+                addSpecialCase();
+                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+                    if (routine_altered[counter].site == this.value) {
+                        $(this).prop("checked", true);
+                    } else {
+                        $(this).prop("checked", false);
+                    }
+                });
+            }
+            break;
+    }
+}
+
+function changeSemiAutomationSettings(category, data) {
+    if (category != "routine" && category != "event" && category != "extended") {
+        reconstructSavedSettingsForGndMeasReminder(data.settings, data.event, data.extended, data.routine);
+    } else {
+        resetCaseDiv();
+        console.log(data);
+        const currentDate = new Date();
+        const current_meridiem = currentDate.getHours();
+        let template = data.template.template.replace("(monitoring_type)", category);
+        if (current_meridiem >= 13 && current_meridiem <= 18) {
+            template = template.replace("(greetings)", "hapon");
+        } else if (current_meridiem >= 18 && current_meridiem <= 23) {
+            template = template.replace("(greetings)", "gabi");
+        } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+            template = template.replace("(greetings)", "gabi");
+        } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+            template = template.replace("(greetings)", "umaga");
+        } else {
+            template = template.replace("(greetings)", "tanghali");
+        }
+
+        $('#reminder-message').text(template);
+
+        $(".gndmeas-reminder-site").empty();
+        $(".gndmeas-reminder-office").empty();
+
+        switch(category) {
+            case 'extended':
+                site_count = data.extended_sites.length;
+                for (var i = 0; i < data.extended_sites.length; i++) {
+                    var modIndex = i % 6;
+                    sitename = data.extended_sites[i].toUpperCase();
+                    console.log(sitename);
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+                }
+
+                for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+                    var modIndex = i % 6;
+                    sitename = data.cant_send_gndmeas[i].toUpperCase();
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                }
+                break;
+            case 'event':
+                site_count = data.event_sites.length;
+                console.log(site_count);
+                for (var i = 0; i < data.event_sites.length; i++) {
+                    var modIndex = i % 6;
+                    sitename = data.event_sites[i].name.toUpperCase();
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+                }
+
+                for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+                    var modIndex = i % 6;
+                    sitename = data.cant_send_gndmeas[i].toUpperCase();
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                }
+                break;
+            case 'routine':
+                site_count = data.routine_sites.length;
+                for (var i = 0; i < data.routine_sites.length; i++) {
+                    var modIndex = i % 6;
+                    sitename = data.routine_sites[i].toUpperCase();
+                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+                }
+                break;
+        }
+    }
+
+}
+
+$( document ).ready(() => {
+    initializeAddSpecialCaseButtonOnClick();
+    removeInputField();
+    initializeResetSpecialCasesButtonOnCLick();
+});
+
+function initializeAddSpecialCaseButtonOnClick () {
+    $("#add-special-case").click(() => {
+        addSpecialCase();
+    });
+}
+
+function addSpecialCase () {
+    const case_name = `clone-special-case-${special_case_id}`;
+    const class_sites_div = `clone-sites-div-${special_case_num}`;
+    const class_msg_div = `clone-msg-div-${special_case_num}`; 
+    const $clone = $("#special-case-template").clone().prop("hidden", false);
+    const regular_reminder_msg = $("#reminder-message").val();
+    const $clone_sites = $(".gndmeas-reminder-site-container").children().clone();
+    if (site_count <= special_case_num) {
+        $("#add-special-case").prop('disabled',true);
+    } else {
+        $("#add-special-case").prop('disabled',false);
+        $clone.attr("id", case_name);
+        $clone.find("div#special-case-body .col-sm-6:first-child").addClass(class_sites_div);
+        $clone.find("div#special-case-body .col-sm-6:last-child").addClass(class_msg_div);
+        $clone.find("textarea.special-case-message-container").attr('id', `special-case-message-${special_case_num}`);
+        $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
+        
+        // Set name for each checkbox based on div-id
+        $clone_sites.find("input").each((index, element) => {
+            let checkbox_name = `gnd-meas-${special_case_num}`;
+            $(element).attr('name', checkbox_name);
+        });
+        
+        $clone.find("#special-case-sites").append($clone_sites);
+        // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
+        $("#special-case-container").append($clone);
+        special_case_id += 1;
+        special_case_num += 1;
+
+        // Disable add button if site_count is maxed out
+        if (site_count <= special_case_num) $("#add-special-case").prop('disabled',true); 
+    }
+}
+
+function removeInputField () {
+    $(document).on("click", ".remove", ({ currentTarget }) => {
+        special_case_num = special_case_num-1;
+        $("#add-special-case").prop('disabled',false);
+        $(currentTarget).closest("div.special-case-template").remove();
+    });
+}
+
+function initializeResetSpecialCasesButtonOnCLick () {
+    $("#reset-button").on("click",() => {
+        resetSpecialCases();
+    });    
+}
+
+function resetSpecialCases () {
+    // Clear special cases
+    $("#gnd-meas-category").val('event');
+    let special_case_length = $(".special-case-template").length;
+    special_case_num = 0;
+    for (let counter = special_case_length-1; counter >=0; counter--) {
+        $("#clone-special-case-"+counter).remove();
+    }
+    resetCaseDiv();
+    var data = {
+        type: "getGroundMeasDefaultSettings"
+    };
+    wss_connect.send(JSON.stringify(data));    
+}
+
+function resetCaseDiv () {
+    $("#add-special-case").prop('disabled',false);
+    let case_div = $("#special-case-container");
+    case_div.empty();
+    special_case_num = 0;
+    special_case_id = 0;
 }
