@@ -129,7 +129,7 @@ function createRainSourcesButton (sources) {
     $btn_group = $("#rainfall-sources-btn-group");
     $btn_group.empty();
     sources.forEach(({ gauge_name }) => {
-        const txt = gauge_name.toUpperCase();
+        const txt = gauge_name.toUpperCase().replace("RAIN_", " ").replace("_", " ");
         const table = isFinite(gauge_name) ? `NOAH ${txt}` : txt;
 
         $btn_group.append($("<button>", {
