@@ -281,14 +281,15 @@ function connectWS () {
         } else {
             var numbers = /^[0-9]+$/;
             if (msg.type == "ackgsm") {
-                let execution_time = moment(msg.timestamp_written).subtract(moment(msg.timestamp_sent));
+                let execution_time = moment(moment(msg.timestamp_written).format("YYYY-MM-DD HH:mm:ss")).diff(moment(msg.timestamp_sent).format("YYYY-MM-DD HH:mm:ss"),'ms'); // to change to performance.now
+                console.log(execution_time);
                 let timeliness_report = {
                     "type": "timeliness",
                     "metric_name": "sms_execution_time",
                     "module_name": "chatterbox",
                     "reference_id": msg.sms_id,
                     "reference_table": "smsoutbox",
-                    "execution_time": execution_time
+                    "execution_time": moment(execution_time).format("X")
                 };
                 PMS.send(timeliness_report);
                 

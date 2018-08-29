@@ -183,7 +183,13 @@ function createSurficialChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 400
+            height: 400,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Surficial Data History Chart of ${site_code.toUpperCase()}</b>`,
@@ -311,6 +317,12 @@ function createMarkerAccelerationChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
@@ -358,6 +370,12 @@ function createMarkerInterpolationChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {
@@ -413,6 +431,12 @@ function createMarkerAccelerationVsTimeChart (data, input) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            },
             width: $(`#marker-${marker_name}-tab-content`).width()
         },
         title: {

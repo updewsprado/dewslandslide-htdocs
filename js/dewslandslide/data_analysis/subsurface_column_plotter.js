@@ -28,10 +28,10 @@ function getSiteSubsurfaceColumns (site_code) {
 }
 
 function delegateSubsurfaceColumnsOnDropDown (column_list) {
-    column_list.forEach(({ name: site_code }) => {
+    column_list.forEach(({ tsm_name: column }) => {
         $("#subsurface_column").append($("<option>", {
-            value: site_code,
-            text: `${site_code.toUpperCase()}`,
+            value: column,
+            text: `${column.toUpperCase()}`,
             class: "appended-option"
         }));
     });
@@ -130,7 +130,13 @@ function createNodeHealthSummaryChart (series, subsurface_column) {
             type: "heatmap",
             height: 120 + (divisor * 20),
             marginTop: 40,
-            marginBottom: 40
+            marginBottom: 40,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Node Health Summary of ${subsurface_column.toUpperCase()}</b>`,
@@ -220,7 +226,13 @@ function createDataPresenceChart (data_presence, form) {
         }],
         chart: {
             type: "heatmap",
-            height: 90 + (divisor * 20)
+            height: 90 + (divisor * 20),
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Data Presence Chart of ${subsurface_column.toUpperCase()}</b>`,
@@ -292,7 +304,13 @@ function createCommunicationHealthChart (communication_health, form) {
         series: communication_health,
         chart: {
             type: "column",
-            height: 300
+            height: 300,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Communication Health Chart of ${subsurface_column.toUpperCase()}</b>`,
@@ -438,7 +456,13 @@ function createColumnPositionChart (orientation, column_data, subsurface_column)
         chart: {
             type: "scatter",
             zoomType: "x",
-            height: 800
+            height: 800,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Column Position Plot of ${subsurface_column.toUpperCase()}</b>`,
@@ -503,7 +527,13 @@ function createDisplacementChart (column_data, form) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800
+            height: 800,
+            resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Displacement Plot, ${xAxisTitle} of ${(subsurface_column).toUpperCase()}</b>`,
@@ -561,7 +591,13 @@ function createVelocityAlertsChart (orientation, data, form) {
             zoomType: "x",
             panning: true,
             panKey: "shift",
-            height: 800
+            height: 800,
+                resetZoomButton: {
+                position: {
+                    x: 0,
+                    y: -30
+                }
+            }
         },
         title: {
             text: `<b>Velocity Alerts Plot, ${xAxisTitle} of ${subsurface_column.toUpperCase()}</b>`,

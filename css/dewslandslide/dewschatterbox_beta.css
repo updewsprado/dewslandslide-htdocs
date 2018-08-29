@@ -46,6 +46,11 @@
 	margin-top: 5px;
 }
 
+div.panel-body > div:nth-child(1) > div > div > div > div > ul {
+  margin-top: 50px;
+}
+
+
 .sent-status-success {
   color: blue;
 }
@@ -194,6 +199,10 @@ hr {
 
 div.awesomplete {
 	width: 100%;
+}
+
+.awesomplete ul {
+  margin-top: 50px;
 }
 
 .panel,.panel-heading {
