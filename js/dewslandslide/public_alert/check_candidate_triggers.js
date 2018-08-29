@@ -269,7 +269,7 @@ function tagSitesForLowering (merged_arr, no_alerts) {
     // on site but already A0 on json
     merged_arr.forEach((site) => {
         if (typeof site.forRelease === "undefined") {
-            const index = no_alerts.findIndex(elem => elem.site === site.name);
+            const index = no_alerts.findIndex(elem => elem.site === site.site_code);
             let x = no_alerts[index];
             lowering_index.push(index);
 
