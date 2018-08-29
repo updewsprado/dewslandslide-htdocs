@@ -2,8 +2,8 @@
 /****
  *
  *	Created by Kevin Dhale dela Cruz
- *	JS file for Manifestations of Movement Table [data_analysis/manifestations_view.php]
- *  [host]/data_analysis/manifestations
+ *	JS file for Manifestations of Movement Table [analysis/manifestations_view.php]
+ *  [host]/analysis/manifestations
  *	
 ****/
 
