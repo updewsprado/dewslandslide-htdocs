@@ -235,6 +235,7 @@ function initializeGoChatOnClick () {
 			raw_name = multiple_contact[0].split(",");
 			firstname = raw_name[1].trim();
 			lastname = raw_name[0].split("-")[1].trim();
+			lastname = lastname.replace("NA ","");
 			office = raw_name[0].split(" ")[1].trim();
 			site = raw_name[0].split(" ")[0].trim();
 			conversation_details = {
