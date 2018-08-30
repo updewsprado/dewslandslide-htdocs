@@ -83,7 +83,7 @@ function processEntriesWithAlerts (with_alerts, merged_arr, invalids) {
 
         let isValidButNeedsManual = false;
         site_invalids.forEach((invalid_entry) => {
-            const alertIndex = merged_arr.findIndex(elem => elem.name === invalid_entry.site);
+            const alertIndex = merged_arr.findIndex(elem => elem.site_code === invalid_entry.site);
             const { alert: public_alert } = invalid_entry;
 
             // Get alerts sources from the alerts array and invalids array
@@ -150,7 +150,7 @@ function processEntriesWithAlerts (with_alerts, merged_arr, invalids) {
 
         let forUpdating = true;
         // Check if alert entry is already updated on latest/overdue table
-        const index = merged_arr.findIndex(elem => elem.name === entry.site);
+        const index = merged_arr.findIndex(elem => elem.site_code === entry.site);
 
         if (index !== -1) {
             // Tag the site on merged_arr as cleared
@@ -269,10 +269,9 @@ function tagSitesForLowering (merged_arr, no_alerts) {
     // on site but already A0 on json
     merged_arr.forEach((site) => {
         if (typeof site.forRelease === "undefined") {
-            const index = no_alerts.findIndex(elem => elem.site === site.name);
+            const index = no_alerts.findIndex(elem => elem.site === site.site_code);
             let x = no_alerts[index];
             lowering_index.push(index);
-
             const { data_timestamp, internal_alert_level } = site;
             // Check if alert for site is A0 and not yet released
             if (!moment(data_timestamp).isSame(x.timestamp) && internal_alert_level !== "A0" && internal_alert_level !== "ND") {
@@ -293,7 +292,7 @@ function prepareSitesForExtendedRelease (extended_sites, no_alerts) {
     const return_arr = [];
     const extended_index = [];
     extended_sites.forEach((site) => {
-        const index = no_alerts.findIndex(elem => elem.site === site.name);
+        const index = no_alerts.findIndex(elem => elem.site === site.site_code);
         if (index > -1) {
             let x = no_alerts[index];
             extended_index.push(index);
@@ -330,7 +329,7 @@ function prepareSitesForRoutineRelease (no_alerts, excluded_index, invalid_entri
     let matrix = null;
     const return_arr = [];
     const routine_list = [];
-    
+
     if (datetime.format("HH:mm") === "11:30") {
         if (weekday === 3) matrix = dry;
         else if (weekday === 2 || weekday === 5) matrix = wet;
@@ -341,7 +340,7 @@ function prepareSitesForRoutineRelease (no_alerts, excluded_index, invalid_entri
         merged.forEach((entry, index) => {
             const { site: site_code, timestamp } = entry;
             const month = moment(timestamp).month();
-            const { season } = dynaslope_sites.find(site => site.name === site_code);
+            const { season } = dynaslope_sites.find(site => site.site_code === site_code);
 
             if (matrix[season - 1].includes(month)) {
                 const is_sent = sent_routine.some(x => x.site_code === entry.site);

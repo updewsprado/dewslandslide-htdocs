@@ -466,7 +466,7 @@ function getReportBackboneData ([event_release], shift_triggers, all_triggers) {
     // and put it in triggers_in_shift
     // triggers_in_shift contains all triggers for an event REGARDLESS of type
     // arranged in DESCENDING TIMESTAMP
-    let index = shift_triggers.map(({ event_id: id }) => id).indexOf(event_id);
+    let index = shift_triggers.map(([{ event_id: id }]) => id).indexOf(event_id);
     const triggers_in_shift = index > -1 ? shift_triggers[index] : null;
 
     let alert_triggers = null;
@@ -692,7 +692,7 @@ function makeNarrativeReport (report_data) {
 function getShiftNarratives (data) {
     const timestamps = $.extend(true, {}, shift_timestamps);
     timestamps.event_id = data.event_id;
-    timestamps.start = moment(timestamps.start).add(1, "hour").format("YYYY-MM-DD HH:mm:ss");
+    timestamps.start = moment(timestamps.start).add(30, "minutes").format("YYYY-MM-DD HH:mm:ss");
     if (data.internal_alert_level === "A0") timestamps.end = null;
 
     return $.getJSON("/../../accomplishment/getNarrativesForShift", timestamps)

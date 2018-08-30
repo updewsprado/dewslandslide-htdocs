@@ -2,8 +2,8 @@
 /****
  *
  *	Created by Kevin Dhale dela Cruz
- *	JS file for Manifestations of Movement Table [data_analysis/manifestations_view.php]
- *  [host]/data_analysis/manifestations
+ *	JS file for Manifestations of Movement Table [analysis/manifestations_view.php]
+ *  [host]/analysis/manifestations
  *	
 ****/
 
@@ -37,7 +37,7 @@ function buildLatestRecordPerSiteTable()
                     // return "<a style='color:blue' href='/../monitoring/events/" + data + "'>" + data + "</a>";
                     //if( full.ts_observance == null ) return "<strong>" + data.toUpperCase() + " (" + full.barangay + ", " + full.municipality + ", " + full.province + ")</strong>";
                     //else 
-                    return "<a style='color:blue' href='/../data_analysis/manifestations/" + data + "'><strong>" + data.toUpperCase() + " (" + full.barangay + ", " + full.municipality + ", " + full.province + ")</strong></a>";
+                    return "<a style='color:blue' href='/../analysis/manifestations/" + data + "'><strong>" + data.toUpperCase() + " (" + full.barangay + ", " + full.municipality + ", " + full.province + ")</strong></a>";
                 }
             },
             {
