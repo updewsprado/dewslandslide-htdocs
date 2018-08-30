@@ -114,7 +114,7 @@ function displayQuickInboxMain(msg_data) {
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
 				msg_data[counter].isunknown = 0;
-				quick_inbox_registered.unshift(msg_data[counter]);	
+				quick_inbox_registered.push(msg_data[counter]);
 			}
 			
 		} catch(err) {
