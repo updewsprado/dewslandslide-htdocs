@@ -132,7 +132,6 @@ function displayQuickInboxMain(msg_data) {
 }
 
 function displayNewSmsQuickInbox(msg_data) {
-
 	let new_inbox = [];
 
 	for (let counter = 0; counter < msg_data.length; counter++) {
@@ -143,8 +142,6 @@ function displayNewSmsQuickInbox(msg_data) {
 		}
 		new_inbox.push(msg_data[counter]);
 	}
-
-
 
 	try {
 		try {
@@ -653,3 +650,20 @@ function displayTemplateInChatbox (data) {
 	$("#msg").val("");
 	$("#msg").val(data);
 }
+
+function displayTeamsGroupSending(data) {
+    for (var x = 0; x < 6; x++) {
+        var myNode = document.getElementById(`tag-${x}`);
+        while (myNode.firstChild) {
+            myNode.removeChild(myNode.firstChild);
+        }
+    }
+
+    for (var i = 0; i < data.length; i++) {
+        var modIndex = i % 4;
+        var tag = data[i];
+        if (tag != "" || tag != null) {
+            $(`#tag-${modIndex}`).append(`<div class="checkbox"><label><input name="tag" type="checkbox" value="${tag}">${tag.toUpperCase()}</label></div>`);
+        }
+    }
+} 

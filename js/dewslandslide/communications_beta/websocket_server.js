@@ -121,6 +121,11 @@ function connectWS() {
 					} else {
 						$.notify(msg_data.status_message, "err");
 					}
+					break;
+				case "fetchedTeams":
+					console.log(msg_data.data);
+					displayTeamsGroupSending(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
