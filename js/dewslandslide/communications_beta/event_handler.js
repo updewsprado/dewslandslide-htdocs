@@ -24,6 +24,7 @@ $(document).ready(function() {
 	initializeClearQuickSearchInputs();
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
+	initializeEmployeeContactGroupSending();
 	getQuickGroupSelection();
 });
 
@@ -892,4 +893,13 @@ function initializeLoadSearchedKeyMessage() {
         $(".recent_activities").hide();
         $("#quick-search-modal").modal("hide");
     });
+}
+
+function initializeEmployeeContactGroupSending() {
+	$("#emp-grp-flag").click(function() {
+        const employee_teams = {
+        	type: "fetchTeams"
+        };
+    	wss_connect.send(JSON.stringify(employee_teams));
+	});
 }
