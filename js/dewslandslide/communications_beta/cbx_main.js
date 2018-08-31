@@ -114,7 +114,40 @@ function displayQuickInboxMain(msg_data) {
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
 				msg_data[counter].isunknown = 0;
-				quick_inbox_registered.unshift(msg_data[counter]);	
+				quick_inbox_registered.unshift(msg_data[counter]);
+			}
+			
+		} catch(err) {
+			console.log(err);
+		}
+
+		quick_inbox_html = quick_inbox_template({'quick_inbox_messages': quick_inbox_registered});
+
+		$("#quick-inbox-display").html(quick_inbox_html);
+		$("#quick-inbox-display").scrollTop(0);
+	} catch (err) {
+		console.log(err);
+		//Add PMS here
+	}
+}
+
+function displayNewSmsQuickInbox(msg_data) {
+	let new_inbox = [];
+
+	for (let counter = 0; counter < msg_data.length; counter++) {
+		for (let sub_counter = 0; sub_counter < inbox_container.length; sub_counter++) {
+			if (inbox_container[sub_counter].full_name != msg_data[counter].full_name) {
+				new_inbox.push(inbox_container[sub_counter]);
+			}
+		}
+		new_inbox.push(msg_data[counter]);
+	}
+
+	try {
+		try {
+			for (let counter = 0; counter < new_inbox.length; counter++) {
+				new_inbox[counter].isunknown = 0;
+				quick_inbox_registered.unshift(new_inbox[counter]);
 			}
 			
 		} catch(err) {
@@ -468,7 +501,7 @@ function updateConversationBubble(msg_response) {
 
 function updateSmsInbox(data) {
 	data[0].isunknown = 0;
-	displayQuickInboxMain(data);
+	displayNewSmsQuickInbox(data);
 }
 
 function updateSmsConversationBubble(data) {
@@ -617,3 +650,20 @@ function displayTemplateInChatbox (data) {
 	$("#msg").val("");
 	$("#msg").val(data);
 }
+
+function displayTeamsGroupSending(data) {
+    for (var x = 0; x < 6; x++) {
+        var myNode = document.getElementById(`tag-${x}`);
+        while (myNode.firstChild) {
+            myNode.removeChild(myNode.firstChild);
+        }
+    }
+
+    for (var i = 0; i < data.length; i++) {
+        var modIndex = i % 4;
+        var tag = data[i];
+        if (tag != "" || tag != null) {
+            $(`#tag-${modIndex}`).append(`<div class="checkbox"><label><input name="tag" type="checkbox" value="${tag}">${tag.toUpperCase()}</label></div>`);
+        }
+    }
+} 

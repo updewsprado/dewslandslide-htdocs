@@ -3,6 +3,7 @@ let connection_status = false;
 let reconnection_delay = 10000;
 let routine_site = [];
 let routine_template = [];
+let inbox_container = [];
 let wss_connect= connectWS();
 
 function connectWS() {
@@ -31,6 +32,7 @@ function connectWS() {
 					displayOrgSelection(msg_data.data);
 					break;
 				case "smsloadquickinbox":
+					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
 					break;
 				case "fetchedCmmtyContacts":
@@ -119,6 +121,11 @@ function connectWS() {
 					} else {
 						$.notify(msg_data.status_message, "err");
 					}
+					break;
+				case "fetchedTeams":
+					console.log(msg_data.data);
+					displayTeamsGroupSending(msg_data.data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
