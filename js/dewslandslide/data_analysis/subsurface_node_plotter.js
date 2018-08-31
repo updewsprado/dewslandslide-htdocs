@@ -65,16 +65,18 @@ function plotNodeLevelCharts (input) {
     .done((subsurface_node_data) => {
         console.log(subsurface_node_data);
         subsurface_node_data.forEach((series) => {
+            console.log(series);
             const { series_name, data: nodes } = series;
             nodes.forEach((node_arr) => {
                 const { node_name, series: node_series } = node_arr;
+                const source_name = node_name.replace("node_", "");
                 const container_id = `${series_name}-${node_name}`;
                 const final_series = hideByDefaultRawSeries(node_series);
                 createPlotContainer(series_name, container_id);
-                createGeneralNodeChart(container_id, final_series, input);
+                createGeneralNodeChart(container_id, final_series, input, source_name);
             });
             synchronizeNodeChartsPerPlotType(series_name);
-            // createSVG(series.series_name, input.subsurface_column);
+            createSVG("node");
         });
         $("#subsurface-node-plots .loading-bar").hide();
     })
@@ -96,10 +98,11 @@ function getPlotDataForNode ({
     return $.getJSON(`../site_analysis/getPlotDataForNode/${subsurface_column}/${start_date}/${end_date}/${node}`);
 }
 
-function createGeneralNodeChart (series_name, data, input) {
+function createGeneralNodeChart (series_name, data, input, source_name) {
     const { subsurface_column, start_date, end_date } = input;
     const cap = series_name === "battery" ? 1 : 3;
     const title = series_name.slice(0, cap).toUpperCase() + series_name.slice(cap);
+
     $(`#${series_name}-graph`).highcharts({
         series: data,
         chart: {
@@ -118,7 +121,7 @@ function createGeneralNodeChart (series_name, data, input) {
             // y: 16
         },
         subtitle: {
-            text: `Source: <b>Node X</b><br/>Range: <b>${moment(start_date).format("D MMM YYYY, HH:mm")} - ${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
+            text: `Source: <b>Node ${source_name}</b><br/>Range: <b>${moment(start_date).format("D MMM YYYY, HH:mm")} - ${moment(end_date).format("D MMM YYYY, HH:mm")}</b>`,
             style: { fontSize: "9px" }
         },
         xAxis: {
