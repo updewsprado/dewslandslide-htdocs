@@ -219,6 +219,7 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function displaySiteSelection (sites,psgc_source = []) {
+	console.log(sites, psgc_source);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -247,8 +248,10 @@ function displaySiteSelection (sites,psgc_source = []) {
 					psgc_source[counter].org_psgc_source = psgc_source[counter].org_psgc_source+"0";
 				}
 			}
-			if (psgc_source[counter].org_psgc_source == site.psgc_source) {
-				$("#sitenames-cc-"+modIndex).find(".checkbox").find("#id_"+site.psgc_source).prop('checked',true);
+
+			if (psgc_source[counter].site_code.toLowerCase() == site.site_code) {
+				console.log(psgc_source[counter].site_code +"|"+ site.site_code);
+				$("#sitenames-cc-"+modIndex).find(".checkbox").find("[value="+site.site_code+"]").prop('checked',true);
 			}
 		}
 	}
@@ -366,23 +369,27 @@ function displayUpdateEmployeeDetails (employee_data) {
 
 	for (let counter = 0; counter < employee_data.mobile_data.length; counter+=1) {
 		if(employee_data.mobile_data[counter].number != null){
-			$("#employee-add-number").click();
-			const number_count = employee_input_count - 1;
-			$("#employee_mobile_number_"+number_count).val(employee_data.mobile_data[counter].number);
-			$("#employee_mobile_status_"+number_count).val(employee_data.mobile_data[counter].number_status);
-			$("#employee_mobile_priority_"+number_count).val(employee_data.mobile_data[counter].priority);
-			$("#employee_mobile_id_"+number_count).val(employee_data.mobile_data[counter].number_id);
+			const number_count = counter + 1;
+			const mobile_data = {
+				"mobile_number" : employee_data.mobile_data[counter].number,
+				"mobile_status" : employee_data.mobile_data[counter].number_status,
+				"mobile_priority" : employee_data.mobile_data[counter].priority,
+				"mobile_id" : employee_data.mobile_data[counter].number_id
+			}
+			appendContactForms("Mobile", number_count, "employee_mobile", mobile_data);
 		}
 		
 	}
 
 	for (let counter = 0; counter < employee_data.landline_data.length; counter+=1) {
 		if(employee_data.landline_data[counter].landline_number != null){
-			$("#employee-add-landlie").click();
-			const number_count = employee_input_count - 1;
-			$("#employee_landline_number_"+number_count).val(employee_data.landline_data[counter].landline_number);
-			$("#employee_landline_remarks_"+number_count).val(employee_data.landline_data[counter].landline_remarks);
-			$("#employee_mobile_id_"+number_count).val(employee_data.landline_data[counter].landline_id);
+			const number_count = counter + 1;
+			const landline_data = {
+				"landline_number" : employee_data.landline_data[counter].landline_number,
+				"landline_remarks" : employee_data.landline_data[counter].landline_remarks,
+				"landline_id" : employee_data.landline_data[counter].landline_id
+			}
+			appendContactForms("Landline", number_count, "employee_landline", landline_data);
 		}
 	}
 }
@@ -407,29 +414,118 @@ function displayUpdateCommunityDetails (community_data) {
 
 	for (let counter = 0; counter < community_data.mobile_data.length; counter+=1) {
 		if(community_data.mobile_data[counter].number != null){
-			$("#community-add-number").click();
-			const number_count = community_input_count - 1;
-			$("#community_mobile_number_"+number_count).val(community_data.mobile_data[counter].number);
-			$("#community_mobile_status_"+number_count).val(community_data.mobile_data[counter].number_status);
-			$("#community_mobile_priority_"+number_count).val(community_data.mobile_data[counter].priority);
-			$("#community_mobile_id_"+number_count).val(community_data.mobile_data[counter].number_id);
-			console.log("#community_mobile_id_"+number_count);
+			const number_count = counter + 1;
+			const mobile_data = {
+				"mobile_number" : community_data.mobile_data[counter].number,
+				"mobile_status" : community_data.mobile_data[counter].number_status,
+				"mobile_priority" : community_data.mobile_data[counter].priority,
+				"mobile_id" : community_data.mobile_data[counter].number_id
+			} 
+			appendContactForms("Mobile", number_count, "community_mobile", mobile_data);
 		}
 		
 	}
 
 	for (let counter = 0; counter < community_data.landline_data.length; counter+=1) {
 		if(community_data.landline_data[counter].landline_number != null){
-			$("#community-add-landlie").click();
-			const number_count = employee_input_count - 1;
-			$("#community_landline_number_"+number_count).val(community_data.landline_data[counter].landline_number);
-			$("#community_landline_remarks_"+number_count).val(community_data.landline_data[counter].landline_remarks);
-			$("#community_mobile_id_"+number_count).val(community_data.landline_data[counter].landline_id);
+			const number_count = counter + 1;
+			const landline_data = {
+				"landline_number" : community_data.landline_data[counter].landline_number,
+				"landline_remarks" : community_data.landline_data[counter].landline_remarks,
+				"landline_id" : community_data.landline_data[counter].landline_id
+			}
+			appendContactForms("Landline", number_count, "community_landline", landline_data);
 		}
 	}
 
 	displaySiteSelection(community_data.list_of_sites, community_data.org_data);
 	displayOrganizationSelection(community_data.list_of_orgs, community_data.org_data);
+}
+
+function appendContactForms (type, number_count, category, data) {
+	let container = "";
+	if (category == "employee_mobile") {
+		container = "#mobile-div";
+	} else if (category == "employee_landline"){
+		container = "#landline-div";
+	} else if (category == "community_mobile"){
+		container = "#mobile-div-cc";
+	} else if (category == "community_landline"){
+		container = "#landline-div-cc";
+	}
+
+	$(container).empty();
+
+	if (category == "employee_mobile" || category == "community_mobile") {
+		$(container)
+		.append(
+		"<div class='row'>"+
+	    "<div class='col-md-4'>"+
+	    "<div class='form-group hideable'>"+
+		"<label class='control-label' for='"+category+"_number_"+number_count+"'>"+type+" #:</label>"+
+		"<input type='number' class='form-control' id='"+category+"_number_"+number_count+"' name='"+category+"_number_"+number_count+"' value='"+data.mobile_number+"' required/>"+
+		"</div>"+
+		"</div>"+
+		"<div class='col-md-4' hidden>"+
+		"<label>"+type+" #:</label>"+
+		"<input type='text' id='"+category+"_id_"+number_count+"' class='form-control' value='"+data.mobile_id+"' disabled>"+
+		"</div>"+
+		"<div class='col-md-4'>"+
+		"<div class='form-group hideable'>"+
+		"<label class='control-label' for='"+category+"_status_"+number_count+"'>"+type+" # Status:</label>"+
+		"<select id='"+category+"_status_"+number_count+"' name='"+category+"_status_"+number_count+"' class='form-control' value='' required>"+
+		"<option value='1'>Active</option>"+
+		"<option value='0'>Inactive</option>"+
+		"</select>"+
+		"</div>"+
+		"</div>"+
+		"<div class='col-md-4'>"+
+		"<div class='form-group hideable'>"+
+		"<label class='control-label' for='"+category+"_priority_"+number_count+"'>"+type+" # Priority:</label>"+
+		"<select id='"+category+"_priority_"+number_count+"' name='"+category+"_priority_"+number_count+"' class='form-control' value='' required>"+
+		"<option value=''>--------</option>"+
+		"<option value='1'>1</option>"+
+		"<option value='2'>2</option>"+
+		"<option value='3'>3</option>"+
+		"</select>"+
+		"</div>"+
+		"</div>"+
+		"</div>");
+		$("#"+category+"_priority_"+number_count).val(data.mobile_priority);
+		$("#"+category+"_status_"+number_count).val(data.mobile_status);
+	} else if (category == "employee_landline" || category == "community_landline"){
+		$(container)
+		.append(
+		"<div class='row'>"+
+	    "<div class='col-md-6'>"+
+		"<div class='form-group hideable'>"+
+        "<label class='control-label' for='"+category+"_number_"+number_count+"'>"+type+" #</label>"+
+		"<input type='number' class='form-control' id='"+category+"_number_"+number_count+"' name='"+category+"_number_"+number_count+"' value='"+data.landline_number+"' required/>"+
+		"</div>"+
+		"</div>"+
+		"<div class='col-md-4' hidden>"+
+		"<label>"+type+" ID #:</label>"+
+		"<input type='text' id='"+category+"_id_"+number_count+"' class='form-control' value='"+data.landline_id+"' disabled>"+
+		"</div>"+
+		"<div class='col-md-6'>"+
+		"<div class='form-group hideable'>"+
+		"<label class='control-label' for='"+category+"_remarks_"+number_count+"'>Remarks</label>"+
+		"<input type='text' class='form-control' id='"+category+"_remarks_"+number_count+"' name='"+category+"_remarks_"+number_count+"' value='"+data.landline_remarks+"' required/>"+
+		"</div>"+
+		"</div>"+
+		"</div>");
+	}
+	
+
+	if (category == "employee_mobile") {
+		employee_input_count += 1;
+	} else if (category == "employee_landline"){
+		employee_input_count_landline += 1;
+	} else if (category == "community_mobile"){
+		community_input_count += 1;
+	} else if (category == "community_landline"){
+		community_input_count_landline += 1;
+	}
 }
 
 function loadSiteConversation(){

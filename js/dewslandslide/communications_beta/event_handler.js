@@ -104,8 +104,6 @@ function initializeContactSettingsOnChange () {
 		}
 
 		if ($('#contact-category').val() == "econtacts") {
-			employee_input_count = 1;
-			employee_input_count_landline = 1;
 			$("#settings-cmd").prop('disabled', false);
 			if ($('#settings-cmd').val() == "addcontact") {
 				$('#emp-response-contact-container_wrapper').prop('hidden',true);
@@ -116,20 +114,20 @@ function initializeContactSettingsOnChange () {
 				$("#emp-settings-cmd").show();
 				$('#employee-contact-wrapper').show();
 				$("#update-contact-container").hide();
+				employee_input_count = 1;
+				employee_input_count_landline = 1;
 			} else if ($('#settings-cmd').val() == "updatecontact") {
 				$('#community-contact-wrapper').hide();
 				$('#employee-contact-wrapper').hide();
 				$('#email_ec').tagsinput('removeAll');
 				$('#team_ec').tagsinput('removeAll');
+				employee_input_count = 1;
+				employee_input_count_landline = 1;
 				getEmployeeContact();
 			} else {
 				console.log('Invalid Request');
 			}
 		} else if ($('#contact-category').val() == "ccontacts") {
-			community_input_count = 1;
-			community_input_count_landline = 1;
-			console.log(community_input_count);
-			console.log(community_input_count_landline);
 			$("#settings-cmd").prop('disabled', false);
 			if ($('#settings-cmd').val() == "addcontact") {
 				$('#emp-response-contact-container_wrapper').prop('hidden',true);
@@ -141,6 +139,8 @@ function initializeContactSettingsOnChange () {
 				emptyCommunityContactForm();
 				$('#employee-contact-wrapper').hide();
 				$(".organization-checkbox").prop("checked", false);
+				community_input_count = 1;
+				community_input_count_landline = 1;
 				$(".site-checkbox").prop("checked", false);
 			} else if ($('#settings-cmd').val() == "updatecontact") {
 				$('#comm-response-contact-container_wrapper').hide();
@@ -149,6 +149,8 @@ function initializeContactSettingsOnChange () {
 				$('#comm-settings-cmd').hide();
 				$('#update-comm-contact-container').show();
 				getCommunityContact();
+				community_input_count = 1;
+				community_input_count_landline = 1;
 			} else {
 				console.log('Invalid Request');
 			}
@@ -448,7 +450,7 @@ function submitEmployeeInformation () {
 	for (let counter = 1; counter < employee_input_count_landline; counter +=1) {
 		const landline_number_raw = {
 			"user_id": $("#user_id_ec").val(),
-			"landline": $("#employee_landline_id_"+counter).val(),
+			"id": $("#employee_landline_id_"+counter).val(),
 			"landline_number": $("#employee_landline_number_"+counter).val(),
 			"landline_remarks": $("#employee_landline_remarks_"+counter).val()
 		};
@@ -483,10 +485,11 @@ function submitEmployeeInformation () {
 		type: message_type,
 		data: contact_data
 	}
-
-	wss_connect.send(JSON.stringify(message));
-	employee_input_count = 1;
-	employee_input_count_landline = 1;
+	$('#emp-response-contact-container_wrapper').show();
+	$('#employee-contact-wrapper').hide();
+	
+	// console.log(mobile_numbers);
+	// wss_connect.send(JSON.stringify(message));
 }
 
 function onSubmitCommunityContactForm (sites, organizations) {
@@ -510,6 +513,7 @@ function onSubmitCommunityContactForm (sites, organizations) {
 	for (let counter = 1; counter < community_input_count_landline; counter +=1) {
 		const landline_number_raw = {
 			"user_id": $("#user_id_cc").val(),
+			"id": $("#community_landline_id_"+counter).val(),
 			"landline_number": $("#community_landline_number_"+counter).val(),
 			"landline_remarks": $("#community_landline_remarks_"+counter).val()
 		};
@@ -533,8 +537,6 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		"organizations": organization_selected
 	}
 
-	console.log(contact_data);
-
 	if (save_type === "updatecontact") {
 		message_type = "updateCommunityContact";
 	}else {
@@ -546,9 +548,10 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		data: contact_data
 	}
 
-	wss_connect.send(JSON.stringify(message));
-	community_input_count = 1;
-	community_input_count_landline = 1;
+	$('#comm-response-contact-container_wrapper').show();
+	$('#community-contact-wrapper').hide();
+
+	// wss_connect.send(JSON.stringify(message));
 }
 
 function emptyEmployeeContactForm () {
