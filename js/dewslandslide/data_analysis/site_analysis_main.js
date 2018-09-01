@@ -182,7 +182,7 @@ function validateForm (form) {
         CHART_PLOTS = new Set();
         switch (submit_btn_id) {
             case "plot-node-level":
-                ["x-accelerometer", "y-accelerometer", "z-accelerometer", "battery"].forEach((plotted) => {
+                ["node"].forEach((plotted) => {
                     CHART_PLOTS.add(plotted);
                 });
                 $("#subsurface_node").rules("add", { required: true });
