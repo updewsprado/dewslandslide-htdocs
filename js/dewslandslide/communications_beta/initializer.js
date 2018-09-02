@@ -214,7 +214,6 @@ function initializeOnSubmitCommunityContactForm () {
 	$('#comm-settings-cmd button[type="submit"], #sbt-update-comm-contact-info').on('click',function(){
 		try{
 			communityContactFormValidation();
-			alert();
 		} catch (e) {
 			console.log(e.message);
 		}
@@ -228,8 +227,6 @@ function employeeContactFormValidation() {
             firstname_ec: "required",
 			lastname_ec: "required",
 			middlename_ec: "required",
-			nickname_ec: "required",
-			salutation_ec: "required",
 			gender_ec: "required",
 			birthdate_ec: "required",
 			email_ec: "required",
@@ -291,9 +288,6 @@ function communityContactFormValidation () {
         rules: {
             firstname_cc: "required",
 			lastname_cc: "required",
-			middlename_cc: "required",
-			nickname_cc: "required",
-			salutation_cc: "required",
 			gender_cc: "required",
 			birthdate_cc: "required",
 			active_status_cc: "required",
