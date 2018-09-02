@@ -649,8 +649,8 @@ function getSubsurfaceColumns (site_code) {
 }
 
 function processSubsurfaceColumnDropdown (columns, site_code) {
-    columns.forEach(({ column_name, status }) => {
-        $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${column_name}`, style: "" })
+    columns.forEach(({ tsm_name, status }) => {
+        $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${tsm_name}`, style: "" })
         .appendTo(`#graph_checkbox_${site_code} .subsurface_options`);
 
         let attr = "";
@@ -661,9 +661,9 @@ function processSubsurfaceColumnDropdown (columns, site_code) {
         } else if (status === "no_data") label = " (No Data)";
 
         const html_string = "<input type='checkbox' class='subsurface_checkbox' " +
-        `value='subsurface_${column_name}' ${attr}>&emsp;${column_name.toUpperCase() + label}`;
+        `value='subsurface_${tsm_name}' ${attr}>&emsp;${tsm_name.toUpperCase() + label}`;
 
-        $(`#subsurface_option_${column_name} a`).html(html_string);
+        $(`#subsurface_option_${tsm_name} a`).html(html_string);
         $(".dropdown-toggle").dropdown();
     });
 }
