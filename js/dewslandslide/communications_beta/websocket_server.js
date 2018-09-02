@@ -126,6 +126,12 @@ function connectWS() {
 					console.log(msg_data.data);
 					displayTeamsGroupSending(msg_data.data);
 					break;
+				case "fetchedEwiDashboardTemplate":
+					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
+					break;
+				case "sentEwiDashboard":
+					displayEwiStatus(msg_data.statuses);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
