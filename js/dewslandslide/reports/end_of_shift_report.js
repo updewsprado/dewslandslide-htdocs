@@ -793,7 +793,7 @@ function createInitialSubsurfaceAnalysis (columns) {
     const { length: in_len } = inactive;
     if (in_len > 0) {
         if (in_len > 1) connector = "are";
-        cols = inactive.map(x => x.column_name.toUpperCase());
+        cols = inactive.map(x => x.tsm_name.toUpperCase());
         cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
         report += `<b>${cols}</b> ${connector} already deactivated. `;
     }
@@ -801,14 +801,14 @@ function createInitialSubsurfaceAnalysis (columns) {
     const no_data = columns.filter(x => x.status === "no_data");
     const { length: no_len } = no_data;
     if (no_len > 0) {
-        cols = no_data.map(x => x.column_name.toUpperCase());
+        cols = no_data.map(x => x.tsm_name.toUpperCase());
         cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
         report += `No available data from <b>${cols}</b> all throughout the shift. `;
     }
 
     const with_data = columns.filter(x => x.status === "with_data");
-    with_data.forEach(({ column_name }) => {
-        report += `<b>${column_name.toUpperCase()}</b> - [write analysis here]. `;
+    with_data.forEach(({ tsm_name }) => {
+        report += `<b>${tsm_name.toUpperCase()}</b> - [write analysis here]. `;
     });
 
     return report;
