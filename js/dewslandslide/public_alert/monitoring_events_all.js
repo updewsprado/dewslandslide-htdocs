@@ -103,7 +103,7 @@ $(document).ready(function()
   
                 $.get("/../pubrelease/getSites", function( data ) {
                     data.forEach(function (x) {
-                        select.append( '<option value="'+x.id+'">'+ x.site_code.toUpperCase() + " (" + x.address + ")" +'</option>' )
+                        select.append( '<option value="'+x.site_id+'">'+ x.site_code.toUpperCase() + " (" + x.address + ")" +'</option>' )
                     });
                 }, "json");
 

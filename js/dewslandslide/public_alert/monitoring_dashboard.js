@@ -46,7 +46,7 @@ $(document).ready(() => {
 
 function getSites () {
     $.getJSON("../monitoring/getSites", (sites) => {
-        sites.forEach((x) => { sites_list[x.name] = x.id; });
+        sites.forEach((x) => { sites_list[x.site_code] = x.site_id; });
     });
 }
 
@@ -406,7 +406,7 @@ function initializeCandidateTriggersIconOnClick () {
             // Search candidate trigger if existing on latest and overdue
             const { latest, overdue, extended } = ongoing;
             merged_arr = [...latest, ...overdue];
-            const index = merged_arr.map(x => x.name).indexOf(site);
+            const index = merged_arr.map(x => x.site_code).indexOf(site);
             let previous = null;
             let enableReleaseButton = false;
 
@@ -423,7 +423,7 @@ function initializeCandidateTriggersIconOnClick () {
 
                 entry.event_id = previous.event_id;
             } else {
-                const index_ex = extended.map(x => x.name).indexOf(site);
+                const index_ex = extended.map(x => x.site_code).indexOf(site);
                 entry.trigger_list = showModalTriggers(current_row, null);
                 enableReleaseButton = true;
 
