@@ -189,9 +189,9 @@ function buildDashboardTables (socket_data) {
             ],
             columns: [
                 {
-                    data: "name",
+                    data: "site_code",
                     render (data, type, full) { return `<b><a href='../monitoring/events/${full.event_id}'>${data.toUpperCase()}</a></b>`; },
-                    name: "name"
+                    name: "site_code"
                 },
                 {
                     data: "validity",
