@@ -130,7 +130,7 @@ function connectWS() {
 					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
 					break;
 				case "sentEwiDashboard":
-					displayEwiStatus(msg_data.statuses);
+					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				default:
 					console.log("No request to load.");
