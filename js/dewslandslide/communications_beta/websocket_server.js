@@ -53,6 +53,10 @@ function connectWS() {
 					break;	
 				case "sendSms":
 					updateConversationBubble(msg_data);
+			    	setTimeout(function(){
+						$("#send-msg").prop('disabled',false);
+					}, 3000);
+					
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;

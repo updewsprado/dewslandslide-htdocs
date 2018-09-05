@@ -276,8 +276,13 @@ function initializeGoLoadOnClick () {
 
 function initializeSendMessageOnClick () {
 	$("#send-msg").click(function() {
-		console.log(recipient_container);
-		sendSms(recipient_container,$("#msg").val());
+		console.log($("#send-msg").is(":disabled"));
+		if ($("#send-msg").is(":disabled") == true) {
+			$.notify("Message still sending, please wait for awhile..", "info");
+		} else {
+			console.log(recipient_container);
+			sendSms(recipient_container,$("#msg").val());		
+		}
 	});
 }
 

@@ -582,6 +582,7 @@ function sendSms(recipients, message) {
 			message: message
 		};
 		wss_connect.send(JSON.stringify(convo_details));
+		$("#send-msg").prop('disabled',true);
 	} catch(err) {
 		console.log(err);
 		// Add PMS here
@@ -589,6 +590,7 @@ function sendSms(recipients, message) {
 }
 
 function updateConversationBubble(msg_response) {
+
 	message_container = [];
 	displayUpdatedMessages(msg_response);
 	$("#msg").val("");
