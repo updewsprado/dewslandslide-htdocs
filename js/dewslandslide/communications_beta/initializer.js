@@ -4,7 +4,6 @@ let recent_sites_collection = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
-
     initialize();
 	$(".birthdate").datetimepicker({
 		locale: "en",
@@ -147,6 +146,55 @@ function initializeOnClickUpdateCommunityContact () {
 		};	
 		wss_connect.send(JSON.stringify(msg));
 	});
+}
+
+function initLoadLatestAlerts (data) {
+    initCheckboxColors();
+    if (data == null) {
+        return;
+    }
+    var alerts = data;
+    temp = data;
+    var msg;
+    for (var i = alerts.length - 1; i >= 0; i--) {
+        msg = alerts[i];
+        updateLatestPublicRelease(msg);
+        $("input[name=\"sitenames\"]:unchecked").each(function () {
+            if ($(this).val() == alerts[i].site_id) {
+                if (alerts[i].status == "on-going") {
+                    $(this).parent().css("color", "red");
+                } else if (alerts[i].status == "extended") {
+                    $(this).parent().css("color", "blue");
+                } 
+            } else if ($(this).val() == 32 || $(this).val() == 33) { 
+                if (alerts[i].site_code == "msl" || alerts[i].site_code == "msu") {
+                    if (alerts[i].status == "on-going") {
+                        $(this).parent().css("color", "red");
+                    } else if (alerts[i].status == "extended") {
+                        $(this).parent().css("color", "blue");
+                    }
+                }
+            }
+        });
+    }
+
+}
+
+function initCheckboxColors () {
+    $("input[name=\"sitenames\"]:unchecked").each(function () {
+        $(this).parent().css("color", "#333");
+    });    
+}
+
+function updateLatestPublicRelease (msg) {
+    try {
+        quick_release.unshift(msg);
+        var quick_release_html = quick_release_template({ quick_release });
+        $("#quick-release-display").html(quick_release_html);
+        $("#quick-release-display").scrollTop(0);
+    } catch (err) {
+        console.log(err.message)
+    }
 }
 
 function getSiteSelection() {
@@ -498,6 +546,13 @@ function getRoutineTemplate() {
 		};
 		wss_connect.send(JSON.stringify(msg));
 	});
+}
+
+function getLatestAlert() {
+    var msg = {
+        type: 'latestAlerts'
+    };
+    wss_connect.send(JSON.stringify(msg));
 }
 
 function displayRoutineReminder(sites,template) {
