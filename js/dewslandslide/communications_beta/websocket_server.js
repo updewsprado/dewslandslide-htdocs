@@ -134,6 +134,7 @@ function connectWS() {
 					break;
 				case "taggingStatus":
 					console.log(msg_data);
+					displayConversationTaggingStatus(msg_data.tag_status);
 					break;
 				default:
 					console.log("No request to load.");

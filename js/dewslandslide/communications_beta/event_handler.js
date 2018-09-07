@@ -4,6 +4,8 @@ let organization_selected = [];
 let temp_tag_flag_container = "";
 
 let message_details = [];
+let site_code = 0;
+let temp_important_tag = [];
 
 $(document).ready(function() {
 	initializeGetQuickGroupSelection();
@@ -18,6 +20,8 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
+	initializeOnClickConfirmTagging();
+	initializeOnClickConfirmNarrative();
 	initializeAlertStatusOnChange();
 	initializeEWITemplateModal();
 	initializeConfirmEWITemplateViaChatterbox();
@@ -598,11 +602,13 @@ function initializeOnAvatarClickForTagging() {
 	$(".chat-message").on("click","#messages .user-avatar",function(){
 		$("#gintag_selected").tagsinput('removeAll');
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
+		message_details = null;
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
-		const user_details = message_details[2].split(" ");
-		OnClickConfirmTagging(message_details, user_details[0].toLowerCase());
+		user = message_details[2].split(" ");
+		site_code = user[0].toLowerCase();
 		getSmsTags(message_details[0]);
+		console.log(message_details[0]);
 	});
 }
 
@@ -635,9 +641,10 @@ function initializeEWITemplateModal() {
 	});
 }
 
-function OnClickConfirmTagging (message_details, site_code) {
-	$("#confirm-tagging").click(function(){
+function initializeOnClickConfirmTagging () {
+	$("#confirm-tagging").on("click", ({ currentTarget }) => {
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
+		temp_important_tag = [];
 		const important = [];
 		const new_tag = [];
 		if (gintag_selected.length === 0 ) {
@@ -661,10 +668,17 @@ function OnClickConfirmTagging (message_details, site_code) {
 				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
-				onClickConfirmNarrative(message_details, important, site_code);
-			}
+				temp_important_tag = important;
+				// onClickConfirmNarrative(message_details, important, site_code);
+
+				$("#narrative_message").empty();
+				$("#narrative_message").append(
+					"Contact(s) to be tagged: " + "&#013;&#010;"+ 
+					"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
+					message_details[4] + "&#013;&#010;"
+				);
+			}//
 		}
-		
 	});
 }
 
@@ -707,21 +721,26 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 	wss_connect.send(JSON.stringify(message));
 }
 
-function onClickConfirmNarrative (message_details, important, site_code) {
-	$("#narrative_message").empty();
-	$("#narrative_message").append(
-		"Contact(s) to be tagged: " + "&#013;&#010;"+ 
-		"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
-		message_details[4] + "&#013;&#010;"
-	);
+function initializeOnClickConfirmNarrative () {
 
-	$("#save-narrative").click(function(){
+	$("#save-narrative").click(function(event){
 		if (message_details[2] != "You") {
-			addNewTags(message_details, important, true, site_code);
+			addNewTags(message_details, temp_important_tag, true, site_code);
 		} else {
-			addNewTags(message_details, important, true, site_code, recipient_container);
+			addNewTags(message_details, temp_important_tag, true, site_code, recipient_container);
 		}
 	});
+}
+
+function displayConversationTaggingStatus (status) {
+	if (status == true) {
+		$.notify("Successfully tagged message", "success");
+		$("#gintag-modal").modal("hide");
+		$("#narrative-modal").modal("hide");
+	} else {
+		$.notify("Successfully tagging message", "error");
+	}
+
 }
 
 function displayConversationTags (conversation_tags) {
