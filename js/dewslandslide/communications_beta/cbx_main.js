@@ -220,7 +220,6 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function displaySiteSelection (sites,psgc_source = []) {
-	console.log(sites, psgc_source);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -315,6 +314,7 @@ function displayConversationPanel(msg_data, full_data, recipients, titles) {
 function displayUpdatedMessages(data) {
 	latest_conversation_timestamp = data.ts_written;
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
+	data.sms_msg = data.sms_msg.replace(/\n/g, "<br />");
 	message_container.unshift(data);
 	messages_html = messages_template_both({'messages': message_container});
 	let html_string = $('#messages').html();
