@@ -22,6 +22,13 @@ let selected_contact_template = Handlebars.compile($('#selected-contact-template
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
 let search_key_template = Handlebars.compile($('#search-message-key-template').html());
 
+Handlebars.registerHelper('breaklines', function(text) {
+    text = Handlebars.Utils.escapeExpression(text);
+    text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
+    return new Handlebars.SafeString(text);
+});
+
+
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
 	// getQuickEmployeeSelection();
@@ -219,7 +226,6 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function displaySiteSelection (sites,psgc_source = []) {
-	console.log(sites, psgc_source);
 	var column_count = 12; // 12 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
@@ -314,6 +320,7 @@ function displayConversationPanel(msg_data, full_data, recipients, titles) {
 function displayUpdatedMessages(data) {
 	latest_conversation_timestamp = data.ts_written;
 	data.ts_received == null ? data.isYou = 1 : data.isYou = 0;
+	data.sms_msg = data.sms_msg.replace(/\n/g, "<br />");
 	message_container.unshift(data);
 	messages_html = messages_template_both({'messages': message_container});
 	let html_string = $('#messages').html();

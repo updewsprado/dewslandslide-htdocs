@@ -3,6 +3,8 @@ let site_selected = [];
 let organization_selected = [];
 let temp_tag_flag_container = "";
 
+let message_details = [];
+
 $(document).ready(function() {
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
@@ -593,7 +595,7 @@ function contactSettingsFeedback (status) {
 }
 
 function initializeOnAvatarClickForTagging() {
-	$(document).on("click","#messages .user-avatar",function(){
+	$(".chat-message").on("click","#messages .user-avatar",function(){
 		$("#gintag_selected").tagsinput('removeAll');
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
@@ -635,13 +637,9 @@ function initializeEWITemplateModal() {
 
 function OnClickConfirmTagging (message_details, site_code) {
 	$("#confirm-tagging").click(function(){
-		// $("#narrative-modal").modal({backdrop: 'static', keyboard: false});
-		// $("#gintag-modal").hide();
-		console.log(recipient_container);
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
 		const important = [];
 		const new_tag = [];
-		console.log(message_details);
 		if (gintag_selected.length === 0 ) {
 			$("#gintag_warning_message").show(300).effect("shake");
 		} else {
@@ -663,7 +661,6 @@ function OnClickConfirmTagging (message_details, site_code) {
 				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
-
 				onClickConfirmNarrative(message_details, important, site_code);
 			}
 		}
@@ -671,21 +668,38 @@ function OnClickConfirmTagging (message_details, site_code) {
 	});
 }
 
-function addNewTags (message_details, new_tag, is_important, site_code) {
+function addNewTags (message_details, new_tag, is_important, site_code, recipient_container = []) {
 	console.log("success tagging new tag");
 	$("#gintag-modal").modal("hide");
-	const details_data = {
-		"user_id": message_details[1],
-		"sms_id": message_details[0],
-		"tag": new_tag,
-		"full_name": message_details[2],
-		"ts": message_details[3],
-		"time_sent": moment(message_details[3]).format("h:mm A"),
-		"msg": message_details[4],
-		"account_id": current_user_id,
-		"tag_important": is_important,
-		"site_code" : site_code
-	};
+	let details_data = {};
+	if (recipient_container.length == 0) {
+		details_data = {
+			"user_id": message_details[1],
+			"sms_id": message_details[0],
+			"tag": new_tag,
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"msg": message_details[4],
+			"account_id": current_user_id,
+			"tag_important": is_important,
+			"site_code" : site_code
+		};
+	} else {
+		details_data = {
+			"recipients": recipient_container,
+			"tag": new_tag,
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"msg": message_details[4],
+			"account_id": current_user_id,
+			"tag_important": is_important,
+			"site_code" : site_code
+		};
+	}
+
+	console.log(details_data);
 	const message = {
 		type: "gintaggedMessage",
 		data: details_data
@@ -702,7 +716,11 @@ function onClickConfirmNarrative (message_details, important, site_code) {
 	);
 
 	$("#save-narrative").click(function(){
-		addNewTags(message_details, important, true, site_code);
+		if (message_details[2] != "You") {
+			addNewTags(message_details, important, true, site_code);
+		} else {
+			addNewTags(message_details, important, true, site_code, recipient_container);
+		}
 	});
 }
 

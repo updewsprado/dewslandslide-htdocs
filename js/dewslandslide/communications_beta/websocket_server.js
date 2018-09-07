@@ -132,6 +132,9 @@ function connectWS() {
 				case "sentEwiDashboard":
 					displayEwiStatus(msg_data.statuses);
 					break;
+				case "taggingStatus":
+					console.log(msg_data);
+					break;
 				default:
 					console.log("No request to load.");
 					break;
