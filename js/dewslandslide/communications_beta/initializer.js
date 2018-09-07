@@ -4,32 +4,8 @@ let recent_sites_collection = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
-	setTimeout(function() {
-		initializeQuickInboxMessages();
-        initializeDatepickers();
-		getRecentActivity();
-        recentActivityInitializer();
-        getRoutineSites();
-        getRoutineReminder();
-        getRoutineTemplate();
-        getImportantTags();
-    	setTimeout(function(){
-			try {
-				initializeContactSuggestion($("#contact-suggestion").val());
-				initializeOnClickUpdateEmployeeContact();
-				initializeOnClickUpdateCommunityContact();
-				getSiteSelection();
-				getOrganizationSelection();
-				$("#chatterbox-loader-modal").modal("hide");
-			} catch (err) {
-				$("#chatterbox-loader-modal").modal("hide");
-				console.log(err.message);
-				// Add PMS HERE.
-			}
-			
-		}, 3000);
-	},3000);
 
+    initialize();
 	$(".birthdate").datetimepicker({
 		locale: "en",
 		format: "YYYY-MM-DD"
@@ -41,6 +17,33 @@ $(document).ready(function() {
 });
 
 
+function initialize() {
+    setTimeout(function() {
+        initializeQuickInboxMessages();
+        initializeDatepickers();
+        getRecentActivity();
+        recentActivityInitializer();
+        getRoutineSites();
+        getRoutineReminder();
+        getRoutineTemplate();
+        getImportantTags();
+        setTimeout(function(){
+            try {
+                initializeContactSuggestion($("#contact-suggestion").val());
+                initializeOnClickUpdateEmployeeContact();
+                initializeOnClickUpdateCommunityContact();
+                getSiteSelection();
+                getOrganizationSelection();
+                $("#chatterbox-loader-modal").modal("hide");
+            } catch (err) {
+                $("#chatterbox-loader-modal").modal("hide");
+                console.log(err.message);
+                // Add PMS HERE.
+            }
+            
+        }, 3000);
+    },3000);
+}
 
 function getContactSuggestion (name_suggestion) {
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
