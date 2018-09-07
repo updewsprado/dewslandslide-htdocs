@@ -12,7 +12,7 @@ $(document).ready(function() {
         getRoutineSites();
         getRoutineReminder();
         getRoutineTemplate();
-        getImportantTags(); // LOUIE
+        getImportantTags(); 
         getLatestAlert();
     	setTimeout(function(){
 			try {
@@ -147,8 +147,8 @@ function initializeOnClickUpdateCommunityContact () {
 	});
 }
 
-// LOUIE
 function initLoadLatestAlerts (data) {
+    initCheckboxColors();
     if (data == null) {
         return;
     }
@@ -164,25 +164,27 @@ function initLoadLatestAlerts (data) {
                     $(this).parent().css("color", "red");
                 } else if (alerts[i].status == "extended") {
                     $(this).parent().css("color", "blue");
-                } else {
-                    $(this).parent().css("color", "green");
-                }
-            } else if ($(this).val() == 32 || $(this).val() == 33) { // LOUIE - PARA SAAN TO?
+                } 
+            } else if ($(this).val() == 32 || $(this).val() == 33) { 
                 if (alerts[i].site_code == "msl" || alerts[i].site_code == "msu") {
                     if (alerts[i].status == "on-going") {
                         $(this).parent().css("color", "red");
                     } else if (alerts[i].status == "extended") {
                         $(this).parent().css("color", "blue");
-                    } else {
-                        $(this).parent().css("color", "green");
                     }
                 }
             }
         });
     }
+
 }
 
-// LOUIE
+function initCheckboxColors () {
+    $("input[name=\"sitenames\"]:unchecked").each(function () {
+        $(this).parent().css("color", "#333");
+    });    
+}
+
 function updateLatestPublicRelease (msg) {
     try {
         quick_release.unshift(msg);
@@ -545,7 +547,6 @@ function getRoutineTemplate() {
 	});
 }
 
-// LOUIE
 function getLatestAlert() {
     var msg = {
         type: 'latestAlerts'
