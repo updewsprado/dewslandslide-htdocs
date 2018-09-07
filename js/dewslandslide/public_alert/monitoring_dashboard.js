@@ -46,7 +46,7 @@ $(document).ready(() => {
 
 function getSites () {
     $.getJSON("../monitoring/getSites", (sites) => {
-        sites.forEach((x) => { sites_list[x.name] = x.id; });
+        sites.forEach((x) => { sites_list[x.site_code] = x.site_id; });
     });
 }
 
@@ -109,11 +109,11 @@ function buildDashboardTables (socket_data) {
             ],
             columns: [
                 {
-                    data: "name",
+                    data: "site_code",
                     render (data, type, full) {
                         return `<b><a href='../monitoring/events/${full.event_id}'>${data.toUpperCase()}</a></b>`;
                     },
-                    name: "name"
+                    name: "site_code"
                 },
                 {
                     data: "event_start",
@@ -146,7 +146,7 @@ function buildDashboardTables (socket_data) {
                 },
                 {
                     render (data, type, full) {
-                        return `<a onclick='chatterboxViaMonitoringDashboard(${JSON.stringify(full)})'><span id='${full.latest_release_id}_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
+                        return `<a><span class='glyphicon glyphicon-phone send_ewi_sms'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
                     }
                 }
             ],
@@ -189,9 +189,9 @@ function buildDashboardTables (socket_data) {
             ],
             columns: [
                 {
-                    data: "name",
+                    data: "site_code",
                     render (data, type, full) { return `<b><a href='../monitoring/events/${full.event_id}'>${data.toUpperCase()}</a></b>`; },
-                    name: "name"
+                    name: "site_code"
                 },
                 {
                     data: "validity",
@@ -210,7 +210,7 @@ function buildDashboardTables (socket_data) {
                 },
                 {
                     render (data, type, full) {
-                        return `<a onclick='chatterboxViaMonitoringDashboard(${JSON.stringify(full)})'><span id='${full.latest_release_id}_sms' class='glyphicon glyphicon-phone'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
+                        return `<a><span class='glyphicon glyphicon-phone send_ewi_extended_sms'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
                     }
                 }
             ],
@@ -406,7 +406,7 @@ function initializeCandidateTriggersIconOnClick () {
             // Search candidate trigger if existing on latest and overdue
             const { latest, overdue, extended } = ongoing;
             merged_arr = [...latest, ...overdue];
-            const index = merged_arr.map(x => x.name).indexOf(site);
+            const index = merged_arr.map(x => x.site_code).indexOf(site);
             let previous = null;
             let enableReleaseButton = false;
 
@@ -423,7 +423,7 @@ function initializeCandidateTriggersIconOnClick () {
 
                 entry.event_id = previous.event_id;
             } else {
-                const index_ex = extended.map(x => x.name).indexOf(site);
+                const index_ex = extended.map(x => x.site_code).indexOf(site);
                 entry.trigger_list = showModalTriggers(current_row, null);
                 enableReleaseButton = true;
 
