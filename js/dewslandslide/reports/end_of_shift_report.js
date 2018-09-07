@@ -324,12 +324,14 @@ function processSiteSelectionModal (obj) {
 function initializeMailRecipients () {
     $("#mail_recipients_row .bootstrap-tagsinput").css("width", "100%");
     const $recipients = $("#recipients_span");
+    const emails = [];
     if (window.location.hostname === "www.dewslandslide.com") {
-        const emails = ["rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com"];
-        emails.forEach((x) => { $("#recipients").tagsinput("add", x); });
+        emails.push("rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com");
     } else if ($recipients.html().length === 0) {
+        emails.push("dynaslope.mail@gmail.com");
         $recipients.append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & ASD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
     }
+    emails.forEach((x) => { $("#recipients").tagsinput("add", x); });
 }
 
 /*************************************************
@@ -649,8 +651,8 @@ function getSubsurfaceColumns (site_code) {
 }
 
 function processSubsurfaceColumnDropdown (columns, site_code) {
-    columns.forEach(({ column_name, status }) => {
-        $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${column_name}`, style: "" })
+    columns.forEach(({ tsm_name, status }) => {
+        $("#subsurface_option_sample").clone().attr({ id: `subsurface_option_${tsm_name}`, style: "" })
         .appendTo(`#graph_checkbox_${site_code} .subsurface_options`);
 
         let attr = "";
@@ -661,9 +663,9 @@ function processSubsurfaceColumnDropdown (columns, site_code) {
         } else if (status === "no_data") label = " (No Data)";
 
         const html_string = "<input type='checkbox' class='subsurface_checkbox' " +
-        `value='subsurface_${column_name}' ${attr}>&emsp;${column_name.toUpperCase() + label}`;
+        `value='subsurface_${tsm_name}' ${attr}>&emsp;${tsm_name.toUpperCase() + label}`;
 
-        $(`#subsurface_option_${column_name} a`).html(html_string);
+        $(`#subsurface_option_${tsm_name} a`).html(html_string);
         $(".dropdown-toggle").dropdown();
     });
 }
@@ -791,7 +793,7 @@ function createInitialSubsurfaceAnalysis (columns) {
     const { length: in_len } = inactive;
     if (in_len > 0) {
         if (in_len > 1) connector = "are";
-        cols = inactive.map(x => x.column_name.toUpperCase());
+        cols = inactive.map(x => x.tsm_name.toUpperCase());
         cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
         report += `<b>${cols}</b> ${connector} already deactivated. `;
     }
@@ -799,14 +801,14 @@ function createInitialSubsurfaceAnalysis (columns) {
     const no_data = columns.filter(x => x.status === "no_data");
     const { length: no_len } = no_data;
     if (no_len > 0) {
-        cols = no_data.map(x => x.column_name.toUpperCase());
+        cols = no_data.map(x => x.tsm_name.toUpperCase());
         cols = [cols.slice(0, -1).join(", "), cols.slice(-1)[0]].join(cols.length < 2 ? "" : " and ");
         report += `No available data from <b>${cols}</b> all throughout the shift. `;
     }
 
     const with_data = columns.filter(x => x.status === "with_data");
-    with_data.forEach(({ column_name }) => {
-        report += `<b>${column_name.toUpperCase()}</b> - [write analysis here]. `;
+    with_data.forEach(({ tsm_name }) => {
+        report += `<b>${tsm_name.toUpperCase()}</b> - [write analysis here]. `;
     });
 
     return report;

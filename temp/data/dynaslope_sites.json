@@ -1,7 +1,7 @@
 [
   {
     "id": "1",
-    "name": "agb",
+    "site_code": "agb",
     "sitio": "",
     "barangay": "Agbatuan",
     "municipality": "Dumarao",
@@ -14,7 +14,7 @@
   },
   {
     "id": "2",
-    "name": "bak",
+    "site_code": "bak",
     "sitio": "",
     "barangay": "Poblacion",
     "municipality": "Bakun",
@@ -27,7 +27,7 @@
   },
   {
     "id": "3",
-    "name": "ban",
+    "site_code": "ban",
     "sitio": "",
     "barangay": "Banlasan",
     "municipality": "Calape",
@@ -40,7 +40,7 @@
   },
   {
     "id": "4",
-    "name": "bar",
+    "site_code": "bar",
     "sitio": "",
     "barangay": "Baras",
     "municipality": "Tarangnan",
@@ -53,7 +53,7 @@
   },
   {
     "id": "5",
-    "name": "bay",
+    "site_code": "bay",
     "sitio": "",
     "barangay": "Bayabas",
     "municipality": "Labo",
@@ -66,7 +66,7 @@
   },
   {
     "id": "6",
-    "name": "blc",
+    "site_code": "blc",
     "sitio": "",
     "barangay": "Boloc",
     "municipality": "Tubungan",
@@ -79,7 +79,7 @@
   },
   {
     "id": "7",
-    "name": "bol",
+    "site_code": "bol",
     "sitio": "Purok 3 and 4",
     "barangay": "Bolodbolod",
     "municipality": "St. Bernard",
@@ -92,7 +92,7 @@
   },
   {
     "id": "8",
-    "name": "bto",
+    "site_code": "bto",
     "sitio": "",
     "barangay": "Bato",
     "municipality": "Sibonga",
@@ -105,7 +105,7 @@
   },
   {
     "id": "9",
-    "name": "car",
+    "site_code": "car",
     "sitio": "",
     "barangay": "San Carlos",
     "municipality": "Dapa",
@@ -118,7 +118,7 @@
   },
   {
     "id": "10",
-    "name": "cud",
+    "site_code": "cud",
     "sitio": "Natuwolan and Wadwad",
     "barangay": "Cudog",
     "municipality": "Lagawe",
@@ -131,7 +131,7 @@
   },
   {
     "id": "11",
-    "name": "dad",
+    "site_code": "dad",
     "sitio": "Sagasa",
     "barangay": "Dadong",
     "municipality": "Tarragona",
@@ -144,7 +144,7 @@
   },
   {
     "id": "12",
-    "name": "gaa",
+    "site_code": "gaa",
     "sitio": "",
     "barangay": "Gaas",
     "municipality": "Balamban",
@@ -157,7 +157,7 @@
   },
   {
     "id": "13",
-    "name": "gam",
+    "site_code": "gam",
     "sitio": "",
     "barangay": "Gamut",
     "municipality": "Tago",
@@ -170,7 +170,7 @@
   },
   {
     "id": "14",
-    "name": "hin",
+    "site_code": "hin",
     "sitio": "",
     "barangay": "1 & 2",
     "municipality": "Hinabangan",
@@ -183,7 +183,7 @@
   },
   {
     "id": "15",
-    "name": "hum",
+    "site_code": "hum",
     "sitio": "",
     "barangay": "Humayhumay",
     "municipality": "Guihulngan City",
@@ -196,7 +196,7 @@
   },
   {
     "id": "16",
-    "name": "ime",
+    "site_code": "ime",
     "sitio": "",
     "barangay": "Imelda",
     "municipality": "Tarangnan",
@@ -209,7 +209,7 @@
   },
   {
     "id": "17",
-    "name": "imu",
+    "site_code": "imu",
     "sitio": "",
     "barangay": "Immuli",
     "municipality": "Pidigan",
@@ -222,7 +222,7 @@
   },
   {
     "id": "18",
-    "name": "ina",
+    "site_code": "ina",
     "sitio": "Sambag",
     "barangay": "Inabasan",
     "municipality": "Maasin",
@@ -235,7 +235,7 @@
   },
   {
     "id": "19",
-    "name": "jor",
+    "site_code": "jor",
     "sitio": "",
     "barangay": "Poblacion 1",
     "municipality": "San Jorge",
@@ -248,7 +248,7 @@
   },
   {
     "id": "20",
-    "name": "lab",
+    "site_code": "lab",
     "sitio": "Labey",
     "barangay": "Ambuklao",
     "municipality": "Bokod",
@@ -261,7 +261,7 @@
   },
   {
     "id": "21",
-    "name": "lay",
+    "site_code": "lay",
     "sitio": "",
     "barangay": "Laygayon",
     "municipality": "Pinabacdao",
@@ -274,7 +274,7 @@
   },
   {
     "id": "22",
-    "name": "lip",
+    "site_code": "lip",
     "sitio": "Purok 1",
     "barangay": "Lipanto",
     "municipality": "St. Bernard",
@@ -287,7 +287,7 @@
   },
   {
     "id": "23",
-    "name": "loo",
+    "site_code": "loo",
     "sitio": "Madrid",
     "barangay": "Looc",
     "municipality": "Villanueva",
@@ -300,7 +300,7 @@
   },
   {
     "id": "24",
-    "name": "lpa",
+    "site_code": "lpa",
     "sitio": "",
     "barangay": "Lipata",
     "municipality": "Paranas",
@@ -313,7 +313,7 @@
   },
   {
     "id": "25",
-    "name": "lte",
+    "site_code": "lte",
     "sitio": "",
     "barangay": "Literon",
     "municipality": "Calbiga",
@@ -326,7 +326,7 @@
   },
   {
     "id": "26",
-    "name": "lun",
+    "site_code": "lun",
     "sitio": "Caianuhan",
     "barangay": "Lunas",
     "municipality": "Maasin City",
@@ -339,7 +339,7 @@
   },
   {
     "id": "27",
-    "name": "mag",
+    "site_code": "mag",
     "sitio": "Purok 1, 2 and 3",
     "barangay": "Magsaysay",
     "municipality": "Kibawe",
@@ -352,7 +352,7 @@
   },
   {
     "id": "28",
-    "name": "mam",
+    "site_code": "mam",
     "sitio": "Mamuyod",
     "barangay": "Ambassador",
     "municipality": "Tublay",
@@ -365,7 +365,7 @@
   },
   {
     "id": "29",
-    "name": "mar",
+    "site_code": "mar",
     "sitio": "",
     "barangay": "Marirong",
     "municipality": "Leon",
@@ -378,7 +378,7 @@
   },
   {
     "id": "30",
-    "name": "mca",
+    "site_code": "mca",
     "sitio": "",
     "barangay": "Mac-Arthur",
     "municipality": "Esperanza",
@@ -391,7 +391,7 @@
   },
   {
     "id": "31",
-    "name": "mng",
+    "site_code": "mng",
     "sitio": "Dao",
     "barangay": "Manghulyawon",
     "municipality": "La Libertad",
@@ -404,7 +404,7 @@
   },
   {
     "id": "32",
-    "name": "msl",
+    "site_code": "msl",
     "sitio": "Lower Mesolong",
     "barangay": "Sto. Nino",
     "municipality": "Talaingod",
@@ -417,7 +417,7 @@
   },
   {
     "id": "33",
-    "name": "msu",
+    "site_code": "msu",
     "sitio": "Upper Mesolong",
     "barangay": "Sto. Nino",
     "municipality": "Talaingod",
@@ -430,7 +430,7 @@
   },
   {
     "id": "34",
-    "name": "nag",
+    "site_code": "nag",
     "sitio": "Purok 6",
     "barangay": "Nagyubuyuban",
     "municipality": "San Fernando City",
@@ -443,7 +443,7 @@
   },
   {
     "id": "35",
-    "name": "nur",
+    "site_code": "nur",
     "sitio": "",
     "barangay": "Nurcia",
     "municipality": "Lanuza ",
@@ -456,7 +456,7 @@
   },
   {
     "id": "36",
-    "name": "osl",
+    "site_code": "osl",
     "sitio": "",
     "barangay": "Oslao",
     "municipality": "San Francisco",
@@ -469,7 +469,7 @@
   },
   {
     "id": "37",
-    "name": "par",
+    "site_code": "par",
     "sitio": "",
     "barangay": "Parasanon",
     "municipality": "Pinabacdao",
@@ -482,7 +482,7 @@
   },
   {
     "id": "38",
-    "name": "pep",
+    "site_code": "pep",
     "sitio": "Bangi",
     "barangay": "Pepe",
     "municipality": "Leon",
@@ -495,7 +495,7 @@
   },
   {
     "id": "39",
-    "name": "pin",
+    "site_code": "pin",
     "sitio": "",
     "barangay": "Pinagkamaligan",
     "municipality": "Calauag",
@@ -508,7 +508,7 @@
   },
   {
     "id": "40",
-    "name": "pla",
+    "site_code": "pla",
     "sitio": "Mambog",
     "barangay": "Planas",
     "municipality": "Guihulngan City",
@@ -521,7 +521,7 @@
   },
   {
     "id": "41",
-    "name": "png",
+    "site_code": "png",
     "sitio": "",
     "barangay": "Pange",
     "municipality": "Matnog",
@@ -534,7 +534,7 @@
   },
   {
     "id": "42",
-    "name": "pug",
+    "site_code": "pug",
     "sitio": "Longlong",
     "barangay": "Puguis",
     "municipality": "La Trinidad",
@@ -547,7 +547,7 @@
   },
   {
     "id": "43",
-    "name": "sag",
+    "site_code": "sag",
     "sitio": "",
     "barangay": "Antadao",
     "municipality": "Sagada",
@@ -560,7 +560,7 @@
   },
   {
     "id": "44",
-    "name": "sib",
+    "site_code": "sib",
     "sitio": "",
     "barangay": "Sibajay",
     "municipality": "Boston",
@@ -573,7 +573,7 @@
   },
   {
     "id": "45",
-    "name": "sin",
+    "site_code": "sin",
     "sitio": "Sinipsip",
     "barangay": "Amgaleyguey",
     "municipality": "Buguias",
@@ -586,7 +586,7 @@
   },
   {
     "id": "46",
-    "name": "sum",
+    "site_code": "sum",
     "sitio": "",
     "barangay": "Sumalsag",
     "municipality": "Malitbog",
@@ -599,7 +599,7 @@
   },
   {
     "id": "47",
-    "name": "tal",
+    "site_code": "tal",
     "sitio": "",
     "barangay": "Talahid",
     "municipality": "Almeria",
@@ -612,7 +612,7 @@
   },
   {
     "id": "48",
-    "name": "tga",
+    "site_code": "tga",
     "sitio": "",
     "barangay": "Taga",
     "municipality": "Pinukpuk",
@@ -625,7 +625,7 @@
   },
   {
     "id": "49",
-    "name": "tue",
+    "site_code": "tue",
     "sitio": "",
     "barangay": "Tue",
     "municipality": "Tadian",
@@ -638,7 +638,7 @@
   },
   {
     "id": "50",
-    "name": "umi",
+    "site_code": "umi",
     "sitio": "",
     "barangay": "Umingan",
     "municipality": "Alimodian",
