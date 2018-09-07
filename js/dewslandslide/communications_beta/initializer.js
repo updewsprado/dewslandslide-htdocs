@@ -12,7 +12,8 @@ $(document).ready(function() {
         getRoutineSites();
         getRoutineReminder();
         getRoutineTemplate();
-        getImportantTags();
+        getImportantTags(); // LOUIE
+        getLatestAlert();
     	setTimeout(function(){
 			try {
 				initializeContactSuggestion($("#contact-suggestion").val());
@@ -144,6 +145,53 @@ function initializeOnClickUpdateCommunityContact () {
 		};	
 		wss_connect.send(JSON.stringify(msg));
 	});
+}
+
+// LOUIE
+function initLoadLatestAlerts (data) {
+    if (data == null) {
+        return;
+    }
+    var alerts = data;
+    temp = data;
+    var msg;
+    for (var i = alerts.length - 1; i >= 0; i--) {
+        msg = alerts[i];
+        updateLatestPublicRelease(msg);
+        $("input[name=\"sitenames\"]:unchecked").each(function () {
+            if ($(this).val() == alerts[i].site_id) {
+                if (alerts[i].status == "on-going") {
+                    $(this).parent().css("color", "red");
+                } else if (alerts[i].status == "extended") {
+                    $(this).parent().css("color", "blue");
+                } else {
+                    $(this).parent().css("color", "green");
+                }
+            } else if ($(this).val() == 32 || $(this).val() == 33) { // LOUIE - PARA SAAN TO?
+                if (alerts[i].site_code == "msl" || alerts[i].site_code == "msu") {
+                    if (alerts[i].status == "on-going") {
+                        $(this).parent().css("color", "red");
+                    } else if (alerts[i].status == "extended") {
+                        $(this).parent().css("color", "blue");
+                    } else {
+                        $(this).parent().css("color", "green");
+                    }
+                }
+            }
+        });
+    }
+}
+
+// LOUIE
+function updateLatestPublicRelease (msg) {
+    try {
+        quick_release.unshift(msg);
+        var quick_release_html = quick_release_template({ quick_release });
+        $("#quick-release-display").html(quick_release_html);
+        $("#quick-release-display").scrollTop(0);
+    } catch (err) {
+        console.log(err.message)
+    }
 }
 
 function getSiteSelection() {
@@ -495,6 +543,14 @@ function getRoutineTemplate() {
 		};
 		wss_connect.send(JSON.stringify(msg));
 	});
+}
+
+// LOUIE
+function getLatestAlert() {
+    var msg = {
+        type: 'latestAlerts'
+    };
+    wss_connect.send(JSON.stringify(msg));
 }
 
 function displayRoutineReminder(sites,template) {
