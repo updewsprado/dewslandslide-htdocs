@@ -7,6 +7,8 @@ let message_details = [];
 let site_code = 0;
 let temp_important_tag = [];
 
+let tag_container = null;
+
 $(document).ready(function() {
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
@@ -603,6 +605,7 @@ function initializeOnAvatarClickForTagging() {
 		$("#gintag_selected").tagsinput('removeAll');
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
 		message_details = null;
+		tag_container = $(this).closest("li.clearfix");
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
 		user = message_details[2].split(" ");
@@ -737,6 +740,7 @@ function displayConversationTaggingStatus (status) {
 		$.notify("Successfully tagged message", "success");
 		$("#gintag-modal").modal("hide");
 		$("#narrative-modal").modal("hide");
+		tag_container.addClass("tagged");
 	} else {
 		$.notify("Successfully tagging message", "error");
 	}

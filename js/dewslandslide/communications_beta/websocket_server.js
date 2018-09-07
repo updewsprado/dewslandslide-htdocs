@@ -133,7 +133,6 @@ function connectWS() {
 					displayEwiStatus(msg_data.statuses);
 					break;
 				case "taggingStatus":
-					console.log(msg_data);
 					displayConversationTaggingStatus(msg_data.tag_status);
 					break;
 				default:
