@@ -328,7 +328,7 @@ function initializeMailRecipients () {
     if (window.location.hostname === "www.dewslandslide.com") {
         emails.push("rusolidum@phivolcs.dost.gov.ph", "asdaag48@gmail.com", "phivolcs-senslope@googlegroups.com", "phivolcs-dynaslope@googlegroups.com");
     } else if ($recipients.html().length === 0) {
-        emails.push("dynaslope.gmail@gmail.com");
+        emails.push("dynaslope.mail@gmail.com");
         $recipients.append("<b style='background-color:yellow;'>TEST SERVER ONLY -- RUS & ASD NOT AUTOMATICALLY TAGGED AS RECIPIENTS FOR SAFEGUARD</b><br/>");
     }
     emails.forEach((x) => { $("#recipients").tagsinput("add", x); });
