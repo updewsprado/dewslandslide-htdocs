@@ -109,9 +109,8 @@ function displayEwiStatus(ewi_status,gtag_status) {
 			}
 		}
 	});
-	console.log(gtag_status);
+  
 	if (temp == "" && gtag_status == true) {
-		console.log("go here");
 		$.notify("Successfully Tagged message as #EwiMessage", "success");
 		$.notify("Successfully Sent Early Warning Information.", "success");
 	} else {

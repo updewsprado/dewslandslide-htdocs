@@ -3,6 +3,12 @@ let site_selected = [];
 let organization_selected = [];
 let temp_tag_flag_container = "";
 
+let message_details = [];
+let site_code = 0;
+let temp_important_tag = [];
+
+let tag_container = null;
+
 $(document).ready(function() {
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
@@ -16,6 +22,8 @@ $(document).ready(function() {
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
+	initializeOnClickConfirmTagging();
+	initializeOnClickConfirmNarrative();
 	initializeAlertStatusOnChange();
 	initializeEWITemplateModal();
 	initializeConfirmEWITemplateViaChatterbox();
@@ -594,14 +602,17 @@ function contactSettingsFeedback (status) {
 }
 
 function initializeOnAvatarClickForTagging() {
-	$(document).on("click","#messages .user-avatar",function(){
+	$(".chat-message").on("click","#messages .user-avatar",function(){
 		$("#gintag_selected").tagsinput('removeAll');
 		$("#gintag-modal").modal({backdrop: 'static', keyboard: false});
+		message_details = null;
+		tag_container = $(this).closest("li.clearfix");
 		message_details = $(this).closest("li.clearfix").find("input[class='msg_details']").val().split('<split>');
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
-
-		OnClickConfirmTagging(message_details);
+		user = message_details[2].split(" ");
+		site_code = user[0].toLowerCase();
 		getSmsTags(message_details[0]);
+		console.log(message_details[0]);
 	});
 }
 
@@ -634,15 +645,12 @@ function initializeEWITemplateModal() {
 	});
 }
 
-function OnClickConfirmTagging (message_details) {
-	$("#confirm-tagging").click(function(){
-		// $("#narrative-modal").modal({backdrop: 'static', keyboard: false});
-		// $("#gintag-modal").hide();
-		console.log(recipient_container);
+function initializeOnClickConfirmTagging () {
+	$("#confirm-tagging").on("click", ({ currentTarget }) => {
 		const gintag_selected = $("#gintag_selected").tagsinput("items");
+		temp_important_tag = [];
 		const important = [];
 		const new_tag = [];
-		console.log(message_details);
 		if (gintag_selected.length === 0 ) {
 			$("#gintag_warning_message").show(300).effect("shake");
 		} else {
@@ -657,34 +665,59 @@ function OnClickConfirmTagging (message_details) {
 			});
 
 			if (new_tag.length > 0){
-				addNewTags(message_details, new_tag, false, recipient_container);
+				addNewTags(message_details, new_tag, false, recipient_container, site_code);
 			}
 
 			if(important.length > 0){
 				console.log("tag and open narrative modal");
 				$("#narrative-modal").modal({backdrop: 'static', keyboard: false});
 				$("#gintag-modal").modal("hide");
+				temp_important_tag = important;
+				// onClickConfirmNarrative(message_details, important, site_code);
 
-				onClickConfirmNarrative(message_details, important);
-			}
+				$("#narrative_message").empty();
+				$("#narrative_message").append(
+					"Contact(s) to be tagged: " + "&#013;&#010;"+ 
+					"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
+					message_details[4] + "&#013;&#010;"
+				);
+			}//
 		}
-		
 	});
 }
 
-function addNewTags (message_details, new_tag, is_important) {
-	console.log("success tagging new tagg");
+function addNewTags (message_details, new_tag, is_important, site_code, recipient_container = []) {
+	console.log("success tagging new tag");
 	$("#gintag-modal").modal("hide");
-	const details_data = {
-		"user_id": message_details[1],
-		"sms_id": message_details[0],
-		"tag": new_tag,
-		"full_name": message_details[2],
-		"ts": message_details[3],
-		"msg": message_details[4],
-		"account_id": current_user_id,
-		"tag_important": is_important
-	};
+	let details_data = {};
+	if (recipient_container.length == 0) {
+		details_data = {
+			"user_id": message_details[1],
+			"sms_id": message_details[0],
+			"tag": new_tag,
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"msg": message_details[4],
+			"account_id": current_user_id,
+			"tag_important": is_important,
+			"site_code" : site_code
+		};
+	} else {
+		details_data = {
+			"recipients": recipient_container,
+			"tag": new_tag,
+			"full_name": message_details[2],
+			"ts": message_details[3],
+			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"msg": message_details[4],
+			"account_id": current_user_id,
+			"tag_important": is_important,
+			"site_code" : site_code
+		};
+	}
+
+	console.log(details_data);
 	const message = {
 		type: "gintaggedMessage",
 		data: details_data
@@ -692,21 +725,31 @@ function addNewTags (message_details, new_tag, is_important) {
 	wss_connect.send(JSON.stringify(message));
 }
 
-function onClickConfirmNarrative (message_details, important) {
-	$("#narrative_message").empty();
-	$("#narrative_message").append(
-		"Contact(s) to be tagged: " + "&#013;&#010;"+ 
-		"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
-		message_details[4] + "&#013;&#010;"
-	);
+function initializeOnClickConfirmNarrative () {
 
-	$("#save-narrative").click(function(){
-		addNewTags(message_details, important, true);
+	$("#save-narrative").click(function(event){
+		if (message_details[2] != "You") {
+			addNewTags(message_details, temp_important_tag, true, site_code);
+		} else {
+			addNewTags(message_details, temp_important_tag, true, site_code, recipient_container);
+		}
 	});
 }
 
+function displayConversationTaggingStatus (status) {
+	if (status == true) {
+		$.notify("Successfully tagged message", "success");
+		$("#gintag-modal").modal("hide");
+		$("#narrative-modal").modal("hide");
+		tag_container.addClass("tagged");
+	} else {
+		$.notify("Successfully tagging message", "error");
+	}
+
+}
+
 function displayConversationTags (conversation_tags) {
-	
+	console.log(conversation_tags);
 	if(conversation_tags.length > 0){
 		$("#gintag_selected").tagsinput('removeAll');
 		$(".bootstrap-tagsinput").keypress(function(){

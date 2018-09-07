@@ -23,6 +23,13 @@ let selected_contact_template = Handlebars.compile($('#selected-contact-template
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
 let search_key_template = Handlebars.compile($('#search-message-key-template').html());
 
+Handlebars.registerHelper('breaklines', function(text) {
+    text = Handlebars.Utils.escapeExpression(text);
+    text = text.replace(/(\r\n|\n|\r)/gm, '<br>');
+    return new Handlebars.SafeString(text);
+});
+
+
 function getQuickGroupSelection () {
 	getQuickCommunitySelection();
 	// getQuickEmployeeSelection();
