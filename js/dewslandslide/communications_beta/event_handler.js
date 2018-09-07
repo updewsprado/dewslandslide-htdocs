@@ -30,6 +30,7 @@ $(document).ready(function() {
 
 function initializeGetQuickGroupSelection () {
 	$("#btn-advanced-search").on("click",function() {
+		getLatestAlert();
 		$('#advanced-search').modal("toggle");
 	});
 }

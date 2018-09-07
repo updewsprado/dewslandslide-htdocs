@@ -35,6 +35,10 @@ function connectWS() {
 					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
 					break;
+				case "latestAlerts":
+					initLoadLatestAlerts(msg_data.data);
+					// $("#chatterbox-loading").modal("hide"); 
+					break;					
 				case "fetchedCmmtyContacts":
 					displayDataTableCommunityContacts(msg_data.data);
 					break;
