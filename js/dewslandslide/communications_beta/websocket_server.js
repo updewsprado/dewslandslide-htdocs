@@ -14,7 +14,7 @@ function connectWS() {
 		wssConnection.onopen = function(e) {
 			console.log("Connection established!");
 			connection_status = true;
-			delayReconn = 10000;
+			reconnection_delay = 10000;
 			WSS_CONNECTION_STATUS = 0;
 			$("#send-msg").removeClass("disabled");
 		};
@@ -35,6 +35,10 @@ function connectWS() {
 					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
 					break;
+				case "latestAlerts":
+					initLoadLatestAlerts(msg_data.data);
+					// $("#chatterbox-loading").modal("hide"); 
+					break;					
 				case "fetchedCmmtyContacts":
 					displayDataTableCommunityContacts(msg_data.data);
 					break;
@@ -128,7 +132,7 @@ function connectWS() {
 					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
 					break;
 				case "sentEwiDashboard":
-					displayEwiStatus(msg_data.statuses);
+					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":
 					console.log(msg_data.tag_status);
@@ -158,9 +162,9 @@ function connectWS() {
 		else if(event.code == 1006) {
 			reason = "The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
 			// disableCommands();
-			// connection_status = false;
-			// $("#send-msg").addClass("disabled");
-			// waitForSocketConnection();
+			connection_status = false;
+			$("#send-msg").addClass("disabled");
+			waitForSocketConnection();
 		}
 		else if(event.code == 1007)
 			reason = "An endpoint is terminating the connection because it has received data within a message that was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629] data within a text message).";
@@ -180,4 +184,28 @@ function connectWS() {
 	}
 
 	return wssConnection;
-	}
+}
+
+function waitForSocketConnection() {
+	$('#chatterbox-loader-modal').modal("show");
+	if (!window.timerID) {
+        window.timerID = setInterval(() => {
+            if (wss_connect.readyState === 1) {
+                console.log("Connection is made");
+                reinitializeContainers();
+                return;
+            }
+            console.log(`wait for connection... ${reconnection_delay}`);
+            wss_connect = connectWS();
+            waitForSocketConnection();
+            if (reconnection_delay < 20000) {
+                reconnection_delay += 1000;
+            }
+        }, reconnection_delay);
+    }
+}
+
+
+function reinitializeContainers() {
+	location.reload();
+}
