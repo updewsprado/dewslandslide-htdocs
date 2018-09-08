@@ -95,7 +95,6 @@ function connectWS() {
 					displayRoutineTemplate(msg_data.data);
 					break;
 				case "fetchedSmsTags":
-					console.log(msg_data.data);
 					displayConversationTags(msg_data.data);
 					break;
 				case "fetchAlertStatus":
@@ -123,7 +122,6 @@ function connectWS() {
 					}
 					break;
 				case "fetchedTeams":
-					console.log(msg_data.data);
 					displayTeamsGroupSending(msg_data.data);
 					break;
 				case "fetchedEwiDashboardTemplate":
@@ -133,6 +131,7 @@ function connectWS() {
 					displayEwiStatus(msg_data.statuses);
 					break;
 				case "taggingStatus":
+					console.log(msg_data.tag_status);
 					displayConversationTaggingStatus(msg_data.tag_status);
 					break;
 				default:

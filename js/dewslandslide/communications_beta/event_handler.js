@@ -706,6 +706,7 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 		details_data = {
 			"recipients": recipient_container,
 			"tag": new_tag,
+			"sms_id": message_details[0],
 			"full_name": message_details[2],
 			"ts": message_details[3],
 			"time_sent": moment(message_details[3]).format("h:mm A"),
@@ -742,20 +743,19 @@ function displayConversationTaggingStatus (status) {
 		$("#narrative-modal").modal("hide");
 		tag_container.addClass("tagged");
 	} else {
-		$.notify("Successfully tagging message", "error");
+		$.notify("Failed to tag message", "error");
 	}
 
 }
 
 function displayConversationTags (conversation_tags) {
-	console.log(conversation_tags);
 	if(conversation_tags.length > 0){
 		$("#gintag_selected").tagsinput('removeAll');
+		conversation_tags.forEach(function(tag) {
+			$("#gintag_selected").tagsinput("add", tag);
+		});
 		$(".bootstrap-tagsinput").keypress(function(){
 			console.log("pressed");
-			conversation_tags.forEach(function(tag) {
-				$("#gintag_selected").tagsinput("add", tag);
-			});
 			console.log($("#gintag_selected").val());
 		});
 	}else {
