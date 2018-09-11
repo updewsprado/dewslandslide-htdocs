@@ -45,8 +45,16 @@ function initialize() {
 }
 
 function getContactSuggestion (name_suggestion) {
+    $("#contact-suggestion-container").empty();
+    $("#contact-suggestion-container").append(
+        '<input type="text" class="awesomplete form-control dropdown-input" id="contact-suggestion" placeholder="Type name..." data-multiple />'+
+        '<span class="input-group-btn">'+
+        '<button class="btn btn-default" id="go-chat" type="button">Go!</button>'+
+        '</span>'
+    );
+    
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
-	let awesomplete = new Awesomplete(contact_suggestion_input,{
+	awesomplete = new Awesomplete(contact_suggestion_input,{
             filter (text, input) {
                 return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
             },replace (text) {
@@ -59,13 +67,7 @@ function getContactSuggestion (name_suggestion) {
 	name_suggestion.data.forEach(function(raw_names) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
-	// $("#contact-suggestion").tagsinput({
-	// 	typeahead: {
-	// 		displayKey: 'text',
-	// 		afterSelect: function (val) { this.$element.val(""); },
-	// 		source: contact_suggestion_container
-	// 	}
-	// });
+
 	awesomplete.list = contact_suggestion_container;
 
 
@@ -327,6 +329,8 @@ function employeeContactFormValidation() {
         },
         submitHandler (form) {
             submitEmployeeInformation();
+            initializeContactSuggestion($("#contact-suggestion").val());
+            getEmployeeContact();
             console.log("success");
         }
     });
@@ -407,6 +411,8 @@ function communityContactFormValidation () {
 				$("#org-and-site-alert").hide(300);
 				//success function here
 				onSubmitCommunityContactForm(site_selected, organization_selected);
+                initializeContactSuggestion($("#contact-suggestion").val());
+                getCommunityContact();
 			}
             
         }

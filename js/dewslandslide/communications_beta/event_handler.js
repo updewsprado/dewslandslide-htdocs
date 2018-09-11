@@ -444,6 +444,7 @@ function submitEmployeeInformation () {
 	let landline_numbers = [];
 
 	//for mobile number
+	const employee_mobile = $("#mobile-div :input").length / 4;
 	for (let counter = 1; counter < employee_input_count; counter +=1) {
 		const mobile_number_raw = {
 			"user_id": $("#user_id_ec").val(),
@@ -498,7 +499,7 @@ function submitEmployeeInformation () {
 	$('#employee-contact-wrapper').hide();
 	
 	// console.log(mobile_numbers);
-	// wss_connect.send(JSON.stringify(message));
+	wss_connect.send(JSON.stringify(message));
 }
 
 function onSubmitCommunityContactForm (sites, organizations) {
@@ -560,7 +561,7 @@ function onSubmitCommunityContactForm (sites, organizations) {
 	$('#comm-response-contact-container_wrapper').show();
 	$('#community-contact-wrapper').hide();
 
-	// wss_connect.send(JSON.stringify(message));
+	wss_connect.send(JSON.stringify(message));
 }
 
 function emptyEmployeeContactForm () {
