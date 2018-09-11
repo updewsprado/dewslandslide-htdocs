@@ -196,6 +196,7 @@ function displayContactSettingsMenu() {
 }
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
+	$('#comm-response-contact-container').empty();
 	$('#comm-response-contact-container').DataTable({
 		destroy: true,
 		data: cmmty_contact_data,
@@ -212,6 +213,7 @@ function displayDataTableCommunityContacts(cmmty_contact_data){
 }
 
 function displayDataTableEmployeeContacts(dwsl_contact_data) {
+	$('#emp-response-contact-container').empty();
 	$('#emp-response-contact-container').DataTable({
 		destroy: true,
 		data: dwsl_contact_data,
