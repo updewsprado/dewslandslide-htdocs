@@ -33,6 +33,7 @@ $(document).ready(function() {
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
+	loadSiteConvoViaQacess();
 	getQuickGroupSelection();
 });
 
@@ -949,4 +950,11 @@ function initializeEmployeeContactGroupSending() {
         };
     	wss_connect.send(JSON.stringify(employee_teams));
 	});
+}
+
+function loadSiteConvoViaQacess() {
+    $(document).on("click", "#quick-release-display li", function () {
+ 		console.log($(this).closest("li").find("input[type='text']").val()
+        .toUpperCase());
+    });
 }
