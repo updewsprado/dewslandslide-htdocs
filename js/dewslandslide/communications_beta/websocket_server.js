@@ -138,6 +138,15 @@ function connectWS() {
 					console.log(msg_data.tag_status);
 					displayConversationTaggingStatus(msg_data.tag_status);
 					break;
+				case "fetchGndMeasReminderSettings":
+		            if (msg_data.saved == true) {
+		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites);
+		            } else {
+		                displaySitesForGndMeasReminder(msg_data);
+		            }
+		            $("#ground-meas-reminder-modal").modal("show");
+		            $("#add-special-case").prop("disabled", false);
+					break;
 				default:
 					console.log("No request to load.");
 					break;

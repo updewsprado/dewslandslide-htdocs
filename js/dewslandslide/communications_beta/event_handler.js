@@ -33,6 +33,9 @@ $(document).ready(function() {
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
+	initializeSemiAutomatedGroundMeasurementReminder();
+	initializeGndMeasSettingsCategory();
+	initializeGndMeasSaveButton();
 	getQuickGroupSelection();
 });
 
@@ -949,4 +952,109 @@ function initializeEmployeeContactGroupSending() {
         };
     	wss_connect.send(JSON.stringify(employee_teams));
 	});
+}
+
+function initializeSemiAutomatedGroundMeasurementReminder() {
+    $("#btn-automation-settings").on("click",function() {
+        let special_case_length = $(".special-case-template").length;
+        special_case_num = 0;
+        for (let counter = special_case_length-1; counter >=0; counter--) {
+            $("#clone-special-case-"+counter).remove();
+        }
+        var data = {
+            type: "getGroundMeasDefaultSettings"
+        };
+        wss_connect.send(JSON.stringify(data));
+    });
+}
+
+function initializeGndMeasSettingsCategory() {
+	   $("#gnd-meas-category").on("change",function() {
+        changeSemiAutomationSettings($(this).val(), ground_meas_reminder_data);
+    });
+}
+
+
+function initializeGndMeasSaveButton() {
+	    $("#save-gnd-meas-settings-button").on("click",function() {
+        let special_case_length = $(".special-case-template").length-1;
+        let gnd_sitenames = [];
+        console.log(gnd_meas_overwrite);
+        if (gnd_meas_overwrite == "new") {
+            $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+                gnd_sitenames.push(this.value);
+            });
+            let gnd_meas_settings = {
+                type: "setGndMeasReminderSettings",
+                sites: gnd_sitenames,
+                altered: 0,
+                category: $("#gnd-meas-category").val(),
+                template: $("#reminder-message").text(),
+                overwrite: false,
+                modified: first_name
+            };
+
+            wss_connect.send(JSON.stringify(gnd_meas_settings));
+            
+            if (special_case_length > 0) {
+                for (let counter = 0; counter < special_case_length; counter++) {
+                    gnd_sitenames = [];
+                    $("input[name=\"gnd-meas-"+counter+"\"]:checked").each(function () {
+                        gnd_sitenames.push(this.value);
+                    });
+                    console.log(gnd_sitenames);
+                    let gnd_meas_settings = {
+                        type: "setGndMeasReminderSettings",
+                        sites: gnd_sitenames,
+                        category: $("#gnd-meas-category").val(),
+                        altered: 1,
+                        template: $("#special-case-message-"+counter).val(),
+                        overwrite: false,
+                        modified: first_name
+                    };
+                    console.log(gnd_meas_settings);
+                    wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                }
+            }
+            $.notify('Ground measurement settings saved!','success');
+        } else {
+            if (confirm('You have a save template, are you sure you want to overwrite it?')){
+                $("input[name=\"gnd-sitenames\"]:checked").each(function () {
+                    gnd_sitenames.push(this.value);
+                });
+
+                let gnd_meas_settings = {
+                    type: "setGndMeasReminderSettings",
+                    sites: gnd_sitenames,
+                    category: $("#gnd-meas-category").val(),
+                    template: $("#reminder-message").text(),
+                    overwrite: true,
+                    modified: first_name
+                };
+
+                wss_connect.send(JSON.stringify(gnd_meas_settings));
+
+                if (special_case_length > 0) {
+                    for (let counter = 0; counter < special_case_length.length; counter++) {
+                        gnd_sitenames = [];
+                        $("input[name=\"gnd-sitenames-"+counter+"\"]:checked").each(function () {
+                            gnd_sitenames.push(this.value);
+                        });
+
+                        let gnd_meas_settings = {
+                            type: "setGndMeasReminderSettings",
+                            sites: gnd_sitenames,
+                            altered: 1,
+                            category: $("#gnd-meas-category").val(),
+                            template: $("#special-case-message-"+counter).text(),
+                            overwrite: true,
+                            modified: first_name
+                        };
+                        wss_connect.send(JSON.stringify(gnd_meas_settings));              
+                    }
+                }
+                $.notify('Ground measurement settings saved!','success');
+            }      
+        }
+    });
 }
