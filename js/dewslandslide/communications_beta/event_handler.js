@@ -18,7 +18,6 @@ $(document).ready(function() {
 	initializeContactCategoryOnChange();
 	initializeContactSettingsOnChange();
 	initializeQuickSelectionGroupFlagOnClick();
-	initializeGoChatOnClick();
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
@@ -202,65 +201,6 @@ function initializeOnClickQuickInbox () {
 		}
 
 		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
-		startConversation(conversation_details);
-	});
-}
-
-function initializeGoChatOnClick () {
-	$("#go-chat").click(function() {
-		let multiple_contact = $("#contact-suggestion").val().split(";");
-		let raw_name = "";
-		let firstname = "";
-		let lastname = "";
-		let office = "";
-		let site = "";
-		let number = "N/A";
-		let conversation_details = {}
-		if (multiple_contact.length > 2) {
-			let recipient_container = [];
-			let temp = {};
-			for (let counter = 0; counter < multiple_contact.length-1; counter++) {
-				raw_name = multiple_contact[counter].split(",");
-				firstname = raw_name[1].trim();
-				lastname = raw_name[0].split("-")[1].trim();
-				office = raw_name[0].split(" ")[1].trim();
-				site = raw_name[0].split(" ")[0].trim();
-				number = "N/A";
-
-				temp = {
-					raw_name: raw_name,
-					firstname: firstname,
-					lastname: lastname,
-					office: office,
-					site: site,
-					number: number,
-					isMultiple: true
-				};
-
-				recipient_container.push(temp);
-			}
-			conversation_details = {
-				isMultiple: true,
-				data: recipient_container
-			};
-		} else {
-			raw_name = multiple_contact[0].split(",");
-			firstname = raw_name[1].trim();
-			lastname = raw_name[0].split("-")[1].trim();
-			lastname = lastname.replace("NA ","");
-			office = raw_name[0].split(" ")[1].trim();
-			site = raw_name[0].split(" ")[0].trim();
-			conversation_details = {
-				full_name: $("#contact-suggestion").val(),
-				firstname: firstname,
-				lastname: lastname,
-				office: office,
-				site: site,
-				number: "N/A",
-				isMultiple: false
-			}
-			conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
-		}
 		startConversation(conversation_details);
 	});
 }
