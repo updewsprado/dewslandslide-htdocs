@@ -368,7 +368,8 @@ function displayUpdateEmployeeDetails (employee_data) {
 	$("#birthdate_ec").val(employee_data.contact_info.birthday);
 	$("#gender_ec").val(employee_data.contact_info.gender);
 	$("#active_status_ec").val(employee_data.contact_info.contact_active_status);
-
+	$("#email_ec").tagsinput('removeAll');
+	$("#team_ec").tagsinput('removeAll');
 	for (let counter = 0; counter < employee_data.email_data.length; counter++) {
 		$('#email_ec').tagsinput('add',employee_data.email_data[counter].email);
 	}
