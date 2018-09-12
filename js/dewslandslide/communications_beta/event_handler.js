@@ -36,7 +36,9 @@ $(document).ready(function() {
 	initializeSemiAutomatedGroundMeasurementReminder();
 	initializeGndMeasSettingsCategory();
 	initializeGndMeasSaveButton();
+	initializeResetSpecialCasesButtonOnCLick();
 	getQuickGroupSelection();
+	resetSpecialCases();
 });
 
 function initializeGetQuickGroupSelection () {
@@ -1057,4 +1059,25 @@ function initializeGndMeasSaveButton() {
             }      
         }
     });
+}
+
+function initializeResetSpecialCasesButtonOnCLick () {
+    $("#reset-button").on("click",() => {
+        resetSpecialCases();
+    });    
+}
+
+function resetSpecialCases () {
+    // Clear special cases
+    $("#gnd-meas-category").val('event');
+    let special_case_length = $(".special-case-template").length;
+    special_case_num = 0;
+    for (let counter = special_case_length-1; counter >=0; counter--) {
+        $("#clone-special-case-"+counter).remove();
+    }
+    resetCaseDiv();
+    var data = {
+        type: "getGroundMeasDefaultSettings"
+    };
+    wss_connect.send(JSON.stringify(data));    
 }
