@@ -553,3 +553,7 @@ input[type=number]::-webkit-outer-spin-button {
 .chatbox-padding {
   padding: 15px;
 }
+
+.pointer {
+  cursor: pointer;
+}
