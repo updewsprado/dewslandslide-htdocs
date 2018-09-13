@@ -556,6 +556,8 @@ function getLatestAlert() {
 }
 
 function displayRoutineReminder(sites,template) {
+    console.log(sites);
+    console.log(template);
 	let day = moment().format("dddd");
     let month = moment().month();
     month += 1;
@@ -564,68 +566,92 @@ function displayRoutineReminder(sites,template) {
     let dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
     let routine_sites = [];
 
-    switch (day) {
-        case "Friday":
+    // switch (day) {
+    //     case "Friday":
+    //         $("#def-recipients").css("display", "inline-block");
+    //         $(".routine-options-container").css("display", "flex");
+    //         $("#send-routine-msg").css("display", "inline");
+    //         for (var counter = 0; counter < sites.length; counter++) {
+    //             if (wet[sites[counter].season - 1].includes(month)) {
+    //                 routine_sites.push(sites[counter]);
+    //             }
+    //         }
+
+    //         $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+    //         routine_sites.forEach((data) => {
+    //             $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+    //         });
+
+    //         $(".routine_section").append("<div class='routine-msg-container'></div>");
+    //         $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+    //         $("#routine-msg").val(template[0].template);
+    //         break;
+    //     case "Tuesday":
+    //         $("#def-recipients").css("display", "inline-block");
+    //         $(".routine-options-container").css("display", "flex");
+    //         $("#send-routine-msg").css("display", "inline");
+    //         for (var counter = 0; counter < sites.length; counter++) {
+    //             if (wet[sites[counter].season - 1].includes(month)) {
+    //                 routine_sites.push(sites[counter]);
+    //             }
+    //         }
+
+    //         $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+    //         routine_sites.forEach((data) => {
+    //             $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+    //         });
+
+    //         $(".routine_section").append("<div class='routine-msg-container'></div>");
+    //         $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+    //         $("#routine-msg").val(template[0].template);
+    //         break;
+    //     case "Wednesday":
+    //         $("#def-recipients").css("display", "inline-block");
+    //         $(".routine-options-container").css("display", "flex");
+    //         $("#send-routine-msg").css("display", "inline");
+    //         for (var counter = 0; counter < sites.length; counter++) {
+    //             if (dry[sites[counter].season - 1].includes(month)) {
+    //                 routine_sites.push(sites[counter]);
+    //             }
+    //         }
+
+    //         $(".routine_section").prepend("<div class='routine-site-selection'></div>");
+    //         routine_sites.forEach((data) => {
+    //             $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+    //         });
+
+    //         $(".routine_section").append("<div class='routine-msg-container'></div>");
+    //         $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
+    //         $("#routine-msg").val(template[0].template);
+    //         break;
+    //     default:
+    //         $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
+    //         break;
+    // }
+
+
+            // LOUIE - THIS IS ONLY TO TEST ROUTINE SITES.
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+            // for (var counter = 0; counter < routine_sites.length; counter++) {
+            //     $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
+            // }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
-            break;
-        case "Tuesday":
-            $("#def-recipients").css("display", "inline-block");
-            $(".routine-options-container").css("display", "flex");
-            $("#send-routine-msg").css("display", "inline");
-            for (var counter = 0; counter < sites.length; counter++) {
-                if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
-                }
-            }
-
-            $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
-
-            $(".routine_section").append("<div class='routine-msg-container'></div>");
-            $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
-            break;
-        case "Wednesday":
-            $("#def-recipients").css("display", "inline-block");
-            $(".routine-options-container").css("display", "flex");
-            $("#send-routine-msg").css("display", "inline");
-            for (var counter = 0; counter < sites.length; counter++) {
-                if (dry[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
-                }
-            }
-
-            $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
-
-            $(".routine_section").append("<div class='routine-msg-container'></div>");
-            $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
-            break;
-        default:
-            $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
-            break;
-    }
+            $("#routine-msg").val(template[0].template);    
 }
 
 function initializeDatepickers() {

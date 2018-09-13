@@ -582,6 +582,11 @@ function siteConversation(){
 
 }
 
+function getRoutineMsgFromCBXMain() {
+	var routine_msg = $("#routine-msg").val();
+	return routine_msg;
+}
+
 function sendSms(recipients, message) {
 	try {
 		let convo_details = {

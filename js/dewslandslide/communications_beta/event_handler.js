@@ -10,6 +10,7 @@ let temp_important_tag = [];
 let tag_container = null;
 
 $(document).ready(function() {
+	initializeOnClickSendRoutine();
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
 	initializeOnClickQuickInbox();
@@ -35,6 +36,61 @@ $(document).ready(function() {
 	initializeEmployeeContactGroupSending();
 	getQuickGroupSelection();
 });
+
+function initializeOnClickSendRoutine () { // LOUIE
+	$("#chatterbox-loader-modal").modal("show");
+	$('#send-routine-msg').click(() => {
+        sites_on_routine = [];
+        $("input[name=\"sites-on-routine\"]:checked").each(function () {
+            sites_on_routine.push(this.id);
+        });
+        console.log(sites_on_routine);
+
+        getLEWCMobileIDs(sites_on_routine);
+
+	    // var data = {
+	    //     type: "smssendgroup",
+	    //     user: "You",
+	    //     offices,
+	    //     sitenames: [routine[0].name.toUpperCase()],
+	    //     msg: routine_msg + footer,
+	    //     ewi_filter: true,
+	    //     ewi_tag: false
+	    // };
+	    // wss_connect.send(JSON.stringify(data));                
+    });
+}
+
+function getLEWCMobileIDs(sites_on_routine) {
+    const lewc_details_request = {
+    	type: "getLEWCMobileDetailsForRoutine",
+    	sites: sites_on_routine,
+    	offices: "LEWC"
+    }
+    wss_connect.send(JSON.stringify(lewc_details_request));	
+}
+
+function sendRoutineSMSToLEWC(data) {
+	var message = $("#routine-msg").val();
+	console.log("Pasok sa custom send");
+	console.log(data);
+	var recipients = data["data"];
+	try {
+		let convo_details = {
+			type: 'sendSmsToRecipients',
+			recipients: recipients,
+			message: message
+		};
+		console.log(convo_details);
+		wss_connect.send(JSON.stringify(convo_details));
+		setTimeout(() => {
+		    $("#chatterbox-loader-modal").modal("hide");
+		}, 20000);    		
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}
+}
 
 function initializeGetQuickGroupSelection () {
 	$("#btn-advanced-search").on("click",function() {
