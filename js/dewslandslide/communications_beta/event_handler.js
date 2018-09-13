@@ -954,7 +954,17 @@ function initializeEmployeeContactGroupSending() {
 
 function loadSiteConvoViaQacess() {
     $(document).on("click", "#quick-release-display li", function () {
- 		console.log($(this).closest("li").find("input[type='text']").val()
-        .toUpperCase());
+    	$("#chatterbox-loader-modal").modal("show");
+    	let site_names = [$(this).closest("li").find("#site_id").val()];
+    	let site_code = [$(this).closest("li").find("#site_code").val().toUpperCase()];
+    	conversation_details_label = $(this).closest("li").find(".friend-name").text().toUpperCase();
+    	$("#conversation-details").append(conversation_details_label);
+    	let convo_request = {
+			'type': 'loadSmsForSites',
+			'organizations': [],
+			'sitenames': site_names,
+			'site_code': site_code
+		};
+		wss_connect.send(JSON.stringify(convo_request));
     });
 }
