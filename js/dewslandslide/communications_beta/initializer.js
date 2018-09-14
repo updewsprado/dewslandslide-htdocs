@@ -28,7 +28,7 @@ function initialize() {
         getImportantTags();
         setTimeout(function(){
             try {
-                initializeContactSuggestion($("#contact-suggestion").val());
+                initializeContactSuggestion("");
                 initializeOnClickUpdateEmployeeContact();
                 initializeOnClickUpdateCommunityContact();
                 getSiteSelection();
@@ -46,8 +46,17 @@ function initialize() {
 }
 
 function getContactSuggestion (name_suggestion) {
+    $("#contact-suggestion-container").empty();
+    $("#contact-suggestion-container").append(
+        '<input type="text" class="awesomplete form-control dropdown-input" id="contact-suggestion" placeholder="Type name..." data-multiple />'+
+        '<span class="input-group-btn">'+
+        '<button class="btn btn-default" id="go-chat" type="button">Go!</button>'+
+        '</span>'
+    );
+
+    initializeGoChatOnClick ();
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
-	let awesomplete = new Awesomplete(contact_suggestion_input,{
+	awesomplete = new Awesomplete(contact_suggestion_input,{
             filter (text, input) {
                 return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
             },replace (text) {
@@ -61,6 +70,66 @@ function getContactSuggestion (name_suggestion) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
 	awesomplete.list = contact_suggestion_container;
+}
+
+function initializeGoChatOnClick () {
+    $("#go-chat").click(function() {
+        console.log("go click");
+        let multiple_contact = $("#contact-suggestion").val().split(";");
+        let raw_name = "";
+        let firstname = "";
+        let lastname = "";
+        let office = "";
+        let site = "";
+        let number = "N/A";
+        let conversation_details = {}
+        if (multiple_contact.length > 2) {
+            let recipient_container = [];
+            let temp = {};
+            for (let counter = 0; counter < multiple_contact.length-1; counter++) {
+                raw_name = multiple_contact[counter].split(",");
+                firstname = raw_name[1].trim();
+                lastname = raw_name[0].split("-")[1].trim();
+                office = raw_name[0].split(" ")[1].trim();
+                site = raw_name[0].split(" ")[0].trim();
+                number = "N/A";
+
+                temp = {
+                    raw_name: raw_name,
+                    firstname: firstname,
+                    lastname: lastname,
+                    office: office,
+                    site: site,
+                    number: number,
+                    isMultiple: true
+                };
+
+                recipient_container.push(temp);
+            }
+            conversation_details = {
+                isMultiple: true,
+                data: recipient_container
+            };
+        } else {
+            raw_name = multiple_contact[0].split(",");
+            firstname = raw_name[1].trim();
+            lastname = raw_name[0].split("-")[1].trim();
+            lastname = lastname.replace("NA ","");
+            office = raw_name[0].split(" ")[1].trim();
+            site = raw_name[0].split(" ")[0].trim();
+            conversation_details = {
+                full_name: $("#contact-suggestion").val(),
+                firstname: firstname,
+                lastname: lastname,
+                office: office,
+                site: site,
+                number: "N/A",
+                isMultiple: false
+            }
+            conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+        }
+        startConversation(conversation_details);
+    });
 }
 
 function initializeQuickInboxMessages () {
@@ -308,6 +377,8 @@ function employeeContactFormValidation() {
         },
         submitHandler (form) {
             submitEmployeeInformation();
+            initializeContactSuggestion("");
+            getEmployeeContact();
             console.log("success");
         }
     });
@@ -388,6 +459,8 @@ function communityContactFormValidation () {
 				$("#org-and-site-alert").hide(300);
 				//success function here
 				onSubmitCommunityContactForm(site_selected, organization_selected);
+                initializeContactSuggestion("");
+                getCommunityContact();
 			}
             
         }
