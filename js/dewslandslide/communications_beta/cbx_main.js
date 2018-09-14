@@ -139,6 +139,18 @@ function displayQuickInboxMain(msg_data) {
 	}
 }
 
+function updateLatestPublicRelease (msg) {
+    try {
+    	quick_release.unshift(msg);
+        var quick_release_html = quick_release_template({ quick_release });
+        $("#quick-release-display").html(quick_release_html);
+        $("#quick-release-display").scrollTop(0);
+
+    } catch (err) {
+        console.log(err.message)
+    }
+}
+
 function displayNewSmsQuickInbox(msg_data) {
 	let new_inbox = [];
 

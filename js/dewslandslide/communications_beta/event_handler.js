@@ -32,6 +32,7 @@ $(document).ready(function() {
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
+	loadSiteConvoViaQacess();
 	getQuickGroupSelection();
 });
 
@@ -890,4 +891,21 @@ function initializeEmployeeContactGroupSending() {
         };
     	wss_connect.send(JSON.stringify(employee_teams));
 	});
+}
+
+function loadSiteConvoViaQacess() {
+    $(document).on("click", "#quick-release-display li", function () {
+    	$("#chatterbox-loader-modal").modal("show");
+    	let site_names = [$(this).closest("li").find("#site_id").val()];
+    	let site_code = [$(this).closest("li").find("#site_code").val().toUpperCase()];
+    	conversation_details_label = $(this).closest("li").find(".friend-name").text().toUpperCase();
+    	$("#conversation-details").append(conversation_details_label);
+    	let convo_request = {
+			'type': 'loadSmsForSites',
+			'organizations': [],
+			'sitenames': site_names,
+			'site_code': site_code
+		};
+		wss_connect.send(JSON.stringify(convo_request));
+    });
 }

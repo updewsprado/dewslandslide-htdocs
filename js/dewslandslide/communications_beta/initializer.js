@@ -32,6 +32,7 @@ function initialize() {
                 initializeOnClickUpdateEmployeeContact();
                 initializeOnClickUpdateCommunityContact();
                 getSiteSelection();
+                getLatestAlert()
                 getOrganizationSelection();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
@@ -68,10 +69,7 @@ function getContactSuggestion (name_suggestion) {
 	name_suggestion.data.forEach(function(raw_names) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
-
 	awesomplete.list = contact_suggestion_container;
-
-
 }
 
 function initializeGoChatOnClick () {
@@ -247,17 +245,6 @@ function initCheckboxColors () {
     $("input[name=\"sitenames\"]:unchecked").each(function () {
         $(this).parent().css("color", "#333");
     });    
-}
-
-function updateLatestPublicRelease (msg) {
-    try {
-        quick_release.unshift(msg);
-        var quick_release_html = quick_release_template({ quick_release });
-        $("#quick-release-display").html(quick_release_html);
-        $("#quick-release-display").scrollTop(0);
-    } catch (err) {
-        console.log(err.message)
-    }
 }
 
 function getSiteSelection() {
