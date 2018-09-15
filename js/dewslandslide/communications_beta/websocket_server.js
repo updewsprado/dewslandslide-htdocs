@@ -56,7 +56,7 @@ function connectWS() {
 					contactSettingsFeedback(msg_data);
 					break;	
 				case "getLEWCMobileDetailsViaSiteName":
-					console.log(msg_data);
+					// console.log(msg_data);
 					sendRoutineSMSToLEWC(msg_data);
 					break;
 				case "sendSms":

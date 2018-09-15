@@ -18,6 +18,7 @@ $(document).ready(function() {
 
 function initialize() {
     setTimeout(function() {
+        initializeOnClickGetRoutineReminder();
         initializeQuickInboxMessages();
         initializeDatepickers();
         getRecentActivity();
@@ -426,7 +427,7 @@ $("#routine-actual-option").on("click", function () {
         $("#routine-actual-option").removeClass("active");
         $("#def-recipients").text("Default recipients: LEWC");
         $("#routine-msg").val("");
-        $("#routine-msg").val(routine_reminder_msg);
+        // $("#routine-msg").val(routine_reminder_msg);
         $(this).addClass("active");
     });
 
@@ -539,8 +540,14 @@ function getRoutineReminder() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
+function initializeOnClickGetRoutineReminder() {
+    $("#routine-reminder-option").on("click", () => {
+        getRoutineReminder();
+    });
+}
+
 function getRoutineTemplate() {
-	$("#routine-actual-option").on("click",function() {
+	$("#routine-actual-option").on("click", () => {
 		let msg = {
 			type: 'getRoutineTemplate'
 		};
@@ -556,8 +563,8 @@ function getLatestAlert() {
 }
 
 function displayRoutineReminder(sites,template) {
-    console.log(sites);
-    console.log(template);
+    // console.log(sites);
+    // console.log(template);
 	let day = moment().format("dddd");
     let month = moment().month();
     month += 1;
@@ -630,7 +637,7 @@ function displayRoutineReminder(sites,template) {
     // }
 
 
-            // LOUIE - THIS IS ONLY TO TEST ROUTINE SITES.
+            // LOUIE - THIS IS ONLY TO TEST ROUTINE SITES. 
             $("#def-recipients").css("display", "inline-block");
             $(".routine-options-container").css("display", "flex");
             $("#send-routine-msg").css("display", "inline");
@@ -639,12 +646,11 @@ function displayRoutineReminder(sites,template) {
                     routine_sites.push(sites[counter]);
                 }
             }
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove(); 
 
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            // for (var counter = 0; counter < routine_sites.length; counter++) {
-            //     $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            // }
-
+     
             routine_sites.forEach((data) => {
                 $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
             });

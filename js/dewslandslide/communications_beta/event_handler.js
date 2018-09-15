@@ -39,14 +39,21 @@ $(document).ready(function() {
 
 function initializeOnClickSendRoutine () { // LOUIE
 	$("#chatterbox-loader-modal").modal("show");
+	let offices = [];
+	let sites_on_routine = [];
+
 	$('#send-routine-msg').click(() => {
-        sites_on_routine = [];
+	    if ($(".btn.btn-primary.active").val() == "Reminder Message") {
+	        offices = ["LEWC"];
+	    } else {
+	        offices = ["LEWC", "MLGU", "BLGU"];
+	    }
+
         $("input[name=\"sites-on-routine\"]:checked").each(function () {
             sites_on_routine.push(this.id);
         });
-        console.log(sites_on_routine);
 
-        getLEWCMobileIDs(sites_on_routine);
+        getRoutineMobileIDs(offices, sites_on_routine);
 
 	    // var data = {
 	    //     type: "smssendgroup",
@@ -61,27 +68,27 @@ function initializeOnClickSendRoutine () { // LOUIE
     });
 }
 
-function getLEWCMobileIDs(sites_on_routine) {
+function getRoutineMobileIDs(offices, sites_on_routine) {
     const lewc_details_request = {
-    	type: "getLEWCMobileDetailsForRoutine",
+    	type: "getRoutineMobileIDsForRoutine",
     	sites: sites_on_routine,
-    	offices: "LEWC"
+    	offices: offices
     }
     wss_connect.send(JSON.stringify(lewc_details_request));	
 }
 
-function sendRoutineSMSToLEWC(data) {
+function sendRoutineSMSToLEWC(data) { // To be refactored to accomodate custom routine message per site
 	var message = $("#routine-msg").val();
-	console.log("Pasok sa custom send");
-	console.log(data);
+	var sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
+	// console.log(data);
 	var recipients = data["data"];
 	try {
 		let convo_details = {
 			type: 'sendSmsToRecipients',
 			recipients: recipients,
-			message: message
+			message: message + sender
 		};
-		console.log(convo_details);
+		// console.log(convo_details);
 		wss_connect.send(JSON.stringify(convo_details));
 		setTimeout(() => {
 		    $("#chatterbox-loader-modal").modal("hide");
