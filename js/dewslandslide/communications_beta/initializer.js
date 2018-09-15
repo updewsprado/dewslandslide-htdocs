@@ -34,6 +34,7 @@ function initialize() {
                 getSiteSelection();
                 getLatestAlert()
                 getOrganizationSelection();
+                initializeMiscButtons();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");
@@ -686,5 +687,26 @@ function initializeDatepickers() {
     $("#ewi-date-picker").datetimepicker({
         locale: "en",
         format: "YYYY-MM-DD HH:mm:ss"
+    });
+}
+
+function initializeMiscButtons() {
+    $("#checkAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
     });
 }
