@@ -52,19 +52,7 @@ function initializeOnClickSendRoutine () { // LOUIE
         $("input[name=\"sites-on-routine\"]:checked").each(function () {
             sites_on_routine.push(this.id);
         });
-
-        getRoutineMobileIDs(offices, sites_on_routine);
-
-	    // var data = {
-	    //     type: "smssendgroup",
-	    //     user: "You",
-	    //     offices,
-	    //     sitenames: [routine[0].name.toUpperCase()],
-	    //     msg: routine_msg + footer,
-	    //     ewi_filter: true,
-	    //     ewi_tag: false
-	    // };
-	    // wss_connect.send(JSON.stringify(data));                
+        getRoutineMobileIDs(offices, sites_on_routine);                
     });
 }
 
@@ -80,7 +68,6 @@ function getRoutineMobileIDs(offices, sites_on_routine) {
 function sendRoutineSMSToLEWC(data) { // To be refactored to accomodate custom routine message per site
 	var message = $("#routine-msg").val();
 	var sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
-	// console.log(data);
 	var recipients = data["data"];
 	try {
 		let convo_details = {
@@ -88,7 +75,6 @@ function sendRoutineSMSToLEWC(data) { // To be refactored to accomodate custom r
 			recipients: recipients,
 			message: message + sender
 		};
-		// console.log(convo_details);
 		wss_connect.send(JSON.stringify(convo_details));
 		setTimeout(() => {
 		    $("#chatterbox-loader-modal").modal("hide");
