@@ -32,6 +32,7 @@ $(document).ready(function() {
 	initializeLoadSearchedKeyMessage();
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
+	loadSiteConvoViaQacess();
 	getQuickGroupSelection();
 });
 
@@ -638,7 +639,7 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 			"tag": new_tag,
 			"full_name": message_details[2],
 			"ts": message_details[3],
-			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"time_sent": moment(message_details[3]).format("h:00"),
 			"msg": message_details[4],
 			"account_id": current_user_id,
 			"tag_important": is_important,
@@ -651,7 +652,7 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 			"sms_id": message_details[0],
 			"full_name": message_details[2],
 			"ts": message_details[3],
-			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"time_sent": moment(message_details[3]).format("h:00"),
 			"msg": message_details[4],
 			"account_id": current_user_id,
 			"tag_important": is_important,
@@ -890,4 +891,21 @@ function initializeEmployeeContactGroupSending() {
         };
     	wss_connect.send(JSON.stringify(employee_teams));
 	});
+}
+
+function loadSiteConvoViaQacess() {
+    $(document).on("click", "#quick-release-display li", function () {
+    	$("#chatterbox-loader-modal").modal("show");
+    	let site_names = [$(this).closest("li").find("#site_id").val()];
+    	let site_code = [$(this).closest("li").find("#site_code").val().toUpperCase()];
+    	conversation_details_label = $(this).closest("li").find(".friend-name").text().toUpperCase();
+    	$("#conversation-details").append(conversation_details_label);
+    	let convo_request = {
+			'type': 'loadSmsForSites',
+			'organizations': [],
+			'sitenames': site_names,
+			'site_code': site_code
+		};
+		wss_connect.send(JSON.stringify(convo_request));
+    });
 }

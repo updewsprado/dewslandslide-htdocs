@@ -32,7 +32,9 @@ function initialize() {
                 initializeOnClickUpdateEmployeeContact();
                 initializeOnClickUpdateCommunityContact();
                 getSiteSelection();
+                getLatestAlert()
                 getOrganizationSelection();
+                initializeMiscButtons();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");
@@ -68,10 +70,7 @@ function getContactSuggestion (name_suggestion) {
 	name_suggestion.data.forEach(function(raw_names) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
-
 	awesomplete.list = contact_suggestion_container;
-
-
 }
 
 function initializeGoChatOnClick () {
@@ -247,17 +246,6 @@ function initCheckboxColors () {
     $("input[name=\"sitenames\"]:unchecked").each(function () {
         $(this).parent().css("color", "#333");
     });    
-}
-
-function updateLatestPublicRelease (msg) {
-    try {
-        quick_release.unshift(msg);
-        var quick_release_html = quick_release_template({ quick_release });
-        $("#quick-release-display").html(quick_release_html);
-        $("#quick-release-display").scrollTop(0);
-    } catch (err) {
-        console.log(err.message)
-    }
 }
 
 function getSiteSelection() {
@@ -699,5 +687,26 @@ function initializeDatepickers() {
     $("#ewi-date-picker").datetimepicker({
         locale: "en",
         format: "YYYY-MM-DD HH:mm:ss"
+    });
+}
+
+function initializeMiscButtons() {
+    $("#checkAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
     });
 }
