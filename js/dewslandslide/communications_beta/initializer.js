@@ -85,13 +85,6 @@ function initializeGoChatOnClick (awesomplete) {
         if(isValidContact) {
             console.log("go click");
             let multiple_contact = contact_suggestion.val().split(";");
-            let raw_name = "";
-            let firstname = "";
-            let lastname = "";
-            let office = "";
-            let site = "";
-            let number = "N/A";
-            let conversation_details = {};
 
             conversation_details = prepareConversationDetails(multiple_contact);
             startConversation(conversation_details);            
@@ -127,6 +120,13 @@ function validateContactSearchKey(searchKey, contact_suggestion) {
 }
 
 function prepareConversationDetails(multiple_contact) { // Removed from initializeGoChatOnClick for purpose of unit test in the future
+    let raw_name = "";
+    let firstname = "";
+    let lastname = "";
+    let office = "";
+    let site = "";
+    let number = "N/A";
+    let conversation_details = {};
     if (multiple_contact.length > 2) {
         let recipient_container = [];
         let temp = {};
