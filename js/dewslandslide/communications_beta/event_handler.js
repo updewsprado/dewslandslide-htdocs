@@ -217,10 +217,20 @@ function initializeGoLoadOnClick () {
 		    offices_selected.push($(this).attr('value'));
 		});
 
-		const sites = sites_selected.join(", ");
-		const offices = offices_selected.join(", ");
-		conversation_details_label = "Site(s): "+sites.toUpperCase()+" | Office(s): "+offices.toUpperCase();
-		loadSiteConversation();
+		// Validate if there is incomplete checkbox input from user
+		if((sites_selected.length === 0) && (offices_selected.length === 0)) {
+			$.notify("You need to specify at least an OFFICE and a SITE to search.", "warn");
+		}
+		else if(offices_selected.length === 0) {
+			$.notify("No OFFICE selected! Please choose at least 1 office.", "warn");		
+		} else if (sites_selected.length === 0) {
+			$.notify("No SITE selected! Please choose at least 1 site.", "warn");
+		} else { 
+			const sites = sites_selected.join(", ");
+			const offices = offices_selected.join(", ");
+			conversation_details_label = "Site(s): "+sites.toUpperCase()+" | Office(s): "+offices.toUpperCase();
+			loadSiteConversation();			
+		}
 	});
 }
 
