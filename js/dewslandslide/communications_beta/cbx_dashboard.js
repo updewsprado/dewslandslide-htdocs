@@ -37,7 +37,7 @@ function initializeEwiPhoneExtendedButton() {
     $("#extended").on("click", "tbody tr .send_ewi_extended_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = extended_table.row(i).data();
-        current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
+        current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
