@@ -55,7 +55,6 @@ function getContactSuggestion (name_suggestion) {
         '</span>'
     );
 
-    initializeGoChatOnClick ();
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
 	awesomplete = new Awesomplete(contact_suggestion_input,{
             filter (text, input) {
@@ -71,66 +70,108 @@ function getContactSuggestion (name_suggestion) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
 	awesomplete.list = contact_suggestion_container;
+    initializeGoChatOnClick(awesomplete);
 }
 
-function initializeGoChatOnClick () {
-    $("#go-chat").click(function() {
-        console.log("go click");
-        let multiple_contact = $("#contact-suggestion").val().split(";");
-        let raw_name = "";
-        let firstname = "";
-        let lastname = "";
-        let office = "";
-        let site = "";
-        let number = "N/A";
-        let conversation_details = {}
-        if (multiple_contact.length > 2) {
-            let recipient_container = [];
-            let temp = {};
-            for (let counter = 0; counter < multiple_contact.length-1; counter++) {
-                raw_name = multiple_contact[counter].split(",");
-                firstname = raw_name[1].trim();
-                lastname = raw_name[0].split("-")[1].trim();
-                office = raw_name[0].split(" ")[1].trim();
-                site = raw_name[0].split(" ")[0].trim();
-                number = "N/A";
+function initializeGoChatOnClick (awesomplete) {
+    console.log(awesomplete._list.length);
+    console.log("AWESOME"+ $.inArray("BLC BLGU - CAPIO, ALEJO", awesomplete._list));
+    $("#go-chat").on("click", ()=>{
+        let contact_suggestion = $("#contact-suggestion");
+        let searchKey = contact_suggestion.val();
 
-                temp = {
-                    raw_name: raw_name,
-                    firstname: firstname,
-                    lastname: lastname,
-                    office: office,
-                    site: site,
-                    number: number,
-                    isMultiple: true
-                };
+        let isValidContact = validateContactSearchKey(searchKey, contact_suggestion);
 
-                recipient_container.push(temp);
-            }
-            conversation_details = {
-                isMultiple: true,
-                data: recipient_container
-            };
-        } else {
-            raw_name = multiple_contact[0].split(",");
+        if(isValidContact) {
+            console.log("go click");
+            let multiple_contact = contact_suggestion.val().split(";");
+
+            conversation_details = prepareConversationDetails(multiple_contact);
+            startConversation(conversation_details);            
+        }
+    });
+}
+
+function validateContactSearchKey(searchKey, contact_suggestion) {
+    let isInInput = searchKey.includes(";");
+
+    console.log("searchKey " + searchKey);
+    console.log("\";\" IN INPUT " + isInInput);
+
+    if(isInInput) {
+        let searchKey = contact_suggestion.val().split("; ");
+        searchKey.pop();
+        console.log(searchKey);
+        isInSuggestions = searchKey.every(elem => awesomplete._list.indexOf(elem) > -1);
+    } else {
+        isInSuggestions = searchKey.indexOf(awesomplete._list) > -1;
+    }
+    console.log(isInSuggestions);
+    if(contact_suggestion.val().length === 0){
+        $.notify("No keyword specified! Please enter a value and select from the suggestions.", "warn");
+        return false;
+    } else if(!isInSuggestions) {
+        console.log("contact_suggestion is empty.");
+        $.notify("Please use the correct format and select from the suggestions.", "warn");
+        return false
+    } else {
+        return true;
+    }
+}
+
+function prepareConversationDetails(multiple_contact) { // Removed from initializeGoChatOnClick for purpose of unit test in the future
+    let raw_name = "";
+    let firstname = "";
+    let lastname = "";
+    let office = "";
+    let site = "";
+    let number = "N/A";
+    let conversation_details = {};
+    if (multiple_contact.length > 2) {
+        let recipient_container = [];
+        let temp = {};
+        for (let counter = 0; counter < multiple_contact.length-1; counter++) {
+            raw_name = multiple_contact[counter].split(",");
             firstname = raw_name[1].trim();
             lastname = raw_name[0].split("-")[1].trim();
-            lastname = lastname.replace("NA ","");
             office = raw_name[0].split(" ")[1].trim();
             site = raw_name[0].split(" ")[0].trim();
-            conversation_details = {
-                full_name: $("#contact-suggestion").val(),
+            number = "N/A";
+
+            temp = {
+                raw_name: raw_name,
                 firstname: firstname,
                 lastname: lastname,
                 office: office,
                 site: site,
-                number: "N/A",
-                isMultiple: false
-            }
-            conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+                number: number,
+                isMultiple: true
+            };
+            recipient_container.push(temp);
         }
-        startConversation(conversation_details);
-    });
+        conversation_details = {
+            isMultiple: true,
+            data: recipient_container
+        };
+    } else {
+        raw_name = multiple_contact[0].split(",");
+        firstname = raw_name[1].trim();
+        lastname = raw_name[0].split("-")[1].trim();
+        lastname = lastname.replace("NA ","");
+        office = raw_name[0].split(" ")[1].trim();
+        site = raw_name[0].split(" ")[0].trim();
+        conversation_details = {
+            full_name: $("#contact-suggestion").val(),
+            firstname: firstname,
+            lastname: lastname,
+            office: office,
+            site: site,
+            number: "N/A",
+            isMultiple: false
+        }
+        conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+    }    
+    return conversation_details;
 }
 
 function initializeQuickInboxMessages () {
