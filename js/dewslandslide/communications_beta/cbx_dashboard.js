@@ -88,7 +88,8 @@ function initializeEditUndoButtons() {
 }
 
 function initializeSendButton() {
-	$("#send-btn-ewi-amd").click(function() {
+    let dashboard_sms_signature = ` -${first_name} from PHIVOLCS-DYNASLOPE`;
+	$("#send-btn-ewi-amd").click(() => {
 		let request = {
 			"type": "sendEwiViaDashboard",
 			"event_id": ewi_event_id,
@@ -96,7 +97,7 @@ function initializeSendButton() {
 			"timestamp": ewi_timestamp,
 			"data_timestamp":ewi_data_timestamp,
 			"recipients": $("#ewi-recipients-dashboard").tagsinput('items'),
-			"msg": $("#constructed-ewi-amd").val()
+			"msg": $("#constructed-ewi-amd").val() + dashboard_sms_signature
 		}
 		wss_connect.send(JSON.stringify(request));
 	});
