@@ -88,7 +88,7 @@ function initializeEditUndoButtons() {
 }
 
 function initializeSendButton() {
-    let dashboard_sms_signature = ` -${first_name} from PHIVOLCS-DYNASLOPE`;
+    let dashboard_sms_signature = ` - ${first_name} from PHIVOLCS-DYNASLOPE`;
 	$("#send-btn-ewi-amd").click(() => {
 		let request = {
 			"type": "sendEwiViaDashboard",

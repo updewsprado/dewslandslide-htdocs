@@ -74,8 +74,6 @@ function getContactSuggestion (name_suggestion) {
 }
 
 function initializeGoChatOnClick (awesomplete) {
-    console.log(awesomplete._list.length);
-    console.log("AWESOME"+ $.inArray("BLC BLGU - CAPIO, ALEJO", awesomplete._list));
     $("#go-chat").on("click", ()=>{
         let contact_suggestion = $("#contact-suggestion");
         let searchKey = contact_suggestion.val();

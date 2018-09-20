@@ -8,7 +8,7 @@ let message_container = [];
 let conversation_recipients = [];
 let current_user_id = $("#current_user_id").val();
 let current_user_name = first_name;
-let chatterbox_sms_signature = ` -${current_user_name} from PHIVOLCS-DYNASLOPE`;
+let chatterbox_sms_signature = ` - ${current_user_name} from PHIVOLCS-DYNASLOPE`;
 
 let employee_input_count = 1;
 let employee_input_count_landline = 1;
