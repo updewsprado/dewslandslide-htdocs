@@ -135,8 +135,8 @@ function connectWS() {
 					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":
-					console.log(msg_data.tag_status);
-					displayConversationTaggingStatus(msg_data.tag_status);
+					console.log(msg_data.status);
+					displayConversationTaggingStatus(msg_data.status);
 					break;
 				default:
 					console.log("No request to load.");
