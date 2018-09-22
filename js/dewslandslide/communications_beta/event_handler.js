@@ -37,12 +37,13 @@ $(document).ready(function() {
 	getQuickGroupSelection();
 });
 
-function initializeOnClickSendRoutine () { // LOUIE
-	$("#chatterbox-loader-modal").modal("show");
+function initializeOnClickSendRoutine () {
+	
 	let offices = [];
 	let sites_on_routine = [];
 
 	$('#send-routine-msg').click(() => {
+		$("#chatterbox-loader-modal").modal("show");
 	    if ($(".btn.btn-primary.active").val() == "Reminder Message") {
 	        offices = ["LEWC"];
 	    } else {
@@ -65,23 +66,46 @@ function getRoutineMobileIDs(offices, sites_on_routine) {
     wss_connect.send(JSON.stringify(lewc_details_request));	
 }
 
-function sendRoutineSMSToLEWC(data) { // To be refactored to accomodate custom routine message per site
-	var message = $("#routine-msg").val();
-	var sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
-	var recipients = data["data"];
-	try {
-		let convo_details = {
-			type: 'sendSmsToRecipients',
-			recipients: recipients,
-			message: message + sender
-		};
-		wss_connect.send(JSON.stringify(convo_details));
-		setTimeout(() => {
-		    $("#chatterbox-loader-modal").modal("hide");
-		}, 20000);    		
-	} catch(err) {
-		console.log(err);
-		// Add PMS here
+function sendRoutineSMSToLEWC(raw) { // To be refactored to accomodate custom routine message per site
+	let message = $("#routine-msg").val();
+	let sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
+	raw.data.forEach(function(contact) {
+		raw.sites.forEach(function(site) {
+			if (contact.fk_site_id == site.site_id) {
+				let temp = "";
+				if (site.purok == null && site.sitio == null) {
+					temp = site.barangay+", "+site.municipality+", "+site.province;
+				} else if (site.purok == null && site.sitio != null) {
+					temp = site.sitio+", "+site.barangay+", "+site.municipality+", "+site.province;
+				} else if (site.purok != null && site.sitio == null) {
+					temp = site.purok+", "+site.barangay+", "+site.municipality+", "+site.province;
+				} else {
+					temp =  site.purok+", "+site.sitio+", "+site.barangay+", "+site.municipality+", "+site.province;
+				}
+				let site_details = temp;
+				message = message.replace("(site_location)", site_details);
+				message = message.replace("(current_date)", raw.date);
+				try {
+					let convo_details = {
+						type: 'sendSmsToRecipients',
+						recipients: [contact.mobile_id],
+						message: message + sender
+					};
+					wss_connect.send(JSON.stringify(convo_details));   		
+				} catch(err) {
+					console.log(err);
+					// Add PMS here
+				}
+				message = $("#routine-msg").val();
+			}
+		});
+	});
+
+	$("#chatterbox-loader-modal").modal("hide");
+	if (message.indexOf('Magandang tanghali po') > -1) {
+		$.notify("Successfully sent routine messages.","success");
+	} else {
+		$.notify("Successfully sent ground measurement reminder.","success");
 	}
 }
 
