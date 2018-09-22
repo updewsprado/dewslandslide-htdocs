@@ -55,6 +55,9 @@ function connectWS() {
 				case "updatedCmmtyContact":
 					contactSettingsFeedback(msg_data);
 					break;	
+				case "getLEWCMobileDetailsViaSiteName":
+					sendRoutineSMSToLEWC(msg_data);
+					break;
 				case "sendSms":
 					updateConversationBubble(msg_data);
 				case "newAddedDwslContact":

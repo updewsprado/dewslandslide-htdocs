@@ -10,6 +10,7 @@ let temp_important_tag = [];
 let tag_container = null;
 
 $(document).ready(function() {
+	initializeOnClickSendRoutine();
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
 	initializeOnClickQuickInbox();
@@ -35,6 +36,54 @@ $(document).ready(function() {
 	loadSiteConvoViaQacess();
 	getQuickGroupSelection();
 });
+
+function initializeOnClickSendRoutine () { // LOUIE
+	$("#chatterbox-loader-modal").modal("show");
+	let offices = [];
+	let sites_on_routine = [];
+
+	$('#send-routine-msg').click(() => {
+	    if ($(".btn.btn-primary.active").val() == "Reminder Message") {
+	        offices = ["LEWC"];
+	    } else {
+	        offices = ["LEWC", "MLGU", "BLGU"];
+	    }
+
+        $("input[name=\"sites-on-routine\"]:checked").each(function () {
+            sites_on_routine.push(this.id);
+        });
+        getRoutineMobileIDs(offices, sites_on_routine);                
+    });
+}
+
+function getRoutineMobileIDs(offices, sites_on_routine) {
+    const lewc_details_request = {
+    	type: "getRoutineMobileIDsForRoutine",
+    	sites: sites_on_routine,
+    	offices: offices
+    }
+    wss_connect.send(JSON.stringify(lewc_details_request));	
+}
+
+function sendRoutineSMSToLEWC(data) { // To be refactored to accomodate custom routine message per site
+	var message = $("#routine-msg").val();
+	var sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
+	var recipients = data["data"];
+	try {
+		let convo_details = {
+			type: 'sendSmsToRecipients',
+			recipients: recipients,
+			message: message + sender
+		};
+		wss_connect.send(JSON.stringify(convo_details));
+		setTimeout(() => {
+		    $("#chatterbox-loader-modal").modal("hide");
+		}, 20000);    		
+	} catch(err) {
+		console.log(err);
+		// Add PMS here
+	}
+}
 
 function initializeGetQuickGroupSelection () {
 	$("#btn-advanced-search").on("click",function() {

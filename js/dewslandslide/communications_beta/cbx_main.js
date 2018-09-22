@@ -2,7 +2,7 @@ let quick_inbox_registered = [];
 let quick_inbox_unregistered = [];
 let quick_inbox_event = [];
 let quick_inbox_data_logger = [];
-let quick_release = []; // LOUIE
+let quick_release = [];
 let chatterbox_user = "You";
 let message_container = [];
 let conversation_recipients = [];
@@ -597,6 +597,11 @@ function siteConversation(){
 		// Add PMS here.
 	}
 
+}
+
+function getRoutineMsgFromCBXMain() {
+	var routine_msg = $("#routine-msg").val();
+	return routine_msg;
 }
 
 function sendSms(recipients, message) {

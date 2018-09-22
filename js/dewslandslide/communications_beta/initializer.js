@@ -18,6 +18,7 @@ $(document).ready(function() {
 
 function initialize() {
     setTimeout(function() {
+        initializeOnClickGetRoutineReminder();
         initializeQuickInboxMessages();
         initializeDatepickers();
         getRecentActivity();
@@ -520,7 +521,7 @@ $("#routine-actual-option").on("click", function () {
         $("#routine-actual-option").removeClass("active");
         $("#def-recipients").text("Default recipients: LEWC");
         $("#routine-msg").val("");
-        $("#routine-msg").val(routine_reminder_msg);
+        // $("#routine-msg").val(routine_reminder_msg);
         $(this).addClass("active");
     });
 
@@ -633,8 +634,14 @@ function getRoutineReminder() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
+function initializeOnClickGetRoutineReminder() {
+    $("#routine-reminder-option").on("click", () => {
+        getRoutineReminder();
+    });
+}
+
 function getRoutineTemplate() {
-	$("#routine-actual-option").on("click",function() {
+	$("#routine-actual-option").on("click", () => {
 		let msg = {
 			type: 'getRoutineTemplate'
 		};
@@ -665,14 +672,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove(); 
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -684,14 +695,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove(); 
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -703,14 +718,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (dry[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove();             
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -720,6 +739,7 @@ function displayRoutineReminder(sites,template) {
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
+
 }
 
 function initializeDatepickers() {
