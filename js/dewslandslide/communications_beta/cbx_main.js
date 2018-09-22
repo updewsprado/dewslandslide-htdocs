@@ -7,6 +7,8 @@ let chatterbox_user = "You";
 let message_container = [];
 let conversation_recipients = [];
 let current_user_id = $("#current_user_id").val();
+let current_user_name = first_name;
+let chatterbox_sms_signature = ` - ${current_user_name} from PHIVOLCS-DYNASLOPE`;
 
 let employee_input_count = 1;
 let employee_input_count_landline = 1;
@@ -602,7 +604,7 @@ function sendSms(recipients, message) {
 		let convo_details = {
 			type: 'sendSmsToRecipients',
 			recipients: recipients,
-			message: message
+			message: message + chatterbox_sms_signature
 		};
 		wss_connect.send(JSON.stringify(convo_details));
 	} catch(err) {
