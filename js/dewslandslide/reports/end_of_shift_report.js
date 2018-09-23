@@ -251,7 +251,7 @@ function getShiftReleases (shift_ts) {
 
 /*************************************************
  * Take note that the parameter releases
- * contains all EWI releases for the specific 
+ * contains all EWI releases for the specific
  * time period INCLUDING extended releases
  ************************************************/
 function processShiftReleases (releases) {
@@ -283,6 +283,7 @@ function processShiftReleases (releases) {
                 release_id, event_id, site_code, site_id
             } = release;
 
+            console.log(all_qualified_sites, release);
             if (all_qualified_sites.includes(event_id)) {
                 obj.release_ids.push(release_id);
 
@@ -311,6 +312,7 @@ function processSiteSelectionModal (obj) {
     $("#loading").modal("hide");
     const $modal_cbox = $("#modal-site-checkbox");
     $modal_cbox.empty();
+    console.log(obj);
 
     if (obj !== null) {
         const { sites: { length: len } } = obj;
