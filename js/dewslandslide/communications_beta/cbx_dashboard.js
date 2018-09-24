@@ -17,15 +17,19 @@ function initializeEwiPhoneButton() {
     $("#latest").on("click", "tbody tr .send_ewi_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = latest_table.row(i).data();
-        console.log(current_row);
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
         ewi_data_timestamp = moment(current_row.data_timestamp).add(30, "m").format('YYYY-MM-DD H:mm:ss');
+        let event_category = "event";
+        if(current_row.internal_alert_level == "A3"){
+        	event_category = "event_level_3";
+        }
+        current_row.internal_alert_level = current_row.internal_alert_level + "-" + current_row.trigger_type.toUpperCase();
         let request = {
         	"type": "getEwiDetailsViaDashboard",
-        	"event_category": 'event',
+        	"event_category": event_category,
         	"data": current_row
         };
 
