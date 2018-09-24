@@ -22,14 +22,9 @@ function initializeEwiPhoneButton() {
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
         ewi_data_timestamp = moment(current_row.data_timestamp).add(30, "m").format('YYYY-MM-DD H:mm:ss');
-        let event_category = "event";
-        if(current_row.internal_alert_level == "A3"){
-        	event_category = "event_level_3";
-        }
-        current_row.internal_alert_level = current_row.internal_alert_level + "-" + current_row.trigger_type.toUpperCase();
         let request = {
         	"type": "getEwiDetailsViaDashboard",
-        	"event_category": event_category,
+        	"event_category": "event",
         	"data": current_row
         };
 
