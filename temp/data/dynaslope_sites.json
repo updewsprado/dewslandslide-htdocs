@@ -1,6 +1,6 @@
 [
   {
-    "id": "1",
+    "site_id": "1",
     "site_code": "agb",
     "sitio": "",
     "barangay": "Agbatuan",
@@ -13,7 +13,7 @@
     "season": "1"
   },
   {
-    "id": "2",
+    "site_id": "2",
     "site_code": "bak",
     "sitio": "",
     "barangay": "Poblacion",
@@ -26,7 +26,7 @@
     "season": "2"
   },
   {
-    "id": "3",
+    "site_id": "3",
     "site_code": "ban",
     "sitio": "",
     "barangay": "Banlasan",
@@ -39,7 +39,7 @@
     "season": "1"
   },
   {
-    "id": "4",
+    "site_id": "4",
     "site_code": "bar",
     "sitio": "",
     "barangay": "Baras",
@@ -52,7 +52,7 @@
     "season": "1"
   },
   {
-    "id": "5",
+    "site_id": "5",
     "site_code": "bay",
     "sitio": "",
     "barangay": "Bayabas",
@@ -65,7 +65,7 @@
     "season": "1"
   },
   {
-    "id": "6",
+    "site_id": "6",
     "site_code": "blc",
     "sitio": "",
     "barangay": "Boloc",
@@ -78,7 +78,7 @@
     "season": "2"
   },
   {
-    "id": "7",
+    "site_id": "7",
     "site_code": "bol",
     "sitio": "Purok 3 and 4",
     "barangay": "Bolodbolod",
@@ -91,7 +91,7 @@
     "season": "1"
   },
   {
-    "id": "8",
+    "site_id": "8",
     "site_code": "bto",
     "sitio": "",
     "barangay": "Bato",
@@ -104,7 +104,7 @@
     "season": "1"
   },
   {
-    "id": "9",
+    "site_id": "9",
     "site_code": "car",
     "sitio": "",
     "barangay": "San Carlos",
@@ -117,7 +117,7 @@
     "season": "1"
   },
   {
-    "id": "10",
+    "site_id": "10",
     "site_code": "cud",
     "sitio": "Natuwolan and Wadwad",
     "barangay": "Cudog",
@@ -130,7 +130,7 @@
     "season": "2"
   },
   {
-    "id": "11",
+    "site_id": "11",
     "site_code": "dad",
     "sitio": "Sagasa",
     "barangay": "Dadong",
@@ -143,7 +143,7 @@
     "season": "1"
   },
   {
-    "id": "12",
+    "site_id": "12",
     "site_code": "gaa",
     "sitio": "",
     "barangay": "Gaas",
@@ -156,7 +156,7 @@
     "season": "1"
   },
   {
-    "id": "13",
+    "site_id": "13",
     "site_code": "gam",
     "sitio": "",
     "barangay": "Gamut",
@@ -169,7 +169,7 @@
     "season": "1"
   },
   {
-    "id": "14",
+    "site_id": "14",
     "site_code": "hin",
     "sitio": "",
     "barangay": "1 & 2",
@@ -182,7 +182,7 @@
     "season": "1"
   },
   {
-    "id": "15",
+    "site_id": "15",
     "site_code": "hum",
     "sitio": "",
     "barangay": "Humayhumay",
@@ -195,7 +195,7 @@
     "season": "1"
   },
   {
-    "id": "16",
+    "site_id": "16",
     "site_code": "ime",
     "sitio": "",
     "barangay": "Imelda",
@@ -208,7 +208,7 @@
     "season": "1"
   },
   {
-    "id": "17",
+    "site_id": "17",
     "site_code": "imu",
     "sitio": "",
     "barangay": "Immuli",
@@ -221,7 +221,7 @@
     "season": "2"
   },
   {
-    "id": "18",
+    "site_id": "18",
     "site_code": "ina",
     "sitio": "Sambag",
     "barangay": "Inabasan",
@@ -234,7 +234,7 @@
     "season": "2"
   },
   {
-    "id": "19",
+    "site_id": "19",
     "site_code": "jor",
     "sitio": "",
     "barangay": "Poblacion 1",
@@ -247,7 +247,7 @@
     "season": "1"
   },
   {
-    "id": "20",
+    "site_id": "20",
     "site_code": "lab",
     "sitio": "Labey",
     "barangay": "Ambuklao",
@@ -260,7 +260,7 @@
     "season": "2"
   },
   {
-    "id": "21",
+    "site_id": "21",
     "site_code": "lay",
     "sitio": "",
     "barangay": "Laygayon",
@@ -273,7 +273,7 @@
     "season": "1"
   },
   {
-    "id": "22",
+    "site_id": "22",
     "site_code": "lip",
     "sitio": "Purok 1",
     "barangay": "Lipanto",
@@ -286,7 +286,7 @@
     "season": "1"
   },
   {
-    "id": "23",
+    "site_id": "23",
     "site_code": "loo",
     "sitio": "Madrid",
     "barangay": "Looc",
@@ -299,7 +299,7 @@
     "season": "1"
   },
   {
-    "id": "24",
+    "site_id": "24",
     "site_code": "lpa",
     "sitio": "",
     "barangay": "Lipata",
@@ -312,7 +312,7 @@
     "season": "1"
   },
   {
-    "id": "25",
+    "site_id": "25",
     "site_code": "lte",
     "sitio": "",
     "barangay": "Literon",
@@ -325,7 +325,7 @@
     "season": "1"
   },
   {
-    "id": "26",
+    "site_id": "26",
     "site_code": "lun",
     "sitio": "Caianuhan",
     "barangay": "Lunas",
@@ -338,7 +338,7 @@
     "season": "1"
   },
   {
-    "id": "27",
+    "site_id": "27",
     "site_code": "mag",
     "sitio": "Purok 1, 2 and 3",
     "barangay": "Magsaysay",
@@ -351,7 +351,7 @@
     "season": "1"
   },
   {
-    "id": "28",
+    "site_id": "28",
     "site_code": "mam",
     "sitio": "Mamuyod",
     "barangay": "Ambassador",
@@ -364,7 +364,7 @@
     "season": "2"
   },
   {
-    "id": "29",
+    "site_id": "29",
     "site_code": "mar",
     "sitio": "",
     "barangay": "Marirong",
@@ -377,7 +377,7 @@
     "season": "2"
   },
   {
-    "id": "30",
+    "site_id": "30",
     "site_code": "mca",
     "sitio": "",
     "barangay": "Mac-Arthur",
@@ -390,7 +390,7 @@
     "season": "1"
   },
   {
-    "id": "31",
+    "site_id": "31",
     "site_code": "mng",
     "sitio": "Dao",
     "barangay": "Manghulyawon",
@@ -403,7 +403,7 @@
     "season": "1"
   },
   {
-    "id": "32",
+    "site_id": "32",
     "site_code": "msl",
     "sitio": "Lower Mesolong",
     "barangay": "Sto. Nino",
@@ -416,7 +416,7 @@
     "season": "1"
   },
   {
-    "id": "33",
+    "site_id": "33",
     "site_code": "msu",
     "sitio": "Upper Mesolong",
     "barangay": "Sto. Nino",
@@ -429,7 +429,7 @@
     "season": "1"
   },
   {
-    "id": "34",
+    "site_id": "34",
     "site_code": "nag",
     "sitio": "Purok 6",
     "barangay": "Nagyubuyuban",
@@ -442,7 +442,7 @@
     "season": "2"
   },
   {
-    "id": "35",
+    "site_id": "35",
     "site_code": "nur",
     "sitio": "",
     "barangay": "Nurcia",
@@ -455,7 +455,7 @@
     "season": "1"
   },
   {
-    "id": "36",
+    "site_id": "36",
     "site_code": "osl",
     "sitio": "",
     "barangay": "Oslao",
@@ -468,7 +468,7 @@
     "season": "1"
   },
   {
-    "id": "37",
+    "site_id": "37",
     "site_code": "par",
     "sitio": "",
     "barangay": "Parasanon",
@@ -481,7 +481,7 @@
     "season": "1"
   },
   {
-    "id": "38",
+    "site_id": "38",
     "site_code": "pep",
     "sitio": "Bangi",
     "barangay": "Pepe",
@@ -494,7 +494,7 @@
     "season": "2"
   },
   {
-    "id": "39",
+    "site_id": "39",
     "site_code": "pin",
     "sitio": "",
     "barangay": "Pinagkamaligan",
@@ -507,7 +507,7 @@
     "season": "1"
   },
   {
-    "id": "40",
+    "site_id": "40",
     "site_code": "pla",
     "sitio": "Mambog",
     "barangay": "Planas",
@@ -520,7 +520,7 @@
     "season": "1"
   },
   {
-    "id": "41",
+    "site_id": "41",
     "site_code": "png",
     "sitio": "",
     "barangay": "Pange",
@@ -533,7 +533,7 @@
     "season": "1"
   },
   {
-    "id": "42",
+    "site_id": "42",
     "site_code": "pug",
     "sitio": "Longlong",
     "barangay": "Puguis",
@@ -546,7 +546,7 @@
     "season": "2"
   },
   {
-    "id": "43",
+    "site_id": "43",
     "site_code": "sag",
     "sitio": "",
     "barangay": "Antadao",
@@ -559,7 +559,7 @@
     "season": "2"
   },
   {
-    "id": "44",
+    "site_id": "44",
     "site_code": "sib",
     "sitio": "",
     "barangay": "Sibajay",
@@ -572,7 +572,7 @@
     "season": "1"
   },
   {
-    "id": "45",
+    "site_id": "45",
     "site_code": "sin",
     "sitio": "Sinipsip",
     "barangay": "Amgaleyguey",
@@ -585,7 +585,7 @@
     "season": "2"
   },
   {
-    "id": "46",
+    "site_id": "46",
     "site_code": "sum",
     "sitio": "",
     "barangay": "Sumalsag",
@@ -598,7 +598,7 @@
     "season": "1"
   },
   {
-    "id": "47",
+    "site_id": "47",
     "site_code": "tal",
     "sitio": "",
     "barangay": "Talahid",
@@ -611,7 +611,7 @@
     "season": "1"
   },
   {
-    "id": "48",
+    "site_id": "48",
     "site_code": "tga",
     "sitio": "",
     "barangay": "Taga",
@@ -624,7 +624,7 @@
     "season": "2"
   },
   {
-    "id": "49",
+    "site_id": "49",
     "site_code": "tue",
     "sitio": "",
     "barangay": "Tue",
@@ -637,7 +637,7 @@
     "season": "2"
   },
   {
-    "id": "50",
+    "site_id": "50",
     "site_code": "umi",
     "sitio": "",
     "barangay": "Umingan",
