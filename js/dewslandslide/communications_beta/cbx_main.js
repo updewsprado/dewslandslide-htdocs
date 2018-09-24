@@ -431,7 +431,7 @@ function displayUpdateCommunityDetails (community_data) {
 	$("#birthdate_cc").val(community_data.contact_info.birthday);
 	$("#gender_cc").val(community_data.contact_info.gender);
 	$("#active_status_cc").val(community_data.contact_info.contact_active_status);
-	if (community_data.ewi_data[0].ewi_status === "Active") {
+	if (community_data.ewi_data[0].ewi_status === "1") {
 		$("#ewirecipient_cc").val(1);
 	}else {
 		$("#ewirecipient_cc").val(0);
@@ -445,10 +445,9 @@ function displayUpdateCommunityDetails (community_data) {
 				"mobile_status" : community_data.mobile_data[counter].number_status,
 				"mobile_priority" : community_data.mobile_data[counter].priority,
 				"mobile_id" : community_data.mobile_data[counter].number_id
-			} 
+			}
 			appendContactForms("Mobile", number_count, "community_mobile", mobile_data);
 		}
-		
 	}
 
 	for (let counter = 0; counter < community_data.landline_data.length; counter+=1) {
@@ -479,7 +478,8 @@ function appendContactForms (type, number_count, category, data) {
 		container = "#landline-div-cc";
 	}
 
-	$(container).empty();
+	if(number_count === 1) // Empty the container if first append. If not, just continue appending the next contact number.
+		$(container).empty();
 
 	if (category == "employee_mobile" || category == "community_mobile") {
 		$(container)
@@ -512,12 +512,15 @@ function appendContactForms (type, number_count, category, data) {
 		"<option value='1'>1</option>"+
 		"<option value='2'>2</option>"+
 		"<option value='3'>3</option>"+
+		"<option value='4'>4</option>"+
+		"<option value='5'>5</option>"+
 		"</select>"+
 		"</div>"+
 		"</div>"+
 		"</div>");
 		$("#"+category+"_priority_"+number_count).val(data.mobile_priority);
 		$("#"+category+"_status_"+number_count).val(data.mobile_status);
+
 	} else if (category == "employee_landline" || category == "community_landline"){
 		$(container)
 		.append(
@@ -540,7 +543,6 @@ function appendContactForms (type, number_count, category, data) {
 		"</div>"+
 		"</div>");
 	}
-	
 
 	if (category == "employee_mobile") {
 		employee_input_count += 1;

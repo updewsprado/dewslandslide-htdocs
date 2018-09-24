@@ -346,6 +346,8 @@ function addNewMobileForEmployee () {
 			"<option value='1'>1</option>"+
 			"<option value='2'>2</option>"+
 			"<option value='3'>3</option>"+
+			"<option value='4'>4</option>"+
+			"<option value='5'>5</option>"+
 			"</select>"+
 			"</div>"+
 			"</div>"+
@@ -419,6 +421,8 @@ function addNewMobileForCommunity () {
 			"<option value='1'>1</option>"+
 			"<option value='2'>2</option>"+
 			"<option value='3'>3</option>"+
+			"<option value='4'>4</option>"+
+			"<option value='5'>5</option>"+
 			"</select>"+
 			"</div>"+
 			"</div>"+
@@ -535,7 +539,8 @@ function onSubmitCommunityContactForm (sites, organizations) {
 	//for mobile number
 	for (let counter = 1; counter < community_input_count; counter +=1) {
 		const mobile_number_raw = {
-			"mobile_id": $("#user_id_cc").val(),
+			"user_id": $("#user_id_cc").val(),
+			"mobile_id": $("#community_mobile_id_"+counter).val(),
 			"mobile_number": $("#community_mobile_number_"+counter).val(),
 			"mobile_status": $("#community_mobile_status_"+counter).val(),
 			"mobile_priority": $("#community_mobile_priority_"+counter).val()
@@ -577,7 +582,7 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		message_type = "newCommunityContact";
 	}
 
-	message = {
+	const message = {
 		type: message_type,
 		data: contact_data
 	}
@@ -706,7 +711,7 @@ function initializeOnClickConfirmTagging () {
 					"Timestamp: " + message_details[3] + "&#013;&#010;&#013;&#010;&#013;&#010;" +
 					message_details[4] + "&#013;&#010;"
 				);
-			}//
+			}
 		}
 	});
 }
