@@ -60,6 +60,7 @@ function connectWS() {
 					break;
 				case "sendSms":
 					updateConversationBubble(msg_data);
+					break;
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;
