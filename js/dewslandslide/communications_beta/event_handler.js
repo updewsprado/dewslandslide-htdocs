@@ -10,6 +10,7 @@ let temp_important_tag = [];
 let tag_container = null;
 
 $(document).ready(function() {
+	initializeOnClickSendRoutine();
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
 	initializeOnClickQuickInbox();
@@ -18,7 +19,6 @@ $(document).ready(function() {
 	initializeContactCategoryOnChange();
 	initializeContactSettingsOnChange();
 	initializeQuickSelectionGroupFlagOnClick();
-	initializeGoChatOnClick();
 	initializeGoLoadOnClick();
 	initializeSendMessageOnClick();
 	initializeOnAvatarClickForTagging();
@@ -37,9 +37,84 @@ $(document).ready(function() {
 	initializeGndMeasSettingsCategory();
 	initializeGndMeasSaveButton();
 	initializeResetSpecialCasesButtonOnCLick();
+	loadSiteConvoViaQacess();
 	getQuickGroupSelection();
-	resetSpecialCases();
 });
+
+function initializeOnClickSendRoutine () {
+	
+	let offices = [];
+	let sites_on_routine = [];
+
+	$('#send-routine-msg').click(() => {
+		$("#chatterbox-loader-modal").modal("show");
+	    if ($(".btn.btn-primary.active").val() == "Reminder Message") {
+	        offices = ["LEWC"];
+	    } else {
+	        offices = ["LEWC", "MLGU", "BLGU"];
+	    }
+
+        $("input[name=\"sites-on-routine\"]:checked").each(function () {
+            sites_on_routine.push(this.id);
+        });
+        getRoutineMobileIDs(offices, sites_on_routine);                
+    });
+}
+
+function getRoutineMobileIDs(offices, sites_on_routine) {
+    const lewc_details_request = {
+    	type: "getRoutineMobileIDsForRoutine",
+    	sites: sites_on_routine,
+    	offices: offices
+    }
+    wss_connect.send(JSON.stringify(lewc_details_request));	
+}
+
+function sendRoutineSMSToLEWC(raw) { // To be refactored to accomodate custom routine message per site
+	let message = $("#routine-msg").val();
+	let sender = " - " + $("#user_name").html() + " from PHIVOLCS-DYNASLOPE";
+	raw.data.forEach(function(contact) {
+		raw.sites.forEach(function(site) {
+			if (contact.fk_site_id == site.site_id) {
+				let temp = "";
+				if (site.purok == null && site.sitio == null) {
+					temp = site.barangay+", "+site.municipality+", "+site.province;
+				} else if (site.purok == null && site.sitio != null) {
+					temp = site.sitio+", "+site.barangay+", "+site.municipality+", "+site.province;
+				} else if (site.purok != null && site.sitio == null) {
+					temp = site.purok+", "+site.barangay+", "+site.municipality+", "+site.province;
+				} else {
+					temp =  site.purok+", "+site.sitio+", "+site.barangay+", "+site.municipality+", "+site.province;
+				}
+				let site_details = temp;
+				message = message.replace("(site_location)", site_details);
+				message = message.replace("(current_date)", raw.date);
+				message = message.replace("(greetings)", "umaga");
+				message = message.replace("(gndmeas_time_submission)","bago-mag 11:30 AM");
+
+				try {
+					let convo_details = {
+						type: 'sendSmsToRecipients',
+						recipients: [contact.mobile_id],
+						message: message + sender
+					};
+					wss_connect.send(JSON.stringify(convo_details));   		
+				} catch(err) {
+					console.log(err);
+					// Add PMS here
+				}
+				message = $("#routine-msg").val();
+			}
+		});
+	});
+
+	$("#chatterbox-loader-modal").modal("hide");
+	if (message.indexOf('Magandang tanghali po') > -1) {
+		$.notify("Successfully sent routine messages.","success");
+	} else {
+		$.notify("Successfully sent ground measurement reminder.","success");
+	}
+}
 
 function initializeGetQuickGroupSelection () {
 	$("#btn-advanced-search").on("click",function() {
@@ -211,65 +286,6 @@ function initializeOnClickQuickInbox () {
 	});
 }
 
-function initializeGoChatOnClick () {
-	$("#go-chat").click(function() {
-		let multiple_contact = $("#contact-suggestion").val().split(";");
-		let raw_name = "";
-		let firstname = "";
-		let lastname = "";
-		let office = "";
-		let site = "";
-		let number = "N/A";
-		let conversation_details = {}
-		if (multiple_contact.length > 2) {
-			let recipient_container = [];
-			let temp = {};
-			for (let counter = 0; counter < multiple_contact.length-1; counter++) {
-				raw_name = multiple_contact[counter].split(",");
-				firstname = raw_name[1].trim();
-				lastname = raw_name[0].split("-")[1].trim();
-				office = raw_name[0].split(" ")[1].trim();
-				site = raw_name[0].split(" ")[0].trim();
-				number = "N/A";
-
-				temp = {
-					raw_name: raw_name,
-					firstname: firstname,
-					lastname: lastname,
-					office: office,
-					site: site,
-					number: number,
-					isMultiple: true
-				};
-
-				recipient_container.push(temp);
-			}
-			conversation_details = {
-				isMultiple: true,
-				data: recipient_container
-			};
-		} else {
-			raw_name = multiple_contact[0].split(",");
-			firstname = raw_name[1].trim();
-			lastname = raw_name[0].split("-")[1].trim();
-			lastname = lastname.replace("NA ","");
-			office = raw_name[0].split(" ")[1].trim();
-			site = raw_name[0].split(" ")[0].trim();
-			conversation_details = {
-				full_name: $("#contact-suggestion").val(),
-				firstname: firstname,
-				lastname: lastname,
-				office: office,
-				site: site,
-				number: "N/A",
-				isMultiple: false
-			}
-			conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
-		}
-		startConversation(conversation_details);
-	});
-}
-
 function initializeGoLoadOnClick () {
 	$("#go-load-groups").click(function() {
 		const offices_selected = [];
@@ -281,10 +297,20 @@ function initializeGoLoadOnClick () {
 		    offices_selected.push($(this).attr('value'));
 		});
 
-		const sites = sites_selected.join(", ");
-		const offices = offices_selected.join(", ");
-		conversation_details_label = "Site(s): "+sites.toUpperCase()+" | Office(s): "+offices.toUpperCase();
-		loadSiteConversation();
+		// Validate if there is incomplete checkbox input from user
+		if((sites_selected.length === 0) && (offices_selected.length === 0)) {
+			$.notify("You need to specify at least an OFFICE and a SITE to search.", "warn");
+		}
+		else if(offices_selected.length === 0) {
+			$.notify("No OFFICE selected! Please choose at least 1 office.", "warn");		
+		} else if (sites_selected.length === 0) {
+			$.notify("No SITE selected! Please choose at least 1 site.", "warn");
+		} else { 
+			const sites = sites_selected.join(", ");
+			const offices = offices_selected.join(", ");
+			conversation_details_label = "Site(s): "+sites.toUpperCase()+" | Office(s): "+offices.toUpperCase();
+			loadSiteConversation();			
+		}
 	});
 }
 
@@ -449,6 +475,7 @@ function submitEmployeeInformation () {
 	let landline_numbers = [];
 
 	//for mobile number
+	const employee_mobile = $("#mobile-div :input").length / 4;
 	for (let counter = 1; counter < employee_input_count; counter +=1) {
 		const mobile_number_raw = {
 			"user_id": $("#user_id_ec").val(),
@@ -503,7 +530,7 @@ function submitEmployeeInformation () {
 	$('#employee-contact-wrapper').hide();
 	
 	// console.log(mobile_numbers);
-	// wss_connect.send(JSON.stringify(message));
+	wss_connect.send(JSON.stringify(message));
 }
 
 function onSubmitCommunityContactForm (sites, organizations) {
@@ -565,7 +592,7 @@ function onSubmitCommunityContactForm (sites, organizations) {
 	$('#comm-response-contact-container_wrapper').show();
 	$('#community-contact-wrapper').hide();
 
-	// wss_connect.send(JSON.stringify(message));
+	wss_connect.send(JSON.stringify(message));
 }
 
 function emptyEmployeeContactForm () {
@@ -702,7 +729,7 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 			"tag": new_tag,
 			"full_name": message_details[2],
 			"ts": message_details[3],
-			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"time_sent": moment(message_details[3]).format("h:00"),
 			"msg": message_details[4],
 			"account_id": current_user_id,
 			"tag_important": is_important,
@@ -715,7 +742,7 @@ function addNewTags (message_details, new_tag, is_important, site_code, recipien
 			"sms_id": message_details[0],
 			"full_name": message_details[2],
 			"ts": message_details[3],
-			"time_sent": moment(message_details[3]).format("h:mm A"),
+			"time_sent": moment(message_details[3]).format("h:00"),
 			"msg": message_details[4],
 			"account_id": current_user_id,
 			"tag_important": is_important,
@@ -1067,7 +1094,7 @@ function initializeResetSpecialCasesButtonOnCLick () {
     });    
 }
 
-function resetSpecialCases () {
+function resetSpecialCases() {
     // Clear special cases
     $("#gnd-meas-category").val('event');
     let special_case_length = $(".special-case-template").length;
@@ -1079,5 +1106,23 @@ function resetSpecialCases () {
     var data = {
         type: "getGroundMeasDefaultSettings"
     };
-    wss_connect.send(JSON.stringify(data));    
+    wss_connect.send(JSON.stringify(data));
+}
+
+function loadSiteConvoViaQacess() {
+    $(document).on("click", "#quick-release-display li", function () {
+    	$("#chatterbox-loader-modal").modal("show");
+    	let site_names = [$(this).closest("li").find("#site_id").val()];
+    	let site_code = [$(this).closest("li").find("#site_code").val().toUpperCase()];
+    	conversation_details_label = $(this).closest("li").find(".friend-name").text().toUpperCase();
+    	$("#conversation-details").append(conversation_details_label);
+    	let convo_request = {
+			'type': 'loadSmsForSites',
+			'organizations': [],
+			'sitenames': site_names,
+			'site_code': site_code
+		};
+		wss_connect.send(JSON.stringify(convo_request));
+    });
+
 }

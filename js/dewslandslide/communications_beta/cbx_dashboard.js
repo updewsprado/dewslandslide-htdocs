@@ -17,6 +17,7 @@ function initializeEwiPhoneButton() {
     $("#latest").on("click", "tbody tr .send_ewi_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = latest_table.row(i).data();
+        console.log(current_row);
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
@@ -36,7 +37,7 @@ function initializeEwiPhoneExtendedButton() {
     $("#extended").on("click", "tbody tr .send_ewi_extended_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = extended_table.row(i).data();
-        current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
+        current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
@@ -59,6 +60,11 @@ function displayTemplatesAndRecipients(recipients,template) {
 		let construct_name = row.site_code.toUpperCase()+" "+row.org_name.toUpperCase()+" - "+row.firstname.toUpperCase()+". "+row.lastname.toUpperCase();
 		$("#ewi-recipients-dashboard").tagsinput('add', construct_name );
 	});
+    $("#constructed-ewi-amd").prop("disabled", true);
+    $("#constructed-ewi-amd").val(temp_ewi_template_holder);
+    $("#edit-btn-ewi-amd").attr("class", "btn btn-warning");
+    $("#edit-btn-ewi-amd").text("Edit");
+    $("#edit-btn-ewi-amd").val("edit");
 	$("#constructed-ewi-amd").text(template.data);
 	$("#ewi-asap-modal").modal("show");
 }

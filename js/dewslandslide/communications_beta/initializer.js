@@ -18,6 +18,7 @@ $(document).ready(function() {
 
 function initialize() {
     setTimeout(function() {
+        initializeOnClickGetRoutineReminder();
         initializeQuickInboxMessages();
         initializeDatepickers();
         getRecentActivity();
@@ -28,11 +29,13 @@ function initialize() {
         getImportantTags();
         setTimeout(function(){
             try {
-                initializeContactSuggestion($("#contact-suggestion").val());
+                initializeContactSuggestion("");
                 initializeOnClickUpdateEmployeeContact();
                 initializeOnClickUpdateCommunityContact();
                 getSiteSelection();
+                getLatestAlert()
                 getOrganizationSelection();
+                initializeMiscButtons();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");
@@ -45,8 +48,16 @@ function initialize() {
 }
 
 function getContactSuggestion (name_suggestion) {
+    $("#contact-suggestion-container").empty();
+    $("#contact-suggestion-container").append(
+        '<input type="text" class="awesomplete form-control dropdown-input" id="contact-suggestion" placeholder="Type name..." data-multiple />'+
+        '<span class="input-group-btn">'+
+        '<button class="btn btn-default" id="go-chat" type="button">Go!</button>'+
+        '</span>'
+    );
+
 	let contact_suggestion_input = document.getElementById("contact-suggestion");
-	let awesomplete = new Awesomplete(contact_suggestion_input,{
+	awesomplete = new Awesomplete(contact_suggestion_input,{
             filter (text, input) {
                 return Awesomplete.FILTER_CONTAINS(text, input.match(/[^;]*$/)[0]);
             },replace (text) {
@@ -59,16 +70,107 @@ function getContactSuggestion (name_suggestion) {
 	name_suggestion.data.forEach(function(raw_names) {
 		contact_suggestion_container.push(raw_names.fullname);
 	});
-	// $("#contact-suggestion").tagsinput({
-	// 	typeahead: {
-	// 		displayKey: 'text',
-	// 		afterSelect: function (val) { this.$element.val(""); },
-	// 		source: contact_suggestion_container
-	// 	}
-	// });
 	awesomplete.list = contact_suggestion_container;
+    initializeGoChatOnClick(awesomplete);
+}
 
+function initializeGoChatOnClick (awesomplete) {
+    $("#go-chat").on("click", ()=>{
+        let contact_suggestion = $("#contact-suggestion");
+        let searchKey = contact_suggestion.val();
 
+        let isValidContact = validateContactSearchKey(searchKey, contact_suggestion);
+
+        if(isValidContact) {
+            console.log("go click");
+            let multiple_contact = contact_suggestion.val().split(";");
+
+            conversation_details = prepareConversationDetails(multiple_contact);
+            startConversation(conversation_details);            
+        }
+    });
+}
+
+function validateContactSearchKey(searchKey, contact_suggestion) {
+    let isInInput = searchKey.includes(";");
+
+    console.log("searchKey " + searchKey);
+    console.log("\";\" IN INPUT " + isInInput);
+
+    if(isInInput) {
+        let searchKey = contact_suggestion.val().split("; ");
+        searchKey.pop();
+        console.log(searchKey);
+        isInSuggestions = searchKey.every(elem => awesomplete._list.indexOf(elem) > -1);
+    } else {
+        isInSuggestions = searchKey.indexOf(awesomplete._list) > -1;
+    }
+    console.log(isInSuggestions);
+    if(contact_suggestion.val().length === 0){
+        $.notify("No keyword specified! Please enter a value and select from the suggestions.", "warn");
+        return false;
+    } else if(!isInSuggestions) {
+        console.log("contact_suggestion is empty.");
+        $.notify("Please use the correct format and select from the suggestions.", "warn");
+        return false
+    } else {
+        return true;
+    }
+}
+
+function prepareConversationDetails(multiple_contact) { // Removed from initializeGoChatOnClick for purpose of unit test in the future
+    let raw_name = "";
+    let firstname = "";
+    let lastname = "";
+    let office = "";
+    let site = "";
+    let number = "N/A";
+    let conversation_details = {};
+    if (multiple_contact.length > 2) {
+        let recipient_container = [];
+        let temp = {};
+        for (let counter = 0; counter < multiple_contact.length-1; counter++) {
+            raw_name = multiple_contact[counter].split(",");
+            firstname = raw_name[1].trim();
+            lastname = raw_name[0].split("-")[1].trim();
+            office = raw_name[0].split(" ")[1].trim();
+            site = raw_name[0].split(" ")[0].trim();
+            number = "N/A";
+
+            temp = {
+                raw_name: raw_name,
+                firstname: firstname,
+                lastname: lastname,
+                office: office,
+                site: site,
+                number: number,
+                isMultiple: true
+            };
+            recipient_container.push(temp);
+        }
+        conversation_details = {
+            isMultiple: true,
+            data: recipient_container
+        };
+    } else {
+        raw_name = multiple_contact[0].split(",");
+        firstname = raw_name[1].trim();
+        lastname = raw_name[0].split("-")[1].trim();
+        lastname = lastname.replace("NA ","");
+        office = raw_name[0].split(" ")[1].trim();
+        site = raw_name[0].split(" ")[0].trim();
+        conversation_details = {
+            full_name: $("#contact-suggestion").val(),
+            firstname: firstname,
+            lastname: lastname,
+            office: office,
+            site: site,
+            number: "N/A",
+            isMultiple: false
+        }
+        conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+    }    
+    return conversation_details;
 }
 
 function initializeQuickInboxMessages () {
@@ -184,17 +286,6 @@ function initCheckboxColors () {
     $("input[name=\"sitenames\"]:unchecked").each(function () {
         $(this).parent().css("color", "#333");
     });    
-}
-
-function updateLatestPublicRelease (msg) {
-    try {
-        quick_release.unshift(msg);
-        var quick_release_html = quick_release_template({ quick_release });
-        $("#quick-release-display").html(quick_release_html);
-        $("#quick-release-display").scrollTop(0);
-    } catch (err) {
-        console.log(err.message)
-    }
 }
 
 function getSiteSelection() {
@@ -327,6 +418,8 @@ function employeeContactFormValidation() {
         },
         submitHandler (form) {
             submitEmployeeInformation();
+            initializeContactSuggestion("");
+            getEmployeeContact();
             console.log("success");
         }
     });
@@ -407,6 +500,8 @@ function communityContactFormValidation () {
 				$("#org-and-site-alert").hide(300);
 				//success function here
 				onSubmitCommunityContactForm(site_selected, organization_selected);
+                initializeContactSuggestion("");
+                getCommunityContact();
 			}
             
         }
@@ -426,7 +521,7 @@ $("#routine-actual-option").on("click", function () {
         $("#routine-actual-option").removeClass("active");
         $("#def-recipients").text("Default recipients: LEWC");
         $("#routine-msg").val("");
-        $("#routine-msg").val(routine_reminder_msg);
+        // $("#routine-msg").val(routine_reminder_msg);
         $(this).addClass("active");
     });
 
@@ -475,7 +570,7 @@ $("#routine-actual-option").on("click", function () {
 
 function getRecentActivity () {
     var division = 1;
-
+    
     if (localStorage.getItem("rv_searched") != null) {
         recent_searched_collection = JSON.parse(localStorage.rv_searched);
     }
@@ -488,40 +583,40 @@ function getRecentActivity () {
         recent_contacts_collection = JSON.parse(localStorage.rv_contacts);
     }
 
-    if (recent_contacts_collection.length != 0) {
-        division = 12 / recent_contacts_collection.length;
-        for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
-            $(".rv_contacts").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_contacts'><input name='rc_index' value = 'activity_contacts_index_${counter}' hidden><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>${recent_contacts_collection[counter].data.full_name}</strong></div></a></div>`);
-        }
-    } else {
-        $(".rv_contacts").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-    }
+    // if (recent_contacts_collection.length != 0) {
+    //     division = 12 / recent_contacts_collection.length;
+    //     for (var counter = 0; counter < recent_contacts_collection.length; counter++) {
+    //         $(".rv_contacts").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_contacts'><input name='rc_index' value = 'activity_contacts_index_${counter}' hidden><a href='#' class='clearfix'>   <img src='/images/Chatterbox/boy_avatar.png' alt='' class='img-circle'><div class='friend-name'><strong>${recent_contacts_collection[counter].data.full_name}</strong></div></a></div>`);
+    //     }
+    // } else {
+    //     $(".rv_contacts").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+    // }
 
-    if (recent_sites_collection.length != 0) {
-        division = 12 / recent_sites_collection.length;
-        var rv_quick_sites = "";
-        var rv_quick_offices = "";
-        for (var counter = 0; counter < recent_sites_collection.length; counter++) {
-            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].organizations.length; sub_counter++) {
-                if (sub_counter == 0) {
-                    rv_quick_offices = recent_sites_collection[counter].organizations[sub_counter];
-                } else {
-                    rv_quick_offices = `${rv_quick_offices}, ${recent_sites_collection[counter].organizations[sub_counter]}`;
-                }
-            }
+    // if (recent_sites_collection.length != 0) {
+    //     division = 12 / recent_sites_collection.length;
+    //     var rv_quick_sites = "";
+    //     var rv_quick_offices = "";
+    //     for (var counter = 0; counter < recent_sites_collection.length; counter++) {
+    //         for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].organizations.length; sub_counter++) {
+    //             if (sub_counter == 0) {
+    //                 rv_quick_offices = recent_sites_collection[counter].organizations[sub_counter];
+    //             } else {
+    //                 rv_quick_offices = `${rv_quick_offices}, ${recent_sites_collection[counter].organizations[sub_counter]}`;
+    //             }
+    //         }
 
-            for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length; sub_counter++) {
-                if (sub_counter == 0) {
-                    rv_quick_sites = recent_sites_collection[counter].site_code[sub_counter];
-                } else {
-                    rv_quick_sites = `${rv_quick_sites}, ${recent_sites_collection[counter].site_code[sub_counter]}`;
-                }
-            }
-            $(".rv_sites").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_sites'><input name='rs_index' value = 'activity_sites_index_${counter}' hidden><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: ${rv_quick_sites}</strong><div class='last-message text-muted'>Offices: ${rv_quick_offices}</div></div></a></div>`);
-        }
-    } else {
-        $(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
-    }
+    //         for (var sub_counter = 0; sub_counter < recent_sites_collection[counter].sitenames.length; sub_counter++) {
+    //             if (sub_counter == 0) {
+    //                 rv_quick_sites = recent_sites_collection[counter].site_code[sub_counter];
+    //             } else {
+    //                 rv_quick_sites = `${rv_quick_sites}, ${recent_sites_collection[counter].site_code[sub_counter]}`;
+    //             }
+    //         }
+    //         $(".rv_sites").append(`<div class='col-md-${parseInt(division)} col-sm-${parseInt(division)} col-xs-${parseInt(division)} recent_sites'><input name='rs_index' value = 'activity_sites_index_${counter}' hidden><a href='#' class='clearfix'><img src='/images/Chatterbox/dewsl_03.png' alt='' class='img-circle'><div class='friend-name'><strong style='text-transform: uppercase;'>Site: ${rv_quick_sites}</strong><div class='last-message text-muted'>Offices: ${rv_quick_offices}</div></div></a></div>`);
+    //     }
+    // } else {
+    //     $(".rv_sites").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No recent activities</h6></div>");
+    // }
 }
 
 
@@ -539,8 +634,14 @@ function getRoutineReminder() {
 	wss_connect.send(JSON.stringify(msg));
 }
 
+function initializeOnClickGetRoutineReminder() {
+    $("#routine-reminder-option").on("click", () => {
+        getRoutineReminder();
+    });
+}
+
 function getRoutineTemplate() {
-	$("#routine-actual-option").on("click",function() {
+	$("#routine-actual-option").on("click", () => {
 		let msg = {
 			type: 'getRoutineTemplate'
 		};
@@ -571,14 +672,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove(); 
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -590,14 +695,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (wet[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove(); 
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -609,14 +718,18 @@ function displayRoutineReminder(sites,template) {
             $("#send-routine-msg").css("display", "inline");
             for (var counter = 0; counter < sites.length; counter++) {
                 if (dry[sites[counter].season - 1].includes(month)) {
-                    routine_sites.push(sites[counter].site);
+                    routine_sites.push(sites[counter]);
                 }
             }
 
+            $(".routine-site-selection").remove();
+            $(".routine-msg-container").remove();             
+
             $(".routine_section").prepend("<div class='routine-site-selection'></div>");
-            for (var counter = 0; counter < routine_sites.length; counter++) {
-                $(".routine-site-selection").append(`<label><input name='offices-routine' type='checkbox' value='${routine_sites[counter]}' checked> ${routine_sites[counter].toUpperCase()}</label>`);
-            }
+
+            routine_sites.forEach((data) => {
+                $(".routine-site-selection").append(`<label><input name='sites-on-routine' id='${data.id}' type='checkbox' value='${data.site}' checked> ${data.site.toUpperCase()}</label>`);
+            });
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
@@ -626,11 +739,33 @@ function displayRoutineReminder(sites,template) {
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
+
 }
 
 function initializeDatepickers() {
     $("#ewi-date-picker").datetimepicker({
         locale: "en",
         format: "YYYY-MM-DD HH:mm:ss"
+    });
+}
+
+function initializeMiscButtons() {
+    $("#checkAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllOffices").click(() => {
+        $("#modal-select-offices").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllTags").click(() => {
+        $("#modal-select-grp-tags").find(".checkbox").find("input").prop("checked", false);
+    });
+    $("#checkAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", true);
+    });
+    $("#uncheckAllSitenames").click(() => {
+        $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
     });
 }

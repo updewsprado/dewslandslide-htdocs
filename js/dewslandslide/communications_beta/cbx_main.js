@@ -2,11 +2,13 @@ let quick_inbox_registered = [];
 let quick_inbox_unregistered = [];
 let quick_inbox_event = [];
 let quick_inbox_data_logger = [];
-let quick_release = []; // LOUIE
+let quick_release = [];
 let chatterbox_user = "You";
 let message_container = [];
 let conversation_recipients = [];
 let current_user_id = $("#current_user_id").val();
+let current_user_name = first_name;
+let chatterbox_sms_signature = ` - ${current_user_name} from PHIVOLCS-DYNASLOPE`;
 
 let employee_input_count = 1;
 let employee_input_count_landline = 1;
@@ -139,6 +141,18 @@ function displayQuickInboxMain(msg_data) {
 	}
 }
 
+function updateLatestPublicRelease (msg) {
+    try {
+    	quick_release.unshift(msg);
+        var quick_release_html = quick_release_template({ quick_release });
+        $("#quick-release-display").html(quick_release_html);
+        $("#quick-release-display").scrollTop(0);
+
+    } catch (err) {
+        console.log(err.message)
+    }
+}
+
 function displayNewSmsQuickInbox(msg_data) {
 	let new_inbox = [];
 
@@ -196,6 +210,7 @@ function displayContactSettingsMenu() {
 }
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
+	$('#comm-response-contact-container').empty();
 	$('#comm-response-contact-container').DataTable({
 		destroy: true,
 		data: cmmty_contact_data,
@@ -212,6 +227,7 @@ function displayDataTableCommunityContacts(cmmty_contact_data){
 }
 
 function displayDataTableEmployeeContacts(dwsl_contact_data) {
+	$('#emp-response-contact-container').empty();
 	$('#emp-response-contact-container').DataTable({
 		destroy: true,
 		data: dwsl_contact_data,
@@ -366,7 +382,8 @@ function displayUpdateEmployeeDetails (employee_data) {
 	$("#birthdate_ec").val(employee_data.contact_info.birthday);
 	$("#gender_ec").val(employee_data.contact_info.gender);
 	$("#active_status_ec").val(employee_data.contact_info.contact_active_status);
-
+	$("#email_ec").tagsinput('removeAll');
+	$("#team_ec").tagsinput('removeAll');
 	for (let counter = 0; counter < employee_data.email_data.length; counter++) {
 		$('#email_ec').tagsinput('add',employee_data.email_data[counter].email);
 	}
@@ -582,12 +599,17 @@ function siteConversation(){
 
 }
 
+function getRoutineMsgFromCBXMain() {
+	var routine_msg = $("#routine-msg").val();
+	return routine_msg;
+}
+
 function sendSms(recipients, message) {
 	try {
 		let convo_details = {
 			type: 'sendSmsToRecipients',
 			recipients: recipients,
-			message: message
+			message: message + chatterbox_sms_signature
 		};
 		wss_connect.send(JSON.stringify(convo_details));
 	} catch(err) {
@@ -1029,7 +1051,6 @@ function changeSemiAutomationSettings(category, data) {
                 for (var i = 0; i < data.extended_sites.length; i++) {
                     var modIndex = i % 6;
                     sitename = data.extended_sites[i].toUpperCase();
-                    console.log(sitename);
                     $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
                 }
 

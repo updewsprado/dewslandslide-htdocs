@@ -55,8 +55,12 @@ function connectWS() {
 				case "updatedCmmtyContact":
 					contactSettingsFeedback(msg_data);
 					break;	
+				case "getLEWCMobileDetailsViaSiteName":
+					sendRoutineSMSToLEWC(msg_data);
+					break;
 				case "sendSms":
 					updateConversationBubble(msg_data);
+					break;
 				case "newAddedDwslContact":
 					displayAddEmployeeContactMessage(msg_data);
 					break;
@@ -135,8 +139,8 @@ function connectWS() {
 					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":
-					console.log(msg_data.tag_status);
-					displayConversationTaggingStatus(msg_data.tag_status);
+					console.log(msg_data.status);
+					displayConversationTaggingStatus(msg_data.status);
 					break;
 				case "fetchGndMeasReminderSettings":
 		            if (msg_data.saved == true) {
