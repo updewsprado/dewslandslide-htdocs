@@ -530,7 +530,7 @@ function communityContactFormValidation () {
 			} else {
 				$("#org-and-site-alert").hide(300);
 				//success function here
-				onSubmitCommunityContactForm(site_selected, organization_selected);
+				submitCommunityContactForm(site_selected, organization_selected);
                 initializeContactSuggestion("");
                 getCommunityContact();
 			}

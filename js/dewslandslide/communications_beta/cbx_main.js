@@ -214,6 +214,7 @@ function displayContactSettingsMenu() {
 }
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
+	// console.log(cmmty_contact_data);
 	$('#comm-response-contact-container').empty();
 	$('#comm-response-contact-container').DataTable({
 		destroy: true,
@@ -371,8 +372,26 @@ function displayAddEmployeeContactMessage (msg_data) {
 	}
 }
 
-function displayAddCommunityContactMessage (msg_data) {
-	
+function displayAddCommunityContactMessage (msg_data) { // LOUIE - new code
+	if(msg_data.status === true) {
+		$.notify(msg_data.return_msg, "success");
+		$("#user_id_cc").val(0);
+		$("#salutation_cc").val("");
+		$("#firstname_cc").val("");
+		$("#middlename_cc").val("");
+		$("#lastname_cc").val("");
+		$("#nickname_cc").val("");
+		$("#birthdate_cc").val("");
+		$("#gender_cc").val("");
+		$("#active_status_cc").val(1);
+		$("#ewi_status").val(0);
+		$("#mobile-div").empty();
+		$("#landline-div").empty();
+		community_input_count = 1;
+		community_input_count_landline = 1;
+	}else {
+		$.notify(msg_data, "warn");
+	}
 }
 
 function displayUpdateEmployeeDetails (employee_data) {
@@ -424,7 +443,7 @@ function displayUpdateEmployeeDetails (employee_data) {
 }
   
 function displayUpdateCommunityDetails (community_data) {
-	console.log(community_data);
+	// console.log(community_data);
 	let user_orgs = [];
 	$("#user_id_cc").val(community_data.contact_info.id);
 	$("#salutation_cc").val(community_data.contact_info.salutation);
