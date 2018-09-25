@@ -95,7 +95,8 @@ function initializeSendButton() {
 			"timestamp": ewi_timestamp,
 			"data_timestamp":ewi_data_timestamp,
 			"recipients": $("#ewi-recipients-dashboard").tagsinput('items'),
-			"msg": $("#constructed-ewi-amd").val()
+			"msg": $("#constructed-ewi-amd").val(),
+			"account_id": $("#current_user_id").val()
 		}
 		wss_connect.send(JSON.stringify(request));
 	});
