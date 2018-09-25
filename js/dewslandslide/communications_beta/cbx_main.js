@@ -20,6 +20,7 @@ let important_tags = null;
 let conversation_details_label = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+let event_inbox_template = Handlebars.compile($('#event-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
@@ -123,6 +124,9 @@ function displayQuickInboxMain(msg_data) {
 	try {
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
+				if(msg_data[counter].isunknown == 1){
+					console.log("has unknown");
+				}
 				msg_data[counter].isunknown = 0;
 				quick_inbox_registered.unshift(msg_data[counter]);
 			}
@@ -210,6 +214,7 @@ function displayContactSettingsMenu() {
 }
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
+	// console.log(cmmty_contact_data);
 	$('#comm-response-contact-container').empty();
 	$('#comm-response-contact-container').DataTable({
 		destroy: true,
@@ -367,8 +372,26 @@ function displayAddEmployeeContactMessage (msg_data) {
 	}
 }
 
-function displayAddCommunityContactMessage (msg_data) {
-	
+function displayAddCommunityContactMessage (msg_data) { // LOUIE - new code
+	if(msg_data.status === true) {
+		$.notify(msg_data.return_msg, "success");
+		$("#user_id_cc").val(0);
+		$("#salutation_cc").val("");
+		$("#firstname_cc").val("");
+		$("#middlename_cc").val("");
+		$("#lastname_cc").val("");
+		$("#nickname_cc").val("");
+		$("#birthdate_cc").val("");
+		$("#gender_cc").val("");
+		$("#active_status_cc").val(1);
+		$("#ewi_status").val(0);
+		$("#mobile-div").empty();
+		$("#landline-div").empty();
+		community_input_count = 1;
+		community_input_count_landline = 1;
+	}else {
+		$.notify(msg_data, "warn");
+	}
 }
 
 function displayUpdateEmployeeDetails (employee_data) {
@@ -420,7 +443,7 @@ function displayUpdateEmployeeDetails (employee_data) {
 }
   
 function displayUpdateCommunityDetails (community_data) {
-	console.log(community_data);
+	// console.log(community_data);
 	let user_orgs = [];
 	$("#user_id_cc").val(community_data.contact_info.id);
 	$("#salutation_cc").val(community_data.contact_info.salutation);

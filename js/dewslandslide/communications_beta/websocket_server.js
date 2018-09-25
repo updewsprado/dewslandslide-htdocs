@@ -32,6 +32,7 @@ function connectWS() {
 					displayOrgSelection(msg_data.data);
 					break;
 				case "smsloadquickinbox":
+					console.log(msg_data.data);
 					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
 					break;
@@ -47,6 +48,7 @@ function connectWS() {
 					break;
 				case "loadSmsConversation":
 					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
+					console.log(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
 					$('#chatterbox-loader-modal').modal("hide");
 					break;
 				case "updatedDwslContact":
@@ -71,7 +73,7 @@ function connectWS() {
 					displayUpdateCommunityDetails(msg_data.data);
 					break;	
 				case "newCommunityContact":
-					displayAddCommunityContactMessage(msg_data.data);
+					displayAddCommunityContactMessage(msg_data);
 					break;
 				case "updateCommunityContact":
 					displayUpdateCommunityDetails(msg_data.data);
@@ -136,6 +138,7 @@ function connectWS() {
 					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
 					break;
 				case "sentEwiDashboard":
+					console.log(msg_data);
 					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":

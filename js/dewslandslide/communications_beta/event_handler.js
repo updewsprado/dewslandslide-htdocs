@@ -14,6 +14,7 @@ $(document).ready(function() {
 	initializeGetQuickGroupSelection();
 	initializeContactSettingsButton();
 	initializeOnClickQuickInbox();
+	initializeOnClickEventInbox();
 	initializeContactCategoryOnSelectDesign();
 	initializeSettingsOnSelectDesign();
 	initializeContactCategoryOnChange();
@@ -260,6 +261,27 @@ function initializeQuickSelectionGroupFlagOnClick () {
 
 function initializeOnClickQuickInbox () {
 	$("body").on("click","#quick-inbox-display li",function(){
+		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
+		let firstname = raw_name[1].trim();
+		let lastname = raw_name[0].split("-")[1].trim();
+		let office = raw_name[0].split(" ")[1].trim();
+		let site = raw_name[0].split(" ")[0].trim();
+		let conversation_details = {
+			full_name: $(this).closest('li').find("input[type='text']").val(),
+			firstname: firstname,
+			lastname: lastname,
+			office: office,
+			site: site,
+			number: "N/A"
+		}
+
+		conversation_details_label = site+" "+office+" - "+firstname+" "+lastname;
+		startConversation(conversation_details);
+	});
+}
+
+function initializeOnClickEventInbox () {
+	$("body").on("click","#quick-event-inbox-display li",function(){
 		let raw_name = $(this).closest('li').find("input[type='text']").val().split(",");
 		let firstname = raw_name[1].trim();
 		let lastname = raw_name[0].split("-")[1].trim();
@@ -530,7 +552,7 @@ function submitEmployeeInformation () {
 	wss_connect.send(JSON.stringify(message));
 }
 
-function onSubmitCommunityContactForm (sites, organizations) {
+function submitCommunityContactForm (sites, organizations) {
 	const save_type = $("#settings-cmd").val();
 	let message_type = null;
 	let mobile_numbers = [];
@@ -575,6 +597,8 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		"sites": site_selected,
 		"organizations": organization_selected
 	}
+
+	// console.log(contact_data);
 
 	if (save_type === "updatecontact") {
 		message_type = "updateCommunityContact";
