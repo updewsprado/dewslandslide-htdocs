@@ -530,7 +530,7 @@ function submitEmployeeInformation () {
 	wss_connect.send(JSON.stringify(message));
 }
 
-function onSubmitCommunityContactForm (sites, organizations) {
+function submitCommunityContactForm (sites, organizations) {
 	const save_type = $("#settings-cmd").val();
 	let message_type = null;
 	let mobile_numbers = [];
@@ -575,6 +575,8 @@ function onSubmitCommunityContactForm (sites, organizations) {
 		"sites": site_selected,
 		"organizations": organization_selected
 	}
+
+	// console.log(contact_data);
 
 	if (save_type === "updatecontact") {
 		message_type = "updateCommunityContact";

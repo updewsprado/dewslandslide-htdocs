@@ -71,7 +71,7 @@ function connectWS() {
 					displayUpdateCommunityDetails(msg_data.data);
 					break;	
 				case "newCommunityContact":
-					displayAddCommunityContactMessage(msg_data.data);
+					displayAddCommunityContactMessage(msg_data);
 					break;
 				case "updateCommunityContact":
 					displayUpdateCommunityDetails(msg_data.data);
