@@ -20,6 +20,7 @@ let important_tags = null;
 let conversation_details_label = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+let event_inbox_template = Handlebars.compile($('#event-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
@@ -123,6 +124,9 @@ function displayQuickInboxMain(msg_data) {
 	try {
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
+				if(msg_data[counter].isunknown == 1){
+					console.log("has unknown");
+				}
 				msg_data[counter].isunknown = 0;
 				quick_inbox_registered.unshift(msg_data[counter]);
 			}

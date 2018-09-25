@@ -279,7 +279,38 @@ function initLoadLatestAlerts (data) {
             }
         });
     }
+    // if(quick_inbox_registered.length != 0){
+        displayQuickEventInbox(quick_inbox_registered, quick_release);
+    // }
+}
 
+function displayQuickEventInbox (){
+    try {
+        try {
+            let inbox_site_code = null;
+            let event_site_code = null;
+            for (let counter = 0; counter < quick_inbox_registered.length; counter++) {
+                inbox_site_code = quick_inbox_registered[counter].full_name;
+                inbox_site_code = inbox_site_code.split(" ");
+                let inbox_data = quick_inbox_registered[counter];
+                for (let counter = 0; counter < quick_release.length; counter++) {
+                    event_site_code = quick_release[counter].site_code.toUpperCase();
+                    if(event_site_code == inbox_site_code[0]){
+                        quick_inbox_event.unshift(inbox_data);
+                    }
+                }
+            }
+
+            let event_inbox_html = event_inbox_template({'event_inbox_messages': quick_inbox_event});
+            $("#quick-event-inbox-display").html(event_inbox_html);
+            $("#quick-event-inbox-display").scrollTop(0);
+        } catch (err) {
+            console.log(err);
+        }
+    } catch (err) {
+        console.log(err);
+        //Add PMS here
+    }
 }
 
 function initCheckboxColors () {
