@@ -497,8 +497,8 @@ function displayUpdateCommunityDetails (community_data) {
 		}
 	}
 
-	displaySitesSelectionForContactSettings(community_data.list_of_sites);
-	displayOrganizationSelection(community_data.list_of_orgs, community_data.org_data);
+	// displaySitesSelectionForContactSettings(community_data.list_of_sites);
+	// displayOrganizationSelection(community_data.list_of_orgs, community_data.org_data);
 }
 
 function appendContactForms (type, number_count, category, data) {
