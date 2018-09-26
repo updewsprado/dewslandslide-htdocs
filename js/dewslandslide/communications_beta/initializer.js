@@ -36,6 +36,7 @@ function initialize() {
                 getLatestAlert()
                 getOrganizationSelection();
                 initializeMiscButtons();
+                getQuickGroupSelection();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");

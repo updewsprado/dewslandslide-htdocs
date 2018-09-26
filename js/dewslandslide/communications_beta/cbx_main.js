@@ -80,15 +80,6 @@ function getCommunityContact(){
 	}
 }
 
-function getQuickEmployeeSelection () {
-	// requestTag = {
-	// 	'type':'smsloadrequesttag',
-	// 	'teams': dynaTags
-	// }
-	// conn.send(JSON.stringify(requestTag));
-	// $('#main-container').removeClass('hidden');
-}
-
 function displaySitesSelection(data) {
 	let sitenames = data;
 	let sitename, site_id, psgc;
