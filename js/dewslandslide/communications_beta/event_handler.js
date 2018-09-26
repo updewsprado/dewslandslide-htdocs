@@ -35,6 +35,8 @@ $(document).ready(function() {
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
 	loadSiteConvoViaQacess();
+	initializeOnClickAddMobileForEmployee();
+	initializeOnClickAddMobileForCommunity();
 });
 
 function initializeOnClickSendRoutine () {
@@ -123,8 +125,6 @@ function initializeContactSettingsButton () {
 		} else {
 			$('#contact-settings').modal("toggle");
 			displayContactSettingsMenu();
-			addNewMobileForEmployee();
-			addNewMobileForCommunity();
 			$("#contact-category").val("default").change();
 			$("#settings-cmd").prop('disabled', true);
 			$(".collapse").collapse("show");
@@ -176,7 +176,7 @@ function initializeContactSettingsOnChange () {
 		$("#mobile-div").empty();
 		$("#landline-div").empty();
 		$("#mobile-div-cc").empty();
-		$("#landline-div").empty();
+		$("#landline-div-cc").empty();
 		if ($('#settings-cmd').val() != 'default') {
 			$('#settings-cmd').css("border-color", "#3c763d");
 			$('#settings-cmd').css("background-color", "#dff0d8");
@@ -335,7 +335,7 @@ function initializeSendMessageOnClick () {
 	});
 }
 
-function addNewMobileForEmployee () {
+function initializeOnClickAddMobileForEmployee () {
 	$("#employee-add-number").click(function(){
 		if (employee_input_count <= 4) {
 			$("#mobile-div").append(
@@ -410,8 +410,9 @@ function addNewMobileForEmployee () {
 
 } 
 
-function addNewMobileForCommunity () {
+function initializeOnClickAddMobileForCommunity () {
 	$("#community-add-number").click(function(){
+		console.log(community_input_count);
 		if (community_input_count <= 4) {
 			$("#mobile-div-cc").append(
 			"<div class='row'>"+
@@ -549,6 +550,7 @@ function submitEmployeeInformation () {
 	
 	// console.log(mobile_numbers);
 	wss_connect.send(JSON.stringify(message));
+	emptyEmployeeContactForm();
 }
 
 function submitCommunityContactForm (sites, organizations) {
@@ -573,7 +575,7 @@ function submitCommunityContactForm (sites, organizations) {
 	for (let counter = 1; counter < community_input_count_landline; counter +=1) {
 		const landline_number_raw = {
 			"user_id": $("#user_id_cc").val(),
-			"id": $("#community_landline_id_"+counter).val(),
+			"landline_id": $("#community_landline_id_"+counter).val(), 
 			"landline_number": $("#community_landline_number_"+counter).val(),
 			"landline_remarks": $("#community_landline_remarks_"+counter).val()
 		};
@@ -614,6 +616,7 @@ function submitCommunityContactForm (sites, organizations) {
 	$('#community-contact-wrapper').hide();
 
 	wss_connect.send(JSON.stringify(message));
+	emptyCommunityContactForm();
 }
 
 function emptyEmployeeContactForm () {
@@ -643,6 +646,8 @@ function emptyCommunityContactForm () {
 	$("#gender_cc").val("");
 	$("#active_status_cc").val("");
 	$("#ewirecipient_cc").val("");
+	$("#mobile-div-cc").val("");
+	$("#landline-div-cc").val("");
 	community_input_count = 1;
 }
 
