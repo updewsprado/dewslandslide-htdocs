@@ -176,7 +176,7 @@ function initializeContactSettingsOnChange () {
 		$("#mobile-div").empty();
 		$("#landline-div").empty();
 		$("#mobile-div-cc").empty();
-		$("#landline-div").empty();
+		$("#landline-div-cc").empty();
 		if ($('#settings-cmd').val() != 'default') {
 			$('#settings-cmd').css("border-color", "#3c763d");
 			$('#settings-cmd').css("background-color", "#dff0d8");
@@ -573,12 +573,15 @@ function submitCommunityContactForm (sites, organizations) {
 	for (let counter = 1; counter < community_input_count_landline; counter +=1) {
 		const landline_number_raw = {
 			"user_id": $("#user_id_cc").val(),
-			"id": $("#community_landline_id_"+counter).val(),
+			"landline_id": $("#community_landline_id_"+counter).val(), 
 			"landline_number": $("#community_landline_number_"+counter).val(),
 			"landline_remarks": $("#community_landline_remarks_"+counter).val()
 		};
 		landline_numbers.push(landline_number_raw);
 	}
+
+	console.log("Wrong ID was here. It should now be landline_id");
+	console.log(landline_numbers);
 
 	contact_data = {
 		"user_id": $("#user_id_cc").val(),
