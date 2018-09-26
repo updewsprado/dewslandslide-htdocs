@@ -35,7 +35,6 @@ $(document).ready(function() {
 	initializeSearchViaOption();
 	initializeEmployeeContactGroupSending();
 	loadSiteConvoViaQacess();
-	getQuickGroupSelection();
 });
 
 function initializeOnClickSendRoutine () {
