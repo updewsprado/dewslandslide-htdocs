@@ -99,6 +99,7 @@ function initializeSendButton() {
 			"recipients": $("#ewi-recipients-dashboard").tagsinput('items'),
 			"msg": $("#constructed-ewi-amd").val() + dashboard_sms_signature
 		}
+		// console.log(request['msg']);
 		wss_connect.send(JSON.stringify(request));
 	});
 }
