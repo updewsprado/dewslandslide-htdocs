@@ -376,8 +376,9 @@ function displayAddCommunityContactMessage (msg_data) { // LOUIE - new code
 		$("#gender_cc").val("");
 		$("#active_status_cc").val(1);
 		$("#ewi_status").val(0);
-		$("#mobile-div").empty();
+		$("#mobile-div-cc").empty();
 		$("#landline-div").empty();
+		$("#settings-cmd").val('updatecontact').change();
 		community_input_count = 1;
 		community_input_count_landline = 1;
 	}else {
