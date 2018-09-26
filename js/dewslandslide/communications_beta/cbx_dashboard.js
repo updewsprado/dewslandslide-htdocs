@@ -95,10 +95,12 @@ function initializeSendButton() {
 			"site_id": ewi_site_id,
 			"timestamp": ewi_timestamp,
 			"data_timestamp":ewi_data_timestamp,
+			"previous_release_time": ewi_timestamp = moment(ewi_data_timestamp).subtract(240, "m").format('h:mm A'),
 			"recipients": $("#ewi-recipients-dashboard").tagsinput('items'),
 			"msg": $("#constructed-ewi-amd").val() + dashboard_sms_signature,
 			"account_id": $("#current_user_id").val()
 		}
+		// alert();
 		// console.log(request['msg']);
 		wss_connect.send(JSON.stringify(request));
 	});
