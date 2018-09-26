@@ -550,7 +550,6 @@ function submitEmployeeInformation () {
 	
 	// console.log(mobile_numbers);
 	wss_connect.send(JSON.stringify(message));
-	emptyEmployeeContactForm();
 }
 
 function submitCommunityContactForm (sites, organizations) {
@@ -616,7 +615,6 @@ function submitCommunityContactForm (sites, organizations) {
 	$('#community-contact-wrapper').hide();
 
 	wss_connect.send(JSON.stringify(message));
-	emptyCommunityContactForm();
 }
 
 function emptyEmployeeContactForm () {
