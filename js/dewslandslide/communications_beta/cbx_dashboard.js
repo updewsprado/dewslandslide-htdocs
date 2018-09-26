@@ -98,6 +98,7 @@ function initializeSendButton() {
 			"msg": $("#constructed-ewi-amd").val(),
 			"account_id": $("#current_user_id").val()
 		}
+		// console.log(request['msg']);
 		wss_connect.send(JSON.stringify(request));
 	});
 }
