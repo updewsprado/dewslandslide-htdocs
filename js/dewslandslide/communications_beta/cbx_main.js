@@ -996,6 +996,7 @@ function changeSemiAutomationSettings(category, data) {
 }
 
 function displaySitesForGndMeasReminder(data) {
+	console.log(data);
     gnd_meas_overwrite = "new";
     ground_meas_reminder_data = data;
     const currentDate = new Date();
@@ -1020,7 +1021,7 @@ function displaySitesForGndMeasReminder(data) {
     site_count = data.event_sites.length;
     for (var i = 0; i < data.event_sites.length; i++) {
         var modIndex = i % 6;
-        sitename = data.event_sites[i].name.toUpperCase();
+        sitename = data.event_sites[i].site_code.toUpperCase();
         $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
     }
 

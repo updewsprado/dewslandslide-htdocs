@@ -1008,7 +1008,6 @@ function initializeGndMeasSaveButton() {
 	    $("#save-gnd-meas-settings-button").on("click",function() {
         let special_case_length = $(".special-case-template").length-1;
         let gnd_sitenames = [];
-        console.log(gnd_meas_overwrite);
         if (gnd_meas_overwrite == "new") {
             $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                 gnd_sitenames.push(this.value);
