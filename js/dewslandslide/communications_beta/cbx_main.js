@@ -192,7 +192,6 @@ function displayOrgSelection(data){
 	for (var i = 0; i < offices.length; i++) {
 		var modIndex = i % 5;
 		$("#offices-"+i).empty();
-
 		office = offices[i].org_name;
 		office_id = offices[i].org_id;
 		$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+office+'" name="orgs" class="form-group" value="'+office+'">'+office.toUpperCase()+'</label></div>');
