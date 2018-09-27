@@ -79,8 +79,7 @@ function connectWS() {
 					displayUpdateCommunityDetails(msg_data.data);
 					break;
 				case "conSetAllSites":
-					// displaySiteSelection(msg_data.data);
-					displaySitesSelectionForContactSettings(msg_data.data);
+					displaySiteSelection(msg_data.data);
 					break;
 				case "conSetAllOrgs":
 					displayOrganizationSelection(msg_data.data);
