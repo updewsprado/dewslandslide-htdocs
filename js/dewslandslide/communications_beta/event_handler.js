@@ -1017,7 +1017,7 @@ function initializeGndMeasSaveButton() {
                 sites: gnd_sitenames,
                 altered: 0,
                 category: $("#gnd-meas-category").val(),
-                template: $("#reminder-message").text(),
+                template: $("#reminder-message").val(),
                 overwrite: false,
                 modified: first_name
             };
