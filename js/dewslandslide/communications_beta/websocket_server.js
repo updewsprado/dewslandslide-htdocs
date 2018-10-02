@@ -47,7 +47,6 @@ function connectWS() {
 					break;
 				case "loadSmsConversation":
 					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
-					console.log(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
 					$('#chatterbox-loader-modal').modal("hide");
 					break;
 				case "updatedDwslContact":
