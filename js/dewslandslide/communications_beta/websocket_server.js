@@ -32,7 +32,6 @@ function connectWS() {
 					displayOrgSelection(msg_data.data);
 					break;
 				case "smsloadquickinbox":
-					console.log(msg_data.data);
 					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
 					break;
