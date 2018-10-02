@@ -137,7 +137,6 @@ function connectWS() {
 					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
 					break;
 				case "sentEwiDashboard":
-					console.log(msg_data);
 					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":
