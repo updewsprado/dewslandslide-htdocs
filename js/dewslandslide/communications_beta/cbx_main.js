@@ -914,11 +914,11 @@ function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_ext
             site_count = def_event.length;
             for (var i = 0; i < def_event.length; i++) {
                 var modIndex = i % 6;
-                sitename = def_event[i].name.toUpperCase();
+                sitename = def_event[i].site_code.toUpperCase();
                 if ($.inArray(sitename, event_sites) != -1 && $.inArray(event_sites_full[i], event_altered) == -1) {
-                  $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+event_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');  
+                  	$(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="automation_id_'+event_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');  
                 } else {
-                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+                   	$(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
                 }
 
             }
