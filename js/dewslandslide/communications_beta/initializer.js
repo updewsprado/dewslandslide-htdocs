@@ -27,6 +27,9 @@ function initialize() {
         getRoutineReminder();
         getRoutineTemplate();
         getImportantTags();
+        initializeAddSpecialCaseButtonOnClick();
+        removeInputField();
+        initializeResetSpecialCasesButtonOnCLick();
         setTimeout(function(){
             try {
                 initializeContactSuggestion("");
