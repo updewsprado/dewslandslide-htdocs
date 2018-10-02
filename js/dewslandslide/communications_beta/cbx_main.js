@@ -324,6 +324,11 @@ function displayConversationPanel(msg_data, full_data, recipients, titles) {
 			title_holder = title_holder+title_container[sub_counter]+"\n";
 		}
 		data.title = title_holder;
+		if (data.network == "GLOBE") {
+			data.isGlobe = true;
+		} else {
+			data.isGlobe = false;
+		}
 		displayUpdatedMessages(data);
 		counter++;
 	});
