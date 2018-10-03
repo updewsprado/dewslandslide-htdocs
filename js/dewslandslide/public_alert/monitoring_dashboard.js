@@ -511,10 +511,16 @@ function showModalTriggers (row, latest) {
 
     if (retrigger_list != null) {
         qualified_retriggers.forEach((x) => {
-            const y = lookup[x.alert];
+            const op_alert = x.alert;
+            const y = lookup[op_alert];
             $(`#${y[0]}_area`).show();
             $(`#trigger_${y[1]}`).val(x.ts).prop({ readonly: true, disabled: false });
-            const info = y[2] === "E" ? row.tech_info[`${y[0]}`].info : row.tech_info[`${y[0]}`];
+            let info = y[2] === "E" ? row.tech_info[`${y[0]}`].info : row.tech_info[`${y[0]}`];
+
+            if (y[0] === "subsurface" || y[0] === "surficial") {
+                info = info[op_alert];
+            }
+
             $(`#trigger_${y[1]}_info`).val(info).prop("disabled", false);
 
             $(`.trigger_switch[value=${y[0]}]`).prop("disabled", false);
