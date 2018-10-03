@@ -322,12 +322,15 @@ function displayConversationPanel(msg_data, full_data, recipients, titles) {
 	msg_data.reverse();
 	let counter = 0;
 	msg_data.forEach(function(data) {
-		let title_container = titles[counter].split("<split>");
-		let title_holder = "";
-		for (let sub_counter = 0; sub_counter < title_container.length; sub_counter++) {
-			title_holder = title_holder+title_container[sub_counter]+"\n";
+		console.log(data.network);
+		if (titles != null) {
+			let title_container = titles[counter].split("<split>");
+			let title_holder = "";
+			for (let sub_counter = 0; sub_counter < title_container.length; sub_counter++) {
+				title_holder = title_holder+title_container[sub_counter]+"\n";
+			}
+			data.title = title_holder;		
 		}
-		data.title = title_holder;
 		if (data.network == "GLOBE") {
 			data.isGlobe = true;
 		} else {
