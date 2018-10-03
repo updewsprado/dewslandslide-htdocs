@@ -1040,6 +1040,7 @@ function initializeGndMeasSaveButton() {
         let special_case_length = $(".special-case-template").length-1;
         let gnd_sitenames = [];
         let special_case_sites = [];
+        let time_of_sending = ground_meas_reminder_data.time_of_sending;
         if (gnd_meas_overwrite == "new") {
             $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                 gnd_sitenames.push(this.value);
@@ -1059,8 +1060,9 @@ function initializeGndMeasSaveButton() {
 	                    });
 	                    console.log(special_case_sites);
 
-			            let gnd_meas_settings = {
+			            let special_case_settings = {
 	                        type: "setGndMeasReminderSettings",
+	                        send_time: time_of_sending,
 	                        sites: special_case_sites,
 	                        category: $("#gnd-meas-category").val(),
 	                        altered: 1,
@@ -1068,8 +1070,8 @@ function initializeGndMeasSaveButton() {
 	                        overwrite: false,
 	                        modified: first_name
 	                    };
-	                    console.log(gnd_meas_settings);
-                    	wss_connect.send(JSON.stringify(gnd_meas_settings));
+	                    console.log(special_case_settings);
+                    	wss_connect.send(JSON.stringify(special_case_settings));
 		            }
 	            	$.notify('Ground measurement settings saved for special case!','success');
             	}
@@ -1079,6 +1081,7 @@ function initializeGndMeasSaveButton() {
 
             	let gnd_meas_settings = {
 	                type: "setGndMeasReminderSettings",
+	                send_time: time_of_sending,
 	                sites: gnd_sitenames,
 	                altered: 0,
 	                category: $("#gnd-meas-category").val(),
@@ -1086,11 +1089,9 @@ function initializeGndMeasSaveButton() {
 	                overwrite: false,
 	                modified: first_name
 	            };
-	            // The special cases will replace default reminder message if checked.
+	            console.log(gnd_meas_settings)
 	            wss_connect.send(JSON.stringify(gnd_meas_settings));
             	$.notify('Ground measurement settings saved!','success');
-	                console.log("default " + gnd_sitenames);               
-	                console.log("special cases "+special_case_sites);
           
             }
             $(".special-case-site-container .gndmeas-reminder-site .checkbox label").closest("input").text();
