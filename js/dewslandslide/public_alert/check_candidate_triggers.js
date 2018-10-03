@@ -119,18 +119,27 @@ function processEntriesWithAlerts (with_alerts, merged_arr, invalids) {
 
                     let isPresentOnInternalAlert = false;
                     let isRpresent = false;
+                    let isSpresent = false;
                     if (alertIndex > -1) {
                         const { internal_alert_level } = merged_arr[alertIndex];
                         const temp = new RegExp(trigger_letter, "i");
                         isPresentOnInternalAlert = internal_alert_level.search(temp);
                         isRpresent = internal_alert_level.includes("R");
+                        isSpresent = internal_alert_level.search(/s/i);
                     }
 
-                    if (alertIndex === -1 || isPresentOnInternalAlert) {
+                    if (alertIndex === -1 || isPresentOnInternalAlert > -1) {
                         let return_obj = null;
-                        if (source === "sensor") {
-                            return_obj = adjustAlertLevelIfInvalidSensor(public_alert, entry);
-                        } else if (source === "rain") {
+                        if (source === "subsurface") {
+                            // Check if alert exists on database already
+                            if (isSpresent > -1) {
+                                // If already exist and it has sensor that became invalid,
+                                // recommend manual input
+                                isValidButNeedsManual = true;
+                            } else {
+                                return_obj = adjustAlertLevelIfInvalidSensor(public_alert, entry);
+                            }
+                        } else if (source === "rainfall") {
                             // Check if alert exists on database already
                             if (isRpresent) {
                                 // If already exist and it has rain that became invalid,
