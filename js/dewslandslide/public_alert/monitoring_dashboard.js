@@ -770,6 +770,7 @@ function initializeReleaseModalForm () {
                     const { event_id, previous_validity } = entry;
 
                     final.current_event_id = event_id;
+                    const list = final.trigger_list;
 
                     // Don't include un-checked retriggers for rain and sensor
                     $(".trigger_switch").each((count, item) => {
@@ -781,7 +782,7 @@ function initializeReleaseModalForm () {
                         }
                     });
 
-                    const list = final.trigger_list;
+                    final.trigger_list = list.length === 0 ? null : list;
 
                     if (list != null) {
                         if (list.indexOf("D") > -1) {
