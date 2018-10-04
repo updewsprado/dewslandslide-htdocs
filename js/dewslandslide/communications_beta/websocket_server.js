@@ -149,12 +149,17 @@ function connectWS() {
 		            if (msg_data.saved == true) {
 		            	console.log(msg_data);
 		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites, msg_data);
+		                
 		            } else {
 		                displaySitesForGndMeasReminder(msg_data);
 		            }
 		            $("#ground-meas-reminder-modal").modal("show");
 		            $("#add-special-case").prop("disabled", false);
 					break;
+				case "insertGndMeasReminderSettingsStatus":
+					console.log(msg_data.status);
+					displayGndMeasSavingStatus(msg_data.status);
+					break;	
 				default:
 					console.log("No request to load.");
 					break;
