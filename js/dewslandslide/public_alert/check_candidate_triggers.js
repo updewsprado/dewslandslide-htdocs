@@ -119,7 +119,7 @@ function processEntriesWithAlerts (with_alerts, merged_arr, invalids) {
 
                     let isPresentOnInternalAlert = false;
                     let isRpresent = false;
-                    let isSpresent = false;
+                    let isSpresent = -1;
                     if (alertIndex > -1) {
                         const { internal_alert_level } = merged_arr[alertIndex];
                         const temp = new RegExp(trigger_letter, "i");
@@ -216,8 +216,8 @@ function getAllInvalidTriggersForSite (invalid_arr, site_code) {
 
 function adjustAlertLevelIfInvalidSensor (public_alert, entry) {
     const {
-        internal_alert, sensor_alert, ground_alert,
-        triggers: retriggers
+        internal_alert, subsurface: subsurface_alert,
+        surficial: surficial_alert, triggers: retriggers
     } = entry;
     let public_alert_level,
         internal_alert_level,
@@ -233,8 +233,8 @@ function adjustAlertLevelIfInvalidSensor (public_alert, entry) {
         public_alert_level = "A1";
         internal_alert_level = internal_alert.replace(/[sS]0*/g, "");
 
-        const hasSensorData = sensor_alert.filter(x => x.alert !== "ND");
-        if (hasSensorData === 0 && ground_alert === "g0") internal_alert_level = internal_alert_level.replace(/A[1-3]/g, "ND");
+        const hasSensorData = subsurface_alert.filter(x => x.alert !== "ND");
+        if (hasSensorData === 0 && surficial_alert === "g0") internal_alert_level = internal_alert_level.replace(/A[1-3]/g, "ND");
         else internal_alert_level = internal_alert_level.replace(/A[1-3]/g, "A1");
 
         invalid_index = getRetriggerIndex(retriggers, "L2");
@@ -250,7 +250,7 @@ function adjustAlertLevelIfInvalidSensor (public_alert, entry) {
 }
 
 function getRetriggerIndex (retriggers, trigger) {
-    const temp = retriggers.map(x => x.retrigger).indexOf(trigger);
+    const temp = retriggers.map(x => x.alert).indexOf(trigger);
     return temp;
 }
 
@@ -370,10 +370,10 @@ function prepareSitesForRoutineRelease (no_alerts, excluded_index, invalid_entri
 
                 if (!is_sent) {
                     if (is_invalid) {
-                        const { ground_alert, sensor_alert } = entry;
+                        const { surficial: surficial_alert, subsurface: subsurface_alert } = entry;
                         let internal_alert = "A0";
-                        if (sensor_alert.length === 0) {
-                            if (ground_alert === "g0") internal_alert = "ND";
+                        if (subsurface_alert.length === 0) {
+                            if (surficial_alert === "g0") internal_alert = "ND";
                         }
                         entry.internal_alert = internal_alert;
                     } else {
