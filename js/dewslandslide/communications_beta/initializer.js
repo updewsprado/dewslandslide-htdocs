@@ -196,7 +196,10 @@ function getQuickInboxEvent() {
 }
 
 function getQuickInboxUnregistered() {
-
+    let msg = {
+        type: 'smsloadquickunknowninbox'
+    }
+    wss_connect.send(JSON.stringify(msg));
 }
 
 function getQuickInboxDataLogger() {

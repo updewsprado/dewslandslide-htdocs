@@ -20,6 +20,7 @@ let important_tags = null;
 let conversation_details_label = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+let quick_unregistered_template = Handlebars.compile($('#quick-unregistered-inbox-template').html());
 let event_inbox_template = Handlebars.compile($('#event-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
@@ -137,6 +138,26 @@ function displayQuickInboxMain(msg_data) {
 	} catch (err) {
 		console.log(err);
 		//Add PMS here
+	}
+}
+
+function displayUnregisteredInboxMain(msg_data) {
+	try {
+		try {
+			for (let counter = 0; counter < msg_data.length; counter++) {
+				quick_inbox_unregistered.unshift(msg_data[counter]);
+			}
+			
+		} catch(err) {
+			console.log(err);
+		}
+
+		quick_inbox_html = quick_unregistered_template({'quick_unregistered_inbox_messages': quick_inbox_unregistered});
+
+		$("#quick-unregistered-inbox-display").html(quick_inbox_html);
+		$("#quick-unregistered-inbox-display").scrollTop(0);
+	} catch (err) {
+		console.log(err);
 	}
 }
 
