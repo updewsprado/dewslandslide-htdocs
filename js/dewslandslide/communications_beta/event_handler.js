@@ -1016,6 +1016,7 @@ function initializeEmployeeContactGroupSending() {
 
 function initializeSemiAutomatedGroundMeasurementReminder() {
     $("#btn-automation-settings").on("click",function() {
+    	$("#gnd-meas-category").val("event");
         let special_case_length = $(".special-case-template").length;
         special_case_num = 0;
         for (let counter = special_case_length-1; counter >=0; counter--) {
@@ -1040,6 +1041,7 @@ function initializeGndMeasSaveButton() {
         let special_case_length = $(".special-case-template").length-1;
         let gnd_sitenames = [];
         let special_case_sites = [];
+        let time_of_sending = ground_meas_reminder_data.time_of_sending;
         if (gnd_meas_overwrite == "new") {
             $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                 gnd_sitenames.push(this.value);
@@ -1047,29 +1049,19 @@ function initializeGndMeasSaveButton() {
             if (gnd_sitenames.length == 0) {
             	$.notify('Please check at least one site','error');
             } else if(gnd_sitenames.length > 0){
-        		let gnd_meas_settings = {
-	                type: "setGndMeasReminderSettings",
-	                sites: gnd_sitenames,
-	                altered: 0,
-	                category: $("#gnd-meas-category").val(),
-	                template: $("#reminder-message").val(),
-	                overwrite: false,
-	                modified: first_name
-	            };
-	            // The special cases will replace default reminder message if checked.
-	            wss_connect.send(JSON.stringify(gnd_meas_settings));
-            	$.notify('Ground measurement settings saved!','success');
-
+        		
+            	gnd_sitenames = [];
             	if (special_case_length > 0) {
             		for (let counter = 0; counter < special_case_length; counter++) {
 	                    special_case_sites = [];
 	                    $("input[name=\"gnd-meas-"+counter+"\"]:checked").each(function () {
 	                        special_case_sites.push(this.value);
+	                        $(".gndmeas-reminder-site-container .gndmeas-reminder-site .checkbox label").find("input[value="+this.value+"]").prop("checked", false);
 	                    });
-	                    console.log(special_case_sites);
 
-			            let gnd_meas_settings = {
+			            let special_case_settings = {
 	                        type: "setGndMeasReminderSettings",
+	                        send_time: time_of_sending,
 	                        sites: special_case_sites,
 	                        category: $("#gnd-meas-category").val(),
 	                        altered: 1,
@@ -1077,17 +1069,31 @@ function initializeGndMeasSaveButton() {
 	                        overwrite: false,
 	                        modified: first_name
 	                    };
-	                    console.log(gnd_meas_settings);
+                    	wss_connect.send(JSON.stringify(special_case_settings));
 		            }
-                    wss_connect.send(JSON.stringify(gnd_meas_settings));              
-	                
 	            	$.notify('Ground measurement settings saved for special case!','success');
-            	} 
+            	}
+            	$("input[name=\"gnd-sitenames\"]:checked").each(function () {
+	                gnd_sitenames.push(this.value);
+	            });
+
+            	let gnd_meas_settings = {
+	                type: "setGndMeasReminderSettings",
+	                send_time: time_of_sending,
+	                sites: gnd_sitenames,
+	                altered: 0,
+	                category: $("#gnd-meas-category").val(),
+	                template: $("#reminder-message").val(),
+	                overwrite: false,
+	                modified: first_name
+	            };
+	            wss_connect.send(JSON.stringify(gnd_meas_settings));
+            	$.notify('Ground measurement settings saved!','success');
           
             }
-            
+            $(".special-case-site-container .gndmeas-reminder-site .checkbox label").closest("input").text();
         } else {
-            if (confirm('You have a save template, are you sure you want to overwrite it?')){
+        	let all_settings = ground_meas_reminder_data.settings
                 $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                     gnd_sitenames.push(this.value);
                 });
@@ -1097,14 +1103,16 @@ function initializeGndMeasSaveButton() {
 
 	                let gnd_meas_settings = {
 	                    type: "setGndMeasReminderSettings",
+	                    send_time: time_of_sending,
 	                    sites: gnd_sitenames,
+	                    altered: 0,
 	                    category: $("#gnd-meas-category").val(),
 	                    template: $("#reminder-message").text(),
 	                    overwrite: true,
 	                    modified: first_name
 	                };
 
-	                wss_connect.send(JSON.stringify(gnd_meas_settings));
+	                // wss_connect.send(JSON.stringify(gnd_meas_settings));
 
 	                if (special_case_length > 0) {
 	                    for (let counter = 0; counter < special_case_length.length; counter++) {
@@ -1115,6 +1123,7 @@ function initializeGndMeasSaveButton() {
 
 	                        let gnd_meas_settings = {
 	                            type: "setGndMeasReminderSettings",
+	                            send_time: time_of_sending,
 	                            sites: gnd_sitenames,
 	                            altered: 1,
 	                            category: $("#gnd-meas-category").val(),
@@ -1122,16 +1131,23 @@ function initializeGndMeasSaveButton() {
 	                            overwrite: true,
 	                            modified: first_name
 	                        };
-	                        wss_connect.send(JSON.stringify(gnd_meas_settings));              
+	                        // wss_connect.send(JSON.stringify(gnd_meas_settings));              
 	                    }
 	                	$.notify('Ground measurement settings saved!','success');
 		            } else {
-		            	$.notify('Please check at least on site on special cases','error');
+		            	// $.notify('Please check at least on site on special cases','error');
 		            }
 	            }
-            }      
-        }
+            }  
     });
+}
+
+function displayGndMeasSavingStatus(status) {
+	if(status == true){
+		$("#ground-meas-reminder-modal").modal("hide");
+	}else {
+		$.notify('Something went wrong. Please try again','error');
+	}
 }
 
 function initializeResetSpecialCasesButtonOnCLick () {
