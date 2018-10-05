@@ -1051,7 +1051,6 @@ function initializeGndMeasSaveButton() {
             } else if(gnd_sitenames.length > 0){
         		
             	gnd_sitenames = [];
-            	console.log(gnd_sitenames);
             	if (special_case_length > 0) {
             		for (let counter = 0; counter < special_case_length; counter++) {
 	                    special_case_sites = [];
@@ -1059,7 +1058,6 @@ function initializeGndMeasSaveButton() {
 	                        special_case_sites.push(this.value);
 	                        $(".gndmeas-reminder-site-container .gndmeas-reminder-site .checkbox label").find("input[value="+this.value+"]").prop("checked", false);
 	                    });
-	                    console.log(special_case_sites);
 
 			            let special_case_settings = {
 	                        type: "setGndMeasReminderSettings",
@@ -1071,7 +1069,6 @@ function initializeGndMeasSaveButton() {
 	                        overwrite: false,
 	                        modified: first_name
 	                    };
-	                    console.log(special_case_settings);
                     	wss_connect.send(JSON.stringify(special_case_settings));
 		            }
 	            	$.notify('Ground measurement settings saved for special case!','success');
@@ -1090,7 +1087,6 @@ function initializeGndMeasSaveButton() {
 	                overwrite: false,
 	                modified: first_name
 	            };
-	            console.log(gnd_meas_settings)
 	            wss_connect.send(JSON.stringify(gnd_meas_settings));
             	$.notify('Ground measurement settings saved!','success');
           
@@ -1098,7 +1094,6 @@ function initializeGndMeasSaveButton() {
             $(".special-case-site-container .gndmeas-reminder-site .checkbox label").closest("input").text();
         } else {
         	let all_settings = ground_meas_reminder_data.settings
-        	console.log(ground_meas_reminder_data);
                 $("input[name=\"gnd-sitenames\"]:checked").each(function () {
                     gnd_sitenames.push(this.value);
                 });
