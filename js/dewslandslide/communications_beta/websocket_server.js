@@ -145,7 +145,6 @@ function connectWS() {
 					break;
 				case "fetchGndMeasReminderSettings":
 		            if (msg_data.saved == true) {
-		            	console.log(msg_data);
 		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites, msg_data);
 		                
 		            } else {
