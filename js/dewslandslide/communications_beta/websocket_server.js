@@ -9,7 +9,10 @@ let wss_connect= connectWS();
 function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var wssConnection = new WebSocket("ws://192.168.150.132:5050");
-		var wssConnection = new WebSocket(`ws://${window.location.host}:5050`);
+		let url = window.location.host;
+		let split_url = url.split(":");
+		let update_url = `ws://${split_url[0]}:5050`;
+		var wssConnection = new WebSocket(update_url);
 		
 		wssConnection.onopen = function(e) {
 			console.log("Connection established!");
@@ -145,7 +148,6 @@ function connectWS() {
 					break;
 				case "fetchGndMeasReminderSettings":
 		            if (msg_data.saved == true) {
-		            	console.log(msg_data);
 		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites, msg_data);
 		                
 		            } else {
