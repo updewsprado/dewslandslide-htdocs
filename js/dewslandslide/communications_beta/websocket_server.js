@@ -8,7 +8,6 @@ let wss_connect= connectWS();
 
 function connectWS() {
 		console.log("trying to connect to web socket server");
-		// var wssConnection = new WebSocket("ws://192.168.150.132:5050");
 		let url = window.location.host;
 		let split_url = url.split(":");
 		let update_url = `ws://${split_url[0]}:5050`;
