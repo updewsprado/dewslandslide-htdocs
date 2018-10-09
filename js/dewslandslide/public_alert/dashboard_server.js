@@ -8,7 +8,14 @@
  *  - Issues And Reminders Page
 ****/
 
-const wsUri = `ws://${window.location.hostname}:5070/`;
+let wsUri = "";
+const hostname = `${window.location.hostname}`;
+const finalHostname = hostname.split(":");
+wsUri = `ws://${finalHostname[0]}:5070`;
+
+console.log("WS Hostname");
+console.log(wsUri);
+
 let websocket;
 
 const reconnect = 10000;
