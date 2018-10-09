@@ -8,10 +8,9 @@
  *  - Issues And Reminders Page
 ****/
 
-let wsUri = "";
-const hostname = `${window.location.hostname}`;
+const hostname = window.location.hostname;
 const finalHostname = hostname.split(":");
-wsUri = `ws://${finalHostname[0]}:5070`;
+const wsUri = `ws://${finalHostname[0]}:5070`;
 
 console.log("WS Hostname");
 console.log(wsUri);
