@@ -27,6 +27,9 @@ function initialize() {
         getRoutineReminder();
         getRoutineTemplate();
         getImportantTags();
+        initializeAddSpecialCaseButtonOnClick();
+        removeInputField();
+        initializeResetSpecialCasesButtonOnCLick();
         setTimeout(function(){
             try {
                 initializeContactSuggestion("");
@@ -193,7 +196,10 @@ function getQuickInboxEvent() {
 }
 
 function getQuickInboxUnregistered() {
-
+    let msg = {
+        type: 'smsloadquickunknowninbox'
+    }
+    wss_connect.send(JSON.stringify(msg));
 }
 
 function getQuickInboxDataLogger() {
@@ -693,6 +699,8 @@ function displayRoutineReminder(sites,template) {
     let month = moment().month();
     month += 1;
 
+    let parsed_template = parseRoutineReminderViaCbx(template[0].template);
+
     let wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
     let dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
     let routine_sites = [];
@@ -719,7 +727,7 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         case "Tuesday":
             $("#def-recipients").css("display", "inline-block");
@@ -742,7 +750,7 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         case "Wednesday":
             $("#def-recipients").css("display", "inline-block");
@@ -765,13 +773,20 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         default:
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
             break;
     }
 
+}
+
+function parseRoutineReminderViaCbx(template) {
+    template = template.replace("(greetings)","umaga");
+    template = template.replace("(ground_meas_submission)","11:30 AM");
+    template = template.replace("(monitoring_type)","routine");
+    return template
 }
 
 function initializeDatepickers() {

@@ -98,6 +98,10 @@ function onMessage (evt) {
             buildDashboardTables(data);
         } else if (code === "existingAlerts") {
             buildDashboardTables(data);
+        } else if (code === "updateGeneratedAlerts") {
+            let { generated_alerts } = data;
+            generated_alerts = JSON.parse(generated_alerts);
+            processReceivedGeneratedAlerts(generated_alerts);
         } else if (code === "showAutomationMenu") {
             $("#automation-row").show();
             if (data.alert_release.switch) {

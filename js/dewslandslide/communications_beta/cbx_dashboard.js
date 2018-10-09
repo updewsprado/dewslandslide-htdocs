@@ -2,6 +2,7 @@ let ewi_event_id = null;
 let ewi_site_id = null;
 let ewi_timestamp = null;
 let ewi_data_timestamp = null;
+let temp_ewi_button_container = null;
 $(document).ready(() => {
 	let temp_ewi_template_holder = "";
 	console.log("Chatterbox: Dashboard mode...");
@@ -16,6 +17,7 @@ $(document).ready(() => {
 function initializeEwiPhoneButton() {
     $("#latest").on("click", "tbody tr .send_ewi_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
+        temp_ewi_button_container = $(currentTarget).attr('id');
         current_row = latest_table.row(i).data();
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
@@ -36,6 +38,7 @@ function initializeEwiPhoneExtendedButton() {
     $("#extended").on("click", "tbody tr .send_ewi_extended_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = extended_table.row(i).data();
+        temp_ewi_button_container = $(currentTarget).attr('id');
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY');
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
@@ -100,18 +103,16 @@ function initializeSendButton() {
 			"msg": $("#constructed-ewi-amd").val() + dashboard_sms_signature,
 			"account_id": $("#current_user_id").val()
 		}
-		// alert();
-		// console.log(request['msg']);
+
 		wss_connect.send(JSON.stringify(request));
+		$("#"+temp_ewi_button_container).css("color","red");
 	});
 }
 
 function displayEwiStatus(ewi_status,gtag_status) {
-	console.log(ewi_status);
 	let temp = "";
 	ewi_status.forEach(function(ewi) {
-		console.log(ewi);
-		if (ewi.status[0].status == false) {
+		if (ewi.status == null || ewi.status[0].status == false) {
 			if (temp == "") {
 				temp = "Failed to send EWI to: "+ewi.recipient;
 			} else {
@@ -119,13 +120,12 @@ function displayEwiStatus(ewi_status,gtag_status) {
 			}
 		}
 	});
-  
-	if (temp == "" && gtag_status == true) {
-		$.notify("Successfully Tagged message as #EwiMessage", "success");
-		$.notify("Successfully Sent Early Warning Information.", "success");
+  	
+	if (temp == "") {
+		$.notify("Successfully Tagged message as #EwiMessage", "success", {hideDuration: 400});
+		$.notify("Successfully Sent Early Warning Information.", "success",{hideDuration: 400});
 	} else {
-		console.log("no go here");
-		$.notify(temp, "err");
+		$.notify(temp, "error",{hideDuration: 400});
 	}
 	$("#ewi-asap-modal").modal("hide");
 }

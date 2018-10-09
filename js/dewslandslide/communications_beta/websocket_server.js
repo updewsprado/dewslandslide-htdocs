@@ -9,7 +9,10 @@ let wss_connect= connectWS();
 function connectWS() {
 		console.log("trying to connect to web socket server");
 		// var wssConnection = new WebSocket("ws://192.168.150.132:5050");
-		var wssConnection = new WebSocket(`ws://${window.location.host}:5050`);
+		let url = window.location.host;
+		let split_url = url.split(":");
+		let update_url = `ws://${split_url[0]}:5050`;
+		var wssConnection = new WebSocket(update_url);
 		
 		wssConnection.onopen = function(e) {
 			console.log("Connection established!");
@@ -32,13 +35,13 @@ function connectWS() {
 					displayOrgSelection(msg_data.data);
 					break;
 				case "smsloadquickinbox":
-					console.log(msg_data.data);
-					inbox_container = msg_data.data;
 					displayQuickInboxMain(msg_data.data);
+					break;
+				case "smsloadunregisteredinbox":
+					displayUnregisteredInboxMain(msg_data.data);
 					break;
 				case "latestAlerts":
 					initLoadLatestAlerts(msg_data.data);
-					// $("#chatterbox-loading").modal("hide"); 
 					break;					
 				case "fetchedCmmtyContacts":
 					displayDataTableCommunityContacts(msg_data.data);
@@ -48,7 +51,6 @@ function connectWS() {
 					break;
 				case "loadSmsConversation":
 					displayConversationPanel(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
-					console.log(msg_data.data,msg_data.full_name,msg_data.recipients,msg_data.titles);
 					$('#chatterbox-loader-modal').modal("hide");
 					break;
 				case "updatedDwslContact":
@@ -138,7 +140,6 @@ function connectWS() {
 					displayTemplatesAndRecipients(msg_data.recipients,msg_data.template);
 					break;
 				case "sentEwiDashboard":
-					console.log(msg_data);
 					displayEwiStatus(msg_data.statuses, msg_data.gintag_status);
 					break;
 				case "taggingStatus":
@@ -147,13 +148,18 @@ function connectWS() {
 					break;
 				case "fetchGndMeasReminderSettings":
 		            if (msg_data.saved == true) {
-		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites);
+		                reconstructSavedSettingsForGndMeasReminder(msg_data.save_settings,msg_data.event_sites, msg_data.extended_sites, msg_data.routine_sites, msg_data);
+		                
 		            } else {
 		                displaySitesForGndMeasReminder(msg_data);
 		            }
 		            $("#ground-meas-reminder-modal").modal("show");
 		            $("#add-special-case").prop("disabled", false);
 					break;
+				case "insertGndMeasReminderSettingsStatus":
+					console.log(msg_data.status);
+					displayGndMeasSavingStatus(msg_data.status);
+					break;	
 				default:
 					console.log("No request to load.");
 					break;
