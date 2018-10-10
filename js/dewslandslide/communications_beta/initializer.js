@@ -1,7 +1,7 @@
 let recipient_container = [];
 let recent_contacts_collection = [];
 let recent_sites_collection = [];
-let samar_sites = [];
+let samar_sites_details = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});

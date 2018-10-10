@@ -161,7 +161,7 @@ function connectWS() {
 					displayGndMeasSavingStatus(msg_data.status);
 					break;
 				case "fetchedSamarSites":
-					samar_sites = msg_data.data;
+					samar_sites_details = msg_data.data;
 					break;
 				default:
 					console.log("No request to load.");
