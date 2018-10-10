@@ -948,18 +948,19 @@ function initializeConfirmEWITemplateViaChatterbox() {
 		    	 		}
 		    	 	}
 		    	 }
-		        }
-		    });
-		    for (let counter = 0; counter < samar_sites_details.length; counter++ ) {
-                let sbmp = `${samar_sites_details[0].sitio}, ${samar_sites_details[0].barangay}, ${samar_sites_details[0].municipality}`;
-                let formatSbmp = sbmp.replace("null", "");
-                if (formatSbmp.charAt(0) == ",") {
-                    formatSbmp = formatSbmp.substr(1);
-                }
-                rain_info_template = rain_info_template.replace(samar_sites_details[0].site_code, formatSbmp);
-                $("#msg").val(rain_info_template);
-		    }
-	    } else if ($("#ewi-date-picker input").val() == "" || $("#sites").val() == "") {
+		        
+			for (let counter = 0; counter < samar_sites_details.length; counter++ ) {
+                		let sbmp = `${samar_sites_details[counter].sitio}, ${samar_sites_details[counter].barangay}, ${samar_sites_details[counter].municipality}`;
+                		let formatSbmp = sbmp.replace("null", "");
+                		if (formatSbmp.charAt(0) == ",") {
+                	    		formatSbmp = formatSbmp.substr(1);
+                		}
+                		rain_info_template = rain_info_template.replace(samar_sites_details[counter].site_code, formatSbmp);
+            		}
+			$("#msg").val(rain_info_template);
+		}
+		});
+	} else if ($("#ewi-date-picker input").val() == "" || $("#sites").val() == "") {
             alert("Invalid input, All fields must be filled");
         } else {
         	let template_container = {
