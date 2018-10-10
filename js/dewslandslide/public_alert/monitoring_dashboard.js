@@ -146,7 +146,7 @@ function buildDashboardTables (socket_data) {
                 },
                 {
                     render (data, type, full) {
-                        return `<a><span class='glyphicon glyphicon-phone send_ewi_sms'></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
+                        return `<a><span class='glyphicon glyphicon-phone send_ewi_sms' id='${full.latest_release_id}_sms' data-sent='0' data-event-id='${full.event_id}_sms' ></span></a>&ensp;&ensp;<a><span class='glyphicon glyphicon-envelope' id='${full.latest_release_id}' data-sent='0' data-event-id='${full.event_id}'></span></a>`;
                     }
                 }
             ],
@@ -511,10 +511,16 @@ function showModalTriggers (row, latest) {
 
     if (retrigger_list != null) {
         qualified_retriggers.forEach((x) => {
-            const y = lookup[x.alert];
+            const op_alert = x.alert;
+            const y = lookup[op_alert];
             $(`#${y[0]}_area`).show();
             $(`#trigger_${y[1]}`).val(x.ts).prop({ readonly: true, disabled: false });
-            const info = y[2] === "E" ? row.tech_info[`${y[0]}`].info : row.tech_info[`${y[0]}`];
+            let info = y[2] === "E" ? row.tech_info[`${y[0]}`].info : row.tech_info[`${y[0]}`];
+
+            if (y[0] === "subsurface" || y[0] === "surficial") {
+                info = info[op_alert];
+            }
+
             $(`#trigger_${y[1]}_info`).val(info).prop("disabled", false);
 
             $(`.trigger_switch[value=${y[0]}]`).prop("disabled", false);
@@ -764,6 +770,7 @@ function initializeReleaseModalForm () {
                     const { event_id, previous_validity } = entry;
 
                     final.current_event_id = event_id;
+                    const list = final.trigger_list;
 
                     // Don't include un-checked retriggers for rain and sensor
                     $(".trigger_switch").each((count, item) => {
@@ -775,7 +782,7 @@ function initializeReleaseModalForm () {
                         }
                     });
 
-                    const list = final.trigger_list;
+                    final.trigger_list = list.length === 0 ? null : list;
 
                     if (list != null) {
                         if (list.indexOf("D") > -1) {

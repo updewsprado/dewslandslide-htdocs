@@ -1285,7 +1285,7 @@ function initializeFormValidator () {
             } else if (this_event_status === "routine") {
                 temp.routine_list = [];
                 $("input[name='routine_sites[]']:checked").each((i, elem) => {
-                    if ($(elem).is(":disabled")) {
+                    if (!$(elem).is(":disabled")) {
                         const obj = {
                             site_id: elem.value,
                             internal_alert_level: temp.internal_alert_level
