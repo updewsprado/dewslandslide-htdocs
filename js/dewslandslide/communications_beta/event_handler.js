@@ -923,9 +923,9 @@ function initializeClearQuickSearchInputs () {
 
 function initializeConfirmEWITemplateViaChatterbox() {
 	$("#confirm-ewi").click(() => {
-        var samar_sites = ["jor", "bar", "ime", "lpa", "hin", "lte", "par", "lay"];
+        let samar_sites = ["jor", "bar", "ime", "lpa", "hin", "lte", "par", "lay"];
         if ($("#rainfall-sites").val() !== "#") {
-            var rain_info_template = "";
+            let rain_info_template = "";
             if ($("#rainfall-cummulative").val() == "1d") {
                 rain_info_template = `1 day cumulative rainfall as of ${$("#rfi-date-picker input").val()}: `;
             } else {
@@ -935,9 +935,9 @@ function initializeConfirmEWITemplateViaChatterbox() {
                 url: "../rainfall_scanner/getRainfallPercentages",
                 dataType: "json",
                 success (result) {
-		    	var data = JSON.parse(result);
-		    	for (var counter = 0; counter < samar_sites.length; counter++) {
-		    	 	for (var sub_counter = 0; sub_counter < data.length; sub_counter++) {
+		    	let data = JSON.parse(result);
+		    	for (let counter = 0; counter < samar_sites.length; counter++) {
+		    	 	for (let sub_counter = 0; sub_counter < data.length; sub_counter++) {
 		    	 		if (data[sub_counter].site_code == samar_sites[counter]) {
 		    	 			if ($("#rainfall-cummulative").val() == "1d") {
 	    		 				rainfall_percent = parseInt((data[sub_counter]["1D cml"] / data[sub_counter]["half of 2yr max"]) * 100);
@@ -950,7 +950,15 @@ function initializeConfirmEWITemplateViaChatterbox() {
 		    	 }
 		        }
 		    });
-		    console.log(samar_sites);
+		    for (let counter = 0; counter < samar_sites_details.length; counter++ ) {
+                let sbmp = `${samar_sites_details[0].sitio}, ${samar_sites_details[0].barangay}, ${samar_sites_details[0].municipality}`;
+                let formatSbmp = sbmp.replace("null", "");
+                if (formatSbmp.charAt(0) == ",") {
+                    formatSbmp = formatSbmp.substr(1);
+                }
+                rain_info_template = rain_info_template.replace(samar_sites_details[0].site_code, formatSbmp);
+                $("#msg").val(rain_info_template);
+		    }
 	    } else if ($("#ewi-date-picker input").val() == "" || $("#sites").val() == "") {
             alert("Invalid input, All fields must be filled");
         } else {
