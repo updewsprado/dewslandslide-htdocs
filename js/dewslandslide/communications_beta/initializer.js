@@ -1,6 +1,7 @@
 let recipient_container = [];
 let recent_contacts_collection = [];
 let recent_sites_collection = [];
+let samar_sites = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
@@ -40,6 +41,7 @@ function initialize() {
                 getOrganizationSelection();
                 initializeMiscButtons();
                 getQuickGroupSelection();
+                initializeSamarSites();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");
@@ -822,4 +824,11 @@ function initializeMiscButtons() {
     $("#uncheckAllSitenames").click(() => {
         $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
     });
+}
+
+function initializeSamarSites() {
+    let msg = {
+        type: "getSiteDetails"
+    };
+    wss_connect.send(JSON.stringify(msg));
 }

@@ -931,7 +931,6 @@ function initializeConfirmEWITemplateViaChatterbox() {
             } else {
                 rain_info_template = `3 day cumulative rainfall as of ${$("#rfi-date-picker input").val()}: `;
             }
-		console.log("GO HERE");
             $.ajax({
                 url: "../rainfall_scanner/getRainfallPercentages",
                 dataType: "json",
@@ -949,23 +948,9 @@ function initializeConfirmEWITemplateViaChatterbox() {
 		    	 		}
 		    	 	}
 		    	 }
-			console.log(rain_info_template);
-
-		   	for (var counter = 0; counter < samar_sites.length; counter++) {
-		                 $.post("../chatterbox/getsitbangprovmun", { sites: samar_sites[counter] })
-		                 .done((response) => {
-		                     var data = JSON.parse(response);
-		                     console.log(data);
-		                     var sbmp = `${data[0].sitio}, ${data[0].barangay}, ${data[0].municipality}`;
-		                     var formatSbmp = sbmp.replace("null", "");
-		                     if (formatSbmp.charAt(0) == ",") {
-		                         formatSbmp = formatSbmp.substr(1);
-		                     }
-		                     rain_info_template = rain_info_template.replace(data[0].name, formatSbmp);
-		                     $("#msg").val(rain_info_template);
-		                 });
-			 };
-		        }});
+		        }
+		    });
+		    console.log(samar_sites);
 	    } else if ($("#ewi-date-picker input").val() == "" || $("#sites").val() == "") {
             alert("Invalid input, All fields must be filled");
         } else {

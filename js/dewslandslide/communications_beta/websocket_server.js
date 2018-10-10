@@ -159,7 +159,10 @@ function connectWS() {
 				case "insertGndMeasReminderSettingsStatus":
 					console.log(msg_data.status);
 					displayGndMeasSavingStatus(msg_data.status);
-					break;	
+					break;
+				case "fetchedSamarSites":
+					samar_sites = msg_data.data;
+					break;
 				default:
 					console.log("No request to load.");
 					break;
