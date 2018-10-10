@@ -72,7 +72,9 @@ function getContactSuggestion (name_suggestion) {
 	let contact_suggestion_container = [];
 
 	name_suggestion.data.forEach(function(raw_names) {
-		contact_suggestion_container.push(raw_names.fullname);
+        let mobile_number = raw_names.number.replace("63", "0");
+        let display_info = `${raw_names.fullname} (${mobile_number})`;
+		contact_suggestion_container.push(display_info);
 	});
 	awesomplete.list = contact_suggestion_container;
     initializeGoChatOnClick(awesomplete);
