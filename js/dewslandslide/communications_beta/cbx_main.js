@@ -992,7 +992,7 @@ function displaySavedReminderMessage (settings, def_event, def_extended, def_rou
 	for (let counter = 0; counter < settings.length; counter++) {
         switch(settings[counter].type) {
             case 'routine':
-            	has_routine_settings = false;
+            	has_routine_settings = true;
                 routine_sites_full.push(settings[counter]);
                 routine_sites.push(settings[counter].site);
                 if(settings[counter].altered_template == 0){
@@ -1109,7 +1109,7 @@ function displaySavedReminderMessage (settings, def_event, def_extended, def_rou
 		            }
             	}else{
             		gnd_meas_overwrite = "new";
-            		delegateCheckboxesForNoSavedSettings(def_event);
+            		delegateCheckboxesForNoSavedSettings(def_event, "event");
 				    $("#reminder-message").text(template);
             	}
             	
@@ -1126,7 +1126,7 @@ function displaySavedReminderMessage (settings, def_event, def_extended, def_rou
             	if(has_routine_settings == true){
             		for (var i = 0; i < def_routine.length; i++) {
 		                var modIndex = i % 6;
-		                sitename = def_routine[i].site_code.toUpperCase();
+		                sitename = def_routine[i].toUpperCase();
 		                if ($.inArray(sitename, routine_sites) != -1 && $.inArray(routine_sites_full[i], routine_altered) == -1) {
 		                    $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="reminder_automation_id_'+routine_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
 		                } else {
@@ -1188,11 +1188,16 @@ function displayNoEventText(type){
 	return message;
 }
 
-function delegateCheckboxesForNoSavedSettings(data){
+function delegateCheckboxesForNoSavedSettings(data, category){
+	let site_name = null;
 	for (var i = 0; i < data.length; i++) {
         var modIndex = i % 6;
-        sitename = data[i].toUpperCase();
-            $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
+        if(category == "event"){
+        	site_name = data[i].site_code.toUpperCase();
+        }else {
+        	site_name = data[i].toUpperCase();
+        }
+            $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" hidden><input name="gnd-sitenames" type="checkbox" value="'+site_name+'" checked>'+site_name+'</label></div>');
     }
 
 }
