@@ -108,7 +108,6 @@ function startConversation(details) {
 			type: 'loadSmsConversation',
 			data: details
 		};
-		// addContactsActivity(convo_details);
 		wss_connect.send(JSON.stringify(convo_details));
 	} catch(err) {
 		console.log(err);
