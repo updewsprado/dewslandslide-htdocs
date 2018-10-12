@@ -1,6 +1,7 @@
 let recipient_container = [];
 let recent_contacts_collection = [];
 let recent_sites_collection = [];
+let samar_sites_details = [];
 $(document).ready(function() {
 	$('#chatterbox-loader-modal').modal({backdrop: 'static', keyboard: false});
 	// $('#ground-meas-reminder-modal').modal({backdrop: 'static', keyboard: false});
@@ -27,6 +28,9 @@ function initialize() {
         getRoutineReminder();
         getRoutineTemplate();
         getImportantTags();
+        initializeAddSpecialCaseButtonOnClick();
+        removeInputField();
+        initializeResetSpecialCasesButtonOnCLick();
         setTimeout(function(){
             try {
                 initializeContactSuggestion("");
@@ -36,6 +40,8 @@ function initialize() {
                 getLatestAlert()
                 getOrganizationSelection();
                 initializeMiscButtons();
+                getQuickGroupSelection();
+                initializeSamarSites();
                 $("#chatterbox-loader-modal").modal("hide");
             } catch (err) {
                 $("#chatterbox-loader-modal").modal("hide");
@@ -68,7 +74,9 @@ function getContactSuggestion (name_suggestion) {
 	let contact_suggestion_container = [];
 
 	name_suggestion.data.forEach(function(raw_names) {
-		contact_suggestion_container.push(raw_names.fullname);
+        let mobile_number = raw_names.number.replace("63", "0");
+        let display_info = `${raw_names.fullname} (${mobile_number})`;
+		contact_suggestion_container.push(display_info);
 	});
 	awesomplete.list = contact_suggestion_container;
     initializeGoChatOnClick(awesomplete);
@@ -192,7 +200,10 @@ function getQuickInboxEvent() {
 }
 
 function getQuickInboxUnregistered() {
-
+    let msg = {
+        type: 'smsloadquickunknowninbox'
+    }
+    wss_connect.send(JSON.stringify(msg));
 }
 
 function getQuickInboxDataLogger() {
@@ -279,7 +290,38 @@ function initLoadLatestAlerts (data) {
             }
         });
     }
+    // if(quick_inbox_registered.length != 0){
+        displayQuickEventInbox(quick_inbox_registered, quick_release);
+    // }
+}
 
+function displayQuickEventInbox (){
+    try {
+        try {
+            let inbox_site_code = null;
+            let event_site_code = null;
+            for (let counter = 0; counter < quick_inbox_registered.length; counter++) {
+                inbox_site_code = quick_inbox_registered[counter].full_name;
+                inbox_site_code = inbox_site_code.split(" ");
+                let inbox_data = quick_inbox_registered[counter];
+                for (let counter = 0; counter < quick_release.length; counter++) {
+                    event_site_code = quick_release[counter].site_code.toUpperCase();
+                    if(event_site_code == inbox_site_code[0]){
+                        quick_inbox_event.unshift(inbox_data);
+                    }
+                }
+            }
+
+            let event_inbox_html = event_inbox_template({'event_inbox_messages': quick_inbox_event});
+            $("#quick-event-inbox-display").html(event_inbox_html);
+            $("#quick-event-inbox-display").scrollTop(0);
+        } catch (err) {
+            console.log(err);
+        }
+    } catch (err) {
+        console.log(err);
+        //Add PMS here
+    }
 }
 
 function initCheckboxColors () {
@@ -499,7 +541,7 @@ function communityContactFormValidation () {
 			} else {
 				$("#org-and-site-alert").hide(300);
 				//success function here
-				onSubmitCommunityContactForm(site_selected, organization_selected);
+				submitCommunityContactForm(site_selected, organization_selected);
                 initializeContactSuggestion("");
                 getCommunityContact();
 			}
@@ -661,6 +703,8 @@ function displayRoutineReminder(sites,template) {
     let month = moment().month();
     month += 1;
 
+    let parsed_template = parseRoutineReminderViaCbx(template[0].template);
+
     let wet = [[1, 2, 6, 7, 8, 9, 10, 11, 12], [5, 6, 7, 8, 9, 10]];
     let dry = [[3, 4, 5], [1, 2, 3, 4, 11, 12]];
     let routine_sites = [];
@@ -687,7 +731,7 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         case "Tuesday":
             $("#def-recipients").css("display", "inline-block");
@@ -710,7 +754,7 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").append("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         case "Wednesday":
             $("#def-recipients").css("display", "inline-block");
@@ -733,7 +777,7 @@ function displayRoutineReminder(sites,template) {
 
             $(".routine_section").append("<div class='routine-msg-container'></div>");
             $(".routine-msg-container").prepend("<textarea class='form-control' id='routine-msg' cols='30'rows='10'></textarea>");
-            $("#routine-msg").val(template[0].template);
+            $("#routine-msg").val(parsed_template);
             break;
         default:
             $(".routine_section").append("<div class='col-md-12 col-sm-12 col-xs-12'><h6>No Routine Monitoring for today.</h6></div>");
@@ -742,10 +786,22 @@ function displayRoutineReminder(sites,template) {
 
 }
 
+function parseRoutineReminderViaCbx(template) {
+    template = template.replace("(greetings)","umaga");
+    template = template.replace("(ground_meas_submission)","11:30 AM");
+    template = template.replace("(monitoring_type)","routine");
+    return template
+}
+
 function initializeDatepickers() {
     $("#ewi-date-picker").datetimepicker({
         locale: "en",
         format: "YYYY-MM-DD HH:mm:ss"
+    });
+
+    $("#rfi-date-picker").datetimepicker({
+        locale: "en",
+        format: "hh:mmA MMMM DD, YYYY"
     });
 }
 
@@ -768,4 +824,11 @@ function initializeMiscButtons() {
     $("#uncheckAllSitenames").click(() => {
         $("#modal-select-sitenames").find(".checkbox").find("input").prop("checked", false);
     });
+}
+
+function initializeSamarSites() {
+    let msg = {
+        type: "getSiteDetails"
+    };
+    wss_connect.send(JSON.stringify(msg));
 }

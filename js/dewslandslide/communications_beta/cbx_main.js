@@ -20,10 +20,16 @@ let important_tags = null;
 let conversation_details_label = null;
 
 let quick_inbox_template = Handlebars.compile($('#quick-inbox-template').html());
+let quick_unregistered_template = Handlebars.compile($('#quick-unregistered-inbox-template').html());
+let event_inbox_template = Handlebars.compile($('#event-inbox-template').html());
 let messages_template_both = Handlebars.compile($('#messages-template-both').html());
 let selected_contact_template = Handlebars.compile($('#selected-contact-template').html());
 let quick_release_template = Handlebars.compile($('#quick-release-template').html());
 let search_key_template = Handlebars.compile($('#search-message-key-template').html());
+
+let special_case_num = 0;
+let special_case_id = 0;
+let site_count = 0;
 
 Handlebars.registerHelper('breaklines', function(text) {
     text = Handlebars.Utils.escapeExpression(text);
@@ -80,15 +86,6 @@ function getCommunityContact(){
 	}
 }
 
-function getQuickEmployeeSelection () {
-	// requestTag = {
-	// 	'type':'smsloadrequesttag',
-	// 	'teams': dynaTags
-	// }
-	// conn.send(JSON.stringify(requestTag));
-	// $('#main-container').removeClass('hidden');
-}
-
 function displaySitesSelection(data) {
 	let sitenames = data;
 	let sitename, site_id, psgc;
@@ -99,7 +96,7 @@ function displaySitesSelection(data) {
 
 		sitename = sitenames[i].site_code;
 		site_id = sitenames[i].site_id;
-		psgc = sitenames[i].psgc;
+		psgc = sitenames[i].psgc_source;
 		$("#sitenames-"+modIndex).append('<div class="checkbox"><label class="site_code"><input name="sitenames" id="id_'+psgc+'" type="checkbox" value="'+site_id+'">'+sitename.toUpperCase()+'</label></div>');
 	}
 }
@@ -111,7 +108,6 @@ function startConversation(details) {
 			type: 'loadSmsConversation',
 			data: details
 		};
-		// addContactsActivity(convo_details);
 		wss_connect.send(JSON.stringify(convo_details));
 	} catch(err) {
 		console.log(err);
@@ -123,6 +119,9 @@ function displayQuickInboxMain(msg_data) {
 	try {
 		try {
 			for (let counter = 0; counter < msg_data.length; counter++) {
+				if(msg_data[counter].isunknown == 1){
+					console.log("has unknown");
+				}
 				msg_data[counter].isunknown = 0;
 				quick_inbox_registered.unshift(msg_data[counter]);
 			}
@@ -138,6 +137,26 @@ function displayQuickInboxMain(msg_data) {
 	} catch (err) {
 		console.log(err);
 		//Add PMS here
+	}
+}
+
+function displayUnregisteredInboxMain(msg_data) {
+	try {
+		try {
+			for (let counter = 0; counter < msg_data.length; counter++) {
+				quick_inbox_unregistered.unshift(msg_data[counter]);
+			}
+			
+		} catch(err) {
+			console.log(err);
+		}
+
+		quick_inbox_html = quick_unregistered_template({'quick_unregistered_inbox_messages': quick_inbox_unregistered});
+
+		$("#quick-unregistered-inbox-display").html(quick_inbox_html);
+		$("#quick-unregistered-inbox-display").scrollTop(0);
+	} catch (err) {
+		console.log(err);
 	}
 }
 
@@ -192,7 +211,6 @@ function displayOrgSelection(data){
 	for (var i = 0; i < offices.length; i++) {
 		var modIndex = i % 5;
 		$("#offices-"+i).empty();
-
 		office = offices[i].org_name;
 		office_id = offices[i].org_id;
 		$("#offices-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+office+'" name="orgs" class="form-group" value="'+office+'">'+office.toUpperCase()+'</label></div>');
@@ -210,6 +228,7 @@ function displayContactSettingsMenu() {
 }
 
 function displayDataTableCommunityContacts(cmmty_contact_data){
+	// console.log(cmmty_contact_data);
 	$('#comm-response-contact-container').empty();
 	$('#comm-response-contact-container').DataTable({
 		destroy: true,
@@ -243,14 +262,14 @@ function displayDataTableEmployeeContacts(dwsl_contact_data) {
 }
 
 function displaySiteSelection (sites,psgc_source = []) {
-	var column_count = 12; // 12 rows 
+	var column_count = 6; // 6 rows 
 	$('#new-site').remove();
 	for (var counter = 0; counter < column_count; counter++) {
 		$('#sitenames-cc-'+counter).empty();
 	}
 	// console.log(psgc_source[1].psgc);
 	for (var i = 0; i < sites.length; i++) {
-		var modIndex = i % 12;
+		var modIndex = i % 6;
 		var site = sites[i];
 		$("#sitenames-cc-"+modIndex).append('<div class="checkbox"><label><input type="checkbox" id="id_'+site.psgc_source+'" name="sites" class="form-group site-checkbox" value="'+site.site_code+'">'+site.site_code.toUpperCase()+'</label></div>');
 
@@ -323,12 +342,20 @@ function displayConversationPanel(msg_data, full_data, recipients, titles) {
 	msg_data.reverse();
 	let counter = 0;
 	msg_data.forEach(function(data) {
-		// let title_container = titles[counter].split("<split>");
-		// let title_holder = "";
-		// for (let sub_counter = 0; sub_counter < title_container.length; sub_counter++) {
-		// 	title_holder = title_holder+title_container[sub_counter]+"\n";
-		// }
-		// data.title = title_holder;
+		console.log(data.network);
+		if (titles != null) {
+			let title_container = titles[counter].split("<split>");
+			let title_holder = "";
+			for (let sub_counter = 0; sub_counter < title_container.length; sub_counter++) {
+				title_holder = title_holder+title_container[sub_counter]+"\n";
+			}
+			data.title = title_holder;		
+		}
+		if (data.network == "GLOBE") {
+			data.isGlobe = true;
+		} else {
+			data.isGlobe = false;
+		}
 		displayUpdatedMessages(data);
 		counter++;
 	});
@@ -367,8 +394,27 @@ function displayAddEmployeeContactMessage (msg_data) {
 	}
 }
 
-function displayAddCommunityContactMessage (msg_data) {
-	
+function displayAddCommunityContactMessage (msg_data) { // LOUIE - new code
+	if(msg_data.status === true) {
+		$.notify(msg_data.return_msg, "success");
+		$("#user_id_cc").val(0);
+		$("#salutation_cc").val("");
+		$("#firstname_cc").val("");
+		$("#middlename_cc").val("");
+		$("#lastname_cc").val("");
+		$("#nickname_cc").val("");
+		$("#birthdate_cc").val("");
+		$("#gender_cc").val("");
+		$("#active_status_cc").val(1);
+		$("#ewi_status").val(0);
+		$("#mobile-div-cc").empty();
+		$("#landline-div").empty();
+		$("#settings-cmd").val('updatecontact').change();
+		community_input_count = 1;
+		community_input_count_landline = 1;
+	}else {
+		$.notify(msg_data, "warn");
+	}
 }
 
 function displayUpdateEmployeeDetails (employee_data) {
@@ -420,7 +466,7 @@ function displayUpdateEmployeeDetails (employee_data) {
 }
   
 function displayUpdateCommunityDetails (community_data) {
-	console.log(community_data);
+	// console.log(community_data);
 	let user_orgs = [];
 	$("#user_id_cc").val(community_data.contact_info.id);
 	$("#salutation_cc").val(community_data.contact_info.salutation);
@@ -794,4 +840,488 @@ function displayTeamsGroupSending(data) {
             $(`#tag-${modIndex}`).append(`<div class="checkbox"><label><input name="tag" type="checkbox" value="${tag}">${tag.toUpperCase()}</label></div>`);
         }
     }
-} 
+}
+
+function initializeAddSpecialCaseButtonOnClick () {
+    $("#add-special-case").click(() => {
+        addSpecialCase();
+    });
+}
+
+function reconstructSavedSettingsForGndMeasReminder(settings, def_event, def_extended, def_routine, all_data) {
+	$("#no-site-on-monitoring").hide();
+	resetCaseDiv();
+    ground_meas_reminder_data = {
+        event: def_event,
+        extended: def_extended,
+        routine: def_routine,
+        settings: settings,
+        template: all_data.template.template,
+        time_of_sending : all_data.time_of_sending
+
+    }
+    if(def_event.length == 0){
+    	$("#no-site-on-monitoring-msg").text("No site under event monitoring.");
+    	$("#save-gnd-meas-settings-button").prop("disabled",true);
+    	$("#add-special-case").prop("disabled",true);
+    }else {
+    	$("#no-site-on-monitoring").hide();
+    	$("#save-gnd-meas-settings-button").prop("disabled",false);
+    	$("#add-special-case").prop("disabled",false);
+    	displaySavedReminderMessage(settings, def_event, def_extended, def_routine);
+    }
+    
+}
+
+function changeSemiAutomationSettings(category, data) {
+	console.log(data);
+    if (category != "routine" && category != "event" && category != "extended") {
+        reconstructSavedSettingsForGndMeasReminder(data.settings, data.event, data.extended, data.routine);
+    } else {
+        resetCaseDiv();
+        const currentDate = new Date();
+        const current_meridiem = currentDate.getHours();
+        if(data.saved == false){
+        	let template = data.template.template.replace("(monitoring_type)", category);
+	        
+	        $('#reminder-message').text(template);
+
+	        $(".gndmeas-reminder-site").empty();
+	        $(".gndmeas-reminder-office").empty();
+
+	        switch(category) {
+	            case 'extended':
+	                site_count = data.extended_sites.length;
+	                if (site_count == 0){
+	                	$("#no-site-on-monitoring").show();
+	                	$("#no-site-on-monitoring-msg").text("No site under extended monitoring.");
+	                	$("#save-gnd-meas-settings-button").prop("disabled",true);
+	                	$("#add-special-case").prop("disabled",true);
+	                } else {
+	                	$("#no-site-on-monitoring").hide();
+	                	$("#save-gnd-meas-settings-button").prop("disabled",false);
+	                	$("#add-special-case").prop("disabled",false);
+	                	for (var i = 0; i < data.extended_sites.length; i++) {
+		                    var modIndex = i % 6;
+		                    sitename = data.extended_sites[i].toUpperCase();
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+		                }
+
+		                for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+		                    var modIndex = i % 6;
+		                    sitename = data.cant_send_gndmeas[i].toUpperCase();
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+		                }
+	                }
+	                
+	                break;
+	            case 'event':
+	                site_count = data.event_sites.length;
+	                if (site_count == 0){
+	                	$("#no-site-on-monitoring").show();
+	                	$("#no-site-on-monitoring-msg").text("No site under event monitoring.");
+	                	$("#save-gnd-meas-settings-button").prop("disabled",true);
+	                	$("#add-special-case").prop("disabled",true);
+	                } else {
+	                	$("#no-site-on-monitoring").hide();
+	                	$("#save-gnd-meas-settings-button").prop("disabled",false);
+	                	$("#add-special-case").prop("disabled",false);
+		                for (var i = 0; i < data.event_sites.length; i++) {
+		                    var modIndex = i % 6;
+		                    sitename = data.event_sites[i].site_code.toUpperCase();
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+		                }
+
+		                for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+		                    var modIndex = i % 6;
+		                    sitename = data.cant_send_gndmeas[i].toUpperCase();
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+		                }
+		            }
+	                break;
+	            case 'routine':
+	                site_count = data.routine_sites.length;
+	                if (site_count == 0){
+	                	$("#no-site-on-monitoring").show();
+	                	$("#no-site-on-monitoring-msg").text("No site under routing monitoring.");
+	                	$("#save-gnd-meas-settings-button").prop("disabled",true);
+	                	$("#add-special-case").prop("disabled",true);
+	                } else {
+	                	$("#no-site-on-monitoring").hide();
+	                	$("#save-gnd-meas-settings-button").prop("disabled",false);
+	                	$("#add-special-case").prop("disabled",false);
+		                for (var i = 0; i < data.routine_sites.length; i++) {
+		                    var modIndex = i % 6;
+		                    sitename = data.routine_sites[i].toUpperCase();
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+		                }
+		            }
+	                break;
+	        }
+        }else {
+	        displaySavedReminderMessage(data.settings, data.event, data.extended ,data.routine);
+        }
+        
+    }
+
+}
+
+function displaySavedReminderMessage (settings, def_event, def_extended, def_routine) {
+	gnd_meas_overwrite = "old";
+    let event_sites = [];
+    let event_sites_full = [];
+    let event_templates_container = [];
+    let event_altered = [];
+    let routine_sites = [];
+    let routine_sites_full = [];
+    let routine_templates_container = [];
+    let routine_altered = [];
+    let extended_sites = [];
+    let extended_sites_full = [];
+    let extended_templates_container = [];
+    let extended_altered = [];
+    let special_cases = 0;
+    let has_event_settings = false;
+    let has_extended_settings = false;
+    let has_routine_settings = false;
+    let template = ground_meas_reminder_data.template.replace("(monitoring_type)", $("#gnd-meas-category").val());
+
+    $(".gndmeas-reminder-site").empty();
+    $(".gndmeas-reminder-office").empty();
+	for (let counter = 0; counter < settings.length; counter++) {
+        switch(settings[counter].type) {
+            case 'routine':
+            	has_routine_settings = true;
+                routine_sites_full.push(settings[counter]);
+                routine_sites.push(settings[counter].site);
+                if(settings[counter].altered_template == 0){
+	                if ($.inArray(settings[counter].msg, routine_templates_container) == -1) {
+	                    routine_templates_container.push(settings[counter].msg);
+	                }
+            	}
+                if (settings[counter].altered_template == 1) {
+                    routine_altered.push(settings[counter]);
+                }
+                break;
+            case 'extended':
+            	has_extended_settings = true;
+                extended_sites_full.push(settings[counter]);
+                extended_sites.push(settings[counter].site);
+                if(settings[counter].altered_template == 0){
+	                if ($.inArray(settings[counter].msg, extended_templates_container) == -1) {
+	                    extended_templates_container.push(settings[counter].msg); 
+	                }
+            	}
+
+                if (settings[counter].altered_template == 1) {
+                    extended_altered.push(settings[counter]);
+                }
+                break;
+            case 'event':
+            	has_event_settings = true;
+                event_sites_full.push(settings[counter]);
+                event_sites.push(settings[counter].site);
+                if(settings[counter].altered_template == 0){
+	                if ($.inArray(settings[counter].msg, event_templates_container) == -1) {
+	                   event_templates_container.push(settings[counter].msg); 
+	                }
+                }
+                if (settings[counter].altered_template == 1) {
+                    event_altered.push(settings[counter]);
+                }
+                break;
+        }
+    }
+
+    let gnd_meas_category = $("#gnd-meas-category").val();
+    switch(gnd_meas_category) {
+        case 'extended':
+            site_count = def_extended.length;
+            if(site_count == 0){
+            	showAndHideGroudMeasButton(true);
+            	$("#no-site-on-monitoring-msg").text(displayNoEventText(gnd_meas_category));
+            }else {
+				showAndHideGroudMeasButton(false);
+            	if(has_extended_settings == true){
+	            	for (var i = 0; i < def_extended.length; i++) {
+		                var modIndex = i % 6;
+		                sitename = def_extended[i].toUpperCase();
+		                if ($.inArray(sitename, extended_sites) != -1 && $.inArray(extended_sites_full[i], extended_altered) == -1) {
+		                    $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="reminder_automation_id_'+extended_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
+		                } else {
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+		                }
+		            }
+
+		            $("#reminder-message").text(extended_templates_container[0]);
+		            for (let counter = 0; counter < extended_altered.length; counter++){
+		                addSpecialCase();
+		                $("#special-case-message-"+counter+"").val(extended_altered[counter].msg);
+		                $("#special-case-message-"+counter+"").after("<input type='text' id='reminder_automation_id_"+extended_altered[counter].automation_id+"' value="+extended_altered[counter].automation_id+" hidden> ");
+		                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+		                    if (extended_altered[counter].site == this.value) {
+		                        $(this).prop("checked", true);
+		                    } else {
+		                        $(this).prop("checked", false);
+		                    }
+		                });
+		            }
+            	}else {
+            		gnd_meas_overwrite = "new";
+            		delegateCheckboxesForNoSavedSettings(def_extended);
+				    $("#reminder-message").text(template);
+            	}
+            }
+            
+            break;
+        case 'event':
+            site_count = def_event.length;
+            if(site_count == 0){
+            	showAndHideGroudMeasButton(true);
+            	$("#no-site-on-monitoring-msg").text(displayNoEventText(gnd_meas_category));
+            }else {
+            	showAndHideGroudMeasButton(false);
+            	if(has_event_settings == true){
+            		for (var i = 0; i < def_event.length; i++) {
+		                var modIndex = i % 6;
+		                sitename = def_event[i].site_code.toUpperCase();
+		                if ($.inArray(sitename, event_sites) != -1 && $.inArray(event_sites_full[i], event_altered) == -1) {
+		                  	$(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="reminder_automation_id_'+event_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');  
+		                } else {
+		                   	$(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input type="text" class="automation_distinction" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+		                }
+
+		            }
+
+		            $("#reminder-message").text(event_templates_container[0]);
+		            for (let counter = 0; counter < event_altered.length; counter++){
+		                addSpecialCase();
+		                $("#special-case-message-"+counter+"").val(event_altered[counter].msg);
+		                $("#special-case-message-"+counter+"").after("<input type='text' id='reminder_automation_id_"+event_altered[counter].automation_id+"' value="+event_altered[counter].automation_id+" hidden> ");
+		                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+		                    if (event_altered[counter].site == this.value) {
+		                        $(this).prop("checked", true);
+		                    } else {
+		                        $(this).prop("checked", false);
+		                    }
+		                });
+		            }
+            	}else{
+            		gnd_meas_overwrite = "new";
+            		delegateCheckboxesForNoSavedSettings(def_event, "event");
+				    $("#reminder-message").text(template);
+            	}
+            	
+            }
+            
+            break;
+        case 'routine':
+            site_count = def_routine.length;
+            if(site_count == 0){
+            	showAndHideGroudMeasButton(true);
+            	$("#no-site-on-monitoring-msg").text(displayNoEventText(gnd_meas_category));
+            }else {
+            	showAndHideGroudMeasButton(false);
+            	if(has_routine_settings == true){
+            		for (var i = 0; i < def_routine.length; i++) {
+		                var modIndex = i % 6;
+		                sitename = def_routine[i].toUpperCase();
+		                if ($.inArray(sitename, routine_sites) != -1 && $.inArray(routine_sites_full[i], routine_altered) == -1) {
+		                    $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" value="reminder_automation_id_'+routine_sites_full[i].automation_id+'" hidden><input name="gnd-sitenames" type="checkbox" value="'+sitename+'" checked>'+sitename+'</label></div>');
+		                } else {
+		                    $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input class="automation_distinction1" type="text" value="new" hidden><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+		                }
+		            }
+		            $("#reminder-message").text(routine_templates_container[0]);
+		            for (let counter = 0; counter < routine_altered.length; counter++){
+		                addSpecialCase();
+		                $("#special-case-message-"+counter+"").val(routine_altered[counter].msg);
+		                $("#special-case-message-"+counter+"").after("<input type='text' id='reminder_automation_id_"+routine_altered[counter].automation_id+"' value="+routine_altered[counter].automation_id+" hidden> ");
+		                $("input[name=\"gnd-meas-"+counter+"\"]:checkbox").each(function () {
+		                    if (routine_altered[counter].site == this.value) {
+		                        $(this).prop("checked", true);
+		                    } else {
+		                        $(this).prop("checked", false);
+		                    }
+		                });
+		            }
+            	}else {
+            		gnd_meas_overwrite = "new";
+            		delegateCheckboxesForNoSavedSettings(def_routine);
+				    $("#reminder-message").text(template);
+            	}
+            	
+            }
+            
+            break;
+    }
+    console.log(gnd_meas_overwrite);
+}
+
+function showAndHideGroudMeasButton (behavior) {
+	if(behavior == true){
+		$("#no-site-on-monitoring").show();
+		$("#save-gnd-meas-settings-button").prop("disabled",true);
+    	$("#add-special-case").prop("disabled",true);
+    	$("#reminder-message").text();
+    	$("#reminder-message").prop("disabled",true);
+	}else {
+		$("#no-site-on-monitoring").hide();
+    	$("#save-gnd-meas-settings-button").prop("disabled",false);
+    	$("#add-special-case").prop("disabled",false);
+    	$("#reminder-message").prop("disabled",false);
+    	$("#reminder-message").text();
+	}
+}
+
+function displayNoEventText(type){
+	let message = "";
+	if (type == "event") {
+		message = "No site under event monitoring.";
+	}else if (type == "extended") {
+		message = "No site under extended monitoring.";
+	}else if (type == "routine") {
+		message = "No site under routine monitoring.";
+	}
+
+	return message;
+}
+
+function delegateCheckboxesForNoSavedSettings(data, category){
+	let site_name = null;
+	for (var i = 0; i < data.length; i++) {
+        var modIndex = i % 6;
+        if(category == "event"){
+        	site_name = data[i].site_code.toUpperCase();
+        }else {
+        	site_name = data[i].toUpperCase();
+        }
+            $(`#gnd-sitenames-${modIndex}`).append('<div class="checkbox"><label><input type="text" class="automation_distinction" hidden><input name="gnd-sitenames" type="checkbox" value="'+site_name+'" checked>'+site_name+'</label></div>');
+    }
+
+}
+
+
+function updateGndMeasTemplate(template) {
+	let current_date_time = moment().format('H:mm:ss');
+	let gndmeas_time = null;
+	if(current_date_time >= moment().format("07:30:00") && current_date_time <= moment().format("11:30:00")){
+		template = template.replace("(ground_meas_submission)", "11:30 AM");
+	}else if (current_date_time >= moment().format("11:30:00") && current_date_time <= moment().format("14:30:00")){
+		template = template.replace("(ground_meas_submission)", "3:30 PM");
+	}
+
+	return template;
+
+}
+
+function displaySitesForGndMeasReminder(data) {
+	console.log(data);
+	$("#no-site-on-monitoring").hide();
+    gnd_meas_overwrite = "new";
+    ground_meas_reminder_data = data;
+    const currentDate = new Date();
+    const current_meridiem = currentDate.getHours();
+    let template = ground_meas_reminder_data.template.template.replace("(monitoring_type)", $("#gnd-meas-category").val());
+    $(".gndmeas-reminder-site").empty();
+    $(".gndmeas-reminder-office").empty();
+
+    if (current_meridiem >= 13 && current_meridiem <= 18) {
+        template = template.replace("(greetings)", "hapon");
+    } else if (current_meridiem >= 18 && current_meridiem <= 23) {
+        template = template.replace("(greetings)", "hapon");
+    } else if (current_meridiem >= 0 && current_meridiem <= 3) {
+        template = template.replace("(greetings)", "umaga");
+    } else if (current_meridiem >= 4 && current_meridiem <= 11) {
+        template = template.replace("(greetings)", "umaga");
+    } else {
+        template = template.replace("(greetings)", "hapon");
+    }
+
+    $("#reminder-message").text(template);
+    site_count = data.event_sites.length;
+    for (var i = 0; i < data.event_sites.length; i++) {
+        var modIndex = i % 6;
+        sitename = data.event_sites[i].site_code.toUpperCase();
+        $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}" checked>${sitename}</label></div>`);
+    }
+
+    for (var i = 0; i < data.cant_send_gndmeas.length; i++) {
+        var modIndex = i % 6;
+        sitename = data.cant_send_gndmeas[i].toUpperCase();
+        $(`#gnd-sitenames-${modIndex}`).append(`<div class="checkbox"><label><input name="gnd-sitenames" type="checkbox" value="${sitename}">${sitename}</label></div>`);
+    }
+}
+
+function addSpecialCase () {
+    const case_name = `clone-special-case-${special_case_id}`;
+    const class_sites_div = `clone-sites-div-${special_case_num}`;
+    const class_msg_div = `clone-msg-div-${special_case_num}`; 
+    const $clone = $("#special-case-template").clone().prop("hidden", false);
+    const regular_reminder_msg = $("#reminder-message").val();
+    const $clone_sites = $(".gndmeas-reminder-site-container").children().clone();
+    if (site_count <= special_case_num) {
+        $("#add-special-case").prop('disabled',true);
+    } else {
+        $("#add-special-case").prop('disabled',false);
+        $clone.attr("id", case_name);
+        $clone.find("div#special-case-body .col-sm-6:first-child").addClass(class_sites_div);
+        $clone.find("div#special-case-body .col-sm-6:last-child").addClass(class_msg_div);
+        $clone.find("textarea.special-case-message-container").attr('id', `special-case-message-${special_case_num}`);
+        $clone.find("textarea.special-case-message-container").val(regular_reminder_msg);
+        
+        // Set name for each checkbox based on div-id
+        $clone_sites.find("input").each((index, element) => {
+            let checkbox_name = `gnd-meas-${special_case_num}`;
+            $(element).attr('name', checkbox_name);
+            $(element).prop("checked", false);
+        });
+        
+        $clone.find("#special-case-sites").append($clone_sites);
+        // changeSemiAutomationSettings($("#gnd-meas-category").val(), ground_meas_reminder_data);
+        $("#special-case-container").append($clone);
+        special_case_id += 1;
+        special_case_num += 1;
+
+        // Disable add button if site_count is maxed out
+        if (site_count <= special_case_num) $("#add-special-case").prop('disabled',true); 
+    }
+}
+
+function removeInputField () {
+    $(document).on("click", ".remove", ({ currentTarget }) => {
+        special_case_num = special_case_num-1;
+        $("#add-special-case").prop('disabled',false);
+        $(currentTarget).closest("div.special-case-template").remove();
+    });
+}
+
+function initializeResetSpecialCasesButtonOnCLick () {
+    $("#reset-button").on("click",() => {
+        resetSpecialCases();
+    });    
+}
+
+function resetSpecialCases () {
+    // Clear special cases
+    $("#gnd-meas-category").val('event');
+    let special_case_length = $(".special-case-template").length;
+    special_case_num = 0;
+    for (let counter = special_case_length-1; counter >=0; counter--) {
+        $("#clone-special-case-"+counter).remove();
+    }
+    resetCaseDiv();
+    var data = {
+        type: "getGroundMeasDefaultSettings"
+    };
+    wss_connect.send(JSON.stringify(data));    
+}
+
+
+function resetCaseDiv () {
+    $("#add-special-case").prop('disabled',false);
+    let case_div = $("#special-case-container");
+    case_div.empty();
+    special_case_num = 0;
+    special_case_id = 0;
+}

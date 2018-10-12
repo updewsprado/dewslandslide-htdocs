@@ -2,6 +2,7 @@ let ewi_event_id = null;
 let ewi_site_id = null;
 let ewi_timestamp = null;
 let ewi_data_timestamp = null;
+let temp_ewi_button_container = null;
 $(document).ready(() => {
 	let temp_ewi_template_holder = "";
 	console.log("Chatterbox: Dashboard mode...");
@@ -16,8 +17,11 @@ $(document).ready(() => {
 function initializeEwiPhoneButton() {
     $("#latest").on("click", "tbody tr .send_ewi_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
+        temp_ewi_button_container = $(currentTarget).attr('id');
         current_row = latest_table.row(i).data();
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY h:mm A');
+        current_row.formatted_data_timestamp = current_row.formatted_data_timestamp.replace("12:00 PM", "12:00 NN");
+        current_row.formatted_data_timestamp = current_row.formatted_data_timestamp.replace("12:00 AM", "12:00 MN");
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
@@ -36,7 +40,10 @@ function initializeEwiPhoneExtendedButton() {
     $("#extended").on("click", "tbody tr .send_ewi_extended_sms", ({ currentTarget }) => {
         const i = $(currentTarget).parents("tr");
         current_row = extended_table.row(i).data();
+        temp_ewi_button_container = $(currentTarget).attr('id');
         current_row.formatted_data_timestamp =  moment(current_row.data_timestamp).add(30, "m").format('MMMM D, YYYY');
+        current_row.formatted_data_timestamp = current_row.formatted_data_timestamp.replace("12:00 PM", "12:00 NN");
+        current_row.formatted_data_timestamp = current_row.formatted_data_timestamp.replace("12:00 AM", "12:00 MN");
         ewi_timestamp = moment(current_row.data_timestamp).add(30, "m").format('h:mm A');
         ewi_event_id = current_row.event_id;
         ewi_site_id = current_row.site_id;
@@ -87,6 +94,7 @@ function initializeEditUndoButtons() {
 }
 
 function initializeSendButton() {
+	let dashboard_sms_signature = ` - ${first_name} from PHIVOLCS-DYNASLOPE`;
 	$("#send-btn-ewi-amd").click(function() {
 		let request = {
 			"type": "sendEwiViaDashboard",
@@ -94,19 +102,21 @@ function initializeSendButton() {
 			"site_id": ewi_site_id,
 			"timestamp": ewi_timestamp,
 			"data_timestamp":ewi_data_timestamp,
+			"previous_release_time": ewi_timestamp = moment(ewi_data_timestamp).subtract(240, "m").format('h:mm A'),
 			"recipients": $("#ewi-recipients-dashboard").tagsinput('items'),
-			"msg": $("#constructed-ewi-amd").val()
+			"msg": $("#constructed-ewi-amd").val() + dashboard_sms_signature,
+			"account_id": $("#current_user_id").val()
 		}
+
 		wss_connect.send(JSON.stringify(request));
+		$("#"+temp_ewi_button_container).css("color","red");
 	});
 }
 
 function displayEwiStatus(ewi_status,gtag_status) {
-	console.log(ewi_status);
 	let temp = "";
 	ewi_status.forEach(function(ewi) {
-		console.log(ewi);
-		if (ewi.status[0].status == false) {
+		if (ewi.status == null || ewi.status[0].status == false) {
 			if (temp == "") {
 				temp = "Failed to send EWI to: "+ewi.recipient;
 			} else {
@@ -114,13 +124,12 @@ function displayEwiStatus(ewi_status,gtag_status) {
 			}
 		}
 	});
-  
-	if (temp == "" && gtag_status == true) {
-		$.notify("Successfully Tagged message as #EwiMessage", "success");
-		$.notify("Successfully Sent Early Warning Information.", "success");
+  	
+	if (temp == "") {
+		$.notify("Successfully Tagged message as #EwiMessage", "success", {hideDuration: 400});
+		$.notify("Successfully Sent Early Warning Information.", "success",{hideDuration: 400});
 	} else {
-		console.log("no go here");
-		$.notify(temp, "err");
+		$.notify(temp, "error",{hideDuration: 400});
 	}
 	$("#ewi-asap-modal").modal("hide");
 }
